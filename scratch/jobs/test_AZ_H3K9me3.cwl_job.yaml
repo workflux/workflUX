@@ -1,0 +1,21 @@
+adapter1: [nextera]
+adapter2: [nextera]
+fastq1:
+- {class: File, path: /C010-datasets/Internal/GCTB/ChIP/raw_data/10631/180418_D00636_0036_BCC872ANXX//AS-228428-LR-34609/fastq/AS-228428-LR-34609_R1.fastq.gz}
+fastq2:
+- {class: File, path: /C010-datasets/Internal/GCTB/ChIP/raw_data/10631/180418_D00636_0036_BCC872ANXX//AS-228428-LR-34609/fastq/AS-228428-LR-34609_R2.fastq.gz}
+macs2_genome_size: hs
+reference:
+  class: File
+  path: /ngs_share/data/genomes/Hsapiens/hg19/bowtie2/hg19.fa
+  secondaryFiles:
+  - {class: File, path: /ngs_share/data/genomes/Hsapiens/hg19/bowtie2/hg19.fa.fai}
+  - {class: File, path: /ngs_share/data/genomes/Hsapiens/hg19/bowtie2/hg19.1.bt2}
+  - {class: File, path: /ngs_share/data/genomes/Hsapiens/hg19/bowtie2/hg19.2.bt2}
+  - {class: File, path: /ngs_share/data/genomes/Hsapiens/hg19/bowtie2/hg19.3.bt2}
+  - {class: File, path: /ngs_share/data/genomes/Hsapiens/hg19/bowtie2/hg19.4.bt2}
+  - {class: File, path: /ngs_share/data/genomes/Hsapiens/hg19/bowtie2/hg19.rev.1.bt2}
+  - {class: File, path: /ngs_share/data/genomes/Hsapiens/hg19/bowtie2/hg19.rev.2.bt2}
+reference_info: {class: File, path: /ngs_share/data/genomes/bedtools_genome_files/hg19_chromInfo.txt}
+sample_id: AZ_H3K9me3
+unique_id: [AS-228428-LR-34609]
