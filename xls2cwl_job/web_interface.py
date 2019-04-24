@@ -15,7 +15,7 @@ def read_template_attributes(sheet_file):
     return attributes
 
 def get_param_info(file_path):
-    _, configs = sheet_file(file_path, verbose_level=0)
+    param_values, configs = sheet_file(file_path, verbose_level=0)
     is_job_specific = {}
     for param in configs.keys():
         param_names = param
@@ -23,4 +23,4 @@ def get_param_info(file_path):
             is_job_specific[param] = True
         else:
             is_job_specific[param] = False
-    return list(configs.keys()), is_job_specific
+    return param_names, is_job_specific

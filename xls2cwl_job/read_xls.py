@@ -173,17 +173,20 @@ def parameter_value( field_string_list ):
     empty_field_found = False
     for field_string in field_string_list:
         try:
-            value = quote_clean_string(field_string)
+            value = clean_string(field_string)
         except SystemExit as e:
             sys.exit( print_pref + str(e))
         if len(value) == 0:
             if empty_field_found:
-                sys.exit( print_pref + "E: empty field, please specify \"null\"" +
-                " if a value should be empty or non-existend")
+                break
             else:
                 empty_field_found = True
         else:
-            param_value.append(value)
+            if empty_field_found:
+                sys.exit( print_pref + "E: empty field, please specify \"null\"" +
+                " if a value should be empty or non-existend") #! maybe change
+            else:
+                param_value.append(value)
     return param_value
 
 
