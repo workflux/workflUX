@@ -47,7 +47,7 @@ def split_all_parameters_by_job_id( all_parameters, configs ):
     for param_name in all_parameters.keys():
         try:
             parameter_by_job_id_tmp = split_parameter_by_job_id( param_name, all_parameters, 
-                                        configs[param_name]["split_into_jobs_by"] )
+                                        configs[param_name]["split_into_runs_by"] )
         except SystemExit as e:
             sys.exit(print_pref + str(e))
         # update parameters_by_job_id with splitted parameter

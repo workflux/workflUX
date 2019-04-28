@@ -12,15 +12,20 @@ def read_template_attributes(sheet_file):
         sys.exit("Error reading the job template \"" + sheet_file + "\": does the template have a \"config\" sheet?")
     _, attributes = read_and_remove_sheet_attributes(config_sheet)
     del(attributes["type"])
+    # add cwl attribute if missing:
+    if not "CWL" in attributes.keys():
+        attributes["CWL"] = ""
+    if not "desc" in attributes.keys():
+        attributes["desc"] = ""
     return attributes
 
-def get_param_info(file_path):
+def get_param_config_info(file_path):
     param_values, configs = sheet_file(file_path, verbose_level=0)
-    is_job_specific = {}
+    param_config_info = []
     for param in configs.keys():
-        param_names = param
-        if configs[param]["split_into_jobs_by"][0] == "job_id":
-            is_job_specific[param] = True
+        if configs[param]["split_into_runs_by"][0] == "job_id":
+            is_run_specific = True
         else:
-            is_job_specific[param] = False
-    return param_names, is_job_specific
+            is_run_specific = False
+        param_config_info.append({"param_name":param, "is_run_specific":is_run_specific})
+    return param_config_info

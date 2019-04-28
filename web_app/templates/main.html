@@ -1,5 +1,44 @@
-{% extends "base.html" %}
+<!DOCTYPE html>
+<html lang="en">
+    <head>
+        <title>CWLab</title>
+        <link rel="stylesheet" href="https://www.w3schools.com/w3css/4/w3.css">
+        <link rel="stylesheet" href="https://www.w3schools.com/lib/w3-colors-metro.css">
+        <link rel="stylesheet" href="https://www.w3schools.com/lib/w3-theme-dark-grey.css">
+        <link rel="stylesheet" 
+            href="https://use.fontawesome.com/releases/v5.4.2/css/all.css" 
+            integrity="sha384-/rXc/GQVaYpyDdyxK+ecHPVYJSN9bmVFBvjA/9eOB+pb3F2w2N6fc5qB9Ew5yIns" 
+            crossorigin="anonymous">
+        <link rel="stylesheet" href="/static/custom.css">
+        <script src="https://unpkg.com/react@15/dist/react.js"></script>
+        <script src="https://unpkg.com/react-dom@15/dist/react-dom.js"></script>
+        <script src="https://unpkg.com/babel-standalone/babel.min.js"></script>
+        <!-- <script src="/static/styles.js" type="text/babel"></script> -->
+        <script src="/static/general_use.js" type="text/babel"></script>
+        <script src="/static/job_template.js" type="text/babel"></script>
+        <script src="/static/main.js" type="text/babel"></script>
 
-{% block content %}
-    <h1>Welcome to <font color="grey">CW</font><font color="green">Lab</font></b></h1>
-{% endblock %}
+        <script > 
+            // global params feeded by back end
+            const routeGetTmplInfo="{{ url_for('read_templ_dir') }}"
+            const routeGetTemplConfigInfo="{{ url_for('get_template_config_info') }}"
+
+            // other global params:
+            const serverNotReachableError = "The server could not be reached."
+            const serverReachedWithError = "The server failed to work on your request."
+
+        </script>
+
+        <script type="text/babel">
+            ReactDOM.render(
+                <Root />,
+                document.getElementById('root')
+            );
+        </script>
+
+    </head>
+    <body class="w3-theme-d3 w3-medium">
+            <div id="root"></div>
+    </body>
+
+</html>

@@ -4,7 +4,7 @@
 
 {% block head %}
     {{ super() }}
-    <!-- <script src="/static/job_creation.js"></script> -->
+    <!-- <script src="/static/job_template.js"></script> -->
     <script>
         var template_names = [];
         var template_filenames = []
@@ -55,7 +55,7 @@
             'type': "GET",
             'global': false,
             'dataType': 'json',
-            'url': "{{ url_for('read_job_templ_dir') }}",
+            'url': "{{ url_for('read_templ_dir') }}",
             'success': function (responce) {
                 template_names = responce[0]
                 template_filenames = responce[1]
