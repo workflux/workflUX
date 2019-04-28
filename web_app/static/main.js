@@ -4,23 +4,23 @@ const modules = {   // each entry corresponds to one wep app module,
                     // each module has a dedicated button in the top bar
                     // and specific content which is displayed on click of that button
     home: {
-        text: (<span><font color="grey">CW</font><font color="green">Lab</font></span>),
+        text: (<span><font color="white">CW</font><font color="lightgreen">Lab</font></span>),
         icon: "",
         content: "Welcome to CWLab"
     },
-    cwl_docs:  {
-        text: "CWL workflows/tools",
-        icon: "fas fa-project-diagram",
+    import_cwl:  {
+        text: "Import CWL Workflow/Tool",
+        icon: "fas fa-file-import",
         content: "Under construction"
     },
-    job_templates:  {
-        text: "Job Templates",
-        icon: "fas  fa-plus-square",
-        content: <JobTemplRoot />
+    create_job:  {
+        text: "Create New Job",
+        icon: "fas  fa-plus",
+        content: "Under construction"
     },
     jobs: {
-        text:  "Jobs Execution & Results",
-        icon: "fas fa-play-circle",
+        text:  "Job Execution & Results",
+        icon: "fas fa-rocket",
         content: "Under construction"
     },
     help: {
