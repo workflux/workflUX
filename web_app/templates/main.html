@@ -13,15 +13,13 @@
         <script src="https://unpkg.com/react@15/dist/react.js"></script>
         <script src="https://unpkg.com/react-dom@15/dist/react-dom.js"></script>
         <script src="https://unpkg.com/babel-standalone/babel.min.js"></script>
-        <!-- <script src="/static/styles.js" type="text/babel"></script> -->
         <script src="/static/general_use.js" type="text/babel"></script>
-        <script src="/static/job_template.js" type="text/babel"></script>
+        <script src="/static/import_cwl.js" type="text/babel"></script>
         <script src="/static/main.js" type="text/babel"></script>
 
         <script > 
             // global params feeded by back end
-            const routeGetTmplInfo="{{ url_for('read_templ_dir') }}"
-            const routeGetTemplConfigInfo="{{ url_for('get_template_config_info') }}"
+            const routeCwlImport = "{{ url_for('import_cwl') }}"
 
             // other global params:
             const serverNotReachableError = "The server could not be reached."

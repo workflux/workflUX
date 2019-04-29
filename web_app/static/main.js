@@ -11,7 +11,7 @@ const modules = {   // each entry corresponds to one wep app module,
     import_cwl:  {
         text: "Import CWL Workflow/Tool",
         icon: "fas fa-file-import",
-        content: "Under construction"
+        content: (<ImportCWLRoot />)
     },
     create_job:  {
         text: "Create New Job",

@@ -1,0 +1,56 @@
+import sys
+import os
+from flask import render_template, jsonify, redirect, flash, url_for, request
+from werkzeug.urls import url_parse
+from werkzeug.utils import secure_filename
+from . import app 
+from xls2cwl_job import generate_xls_from_cwl as generate_job_template_from_cwl
+
+def is_allowed_file(filename):
+    return '.' in filename and \
+           filename.rsplit('.', 1)[1].lower() in app.config['ALLOWED_IMPORT_EXTENSIONS']
+
+@app.route('/import_cwl/', methods=['POST'])
+def import_cwl():
+    messages = []
+    data = []
+    try:
+        if 'file' not in request.files:
+            sys.exit( 'No file received.')
+
+        import_file = request.files['file']
+
+        if import_file.filename == '':
+            sys.exit( "No file specified.")
+
+        if not is_allowed_file(import_file.filename):
+            sys.exit( "Wrong file type. Only files with following extensions are allowed: " + 
+                ", ".join(app.config['ALLOWED_IMPORT_EXTENSIONS']))
+        
+        # save the file to the CWL directory:
+        import_filename = secure_filename(import_file.filename)
+        imported_filepath = os.path.join(app.config['CWL_DIR'], import_filename)
+        import_file.save(imported_filepath)
+
+        # generate job template config:
+        job_templ_filepath = imported_filepath + ".job_templ.xlsx"
+        generate_job_template_from_cwl(
+            cwl_file=imported_filepath, 
+            output_file=job_templ_filepath, 
+            show_please_fill=True
+        )
+        
+        messages.append( { 
+            "type":"success", 
+            "text": import_file.filename + " successfully imported."
+        } )
+
+    except SystemExit as e:
+        messages.append( { "type":"error", "text": str(e) } )
+    except:
+        messages.append( { 
+            "type":"error", 
+            "text":"An uknown error occured." 
+        } )
+    
+    return jsonify({"data":data,"messages":messages})

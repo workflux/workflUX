@@ -19,11 +19,11 @@ app.config.from_object(Config)
 # set up the working environment:
 if not os.path.isdir(app.config['TEMP_DIR']):
     os.makedirs(app.config['TEMP_DIR'])
-if not os.path.isdir(app.config['JOB_TEMPLATE_DIR']):
-    os.makedirs(app.config['JOB_TEMPLATE_DIR'])
 if not os.path.isdir(app.config['CWL_DIR']):
     os.makedirs(app.config['CWL_DIR'])
-if not os.path.isdir(app.config['JOB_DIR']):
-    os.makedirs(app.config['JOB_DIR'])
+if not os.path.isdir(app.config['EXEC_DIR']):
+    os.makedirs(app.config['EXEC_DIR'])
+if not os.path.isdir(app.config['INPUT_DIR']):
+    os.makedirs(app.config['INPUT_DIR'])
 
-from web_app import main, job_template, general_use
+from web_app import main, general_use, import_cwl
