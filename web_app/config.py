@@ -7,10 +7,10 @@ class Config(object):
     #     'sqlite:///' + os.path.join(basedir, 'app.db')
     # SQLALCHEMY_TRACK_MODIFICATIONS = False
     
-    TEMP_DIR = os.environ.get('CWLAB_TEMP_DIR') or os.path.join( "./scratch/", ".temp")
-    JOB_TEMPLATE_DIR = os.environ.get('CWLAB_JOB_TEMPLATE_DIR') or os.path.join( "./scratch/", "job_templates")
+    TEMP_DIR = os.environ.get('CWLAB_TEMP_DIR') or os.path.join( "./scratch/", "temp")
     CWL_DIR = os.environ.get('CWLAB_CWL_DIR') or  os.path.join( "./scratch/", "CWL")
-    JOB_DIR = os.environ.get('CWLAB_OUTPUT_DIR') or  os.path.join( "./scratch/", "jobs")
+    EXEC_DIR = os.environ.get('CWLAB_EXEC_DIR') or  os.path.join( "./scratch/", "exec")
+    INPUT_DIR = os.environ.get('CWLAB_INPUT_DIR') or os.path.join( "./scratch/", "input")
     # OUTPUT_DIR = os.environ.get('CWLAB_OUTPUT_DIR') or  os.path.join( "./scratch/", "output")
     # TEMP_DIR = os.environ.get('CWLAB_TEMP_DIR') or os.path.join( os.path.expanduser('~'), "epicwl", ".temp")
     # JOB_TEMPLATE_DIR = os.environ.get('CWLAB_JOB_TEMPLATE_DIR') or os.path.join( os.path.expanduser('~'), "epicwl", "xls_templates")
