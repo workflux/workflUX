@@ -92,11 +92,10 @@ def build_configs_sheet(configs):
     generation_method = {
             "type": str,
             "is_array": str,
-            "is_optional": str,
             "null_allowed": str,
+            "null_items_allowed": str,
     	    "secondary_files": generate_mutliple_quoted_strings,
             "default_value": generate_mutliple_quoted_strings,
-            "is_run_specific": str,
             "split_into_runs_by": generate_mutliple_quoted_strings,
             "aligned_to": str,
             "group_by": generate_mutliple_quoted_strings,
@@ -105,20 +104,16 @@ def build_configs_sheet(configs):
             "forbidden_characters": generate_mutliple_quoted_strings,
             "additional_validation_methods": generate_mutliple_strings,
             "manipulate_value": generate_mutliple_quoted_strings,
-            "parameter_sheet_name": generate_quoted_string,
-            "web_name": generate_quoted_string,
-            "web_element": str,
-            "web_placeholder": generate_quoted_string
+            "parameter_sheet_name": str
     }
     sheet_header_row = ["# CWL: config"]
     configs_order = [
             "type",
             "is_array",
-            "is_optional",
             "null_allowed",
+            "null_items_allowed",
     	    "secondary_files",
             "default_value",
-            "is_run_specific",
             "split_into_runs_by",
             "aligned_to",
             "group_by",
@@ -127,10 +122,7 @@ def build_configs_sheet(configs):
             "forbidden_characters",
             "additional_validation_methods",
             "manipulate_value",
-            "parameter_sheet_name",
-            "web_name",
-            "web_element",
-            "web_placeholder"
+            "parameter_sheet_name"
     ]
     table_header_row = ["parameter_name"]
     table_header_row.extend(configs_order)

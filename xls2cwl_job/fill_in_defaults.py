@@ -10,7 +10,6 @@ def fill_in_config_defaults(configs):
             "null_allowed": False,
             "secondary_files": [ "" ],
             "default_value": [ "" ],
-            "is_run_specific": False,
             "split_into_runs_by": [ "" ],
             "aligned_to": "",
             "group_by": [ "" ],
@@ -19,10 +18,7 @@ def fill_in_config_defaults(configs):
             "forbidden_characters": [ "" ],
             "additional_validation_methods": [ "" ],
             "manipulate_value": [ "" ],
-            "parameter_sheet_name": "parameters",
-            "web_name": "",
-            "web_element": "",
-            "web_placeholder": ""
+            "parameter_sheet_name": "parameters"
         }
         # check if essential configs[param_name] are present:
         if not (
