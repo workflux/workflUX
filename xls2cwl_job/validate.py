@@ -2,7 +2,7 @@ import sys
 import re
 
 #! not implemented yet:
-# - grouped_by
+# - group_by
 # - additional_validation_methods (unique)
 # - type validation
 

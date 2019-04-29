@@ -133,7 +133,7 @@ def field( field_key, field_string ):
         "manipulate_value":multi_attribute_field_quote_clean,
         "split_into_runs_by":multi_attribute_field_quote_clean,
         "aligned_to":clean_string,
-        "grouped_by":multi_attribute_field_quote_clean,
+        "group_by":multi_attribute_field_quote_clean,
         "allowed_selection":multi_attribute_field_quote_clean,
         "allowed_selection_quote_free":multi_attribute_field_quote_clean,
         "allowed_characters":multi_attribute_field_quote_clean,
@@ -201,15 +201,12 @@ def read_and_remove_sheet_attributes( sheet ):
         "CWL":""
     }
     # read sheet attributes:
-    pattern='(?:<[eE][pP][iI])?[Cc][Ww][Ll]>(.*)'
     while sheet.row[0][0].strip()[0] == "#": # sheet attributes start with "#"
-        match = re.search(pattern, sheet.row[0][0])
-        if match:
-            attributes = multi_attribute_field(match.group(1))
-            for attribute in attributes:
-                attribute = multi_attribute_field_quote_clean(attribute, seperator=":")
-                if len(attribute) == 2:
-                    sheet_attributes[attribute[0]] = attribute[1]
+        attributes = multi_attribute_field(sheet.row[0][0].strip("#").strip())
+        for attribute in attributes:
+            attribute = multi_attribute_field_quote_clean(attribute, seperator=":")
+            if len(attribute) == 2:
+                sheet_attributes[attribute[0]] = attribute[1]
         # remove header:
         del(sheet.row[0])
     return sheet, sheet_attributes

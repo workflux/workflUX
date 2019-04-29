@@ -26,4 +26,4 @@ if not os.path.isdir(app.config['EXEC_DIR']):
 if not os.path.isdir(app.config['INPUT_DIR']):
     os.makedirs(app.config['INPUT_DIR'])
 
-from web_app import main, general_use, import_cwl
+from web_app import main, general_use, import_cwl, create_job

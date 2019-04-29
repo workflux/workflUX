@@ -1,18 +1,61 @@
 // contains general utilities important for multiple modules
 // import styled from "styled-components"
 
+String.prototype.replaceAll = function(search, replacement) {
+    // in contrast to replace() replaces not only the first occurence
+    var target = this;
+    return target.split(search).join(replacement);
+};
 
 class IneditableValueField extends React.Component {
     render() {
-        const style = {backgroundColor: "#303030", fontFamily: "courier"}
-        return( <span style={style}> {this.props.children} </span> )
+        const style = {fontFamily: "courier"}
+        return( 
+            <span className="w3-metro-darken" style={style}> 
+                {this.props.children} 
+            </span> 
+        )
     }
 }
 
+class BooleanSlider extends React.Component {
+    constructor(props) {
+        super(props);
+        // props.name
+        // props.value
+        // props.onChange function executed on change
+        //  takes two arguments: (1) value, (2) whether set or not
+        // props.checked
+        this.handleChange = this.handleChange.bind(this)
+    }
+    
+    handleChange(event){
+        const value=event.target.value
+        const is_set=event.target.checked
+        this.props.onChange(value, is_set)
+    }
+
+    render() {
+        return( 
+            <label className="switch">
+                <input 
+                    type="checkbox" 
+                    name={this.props.name}
+                    value={this.props.value}
+                    onChange={this.handleChange}
+                    // checked={this.props.checked}
+                />
+                <span className="slider round"></span>
+            </label>
+        );
+    }
+}
 
 class ActionButton extends React.Component {
     constructor(props) {
         super(props);
+        // props.name
+        // props.value
         // props.colorClass set color class default is w3-black
         // props.onAction function to execute on click
         // props.label labeling
@@ -21,13 +64,15 @@ class ActionButton extends React.Component {
     }
     
     handleAction(event){
-        this.props.onAction()
+        this.props.onAction(event.target.value)
     }
 
     render() {
         const style = {marginTop: "2px", marginBottom: "2px"}
         return( 
             <button style={style}
+                name={this.props.name}
+                value={this.props.value}
                 className={this.props.colorClass ? ("w3-button" + this.props.colorClass) : "w3-button w3-black"}
                 onClick={this.handleAction}
                 disabled={this.props.loading ? true : false}
@@ -60,9 +105,7 @@ class CollapsibleListItem extends React.Component {
             paddingTop: "10px",
             paddingBottom: "10px",
             paddingLeft: "16px",
-            paddingRight: "16px",
-            color: "#fff",
-            backgroundColor: "#303030"
+            paddingRight: "16px"
         }
         const contentStyle = {
             marginTop: "0px",
@@ -70,16 +113,14 @@ class CollapsibleListItem extends React.Component {
             paddingTop: "10px",
             paddingBottom: "10px",
             paddingLeft: "16px",
-            paddingRight: "16px",
-            color: "#fff", 
-            backgroundColor: "#575757"
+            paddingRight: "16px"
         }
-        console.log("peep" + this.props.itemContent)
 
         return (
             <div>
                 <label>
-                    <div key={this.props.value} style={headerStyle}>
+                    <div key={this.props.value} style={headerStyle}
+                        className="w3-metro-darken">
                         <input 
                             type="radio" name="templ_select"
                             value={this.props.value}
@@ -89,8 +130,7 @@ class CollapsibleListItem extends React.Component {
                     </div>
                 </label>
                 {this.props.itemContent != "" &&
-                    <div style={contentStyle}>
-                        {console.log(this.props.itemContent)}
+                    <div style={contentStyle} className="w3-theme-d5">
                         {this.props.itemContent}
                     </div>
                 }
@@ -166,7 +206,8 @@ class Message extends React.Component {
             error: "w3-red",
             warning: "w3-orange",
             info: "w3-blue",
-            success: "w3-green"
+            success: "w3-green",
+            hint: "w3-yellow"
         };
         return ( <div className={"w3-panel " + color[this.props.type]}> {this.props.children} </div> );
     }
@@ -312,7 +353,7 @@ class FileUploadComponent extends React.Component {
         this.file = event.target.files[0]
     }
 
-    upload(event){ // ajax request to server
+    upload(value){ // ajax request to server
         const fileToUpload = this.file
         if (this.fileToUpload == ""){
             this.serverMessages = [{type:"error", text:"No file selected."}]
@@ -368,7 +409,13 @@ class FileUploadComponent extends React.Component {
                     name="file" 
                     onChange={this.handleFileChange}/>
                 </p>
-                <ActionButton label="import" loading={status == "uploading"} onAction={this.upload}/>
+                <ActionButton 
+                    name="import"
+                    value="import"
+                    label="import" 
+                    loading={status == "uploading"} 
+                    onAction={this.upload}
+                />
             </div>
         );
 

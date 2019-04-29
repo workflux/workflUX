@@ -106,7 +106,7 @@ def build_configs_sheet(configs):
             "manipulate_value": generate_mutliple_quoted_strings,
             "parameter_sheet_name": str
     }
-    sheet_header_row = ["# CWL: config"]
+    sheet_header_row = ["# type: config"]
     configs_order = [
             "type",
             "is_array",
@@ -147,7 +147,7 @@ def build_book(all_parameters, configs, show_please_fill = False):
     for sheet_name in parameters_by_sheet_name.keys():
         book[sheet_name] = build_parameter_sheet(parameters_by_sheet_name[sheet_name], 
             sheet_is_vertical[sheet_name], show_please_fill) 
-    book["configs"] = build_configs_sheet(configs) 
+    book["config"] = build_configs_sheet(configs) 
     return book
 
 def write_xls(all_parameters, configs, output_file, show_please_fill = False):

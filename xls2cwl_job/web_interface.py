@@ -27,5 +27,9 @@ def get_param_config_info(file_path):
             is_run_specific = True
         else:
             is_run_specific = False
-        param_config_info.append({"param_name":param, "is_run_specific":is_run_specific})
+        param_config_info.append({
+            "param_name":param, 
+            "type":configs[param]["type"],
+            "is_run_specific":is_run_specific
+        })
     return param_config_info

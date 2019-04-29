@@ -15,11 +15,14 @@
         <script src="https://unpkg.com/babel-standalone/babel.min.js"></script>
         <script src="/static/general_use.js" type="text/babel"></script>
         <script src="/static/import_cwl.js" type="text/babel"></script>
+        <script src="/static/create_job.js" type="text/babel"></script>
         <script src="/static/main.js" type="text/babel"></script>
 
         <script > 
             // global params feeded by back end
             const routeCwlImport = "{{ url_for('import_cwl') }}"
+            const routeGetJobTemplList = "{{ url_for('get_job_templ_list') }}"
+            const routeGetJobTemplConfigInfo = "{{ url_for('get_job_templ_config_info') }}"
 
             // other global params:
             const serverNotReachableError = "The server could not be reached."
