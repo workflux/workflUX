@@ -26,6 +26,7 @@ class BooleanSlider extends React.Component {
         // props.onChange function executed on change
         //  takes two arguments: (1) value, (2) whether set or not
         // props.checked
+        // props.disabled
         this.handleChange = this.handleChange.bind(this)
     }
     
@@ -43,6 +44,7 @@ class BooleanSlider extends React.Component {
                     name={this.props.name}
                     value={this.props.value}
                     onChange={this.handleChange}
+                    disabled={this.props.disabled ? true : false}
                     // checked={this.props.checked}
                 />
                 <span className="slider round"></span>
@@ -60,6 +62,7 @@ class ActionButton extends React.Component {
         // props.onAction function to execute on click
         // props.label labeling
         // props.loading if true, button will be disabled and loading indicator is shown
+        // props.disabled if true, disable without loading indicator
         this.handleAction = this.handleAction.bind(this)
     }
     
@@ -75,7 +78,7 @@ class ActionButton extends React.Component {
                 value={this.props.value}
                 className={this.props.colorClass ? ("w3-button" + this.props.colorClass) : "w3-button w3-black"}
                 onClick={this.handleAction}
-                disabled={this.props.loading ? true : false}
+                disabled={this.props.loading || this.props.disabled ? true : false}
                 > 
                 {this.props.loading ? (<LoadingIndicator message="" size="tiny" />) : null}
                 {this.props.label} 
@@ -215,6 +218,8 @@ class Message extends React.Component {
 
 
 class DisplayServerMessages extends React.Component {
+    // Inputs:
+    // props.messages
     render() {
         if( this.props.messages.length > 0) {
             return (
@@ -334,6 +339,9 @@ class FileUploadComponent extends React.Component {
         // Inputs:
         // props.requestRoute the route to send the post request to
         // props.instruction short instructive statement
+        // props.oneLine if true, everything will be in one line
+        // props.diabled if true, upload button disabled
+        // props.meta_data meta data send together with the file
 
         this.state = {
             status: "wait_for_upload", // can be "wait_for_upload"/"uploading"/"done"
@@ -363,6 +371,9 @@ class FileUploadComponent extends React.Component {
             this.setState({status:"uploading"})
             let formData = new FormData()
             formData.append("file", fileToUpload)
+            if (this.props.meta_data){
+                formData.append("meta", JSON.stringify(this.props.meta_data))
+            }
             fetch(this.props.requestRoute, {
                 method: "POST",
                 body: formData,
@@ -398,26 +409,56 @@ class FileUploadComponent extends React.Component {
 
     render() {
         status = this.state.status
-        return (
-            <div>
-                <DisplayServerMessages messages={this.serverMessages} />
-                <p>
-                {this.props.instruction}<br/>
-                <input 
-                    className="w3-button w3-border w3-border-grey"
-                    type="file" 
-                    name="file" 
-                    onChange={this.handleFileChange}/>
-                </p>
-                <ActionButton 
-                    name="import"
-                    value="import"
-                    label="import" 
-                    loading={status == "uploading"} 
-                    onAction={this.upload}
-                />
-            </div>
-        );
+        const messages = <DisplayServerMessages messages={this.serverMessages} />
+        const instruction = this.props.instruction
+        const upload_selector = (
+            <input 
+            className="w3-button w3-border w3-border-grey"
+            type="file" 
+            name="file" 
+            onChange={this.handleFileChange}
+            disabled={this.props.disabled ? true : false}
+            />
+        )
+        const action_button = (
+            <ActionButton 
+                name="import"
+                value="import"
+                label="import" 
+                loading={status == "uploading"} 
+                onAction={this.upload}
+                disabled={this.props.disabled ? true : false}
+            />
+        )
+        if (this.props.oneLine){
+            return (
+                <span>
+                    {instruction}&nbsp;
+                    {upload_selector}&nbsp;
+                    {action_button}
+                    {messages}
+                </span>
+            )
+        }
+        else {
+            return (
+                <div>
+                    <div>
+                        <p>
+                            {instruction}<br/>
+                            {upload_selector}
+                        </p>
+                    </div>
+                    <div>
+                        {action_button}
+                    </div>
+                    <div>
+                        {messages}
+                    </div>
+                </div>
+            )
+
+        }
 
     }
 }

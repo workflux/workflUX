@@ -14,7 +14,7 @@ from . import make_yaml
 from . import validate
 from . import manipulate
 from . import write_xls
-from . import split_by_job
+from . import split_by_run
 from . import read_cwl
 from . import fill_in_defaults
 from . import match_types 
@@ -38,24 +38,24 @@ def validate_manipulate_split_type_match( param_values, configs,
         param_values = manipulate.all( param_values, configs )
     except SystemExit as e:
         sys.exit(print_pref + "E: failed manipulation: " + str(e))
-    # split into jobs:
+    # split into runs:
     try:
-        params_by_job_id = split_by_job.split_all_parameters_by_job_id( param_values, configs ) 
+        params_by_run_id = split_by_run.split_all_parameters_by_run_id( param_values, configs ) 
     except SystemExit as e:
-        sys.exit(print_pref + "E: failed job splitting: " + str(e))
-    type_matched_params_by_job_id = {}
-    for job_id in params_by_job_id.keys():
+        sys.exit(print_pref + "E: failed run splitting: " + str(e))
+    type_matched_params_by_run_id = {}
+    for run_id in params_by_run_id.keys():
         # fill in params defaults
         try:
-            params_by_job_id[job_id] = fill_in_defaults.fill_in_param_defaults(params_by_job_id[job_id], configs)
+            params_by_run_id[run_id] = fill_in_defaults.fill_in_param_defaults(params_by_run_id[run_id], configs)
         except SystemExit as e:
-            sys.exit(print_pref + "E: failed to fill in default parameters for job \"" + job_id + "\": " + str(e))
+            sys.exit(print_pref + "E: failed to fill in default parameters for run \"" + run_id + "\": " + str(e))
         # match types:
         try:
-            type_matched_params_by_job_id[job_id] = match_types.get_type_matched_param_values( params_by_job_id[job_id], configs, validate_paths, search_paths, search_subdirs, input_dir)
+            type_matched_params_by_run_id[run_id] = match_types.get_type_matched_param_values( params_by_run_id[run_id], configs, validate_paths, search_paths, search_subdirs, input_dir)
         except SystemExit as e:
-            sys.exit(print_pref + "E: type matching failed for job \"" + job_id + "\": " + str(e))
-    return type_matched_params_by_job_id, params_by_job_id, configs
+            sys.exit(print_pref + "E: type matching failed for run \"" + run_id + "\": " + str(e))
+    return type_matched_params_by_run_id, params_by_run_id, configs
 
 def import_from_xls(sheet_file="", sheet_files=[],
     validate_paths=True, search_paths=True, search_subdirs=True, input_dir=""):
@@ -66,15 +66,15 @@ def import_from_xls(sheet_file="", sheet_files=[],
         param_values, configs = read_xls.sheet_files(sheet_files, verbose_level=0)
     else:
         param_values, configs = read_xls.sheet_file(sheet_file, verbose_level=0)
-    # split into jobs, validate parameters, and manipulate them:
-    type_matched_params_by_job_id, params_by_job_id, configs = validate_manipulate_split_type_match( param_values, configs, validate_paths, search_paths, search_subdirs, input_dir)
-    return type_matched_params_by_job_id, params_by_job_id, configs
+    # split into runs, validate parameters, and manipulate them:
+    type_matched_params_by_run_id, params_by_run_id, configs = validate_manipulate_split_type_match( param_values, configs, validate_paths, search_paths, search_subdirs, input_dir)
+    return type_matched_params_by_run_id, params_by_run_id, configs
 
 
 def only_validate_xls(sheet_file="", sheet_files=[],
     validate_paths=True, search_paths=True, search_subdirs=True, input_dir=""):
     try:
-        type_matched_params_by_job_id, params_by_job_id, configs = import_from_xls(sheet_file, sheet_files, validate_paths, search_paths, search_subdirs, input_dir)
+        type_matched_params_by_run_id, params_by_run_id, configs = import_from_xls(sheet_file, sheet_files, validate_paths, search_paths, search_subdirs, input_dir)
     except SystemExit as e:
         return 'INVALID:' + str(e)
     return "VALID"
@@ -84,8 +84,8 @@ def only_validate_xls(sheet_file="", sheet_files=[],
 def transcode( sheet_file="", sheet_files=[], output_basename="",  output_dir=".", verbose_level=2,
     validate_paths=True, search_paths=True, search_subdirs=True, input_dir=""):
     try:
-        type_matched_params_by_job_id, params_by_job_id, configs = import_from_xls(sheet_file, sheet_files, validate_paths, search_paths, search_subdirs, input_dir)
-        make_yaml.write_multiple_jobs(type_matched_params_by_job_id, output_dir, output_basename)
+        type_matched_params_by_run_id, params_by_run_id, configs = import_from_xls(sheet_file, sheet_files, validate_paths, search_paths, search_subdirs, input_dir)
+        make_yaml.write_multiple_runs(type_matched_params_by_run_id, output_dir, output_basename)
     except SystemExit as e:
         sys.exit( 'Failed to translate - the error was:' + str(e))
     if verbose_level == 2:
@@ -95,8 +95,8 @@ def generate_xls_from_cwl(cwl_file, output_file="", show_please_fill=False):
     if output_file == "":
         output_file = os.path.basename(cwl_file) + ".xlsx"
     configs = read_cwl.read_config_from_cwl_file(cwl_file)
-    param_values, configs = fill_in_defaults.fill_in_defaults({}, configs) # fill in defaults 
-    write_xls.write_xls(param_values, configs, output_file, show_please_fill)
+    param_values, configs = fill_in_defaults.fill_in_defaults({}, configs, show_please_fill) # fill in defaults 
+    write_xls.write_xls(param_values, configs, output_file)
 
 
 

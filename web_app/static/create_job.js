@@ -19,7 +19,9 @@ class JobCreationPrep extends React.Component {
             run_mode: false, 
             run_names: ["job1", "job2", "job3"],
             param_modes: paramModes,
-            job_name: "new_job"
+            job_name: "new_job",
+            sheet_format: "xlsx",
+            file_transfer_status: "none" // if not none, all input will be disabled
         }
 
         // construct job_id:
@@ -32,13 +34,19 @@ class JobCreationPrep extends React.Component {
         const dateString = year + month + day
         let randomNumber = Math.round(Math.random()*1000)
         randomNumber = (randomNumber < 100) ? ("0" + randomNumber.toString()) : (randomNumber.toString())
-        this.jobId = dateString + "_" + randomNumber
+        this.jobIdNum = dateString + "_" + randomNumber
+
+        this.sheetFormMessages = [] // stores messages conserding generation,
+                                             // download, upload, and validation of the form sheet
+        
 
         this.changeJobName = this.changeJobName.bind(this);
         this.changeParamMode = this.changeParamMode.bind(this);
         this.changeRunMode = this.changeRunMode.bind(this);
         this.changeRunNames = this.changeRunNames.bind(this);
         this.changeSheetFormat = this.changeSheetFormat.bind(this);
+        this.triggerDownload = this.triggerDownload.bind(this);
+        this.genFormSheet = this.genFormSheet.bind(this);
     }
 
     changeJobName(event){
@@ -70,6 +78,58 @@ class JobCreationPrep extends React.Component {
         this.setState({"sheet_format": event.target.value})
     }
 
+
+    triggerDownload(){
+        window.location.href = (
+            "/get_param_form_sheet/"  + 
+            this.jobIdNum + "_" + this.state.job_name +
+            ".input." + this.state.sheet_format
+        )
+    }
+
+    genFormSheet(){
+        this.setState({file_transfer_status: "downloading"})
+        const sendData = {
+            cwl_target: this.props.cwlTarget,
+            param_modes: this.state.param_modes,
+            run_mode: this.state.run_mode, 
+            run_names: this.state.run_names.filter((r) => r != ""),
+            job_id: (this.jobIdNum + "_" + this.state.job_name),
+            sheet_format: this.state.sheet_format
+        }
+
+        fetch(routeGenParamFormSheet, {
+            method: "POST",
+            body: JSON.stringify(sendData),
+            headers: new Headers({
+                'Content-Type': 'application/json'
+              }),
+              cache: "no-cache"
+        }).then(res => res.json())
+        .then(
+            (result) => {
+                this.sheetFormMessages = result.messages;
+                let errorOccured = false;
+                for( let i=0;  i<this.sheetFormMessages.length; i++){
+                    if(this.sheetFormMessages[i].type == "error"){
+                        errorOccured = true;
+                        break;
+                    }
+                }
+                if (! errorOccured){
+                    this.triggerDownload()
+                }
+                this.setState({file_transfer_status: "none"})                
+            },
+            (error) => {
+                // server could not be reached
+                this.sheetFormMessages = [{type: "error", text: serverNotReachableError}];
+                this.setState({file_transfer_status: "none"})
+            }
+        )
+
+    }
+
     render() {
         const paramTable = (
             <div style={ {maxHeight:"50vh", overflowY: "auto"} }>
@@ -94,6 +154,7 @@ class JobCreationPrep extends React.Component {
                                                 value={p.param_name}
                                                 onChange={this.changeParamMode}
                                                 checked={this.state.param_modes[p.param_name]}
+                                                disabled={this.state.file_transfer_status != "none"}
                                             />
                                             &nbsp; run-specific
                                         </td>
@@ -111,7 +172,7 @@ class JobCreationPrep extends React.Component {
                 <p>
                     <span className="w3-text-green">Job ID:</span>&nbsp;
                     <IneditableValueField>
-                        {this.jobId + "_" + this.state.job_name }
+                        {this.jobIdNum + "_" + this.state.job_name }
                     </IneditableValueField>
                 </p>
                 <p>
@@ -122,6 +183,7 @@ class JobCreationPrep extends React.Component {
                         name="job_name"
                         value={this.state.job_name}
                         onChange={this.changeJobName}
+                        disabled={this.state.file_transfer_status != "none"}
                     />
                 </p>
             </div>
@@ -136,6 +198,7 @@ class JobCreationPrep extends React.Component {
                     value="create_multi_run_job"
                     onChange={this.changeRunMode}
                     checked={this.run_mode}
+                    disabled={this.state.file_transfer_status != "none"}
                 />
                 &nbsp; multiple runs
                 {this.state.run_mode ? (
@@ -150,6 +213,7 @@ class JobCreationPrep extends React.Component {
                             name="create_multi_run_job" 
                             value={this.state.run_names.join(", ").trim()}
                             onChange={this.changeRunNames}
+                            disabled={this.state.file_transfer_status != "none"}
                         />
                     </span>
                     ) : (null)
@@ -158,35 +222,48 @@ class JobCreationPrep extends React.Component {
         )
 
         const genParamForm = (
-            <div>
-                <span className="w3-text-green">As spreadsheet:</span>
-                <ol>
-                    <li>
-                        download:
-                        <select className="w3-button w3-white w3-border" 
-                            name="sheet_format"
-                            onChange={this.changeSheetFormat}>
-                            <option value="xlsx">excel format</option>
-                            <option value="ods">open office format</option>
-                        </select> 
-                        <ActionButton
-                            name="download"
-                            value="download"
-                            label="download"
-                        />
-                    </li>
-                    <li>
-                        open in excel/open office and fill the form
-                    </li>
-                    <li>
-                        upload:
-                        <ActionButton
-                            name="upload"
-                            value="upload"
-                            label="upload"
-                        />
-                    </li>
-                </ol>
+            <div className="w3-container">
+                <div className="w3-container">
+                    <span className="w3-text-green">As HTML form:</span>
+                </div>
+                <hr></hr>
+                <div className="w3-container">
+                    <span className="w3-text-green">As spreadsheet form:</span>
+                    <ol>
+                        <li>
+                            export/download:
+                            <select className="w3-button w3-white w3-border" 
+                                name="sheet_format"
+                                onChange={this.changeSheetFormat}
+                                value={this.state.sheet_format}
+                                >
+                                <option value="xlsx">excel format (xlsx)</option>
+                                <option value="xls">excel format (xls)</option>
+                                <option value="ods">open office format (ods)</option>
+                            </select> 
+                            <ActionButton
+                                name="export"
+                                value="export"
+                                label="export"
+                                onAction={this.genFormSheet}
+                                loading={this.state.file_transfer_status == "downloading"}
+                            />
+                        </li>
+                        <li>
+                            open in excel or open office and fill in the form
+                        </li>
+                        <li>
+                            <FileUploadComponent
+                                requestRoute={routeSendFilledParamFormSheet}
+                                instruction="import/upload"
+                                oneLine={true}
+                                disabled={this.state.file_transfer_status == "downloading"}
+                                meta_data={this.jobIdNum + "_" + this.state.job_name}
+                            />
+                        </li>
+                    </ol>
+                    <DisplayServerMessages messages={this.sheetFormMessages} />
+                </div>
             </div>   
         )
 

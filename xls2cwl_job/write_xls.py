@@ -4,6 +4,7 @@ import sys
 import re
 import pyexcel as pe
 import pyexcel_xlsx, pyexcel_xls, pyexcel_ods, pyexcel_io
+from .split_by_run import split_parameter_by_run_id
 
 
 def generate_quoted_string(value):
@@ -21,70 +22,184 @@ def generate_mutliple_quoted_strings(values):
         str_values.append(generate_quoted_string(value))
     return " | ".join(str_values)
 
-def split_parameters_by_sheet_name( all_parameters, configs):
-    print_pref = "[split_parameters_by_sheet_name]:"
-    parameters_by_sheet_name = {}
-    sheet_is_vertical = {}
-    for param in all_parameters:
-        sheet_name = ""
-        if configs[param]["parameter_sheet_name"] == "":
-            # do not write to xls file
-            continue
+# def split_parameters_by_sheet_name( all_parameters, configs):
+#     print_pref = "[split_parameters_by_sheet_name]:"
+#     parameters_by_sheet_name = {}
+#     sheet_is_vertical = {}
+#     for param in all_parameters:
+#         sheet_name = ""
+#         if configs[param]["parameter_sheet_name"] == "":
+#             # do not write to xls file
+#             continue
+#         else:
+#             # extract sheet name
+#             sheet_name = configs[param]["parameter_sheet_name"].replace("vertical:","").replace("horizontal:","").strip().strip("\'")
+#             # add to parameters_by_sheet_name
+#             if sheet_name in parameters_by_sheet_name.keys():
+#                 parameters_by_sheet_name[sheet_name][param] = all_parameters[param]
+#             else: # sheet_name not already in parameters_by_sheet_name
+#                 parameters_by_sheet_name[sheet_name] = {}
+#                 parameters_by_sheet_name[sheet_name][param] = all_parameters[param]
+#                 if re.search("vertical:", configs[param]["parameter_sheet_name"]):
+#                     sheet_is_vertical[sheet_name] = True
+#                 elif re.search("horizontal:", configs[param]["parameter_sheet_name"]):
+#                     sheet_is_vertical[sheet_name] = False
+#                 else:
+#                     sheet_is_vertical[sheet_name] = True
+#     return parameters_by_sheet_name, sheet_is_vertical
+
+def assign_params_to_sheets(configs):
+    print_pref = "[assign_params_to_sheets]:"
+    categories = {
+        True:{ # is run specific 
+            True:{}, # is array
+            False:{} # is single value
+        },
+        False:{ # is not run specific (global)
+            True:[], # is array
+            False:[] # is single value
+        }
+    }
+    used_as_run_id=[]   # id a param was already used as run_id
+                        # it will be removed from the params lists
+    for param in configs.keys():
+        run_id = configs[param]["split_into_runs_by"][0]
+        is_run_specific = run_id != ""
+        is_array = configs[param]["is_array"]
+        if is_run_specific:
+            used_as_run_id.append(run_id)
+            if run_id not in categories[True][is_array].keys():
+                categories[True][is_array][run_id] = []
+            categories[True][is_array][run_id].append(param)
         else:
-            # extract sheet name
-            sheet_name = configs[param]["parameter_sheet_name"].replace("vertical:","").replace("horizontal:","").strip().strip("\'")
-            # add to parameters_by_sheet_name
-            if sheet_name in parameters_by_sheet_name.keys():
-                parameters_by_sheet_name[sheet_name][param] = all_parameters[param]
-            else: # sheet_name not already in parameters_by_sheet_name
-                parameters_by_sheet_name[sheet_name] = {}
-                parameters_by_sheet_name[sheet_name][param] = all_parameters[param]
-                if re.search("vertical:", configs[param]["parameter_sheet_name"]):
-                    sheet_is_vertical[sheet_name] = True
-                elif re.search("horizontal:", configs[param]["parameter_sheet_name"]):
-                    sheet_is_vertical[sheet_name] = False
-                else:
-                    sheet_is_vertical[sheet_name] = True
-    return parameters_by_sheet_name, sheet_is_vertical
+            categories[False][is_array].append(param)
+
+    # assign to sheet_assignments:
+    sheet_assignments = []
+    # global single value parameters:
+    if len(categories[False][False]) > 0:
+        params = list(set(categories[False][False]) - set(used_as_run_id))
+        sheet_assignments.append({
+            "name": "global single values",
+            "params": params,
+            "format": "vertical",
+            "run_id": ""
+        })
+    # global array parameters:
+    if len(categories[False][True]) > 0:
+        params = list(set(categories[False][True]) - set(used_as_run_id))
+        sheet_assignments.append({
+            "name": "global arrays",
+            "params": params,
+            "format": "horizontal",
+            "run_id": ""
+        })
+    # run-specific single value parameters:
+    if len(categories[True][False].keys()) == 1:
+        run_id = str(sorted(categories[True][False].keys())[0])
+        params = list(set(categories[True][False][run_id]) - set(used_as_run_id))
+        sheet_assignments.append({
+            "name": "run-specific single values",
+            "params": params,
+            "format": "horizontal",
+            "run_id": run_id
+        })
+    elif len(categories[True][False].keys()) > 1:
+        for key in categories[True][False].keys():
+            params = list(set(categories[True][False][key]) - set(used_as_run_id))
+            sheet_assignments.append({
+                "name": "run-specific single values (" + str(key) + ")",
+                "params": params,
+                "format": "horizontal",
+                "run_id": str(key)
+            })
+    # run-specific array parameters:
+    if len(categories[True][True].keys()) > 0:
+        for key in categories[True][True].keys():
+            for param in categories[True][True][key]:
+                if param in used_as_run_id:
+                    continue
+                sheet_assignments.append({
+                    "name": param,
+                    "params": [param],
+                    "format": "wide",
+                    "run_id": str(key)
+                })
+    
+    return sheet_assignments
 
 
-def build_parameter_sheet(parameters, is_vertical, show_please_fill = False):
+def build_parameter_sheet(
+        all_parameters,
+        param_names,
+        format="vertical",
+        run_id=""
+):
     print_pref = "[build_parameter_sheet]:"
     data = []
-    if is_vertical:
+    if run_id != "":    # is run specific, run_id will be the first param
+                        # unless format == wide 
+        if run_id in param_names:
+            param_names.remove(run_id)
+        if not format == "wide":
+            param_names_ = param_names
+            param_names = [run_id]
+            param_names.extend(param_names_)
+    if format == "vertical":
         # build data row by row:
-        header_row = ["# CWL: vertical"]
+        header_row = ["# type: param | format: vertical"]
         data.append(header_row)
-        for param in parameters.keys():
+        for param in param_names:
             row = [param]
-            row.extend(parameters[param])
+            row.extend(all_parameters[param])
             data.append(row)
-    else:
+    elif format == "horizontal":
         # get the maximal length of parameters:
         max_len = 1 
-        for param in parameters.keys():
-            if len(parameters[param]) > max_len:
-                max_len = len(parameters[param])
+        for param in param_names:
+            if len(all_parameters[param]) > max_len:
+                max_len = len(all_parameters[param])
         # extend parameters:
         extended_parameters={}
-        for param in parameters.keys():
-            ext_param = parameters[param]
+        for param in param_names:
+            ext_param = all_parameters[param]
             while len(ext_param) < max_len:
                 ext_param.append("")
             extended_parameters[param]=ext_param
         # build data row by row:
-        header_row = ["# CWL: horizontal"]
+        header_row = ["# type: param | format: horizontal"]
         data.append(header_row)
-        param_name_row = extended_parameters.keys()
-        data.append(param_name_row)
+        data.append(param_names)
         for idx in range(max_len):
             row = []
-            for param in param_name_row:
-                param_value = extended_parameters[param][idx]
-                if param_value == "" and show_please_fill:
-                    param_value = "<please fill>"
-                row.append( param_value )
+            for param in param_names:
+                row.append( extended_parameters[param][idx] )
             data.append(row)
+    elif format == "wide":
+        if len(param_names) != 1:
+            sys.exit(print_pref + "E: sheet format was declared as wide, " + 
+                "but more than one parameter was handed in")
+        param = param_names[0]
+        # split param by run_id:
+        param_splited = split_parameter_by_run_id(param, all_parameters, [run_id, "array"])
+        max_len = 1
+        #build table content:
+        table_content = []
+        for r in sorted(param_splited.keys()):
+            ps = param_splited[r][param]
+            max_len = max(max_len, len(ps))
+            row = [r]
+            row.extend(ps)
+            table_content.append(row)
+        # assemble:
+        header_row = ["# type: param | format: wide | param: " + param +
+            " | run_id_param: " + run_id]
+        data.append(header_row)
+        table_head = ['run_id \\ pos in array']
+        table_head.extend(range(1, max_len))
+        table_head.append("...")
+        data.append(table_head)
+        data.extend(table_content)
     return data
 
 def build_configs_sheet(configs):
@@ -138,19 +253,23 @@ def build_configs_sheet(configs):
     return data
 
 
-def build_book(all_parameters, configs, show_please_fill = False):
+def build_book(all_parameters, configs):
     print_pref = "[build_book]:"
     book = {}
     # split all parameters by output sheet name and get sheet attributes:
-    parameters_by_sheet_name, sheet_is_vertical = split_parameters_by_sheet_name( all_parameters, configs)
+    sheets_assignments = assign_params_to_sheets(configs)
     # build sheets:
-    for sheet_name in parameters_by_sheet_name.keys():
-        book[sheet_name] = build_parameter_sheet(parameters_by_sheet_name[sheet_name], 
-            sheet_is_vertical[sheet_name], show_please_fill) 
+    for sheets_assignment in sheets_assignments:
+        book[sheets_assignment["name"]] = build_parameter_sheet(
+            all_parameters=all_parameters,
+            param_names=sheets_assignment["params"],
+            format=sheets_assignment["format"],
+            run_id=sheets_assignment["run_id"]
+        ) 
     book["config"] = build_configs_sheet(configs) 
     return book
 
-def write_xls(all_parameters, configs, output_file, show_please_fill = False):
+def write_xls(all_parameters, configs, output_file):
     print_pref = "[parameter_to_xls]:"
     book = build_book(all_parameters, configs)
     pyexcel_xlsx.save_data( afile= output_file, data=book )

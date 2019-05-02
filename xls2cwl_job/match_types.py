@@ -109,7 +109,6 @@ def match_type( param_name, all_param_values, configs, validate_paths=True, sear
     value = all_param_values[param_name]
     # check if non-array paramaeters have at 1 field:
     if not configs[param_name]["is_array"] and len(value) > 1:
-        print(value)
         sys.exit( "parameter is no array but has more than one value." )
     # check if value containes not allowed null entries:
     if configs[param_name]["is_array"] and "null" in value and not configs[param_name]["null_items_allowed"]:

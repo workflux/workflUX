@@ -32,3 +32,15 @@ def fetch_files_in_dir(dir_path, # searches for files in dir_path
                 "file_ext":file_ext
             })
     return hits
+
+
+
+allowed_extensions_by_type = {
+    "CWL": ["cwl", "yaml"],
+    "spreadsheet": ["xlsx", "ods", "xls"]
+}
+
+def is_allowed_file(filename, type="CWL"):
+    # validates uploaded files
+    return '.' in filename and \
+           filename.rsplit('.', 1)[1].lower() in allowed_extensions_by_type[type]

@@ -11,5 +11,4 @@ class Config(object):
     CWL_DIR = os.environ.get('CWLAB_CWL_DIR') or  os.path.join( "./scratch/", "CWL")
     EXEC_DIR = os.environ.get('CWLAB_EXEC_DIR') or  os.path.join( "./scratch/", "exec")
     INPUT_DIR = os.environ.get('CWLAB_INPUT_DIR') or os.path.join( "./scratch/", "input")
-    ALLOWED_IMPORT_EXTENSIONS = ["cwl", "yaml"]
     

@@ -3,12 +3,10 @@ import os
 from flask import render_template, jsonify, redirect, flash, url_for, request
 from werkzeug.urls import url_parse
 from werkzeug.utils import secure_filename
-from . import app 
+from . import app
+from .general_use import is_allowed_file, allowed_extensions_by_type
 from xls2cwl_job import generate_xls_from_cwl as generate_job_template_from_cwl
 
-def is_allowed_file(filename):
-    return '.' in filename and \
-           filename.rsplit('.', 1)[1].lower() in app.config['ALLOWED_IMPORT_EXTENSIONS']
 
 @app.route('/import_cwl/', methods=['POST'])
 def import_cwl():
@@ -23,9 +21,9 @@ def import_cwl():
         if import_file.filename == '':
             sys.exit( "No file specified.")
 
-        if not is_allowed_file(import_file.filename):
+        if not is_allowed_file(import_file.filename, type="CWL"):
             sys.exit( "Wrong file type. Only files with following extensions are allowed: " + 
-                ", ".join(app.config['ALLOWED_IMPORT_EXTENSIONS']))
+                ", ".join(allowed_extensions_by_type["CWL"]))
         
         # save the file to the CWL directory:
         import_filename = secure_filename(import_file.filename)

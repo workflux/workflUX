@@ -197,12 +197,15 @@ def read_and_remove_sheet_attributes( sheet ):
     # sheet attribute defaults:
     sheet_attributes = {
         "type":"unkown",
-        "orientation":"vertical",
+        "format":"vertical",
         "CWL":""
     }
     # read sheet attributes:
     while sheet.row[0][0].strip()[0] == "#": # sheet attributes start with "#"
-        attributes = multi_attribute_field(sheet.row[0][0].strip("#").strip())
+        attribute_line = sheet.row[0][0].strip("#").strip()
+        if re.match(r'^[(Help\:)(Info\:)(help\:)(info\:)]', attribute_line):
+            continue # ignore everthing that follows Help/help/Info/info
+        attributes = multi_attribute_field(sheet.row[0][0].strip("#").strip(), seperator="|")
         for attribute in attributes:
             attribute = multi_attribute_field_quote_clean(attribute, seperator=":")
             if len(attribute) == 2:
@@ -211,14 +214,14 @@ def read_and_remove_sheet_attributes( sheet ):
         del(sheet.row[0])
     return sheet, sheet_attributes
 
-def strip_sheet( sheet, is_vertical, verbose_level):
+def strip_sheet( sheet, format, verbose_level):
     # removes empty tailing table name/head fields
     print_pref = "[strip_sheet]:"
     idx = 0
     empty_field_found = False
-    if is_vertical:
+    if format == "vertical":
         while idx < sheet.number_of_rows():
-            if len(sheet.row[idx][0].strip()) == 0:
+            if len(clean_string(sheet.row[idx][0]).strip()) == 0:
                 if not empty_field_found:
                     empty_field_found = True
                 else:
@@ -227,9 +230,9 @@ def strip_sheet( sheet, is_vertical, verbose_level):
                 del(sheet.row[idx])
             else:
                 idx+=1
-    else:
+    elif format in ["horizontal", "wide"]:
         while idx < sheet.number_of_columns():
-            if len(sheet.column[idx][0].strip()) == 0:
+            if len(clean_string(sheet.column[idx][0]).strip()) == 0:
                 if not empty_field_found:
                     empty_field_found = True
                 else:
@@ -238,6 +241,8 @@ def strip_sheet( sheet, is_vertical, verbose_level):
                 del(sheet.column[idx])
             else:
                 idx+=1
+    else:
+        sys.exit(print_pref + "E: unkown format: " + format)
     return sheet
         
 
@@ -266,13 +271,13 @@ def config_sheet( sheet, verbose_level=2 ):
     return configs
 
             
-def parameter_sheet(sheet, is_vertical, verbose_level=2):
+def parameter_sheet(sheet, sheet_attributes, verbose_level=2):
     # read a parameter sheet
     print_pref = "[parameter_sheet]:"
     param_values={}
-    if is_vertical:
+    format = sheet_attributes["format"]
+    if format == "vertical":
         sheet.name_rows_by_column(0)
-
         try:
             param_names = parameter_names(sheet.rownames)
         except SystemExit as e:
@@ -283,10 +288,9 @@ def parameter_sheet(sheet, is_vertical, verbose_level=2):
                 param_values[param] = parameter_value( sheet.row[param] )
             except SystemExit as e:
                 sys.exit( print_pref + "E: failed to read value of parameter \"" + param + "\":" + str(e) )
-            
-    else:
+        
+    elif format == "horizontal":
         sheet.name_columns_by_row(0)
-
         try:
             param_names = parameter_names(sheet.colnames)
         except SystemExit as e:
@@ -298,6 +302,29 @@ def parameter_sheet(sheet, is_vertical, verbose_level=2):
             except SystemExit as e:
                 sys.exit( print_pref + "E: failed to read value of parameter \"" + param + "\":" + str(e) )
            
+    elif format == "wide":
+        if "param" not in sheet_attributes.keys():
+            sys.exit(print_pref + "E: sheet format was \"wide\" but no attribute \"param\" was specified")
+        if "run_id_param" not in sheet_attributes.keys():
+            sys.exit(print_pref + "E: sheet format was \"wide\" but no attribute \"run_id_param\" was specified")
+        param_name = sheet_attributes["param"]
+        run_id_param = sheet_attributes["run_id_param"]
+        sheet.name_rows_by_column(0)
+        runs = sheet.rownames
+        del(runs[0]) # header lines
+        param_value = []
+        aligned_run_ids = []
+        for run in runs:
+            param_values_ = parameter_value( sheet.row[run] )
+            param_value.extend(param_values_)
+            rids = [run]*len(param_values_)
+            aligned_run_ids.extend(rids)
+        param_values[param_name] = param_value
+        param_values[run_id_param] = aligned_run_ids
+
+    else:
+        sys.exit(print_pref + "E: unkown format: " + format)
+        
     return param_values
 
 
@@ -313,10 +340,9 @@ def spread_sheet(sheet, verbose_level=2):
     except SystemExit as e:
         sys.exit( print_pref + str(e))
     try:
-        trimmed_sheet = strip_sheet( attribute_less_sheet, sheet_attributes["orientation"]=="vertical", verbose_level )
+        trimmed_sheet = strip_sheet( attribute_less_sheet, sheet_attributes["format"], verbose_level )
     except SystemExit as e:
         sys.exit( print_pref + str(e))
-    print(sheet_attributes)
     # read content
     if sheet_attributes["type"] in ["config", "config_sheet"]:
         try:
@@ -325,7 +351,7 @@ def spread_sheet(sheet, verbose_level=2):
             sys.exit( print_pref + str(e))
     elif sheet_attributes["type"] in ["param", "param_sheet"]:
         try:
-            param_values = parameter_sheet( trimmed_sheet, sheet_attributes["orientation"]=="vertical", verbose_level )
+            param_values = parameter_sheet( trimmed_sheet, sheet_attributes, verbose_level )
         except SystemExit as e:
             sys.exit( print_pref + str(e))
     # if not type config or param: empty param_values and configs will be returned
