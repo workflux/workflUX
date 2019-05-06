@@ -21,7 +21,9 @@ class JobCreationPrep extends React.Component {
             param_modes: paramModes,
             job_name: "new_job",
             sheet_format: "xlsx",
-            file_transfer_status: "none" // if not none, all input will be disabled
+            file_transfer_status: "none", // if not none, all input will be disabled
+            job_creation_status: "none",
+            form_passed_validation: false
         }
 
         // construct job_id:
@@ -38,6 +40,7 @@ class JobCreationPrep extends React.Component {
 
         this.sheetFormMessages = [] // stores messages conserding generation,
                                              // download, upload, and validation of the form sheet
+        this.jobCreationMessages = []
         
 
         this.changeJobName = this.changeJobName.bind(this);
@@ -45,8 +48,9 @@ class JobCreationPrep extends React.Component {
         this.changeRunMode = this.changeRunMode.bind(this);
         this.changeRunNames = this.changeRunNames.bind(this);
         this.changeSheetFormat = this.changeSheetFormat.bind(this);
-        this.triggerDownload = this.triggerDownload.bind(this);
         this.genFormSheet = this.genFormSheet.bind(this);
+        this.handleFormSheetUpload = this.handleFormSheetUpload.bind(this)
+        this.createJob = this.createJob.bind(this)
     }
 
     changeJobName(event){
@@ -76,15 +80,6 @@ class JobCreationPrep extends React.Component {
 
     changeSheetFormat(event){
         this.setState({"sheet_format": event.target.value})
-    }
-
-
-    triggerDownload(){
-        window.location.href = (
-            "/get_param_form_sheet/"  + 
-            this.jobIdNum + "_" + this.state.job_name +
-            ".input." + this.state.sheet_format
-        )
     }
 
     genFormSheet(){
@@ -117,7 +112,7 @@ class JobCreationPrep extends React.Component {
                     }
                 }
                 if (! errorOccured){
-                    this.triggerDownload()
+                    window.location.href = result.data.get_form_sheet_href
                 }
                 this.setState({file_transfer_status: "none"})                
             },
@@ -128,6 +123,48 @@ class JobCreationPrep extends React.Component {
             }
         )
 
+    }
+
+    handleFormSheetUpload(isSuccess){
+        this.setState({form_passed_validation: isSuccess})
+    }
+
+    createJob() {
+        this.setState({job_creation_status: "in_progress"})
+        const sendData = {
+            job_id: (this.jobIdNum + "_" + this.state.job_name),
+            sheet_format: this.state.sheet_format //#! problematic: if format selector is changed after sheet was already submitted
+        }
+
+        fetch(routeCreateJob, {
+            method: "POST",
+            body: JSON.stringify(sendData),
+            headers: new Headers({
+                'Content-Type': 'application/json'
+              }),
+              cache: "no-cache"
+        }).then(res => res.json())
+        .then(
+            (result) => {
+                this.jobCreationMessages = result.messages;
+                let errorOccured = false;
+                for( let i=0;  i<this.jobCreationMessages.length; i++){
+                    if(this.jobCreationMessages[i].type == "error"){
+                        errorOccured = true;
+                        break;
+                    }
+                }
+                if (! errorOccured){
+                    // nothing just display messages
+                }    
+                this.setState({job_creation_status: "none"})        
+            },
+            (error) => {
+                // server could not be reached
+                this.jobCreationMessages = [{type: "error", text: serverNotReachableError}];
+                this.setState({job_creation_status: "none"}) 
+            }
+        )
     }
 
     render() {
@@ -247,6 +284,7 @@ class JobCreationPrep extends React.Component {
                                 label="export"
                                 onAction={this.genFormSheet}
                                 loading={this.state.file_transfer_status == "downloading"}
+                                disabled={this.state.file_transfer_status != "none"}
                             />
                         </li>
                         <li>
@@ -257,12 +295,25 @@ class JobCreationPrep extends React.Component {
                                 requestRoute={routeSendFilledParamFormSheet}
                                 instruction="import/upload"
                                 oneLine={true}
-                                disabled={this.state.file_transfer_status == "downloading"}
+                                disabled={this.state.file_transfer_status != "none"}
                                 meta_data={this.jobIdNum + "_" + this.state.job_name}
+                                onUploadCompletion={this.handleFormSheetUpload}
                             />
                         </li>
                     </ol>
                     <DisplayServerMessages messages={this.sheetFormMessages} />
+                    <ActionButton
+                        name="create job"
+                        value="create job"
+                        label="create job"
+                        disabled={
+                            ! this.state.form_passed_validation
+                        }
+                        loading={this.state.job_creation_status != "none"}
+                        onAction={this.createJob}
+                    />
+                    <DisplayServerMessages messages={this.jobCreationMessages} />
+
                 </div>
             </div>   
         )

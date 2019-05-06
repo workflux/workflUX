@@ -10,8 +10,9 @@ from re import sub, match
 from xls2cwl_job.web_interface import read_template_attributes as read_template_attributes_from_xls
 from xls2cwl_job.web_interface import get_param_config_info as get_param_config_info_from_xls
 from xls2cwl_job.web_interface import gen_form_sheet
-from xls2cwl_job import only_validate_xls
+from xls2cwl_job import only_validate_xls, transcode as make_yaml_runs
 from time import sleep
+from shutil import move
 
 
 
@@ -82,41 +83,41 @@ def get_job_templ_config_info():    # returns all parmeter and its default mode 
 def generate_param_form_sheet():    # generate param form sheet with data sent
                                     # by the client
     messages = []
+    data = {}
     request_json = request.get_json()
-    # try:
-    filename = str(request_json["job_id"]) + ".input." + str(request_json["sheet_format"])
-    gen_form_sheet(
-        output_file_path = os.path.join(
-            app.config["TEMP_DIR"],
-            filename
-        ),
-        template_config_file_path = os.path.join(
-            app.config['CWL_DIR'], 
-            request_json["cwl_target"] + ".job_templ.xlsx"
-        ),
-        has_multiple_runs= request_json["run_mode"],
-        run_names=request_json["run_names"],
-        param_is_run_specific=request_json["param_modes"],
-        show_please_fill=True
-    )
-    messages.append( { 
-        "type":"success", 
-        "text": "success"
-    } )
-    # except SystemExit as e:
-    #     messages.append( { 
-    #         "type":"error", 
-    #         "text": str(e) 
-    #     } )
-    # except:
-    #     messages.append( { 
-    #         "type":"error", 
-    #         "text":"An uknown error occured reading the job template config." 
-    #     } )
+    try:
+        filename = str(request_json["job_id"]) + ".input." + str(request_json["sheet_format"])
+        gen_form_sheet(
+            output_file_path = os.path.join(
+                app.config["TEMP_DIR"],
+                filename
+            ),
+            template_config_file_path = os.path.join(
+                app.config['CWL_DIR'], 
+                request_json["cwl_target"] + ".job_templ.xlsx"
+            ),
+            has_multiple_runs= request_json["run_mode"],
+            run_names=request_json["run_names"],
+            param_is_run_specific=request_json["param_modes"],
+            show_please_fill=True
+        )
+        data["get_form_sheet_href"] = url_for("get_param_form_sheet", form_sheet_filename=filename)
+        print(data)
+    except SystemExit as e:
+        messages.append( { 
+            "type":"error", 
+            "text": str(e) 
+        } )
+    except:
+        messages.append( { 
+            "type":"error", 
+            "text":"An uknown error occured reading the job template config." 
+        } )
     return jsonify({
-        "data":[],
+        "data":data,
         "messages":messages
     })
+
 
 @app.route('/get_param_form_sheet/<form_sheet_filename>', methods=['GET','POST'])
 def get_param_form_sheet(form_sheet_filename):
@@ -150,10 +151,11 @@ def send_filled_param_form_sheet():
         if not is_allowed_file(import_file.filename, type="spreadsheet"):
             sys.exit( "Wrong file type. Only files with following extensions are allowed: " + 
                 ", ".join(allowed_extensions_by_type["spreadsheet"]))
+        import_fileext = os.path.splitext(import_file.filename)[1].strip(".").lower()
         
         # save the file to the CWL directory:
-        job_id = str(request.form["meta"])
-        import_filename = job_id + ".input.xlsx"
+        job_id = str(request.form.get("meta")).strip("\"") # ignore non ascii characters
+        import_filename = job_id + ".input." + import_fileext
         import_filepath = os.path.join(app.config['TEMP_DIR'], import_filename)
         import_file.save(import_filepath)
     except SystemExit as e:
@@ -189,3 +191,59 @@ def send_filled_param_form_sheet():
         } )
     
     return jsonify({"data":data,"messages":messages})
+
+
+@app.route('/create_job/', methods=['POST'])
+def create_job():    # generate param form sheet with data sent
+                                    # by the client
+    messages = []
+    data = {}
+    request_json = request.get_json()
+    try:
+        job_id = str(request_json["job_id"])
+        sheet_form = job_id + ".input." + str(request_json["sheet_format"])
+        sheet_form_path = os.path.join(app.config['TEMP_DIR'], sheet_form)
+
+        if not os.path.isfile(sheet_form_path):
+            sys.exit("Could not find the filled parameter sheet \"" + sheet_form + "\".")
+        
+        if not is_allowed_file(sheet_form, type="spreadsheet"):
+            sys.exit( "The filled parameter sheet \"" + sheet_form + "\" has the wrong file type. " +
+                "Only files with following extensions are allowed: " + 
+                ", ".join(allowed_extensions_by_type["spreadsheet"]))
+
+        # prepare job directory
+        job_dir = os.path.join(app.config["EXEC_DIR"], job_id)
+        os.mkdir(job_dir)
+
+        # Move form sheet to job dir:
+        sheet_form_dest_path = os.path.join(job_dir, sheet_form)
+        move(sheet_form_path, sheet_form_dest_path)
+        
+        # create yaml runs:
+        make_yaml_runs(
+            sheet_file=sheet_form_dest_path,
+            output_basename="run",
+            output_suffix=".yaml",
+            output_dir=job_dir,
+            validate_paths=False, search_paths=False, search_subdirs=False, input_dir=""
+        )
+
+        messages.append( { 
+            "type":"success", 
+            "text":"Successfully created job \"" + job_id + "\"." 
+        } )
+    except SystemExit as e:
+        messages.append( { 
+            "type":"error", 
+            "text": str(e) 
+        } )
+    except:
+        messages.append( { 
+            "type":"error", 
+            "text":"An uknown error occured." 
+        } )
+    return jsonify({
+        "data":data,
+        "messages":messages
+    })

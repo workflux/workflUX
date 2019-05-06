@@ -43,4 +43,4 @@ allowed_extensions_by_type = {
 def is_allowed_file(filename, type="CWL"):
     # validates uploaded files
     return '.' in filename and \
-           filename.rsplit('.', 1)[1].lower() in allowed_extensions_by_type[type]
+           os.path.splitext(filename)[1].strip(".").lower() in allowed_extensions_by_type[type]

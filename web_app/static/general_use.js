@@ -342,6 +342,8 @@ class FileUploadComponent extends React.Component {
         // props.oneLine if true, everything will be in one line
         // props.diabled if true, upload button disabled
         // props.meta_data meta data send together with the file
+        // props.onUploadCompletion function to exectute on completion, 
+        //  takes one argument: true (on success)/ false (on error)
 
         this.state = {
             status: "wait_for_upload", // can be "wait_for_upload"/"uploading"/"done"
@@ -355,10 +357,17 @@ class FileUploadComponent extends React.Component {
         
         this.upload = this.upload.bind(this);
         this.handleFileChange = this.handleFileChange.bind(this);
+        this.handleCompletion = this.handleCompletion.bind(this)
     }
 
     handleFileChange(event){
         this.file = event.target.files[0]
+    }
+
+    handleCompletion(isSuccess){
+        if(this.props.onUploadCompletion){
+            this.props.onUploadCompletion(isSuccess)
+        }
     }
 
     upload(value){ // ajax request to server
@@ -391,14 +400,17 @@ class FileUploadComponent extends React.Component {
                     }
                     if (errorOccured){
                         this.setState({status: "wait_for_upload", error: true})
+                        this.handleCompletion(false)
                     } 
                     else {
                         this.setState({status: "done", error: false});
+                        this.handleCompletion(true)
                     }
                 },
                 (error) => {
                     // server could not be reached
                     this.serverMessages = [{type: "error", text: serverNotReachableError}];
+                    this.handleCompletion(false)
                     this.setState({status: "wait_for_upload", error: true});
                 }
             )

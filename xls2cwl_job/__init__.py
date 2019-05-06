@@ -81,11 +81,11 @@ def only_validate_xls(sheet_file="", sheet_files=[],
 
 
 # main function of this module:
-def transcode( sheet_file="", sheet_files=[], output_basename="",  output_dir=".", verbose_level=2,
-    validate_paths=True, search_paths=True, search_subdirs=True, input_dir=""):
+def transcode( sheet_file="", sheet_files=[], output_basename="",  output_suffix=".cwl_run.yaml", 
+    output_dir=".", verbose_level=2, validate_paths=True, search_paths=True, search_subdirs=True, input_dir=""):
     try:
         type_matched_params_by_run_id, params_by_run_id, configs = import_from_xls(sheet_file, sheet_files, validate_paths, search_paths, search_subdirs, input_dir)
-        make_yaml.write_multiple_runs(type_matched_params_by_run_id, output_dir, output_basename)
+        make_yaml.write_multiple_runs(type_matched_params_by_run_id, output_dir, output_basename, output_suffix)
     except SystemExit as e:
         sys.exit( 'Failed to translate - the error was:' + str(e))
     if verbose_level == 2:
