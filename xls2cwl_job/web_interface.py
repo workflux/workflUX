@@ -46,7 +46,9 @@ def gen_form_sheet(
     param_is_run_specific={},  # only relevant id run_mode is multiple,
                     # dict with param names as keys, and true (run specific) or false (global)
                     # as values
-    show_please_fill=False
+    show_please_fill=False,
+    config_attributes={}   # attributes copied to the header of
+                                                            # the config file
 ):
     # read configs from template
     _, configs = sheet_file(template_config_file_path, verbose_level=0)
@@ -79,5 +81,5 @@ def gen_form_sheet(
     configs = fill_in_config_defaults(configs)
 
     # write to file
-    write_xls(param_values, configs, output_file_path)
+    write_xls(param_values, configs, output_file_path, config_attributes)
 

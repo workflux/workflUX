@@ -25,7 +25,7 @@ def get_job_templ_list():   # returns list of job templates
         # read list of template files:
         templates = fetch_files_in_dir(
             dir_path=app.config['CWL_DIR'], 
-            file_exts=[".xlsx"],
+            file_exts=["xlsx"],
             search_string=".job_templ",
             ignore_subdirs=True
         )
@@ -99,7 +99,8 @@ def generate_param_form_sheet():    # generate param form sheet with data sent
             has_multiple_runs= request_json["run_mode"],
             run_names=request_json["run_names"],
             param_is_run_specific=request_json["param_modes"],
-            show_please_fill=True
+            show_please_fill=True,
+            config_attributes={"CWL": request_json["cwl_target"]}
         )
         data["get_form_sheet_href"] = url_for("get_param_form_sheet", form_sheet_filename=filename)
         print(data)

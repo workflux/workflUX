@@ -128,6 +128,13 @@ def assign_params_to_sheets(configs):
     
     return sheet_assignments
 
+def build_attribute_header(attributes): # attibutes as dict
+    attr_strings = []
+    for attr in attributes.keys():
+        attr_strings.append( attr + ": " + attributes[attr] )
+    attr_header = "# " + "| ".join(attr_strings)
+    return attr_header
+
 
 def build_parameter_sheet(
         all_parameters,
@@ -147,8 +154,8 @@ def build_parameter_sheet(
             param_names.extend(param_names_)
     if format == "vertical":
         # build data row by row:
-        header_row = ["# type: param | format: vertical"]
-        data.append(header_row)
+        header_row = build_attribute_header({"type": "param", "format": "vertical"})
+        data.append([header_row])
         for param in param_names:
             row = [param]
             row.extend(all_parameters[param])
@@ -167,8 +174,8 @@ def build_parameter_sheet(
                 ext_param.append("")
             extended_parameters[param]=ext_param
         # build data row by row:
-        header_row = ["# type: param | format: horizontal"]
-        data.append(header_row)
+        header_row = build_attribute_header({"type": "param", "format": "horizontal"})
+        data.append([header_row])
         data.append(param_names)
         for idx in range(max_len):
             row = []
@@ -192,9 +199,12 @@ def build_parameter_sheet(
             row.extend(ps)
             table_content.append(row)
         # assemble:
-        header_row = ["# type: param | format: wide | param: " + param +
-            " | run_id_param: " + run_id]
-        data.append(header_row)
+        header_row = build_attribute_header({
+            "type": "param", 
+            "format": "wide",
+            "run_id_param": run_id
+        })
+        data.append([header_row])
         table_head = ['run_id \\ pos in array']
         table_head.extend(range(1, max_len))
         table_head.append("...")
@@ -202,7 +212,7 @@ def build_parameter_sheet(
         data.extend(table_content)
     return data
 
-def build_configs_sheet(configs):
+def build_configs_sheet(configs, attributes={}):
     print_pref = "[build_config_sheet]:"
     generation_method = {
             "type": str,
@@ -221,7 +231,6 @@ def build_configs_sheet(configs):
             "manipulate_value": generate_mutliple_quoted_strings,
             "parameter_sheet_name": str
     }
-    sheet_header_row = ["# type: config"]
     configs_order = [
             "type",
             "is_array",
@@ -239,6 +248,8 @@ def build_configs_sheet(configs):
             "manipulate_value",
             "parameter_sheet_name"
     ]
+    attributes["type"] = "config"
+    sheet_header_row = [build_attribute_header(attributes)]
     table_header_row = ["parameter_name"]
     table_header_row.extend(configs_order)
     data = [sheet_header_row, table_header_row]
@@ -253,7 +264,7 @@ def build_configs_sheet(configs):
     return data
 
 
-def build_book(all_parameters, configs):
+def build_book(all_parameters, configs, config_attributes={}):
     print_pref = "[build_book]:"
     book = {}
     # split all parameters by output sheet name and get sheet attributes:
@@ -266,11 +277,11 @@ def build_book(all_parameters, configs):
             format=sheets_assignment["format"],
             run_id=sheets_assignment["run_id"]
         ) 
-    book["config"] = build_configs_sheet(configs) 
+    book["config"] = build_configs_sheet(configs, config_attributes) 
     return book
 
-def write_xls(all_parameters, configs, output_file):
+def write_xls(all_parameters, configs, output_file, config_attributes={}):
     print_pref = "[parameter_to_xls]:"
-    book = build_book(all_parameters, configs)
+    book = build_book(all_parameters, configs, config_attributes)
     pyexcel_xlsx.save_data( afile= output_file, data=book )
 
