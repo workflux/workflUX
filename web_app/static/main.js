@@ -21,7 +21,7 @@ const modules = {   // each entry corresponds to one wep app module,
     jobs: {
         text:  "Job Execution & Results",
         icon: "fas fa-rocket",
-        content: "Under construction"
+        content: (<JobExecRoot />)
     },
     help: {
         text: "Help",

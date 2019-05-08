@@ -407,7 +407,7 @@ class CeateJobRoot extends React.Component {
     buildContentOnSuccess(data){ // when AJAX request succeeds
         return (
             <div>
-                <Title>Create a Job for an Imported CWL document</Title>
+                <Title>Create a Job for an Imported CWL Document</Title>
                 { data.length > 0 ? (
                         <JobTemplList templFilesInfo={data}>  </JobTemplList>
                     ) : (

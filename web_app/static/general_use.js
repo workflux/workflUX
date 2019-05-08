@@ -8,10 +8,26 @@ String.prototype.replaceAll = function(search, replacement) {
 };
 
 class IneditableValueField extends React.Component {
+    // Input:
+    // props.backColorClass e.g. w3-metro-darken w3-theme-dark
+    // props.textColorClass e.g. w3-text-green
     render() {
-        const style = {fontFamily: "courier"}
+        const style = {
+            fontFamily: "courier",
+            padding: "2px"
+        }
+        let backColorClass = "w3-metro-darken"
+        let textColorClass = ""
+        if (this.props.backColorClass){
+            backColorClass = this.props.backColorClass
+        }
+        if (this.props.textColorClass){
+            textColorClass = this.props.textColorClass
+        }
         return( 
-            <span className="w3-metro-darken" style={style}> 
+            <span 
+                className={backColorClass + " " + textColorClass} 
+                style={style}> 
                 {this.props.children} 
             </span> 
         )

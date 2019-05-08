@@ -16,6 +16,7 @@
         <script src="/static/general_use.js" type="text/babel"></script>
         <script src="/static/import_cwl.js" type="text/babel"></script>
         <script src="/static/create_job.js" type="text/babel"></script>
+        <script src="/static/job_exec.js" type="text/babel"></script>
         <script src="/static/main.js" type="text/babel"></script>
 
         <script > 
@@ -26,6 +27,7 @@
             const routeGenParamFormSheet = "{{ url_for('generate_param_form_sheet') }}"
             const routeSendFilledParamFormSheet = "{{ url_for('send_filled_param_form_sheet') }}"
             const routeCreateJob = "{{ url_for('create_job') }}"
+            const routeGetJobList = "{{ url_for('get_job_list') }}"
 
 
             // other global params:
