@@ -28,7 +28,7 @@ class JobCreationPrep extends React.Component {
 
         // construct job_id:
         const date = new Date()
-        let year = date.getYear().toString()
+        let year = date.getFullYear().toString()
         let month = date.getMonth()
         month = (month < 10) ? ("0" + month.toString()) : (month.toString())
         let day = date.getDate()
@@ -354,6 +354,7 @@ class JobTemplConfigInfoAjax extends React.Component {
     render() {
         return (
             <AjaxComponent
+                key={this.props.cwlTarget}
                 requestRoute={routeGetJobTemplConfigInfo}
                 sendData={ {cwl_target: this.props.cwlTarget} }
                 buildContentOnSuccess={this.buildContentOnSuccess}
@@ -378,22 +379,28 @@ class JobTemplList extends React.Component {
     render() {
         const itemValues = this.props.templFilesInfo.map( (tf) => tf.cwl_target);
         const itemNames = itemValues; // here no distinction between values and names neccessary
-        let itemContent = "";
+        let itemContent = (
+            <div>
+                <DisplayServerMessages messages={this.props.initMessages}/> 
+                <p>
+                    <i className="fas fa-arrow-left"></i>
+                    Select a CWL document to make a new job.
+                </p>
+            </div>
+        )
         if(this.state.whichFocus != "") {
             itemContent = <JobTemplConfigInfoAjax cwlTarget={this.state.whichFocus} />
         }
 
         return (
-            <div>
-                <p>Select one of the following job templates:</p>
-                <CollapsibleList
-                    itemValues={itemValues}
-                    itemNames={itemNames}
-                    whichFocus={this.state.whichFocus}
-                    itemContent={itemContent}
-                    onChange={this.changeFocus}
-                />
-            </div>
+            <SideBarPanel
+                label="CWL documents:"
+                itemValues={itemValues}
+                itemNames={itemNames}
+                whichFocus={this.state.whichFocus}
+                itemContent={itemContent}
+                onChange={this.changeFocus}
+            />
         );
     }
 }
@@ -404,12 +411,11 @@ class CeateJobRoot extends React.Component {
         this.buildContentOnSuccess = this.buildContentOnSuccess.bind(this);
     }
 
-    buildContentOnSuccess(data){ // when AJAX request succeeds
+    buildContentOnSuccess(data, messages){ // when AJAX request succeeds
         return (
-            <div>
-                <Title>Create a Job for an Imported CWL Document</Title>
+            <div style={ {height:"100%"} }>
                 { data.length > 0 ? (
-                        <JobTemplList templFilesInfo={data}>  </JobTemplList>
+                        <JobTemplList templFilesInfo={data} initMessages={messages}/>
                     ) : (
                         <Message type="info">
                             No job templates found. Please import a CWL document.

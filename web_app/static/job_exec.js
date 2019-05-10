@@ -63,7 +63,7 @@ class JobContent extends React.Component {
 
     render(){
         return(
-            <div>
+            <div className="w3-panel">
                 {this.props.runs.map((r) =>(
                     <RunListElement
                         key={r}
@@ -94,9 +94,17 @@ class JobList extends React.Component {
         const itemValues = this.props.jobInfo.map( (job) => job.job_id);
         const itemNames = this.props.jobInfo.map( (job) => (
             <span key={job.job_id}>
-                Job ID: &nbsp;
-                <span className="w3-text-green">{job.job_id}</span>
-                &nbsp; CWL:&nbsp;
+                <i><span style={ {fontFamily: "courier"} }>
+                    {(
+                        job.job_id.substring(0,4) + "." +
+                        job.job_id.substring(4,6) + "." + 
+                        job.job_id.substring(6,8) + "/" + 
+                        job.job_id.substring(9,12)
+                    )}
+                </span></i><br/>
+                {
+                    job.job_id.substring(13,job.job_id.length)
+                }<br/>
                 <IneditableValueField
                     backColorClass="w3-theme"
                 >
@@ -104,7 +112,15 @@ class JobList extends React.Component {
                 </IneditableValueField>
             </span>
         ))
-        let itemContent = "";
+        let itemContent = (
+            <div>
+                <DisplayServerMessages messages={this.props.initMessages}/> 
+                <p>
+                    <i className="fas fa-arrow-left"></i>
+                    Select a job.
+                </p>
+            </div>
+        );
         if(this.state.whichFocus != "") {
             let runs=[]
             this.props.jobInfo.map((job) =>
@@ -114,16 +130,14 @@ class JobList extends React.Component {
         }
 
         return (
-            <div>
-                <p>Select one of the following jobs:</p>
-                <CollapsibleList
-                    itemValues={itemValues}
-                    itemNames={itemNames}
-                    whichFocus={this.state.whichFocus}
-                    itemContent={itemContent}
-                    onChange={this.changeFocus}
-                />
-            </div>
+            <SideBarPanel
+                label="Jobs:"
+                itemValues={itemValues}
+                itemNames={itemNames}
+                whichFocus={this.state.whichFocus}
+                itemContent={itemContent}
+                onChange={this.changeFocus}
+            />
         );
     }
 }
@@ -134,12 +148,11 @@ class JobExecRoot extends React.Component {
         this.buildContentOnSuccess = this.buildContentOnSuccess.bind(this);
     }
 
-    buildContentOnSuccess(data){ // when AJAX request succeeds
+    buildContentOnSuccess(data, messages){ // when AJAX request succeeds
         return (
             <div>
-                <Title>Job Execution and Results</Title>
                 { data.length > 0 ? (
-                        <JobList jobInfo={data}>  </JobList>
+                        <JobList jobInfo={data} initMessages={messages}/>
                     ) : (
                         <Message type="info">
                             No jobs found.

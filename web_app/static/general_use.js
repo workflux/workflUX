@@ -189,6 +189,64 @@ class CollapsibleList extends React.Component {
 }
 
 
+class SideBarPanel extends React.Component {
+    // Inputs:
+    // props.itemValues contains values of list items
+    // props.itemNames contains names of list items
+    // props.itemContent contains content for the
+    //  list item which has focus; maximally one item can have focus
+    // props.whichFocus contains the value of the
+    //  the list items that has focus; "" if none has focus
+    // props.onChange function executed once the focus changes
+    // props.label
+
+    constructor(props){
+        super(props)
+        this.handleClick = this.handleClick.bind(this)
+    }
+
+    handleClick(event) {
+        this.props.onChange(event.target.value)
+    }
+
+    render () {
+        return (
+            <div className="w3-row">
+                <div 
+                    className="w3-card w3-sidebar w3-bar-block w3-col l2 m4 s4 w3-metro-darken"
+                    style={ {width:"200px", overflowY: "auto"} }
+                >
+                    <div className="w3-bar-item w3-text-green">
+                        {this.props.label}
+                    </div>
+                    {
+                        this.props.itemValues.map( (itemValue, index) => (
+                            <button 
+                                className={this.props.whichFocus == itemValue ?
+                                    "w3-bar-item w3-button w3-theme-d3" : "w3-bar-item w3-button"}
+                                key={itemValue}
+                                value={itemValue}
+                                name={this.props.itemNames[index]}
+                                onClick={this.handleClick}
+                            >
+                                {this.props.itemNames[index]}
+                            </button>
+                        ))
+                    }
+                </div>
+                <div 
+                    className="w3-col s10 m8 s8 w3-container"  
+                    style={ {marginLeft:"200px"} }
+                >
+                    {this.props.itemContent}
+                </div>
+            </div>
+        );
+
+    }
+}
+
+
 class LoadingIndicator extends React.Component {
     render() {
         let loaderClass
@@ -339,8 +397,7 @@ class AjaxComponent extends React.Component {
         } else{
             return (
                 <div>
-                    <DisplayServerMessages messages={this.serverMessages} />
-                    {this.props.buildContentOnSuccess(this.data)}
+                    {this.props.buildContentOnSuccess(this.data, this.serverMessages)}
                 </div>
             )
         }

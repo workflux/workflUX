@@ -2,10 +2,12 @@
 class ImportCWLRoot extends React.Component {
     render() {
         return(
-            <FileUploadComponent
-                requestRoute={routeCwlImport}
-                instruction="Please select a CWL file:"
-            />
+            <div className="w3-panel">
+                <FileUploadComponent
+                    requestRoute={routeCwlImport}
+                    instruction="Please select a CWL file:"
+                />
+            </div>
         );
     }
 }
