@@ -4,8 +4,9 @@ pip3 install flask \
     flask_wtf \
     flask-sqlalchemy \
     flask-migrate \
-    flask-login
-
+    flask-login \
+    flask-sqlalchemy
+    
 pip3 install pyexcel \
     pyexcel-io \
     pyexcel-ods \
