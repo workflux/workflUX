@@ -3,7 +3,7 @@ import os
 from flask import render_template, jsonify, redirect, flash, url_for, request
 from werkzeug.urls import url_parse
 from werkzeug.utils import secure_filename
-from . import app
+from cwlab import app
 from cwlab.general_use import is_allowed_file, allowed_extensions_by_type
 from cwlab.xls2cwl_job import generate_xls_from_cwl as generate_job_template_from_cwl
 

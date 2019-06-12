@@ -3,7 +3,7 @@ import os
 from flask import render_template, jsonify, redirect, flash, url_for, request, send_from_directory
 # from flask_login import current_user, login_user, logout_user, login_required
 from werkzeug.urls import url_parse
-from . import app 
+from cwlab import app 
 from cwlab.general_use import fetch_files_in_dir, is_allowed_file, allowed_extensions_by_type
 import requests
 from re import sub, match

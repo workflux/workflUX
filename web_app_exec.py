@@ -1,2 +1,2 @@
 
-from cwlab.web_app import app
+from cwlab import app

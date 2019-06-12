@@ -31,3 +31,6 @@ if not os.path.isdir(app.config['INPUT_DIR']):
     os.makedirs(app.config['INPUT_DIR'])
 if not os.path.isdir(app.config['DB_DIR']):
     os.makedirs(app.config['DB_DIR'])
+
+from .web_app import main, import_cwl, create_job, job_exec
+from .exec import db

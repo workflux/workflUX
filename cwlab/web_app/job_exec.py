@@ -3,7 +3,7 @@ import os
 from flask import render_template, jsonify, redirect, flash, url_for, request, send_from_directory
 # from flask_login import current_user, login_user, logout_user, login_required
 from werkzeug.urls import url_parse
-from . import app 
+from cwlab import app 
 from cwlab.general_use import fetch_files_in_dir, allowed_extensions_by_type
 import requests
 from re import sub, match
@@ -87,22 +87,3 @@ def get_job_list():   # returns list of job templates
             "messages": messages
         }
     )
-    
-
-## database:
-
-# class Exec(db.Model):
-#     id = db.Column(db.Integer, primary_key=True)
-#     run_id = db.Column(db.String(120))
-#     job_id = db.Column(db.String(120))
-#     status = db.Column(db.String(64))
-#     time_started = db.Column(db.String(64))
-#     time_finished = db.Column(db.String(64))
-#     pid = db.Column(db.Integer)
-#     preexec_code = db.Column(db.String(3000))
-#     exec_code = db.Column(db.String(3000))
-#     monitor_code = db.Column(db.String(3000))
-#     postexec_code = db.Column(db.String(3000))
-
-#     def __repr__(self):
-#         return '<Exec {}>'.format({self.id, self.status, self.run_id, self.job_id})  
