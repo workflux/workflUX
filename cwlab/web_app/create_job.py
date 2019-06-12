@@ -4,13 +4,13 @@ from flask import render_template, jsonify, redirect, flash, url_for, request, s
 # from flask_login import current_user, login_user, logout_user, login_required
 from werkzeug.urls import url_parse
 from . import app 
-from .general_use import fetch_files_in_dir, is_allowed_file, allowed_extensions_by_type
+from cwlab.general_use import fetch_files_in_dir, is_allowed_file, allowed_extensions_by_type
 import requests
 from re import sub, match
-from xls2cwl_job.web_interface import read_template_attributes as read_template_attributes_from_xls
-from xls2cwl_job.web_interface import get_param_config_info as get_param_config_info_from_xls
-from xls2cwl_job.web_interface import gen_form_sheet
-from xls2cwl_job import only_validate_xls, transcode as make_yaml_runs
+from cwlab.xls2cwl_job.web_interface import read_template_attributes as read_template_attributes_from_xls
+from cwlab.xls2cwl_job.web_interface import get_param_config_info as get_param_config_info_from_xls
+from cwlab.xls2cwl_job.web_interface import gen_form_sheet
+from cwlab.xls2cwl_job import only_validate_xls, transcode as make_yaml_runs
 from time import sleep
 from shutil import move
 

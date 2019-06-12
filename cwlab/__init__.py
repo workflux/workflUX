@@ -1,20 +1,24 @@
 import os
-import fnmatch
-from flask import Flask, current_app
+from flask import Flask
 from .config import Config
-#from flask_sqlalchemy import SQLAlchemy
-#from flask_migrate import Migrate
-#from flask_login import LoginManager
+from flask_sqlalchemy import SQLAlchemy
+from flask_migrate import Migrate
 
-app = Flask(__name__)
-with app.app_context():
-    print(current_app.name)
+basedir = os.path.abspath(os.path.dirname(__file__))
+
+app = Flask(
+    __name__,
+    static_folder=os.path.join(basedir, "web_app", "static"),
+    template_folder =os.path.join(basedir, "web_app", "templates")
+)
 
 app.config.from_object(Config)
-# db = SQLAlchemy(app)
-# migrate = Migrate(app, db)
+db = SQLAlchemy(app)
+migrate = Migrate(app, db)
+
 # login = LoginManager(app)
 # login.login_view = 'login'
+
 
 # set up the working environment:
 if not os.path.isdir(app.config['TEMP_DIR']):
@@ -25,5 +29,5 @@ if not os.path.isdir(app.config['EXEC_DIR']):
     os.makedirs(app.config['EXEC_DIR'])
 if not os.path.isdir(app.config['INPUT_DIR']):
     os.makedirs(app.config['INPUT_DIR'])
-
-from web_app import main, general_use, import_cwl, create_job, job_exec
+if not os.path.isdir(app.config['DB_DIR']):
+    os.makedirs(app.config['DB_DIR'])
