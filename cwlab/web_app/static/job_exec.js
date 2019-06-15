@@ -92,17 +92,24 @@ class JobContent extends React.Component {
     // Inputs:
     // props.runs list of run ids
     // props.jobId
+    // props.cwlTarget
+    // props.execProfiles
     constructor(props){
         super(props)
         let runSelection = {}
         this.props.runs.map((r) =>
-            runSelection[r] = false
+            (runSelection[r] = false)
         )
         this.state = {
-            runSelection: runSelection
+            runSelection: runSelection,
+            actionStatus: "none",
+            execProfile: this.props.execProfiles[0]
         }
+        this.actionMessages = []
 
         this.changeRunSelection = this.changeRunSelection.bind(this)
+        this.execRuns = this.execRuns.bind(this)
+        this.changeExecProfile = this.changeExecProfile.bind(this)
     }
 
     changeRunSelection(runID, is_checked){
@@ -111,6 +118,54 @@ class JobContent extends React.Component {
         this.setState({
             runSelection: Object.assign(this.state.runSelection, update)
         })
+    }
+
+    changeExecProfile(execProfile){
+        this.setState({execProfile: execProfile})
+    }
+
+    execRuns(){
+        this.setState({actionStatus: "starting"})
+        const runSelection = this.state.runSelection
+        let selectedRuns = []
+        this.props.runs.map((run) =>
+            runSelection[run] && (selectedRuns.push(run))
+        )
+        const sendData = {
+            cwl_target: this.props.cwlTarget,
+            job_id: this.props.jobId,
+            run_ids: selectedRuns,
+            exec_profile: this.state.execProfile
+        }
+        fetch(routeStartExec, {
+            method: "POST",
+            body: JSON.stringify(sendData),
+            headers: new Headers({
+                'Content-Type': 'application/json'
+            }),
+            cache: "no-cache"
+        }).then(res => res.json())
+        .then(
+            (result) => {
+                this.actionMessages = result.messages;
+                let errorOccured = false;
+                for( let i=0;  i<this.actionMessages.length; i++){
+                    if(this.actionMessages[i].type == "error"){
+                        errorOccured = true;
+                        break;
+                    }
+                }
+                if (! errorOccured){
+                    // nothing just display messages
+                }    
+                this.setState({actionStatus: "none"})        
+            },
+            (error) => {
+                // server could not be reached
+                this.actionMessages = [{type: "error", text: serverNotReachableError}];
+                this.setState({actionStatus: "none"}) 
+            }
+        )
     }
 
     render(){
@@ -129,13 +184,32 @@ class JobContent extends React.Component {
                 />
                 select one or multiple jobs for following actions:
                 <h3>Actions:</h3>
-                <ActionButton
-                    name="start"
-                    value="start"
-                    onAction={console.log}
-                    label={<span><i className="fas fa-rocket w3-text-green"/>&nbsp;start</span>}
-                    disabled={!is_job_selected}
-                />
+                <span className="w3-text-green">Start Execution:</span>
+                <div className="w3-container">
+                    <label>
+                        Select execution profile:
+                        <select className="w3-button w3-white w3-border" 
+                            name="exec_profile"
+                            onChange={this.changeExecProfile}
+                            value={this.state.execProfile}
+                            >
+                            {
+                                this.props.execProfiles.map((execProfile) =>
+                                    <option key={execProfile} value={execProfile}>{execProfile}</option>
+                                )
+                            }
+                        </select> 
+                    </label>
+                    <br/>
+                    <ActionButton
+                        name="start"
+                        value="start"
+                        onAction={this.execRuns}
+                        label={<span><i className="fas fa-rocket w3-text-green"/>&nbsp;start</span>}
+                        disabled={!is_job_selected}
+                    />
+                </div>
+                <DisplayServerMessages messages={this.actionMessages} />
             </div>
         )
     }
@@ -145,6 +219,8 @@ class JobContent extends React.Component {
 class JobList extends React.Component {
     constructor(props) {
         super(props);
+        // props.jobInfo
+        // props.execProfiles
         this.state = {whichFocus: ""}; // no list item is focues by default
         this.changeFocus = this.changeFocus.bind(this);
     }
@@ -156,15 +232,15 @@ class JobList extends React.Component {
     render() {
         const itemValues = this.props.jobInfo.map( (job) => job.job_id);
         const itemNames = this.props.jobInfo.map( (job) => (
-            <span key={job.job_id}>
-                <i><span style={ {fontFamily: "courier"} }>
+            <p key={job.job_id}>
+                <i style={ {fontFamily: "courier"} }>
                     {(
                         job.job_id.substring(0,4) + "." +
                         job.job_id.substring(4,6) + "." + 
                         job.job_id.substring(6,8) + "/" + 
                         job.job_id.substring(9,12)
                     )}
-                </span></i><br/>
+                </i><br/>
                 {
                     job.job_id.substring(13,job.job_id.length)
                 }<br/>
@@ -173,7 +249,7 @@ class JobList extends React.Component {
                 >
                     {job.cwl_target}
                 </IneditableValueField>
-            </span>
+            </p>
         ))
         let itemContent = (
             <div>
@@ -184,12 +260,17 @@ class JobList extends React.Component {
                 </p>
             </div>
         );
-        if(this.state.whichFocus != "") {
-            let runs=[]
+        if(this.state.whichFocus && this.state.whichFocus != "") {
+            let jobInfo={}
             this.props.jobInfo.map((job) =>
-                job.job_id == this.state.whichFocus && (runs = job.runs)
+                job.job_id == this.state.whichFocus && (jobInfo = job)
             )
-            itemContent = <JobContent jobId={this.state.whichFocus} runs={runs} />
+            itemContent = <JobContent 
+                jobId={this.state.whichFocus} 
+                runs={jobInfo.runs} 
+                cwlTarget={jobInfo.cwl_target} 
+                execProfiles={this.props.execProfiles} 
+            />
         }
 
         return (
@@ -214,8 +295,8 @@ class JobExecRoot extends React.Component {
     buildContentOnSuccess(data, messages){ // when AJAX request succeeds
         return (
             <div>
-                { data.length > 0 ? (
-                        <JobList jobInfo={data} initMessages={messages}/>
+                { data.jobs.length > 0 ? (
+                        <JobList jobInfo={data.jobs} execProfiles={data.exec_profiles} initMessages={messages}/>
                     ) : (
                         <Message type="info">
                             No jobs found.

@@ -11,14 +11,14 @@ from cwlab.xls2cwl_job.web_interface import read_template_attributes as read_tem
 from cwlab.xls2cwl_job.web_interface import get_param_config_info as get_param_config_info_from_xls
 from cwlab.xls2cwl_job.web_interface import gen_form_sheet
 from cwlab.xls2cwl_job import only_validate_xls, transcode as make_yaml_runs
+from cwlab.exec.exec import exec_run
 from time import sleep
 from shutil import move
 
 
 
 @app.route('/get_job_list/', methods=['GET','POST'])
-def get_job_list():   # returns list of job templates
-                            # for already imported CWL documents
+def get_job_list():
     messages = []
     jobs = []
     try:
@@ -82,8 +82,55 @@ def get_job_list():   # returns list of job templates
             "type":"error", 
             "text":"An uknown error occured reading the execution directory." 
         } )
+    
+    # get exec profiles names:
+    exec_profile_names = list(app.config["EXEC_PROFILES"].keys())
+
+
     return jsonify({
-            "data": jobs,
+            "data": {
+                "exec_profiles": exec_profile_names,
+                "jobs": jobs
+            },
             "messages": messages
         }
     )
+
+
+
+@app.route('/start_exec/', methods=['POST'])
+def start_exec():    # returns all parmeter and its default mode (global/job specific) 
+                                    # for a given xls config
+    messages = []
+    jobs = []
+    data = request.get_json()
+    cwl_target = data["cwl_target"]
+    job_id = data["job_id"]
+    run_ids = data["run_ids"]
+    exec_profile_name = data["exec_profile"]
+    # try:
+    for run_id in run_ids:
+        exec_run(
+            job_id,
+            run_id,
+            exec_profile_name,
+            cwl_target
+        )
+    messages.append({
+        "type":"success",
+        "text":"Execution started successfully."
+    })
+    # except SystemExit as e:
+    #     messages.append( { 
+    #         "type":"error", 
+    #         "text": str(e) 
+    #     } )
+    # except:
+    #     messages.append( { 
+    #         "type":"error", 
+    #         "text":"An uknown error occured." 
+    #     } )
+    return jsonify({
+        "data":{},
+        "messages":messages
+    })

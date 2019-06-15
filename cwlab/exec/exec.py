@@ -1,5 +1,6 @@
 from cwlab import app
-from . import db
+from .db import Exec
+from cwlab import db
 from datetime import datetime
 import os, sys, platform
 from subprocess import Popen, PIPE
@@ -21,7 +22,7 @@ def create_background_process(command_list):
 def exec_run(job_id, run_id, exec_profile_name, cwl):
 
     # create new exec entry in database:
-    exec_db_entry = db.Exec(
+    exec_db_entry = Exec(
         job_id=job_id,
         run_id=run_id,
         cwl=cwl,
@@ -40,14 +41,14 @@ def exec_run(job_id, run_id, exec_profile_name, cwl):
     # and manages the its status in the database autonomously,
     # even if the parent process is terminated / fails,
     # the child process will continue
-    print(
+    create_background_process(
         [
             python_interpreter,
             os.path.join(basedir, "cwlab_bg_exec.py"),
             app.config["EXEC_DIR"],
             app.config["CWL_DIR"],
             app.config["SQLALCHEMY_DATABASE_URI"],
-            exec_db_entry.id
+            str(exec_db_entry.id)
         ]
     )
 
