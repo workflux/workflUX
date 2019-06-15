@@ -47,7 +47,7 @@ class BooleanSlider extends React.Component {
     }
     
     handleChange(event){
-        const value=event.target.value
+        const value=event.currentTarget.value
         const is_set=event.target.checked
         this.props.onChange(value, is_set)
     }
@@ -83,7 +83,7 @@ class ActionButton extends React.Component {
     }
     
     handleAction(event){
-        this.props.onAction(event.target.value)
+        this.props.onAction(event.currentTarget.value)
     }
 
     render() {
@@ -97,7 +97,7 @@ class ActionButton extends React.Component {
                 disabled={this.props.loading || this.props.disabled ? true : false}
                 > 
                 {this.props.loading ? (<LoadingIndicator message="" size="tiny" />) : null}
-                {this.props.label} 
+                {this.props.label}
             </button> )
     }
 }
@@ -109,7 +109,7 @@ class CollapsibleListItem extends React.Component {
     }
 
     handleChange(event) {
-        this.props.onChange(event.target.value)
+        this.props.onChange(event.currentTarget.value)
     }
 
     render() {
@@ -206,7 +206,7 @@ class SideBarPanel extends React.Component {
     }
 
     handleClick(event) {
-        this.props.onChange(event.target.value)
+        this.props.onChange(event.currentTarget.value)
     }
 
     render () {
@@ -221,7 +221,7 @@ class SideBarPanel extends React.Component {
                     </div>
                     {
                         this.props.itemValues.map( (itemValue, index) => (
-                            <button 
+                            <button
                                 className={this.props.whichFocus == itemValue ?
                                     "w3-bar-item w3-button w3-theme-d3" : "w3-bar-item w3-button"}
                                 key={itemValue}
