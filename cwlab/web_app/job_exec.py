@@ -108,28 +108,28 @@ def start_exec():    # returns all parmeter and its default mode (global/job spe
     job_id = data["job_id"]
     run_ids = data["run_ids"]
     exec_profile_name = data["exec_profile"]
-    # try:
-    for run_id in run_ids:
-        exec_run(
-            job_id,
-            run_id,
-            exec_profile_name,
-            cwl_target
-        )
-    messages.append({
-        "type":"success",
-        "text":"Execution started successfully."
-    })
-    # except SystemExit as e:
-    #     messages.append( { 
-    #         "type":"error", 
-    #         "text": str(e) 
-    #     } )
-    # except:
-    #     messages.append( { 
-    #         "type":"error", 
-    #         "text":"An uknown error occured." 
-    #     } )
+    try:
+        for run_id in run_ids:
+            exec_run(
+                job_id,
+                run_id,
+                exec_profile_name,
+                cwl_target
+            )
+        messages.append({
+            "type":"success",
+            "text":"Execution started successfully."
+        })
+    except SystemExit as e:
+        messages.append( { 
+            "type":"error", 
+            "text": str(e) 
+        } )
+    except:
+        messages.append( { 
+            "type":"error", 
+            "text":"An uknown error occured." 
+        } )
     return jsonify({
         "data":{},
         "messages":messages
