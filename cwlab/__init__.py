@@ -13,12 +13,6 @@ app = Flask(
 )
 
 app.config.from_object(Config)
-db = SQLAlchemy(app)
-migrate = Migrate(app, db)
-
-# login = LoginManager(app)
-# login.login_view = 'login'
-
 
 # set up the working environment:
 if not os.path.isdir(app.config['TEMP_DIR']):
@@ -32,5 +26,10 @@ if not os.path.isdir(app.config['INPUT_DIR']):
 if not os.path.isdir(app.config['DB_DIR']):
     os.makedirs(app.config['DB_DIR'])
 
+db = SQLAlchemy(app)
+migrate = Migrate(app, db)
+
+# login = LoginManager(app)
+# login.login_view = 'login'
+
 from .web_app import main, import_cwl, create_job, job_exec
-from .exec import db
