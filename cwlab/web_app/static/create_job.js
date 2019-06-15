@@ -54,7 +54,7 @@ class JobCreationPrep extends React.Component {
     }
 
     changeJobName(event){
-        let jobNameString = event.target.value.trim().replaceAll(" ", "_")
+        let jobNameString = event.currentTarget.value.trim().replaceAll(" ", "_")
         this.setState({"job_name": jobNameString})
     }
 
@@ -71,7 +71,7 @@ class JobCreationPrep extends React.Component {
     }
 
     changeRunNames(event){
-        let runNameString = event.target.value
+        let runNameString = event.currentTarget.value
         runNameString = runNameString.replaceAll("\n", ",").replaceAll("\t", ",").replaceAll(";", ",")
         let runNames = runNameString.split(",")
         runNames = runNames.map((n) => n.trim().replace(" ", "_"))
@@ -79,7 +79,7 @@ class JobCreationPrep extends React.Component {
     }
 
     changeSheetFormat(event){
-        this.setState({"sheet_format": event.target.value})
+        this.setState({"sheet_format": event.currentTarget.value})
     }
 
     genFormSheet(){
