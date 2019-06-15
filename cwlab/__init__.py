@@ -33,3 +33,4 @@ migrate = Migrate(app, db)
 # login.login_view = 'login'
 
 from .web_app import main, import_cwl, create_job, job_exec
+from . import exec
