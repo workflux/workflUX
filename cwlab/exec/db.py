@@ -8,7 +8,7 @@ class Exec(db.Model):
     status = db.Column(db.String(64))
     time_started = db.Column(db.DateTime())
     time_finished = db.Column(db.DateTime())
-    pid = db.Column(db.Integer(), index=Tue)
+    pid = db.Column(db.Integer())
     exec_profile = db.Column(db.PickleType())
 
     def __repr__(self):

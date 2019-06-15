@@ -1,5 +1,5 @@
 from cwlab import app
-from .db import Exec
+from . import db
 from datetime import datetime
 import os, sys, platform
 from subprocess import Popen, PIPE
@@ -21,9 +21,9 @@ def create_background_process(command_list):
 def exec_run(job_id, run_id, exec_profile_name, cwl):
 
     # create new exec entry in database:
-    exec_db_entry = Exec(
-        run_id=run_id,
+    exec_db_entry = db.Exec(
         job_id=job_id,
+        run_id=run_id,
         cwl=cwl,
         status="queued",
         time_started=datetime.now(),
@@ -32,6 +32,8 @@ def exec_run(job_id, run_id, exec_profile_name, cwl):
         exec_profile=app.config["EXEC_PROFILES"][exec_profile_name]
     )
     #* will be set by the background process itself
+    db.session.add(exec_db_entry)
+    db.session.commit()
 
     # start the background process:
     # the child process will be detached from the parent
@@ -45,7 +47,7 @@ def exec_run(job_id, run_id, exec_profile_name, cwl):
             app.config["EXEC_DIR"],
             app.config["CWL_DIR"],
             app.config["SQLALCHEMY_DATABASE_URI"],
-            exec_id
+            exec_db_entry.id
         ]
     )
 
