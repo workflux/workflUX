@@ -5,7 +5,8 @@ from time import strftime, gmtime
 basedir = os.path.abspath(os.path.dirname(__file__))
 
 class Config(object):
-    config_file = os.environ.get('CWLAB_CONFIG')
+    config_file = os.environ.get('CWLAB_CONFIG') or \
+        os.path.join(basedir, "default_config.yml")
     if not config_file:
         sys.exit(
             "Error: no config file specified. " +
