@@ -4,6 +4,7 @@ import subprocess
 from sqlalchemy import create_engine, MetaData
 from sqlalchemy.orm import sessionmaker
 from sqlalchemy.ext.automap import automap_base
+import pexpect
 
 # commandline arguments
 exec_dir = sys.argv[1]
@@ -27,6 +28,76 @@ cwl = exec_db_entry.cwl
 exec_profile = exec_db_entry.exec_profile
 
 # construct paths:
+cwl_path = os.path.join(cwl_dir, cwl)
+output_dir = os.path.join(exec_dir, job_id, "run." + run_id + ".out")
+run_yaml_path = os.path.join(exec_dir, job_id, "run." + run_id + ".yaml")
+log_file_path = os.path.join(exec_dir, job_id, "run." + run_id + ".log")
+
+# run steps:
+#################
+
+# prepare shell variables:
+var_cmdls = [
+    "JOB_ID=" +  job_id,
+    "RUN_ID=" +  run_id,
+    "CWL=" +  cwl_path,
+    "RUN_YAML=" +  run_yaml_path,
+    "OUTPUT_DIR=" +  output_dir,
+    "LOG_FILE=" +  log_file_path,
+    "SUCCESS=False",
+    "ERR_MESSAGE=None",
+    "FINISH_TAG=DONE"
+]
+if exec_profile["shell"] == "bash":
+    init_pref = ""
+elif exec_profile["shell"] == "cmd":
+    init_pref = "set "
+var_cmdls = [init_pref + c for c in command_lines]
+
+# set up shell session
+if exec_profile["shell"]=="bash":
+    p = pexpect.spawn("bash", timeout=None)
+elif exec_profile["shell"]=="cmd":
+    p = pexpect.popen_spawn.PopenSpawn("cmd", timeout=None)
+[p.sendline(cmdl) for cmdl in var_cmdls]
+
+# run steps:
+status_message={
+    "pre_exec":"preparing for execution",
+    "exec":"executing",
+    "eval":"evaluating results",
+    "post_exec":"finishing",
+}
+def run_step(step_name):
+    # update the state of the exec in the database:
+    exec_db_entry.status = status_message[step_name]
+    session.commit()
+    # run commands specified in the exec profile
+    cmdls = exec_profile[step_name].splitlines()
+    [p.sendline(cmdl) for cmdl in cmdls]
+    # check final exit status:
+    if exec_profile["shell"]=="bash":
+        p.sendline('echo "[${FINISH_TAG}:EXITCODE:$?:${FINISH_TAG}]"')
+    elif exec_profile["shell"]=="cmd":
+        p.sendline('echo "[%FINISH_TAG%:EXITCODE:%ERRORLEVEL%:%FINISH_TAG%]"')
+    p.expect("DONE:EXITCODE:.*:DONE")
+    exit_code = int(p.after.decode().split(":")[2].strip())
+    err_message = int(p.after.decode().split(":")[2].strip())
+    if exit_code != 0:
+        exec_db_entry.status = "system error"
+        exec_db_entry.err_message = "System Error occured while \"" +
+                status_message[step_name] + "\""
+        session.commit()
+        sys.exit()
+    
+
+
+    
+
+
+    
+
+
 subprocess.call(
     "echo " + exec_dir + " " +
     cwl_dir + " " +
