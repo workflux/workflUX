@@ -27,10 +27,13 @@ def exec_run(job_id, run_id, exec_profile_name, cwl):
         run_id=run_id,
         cwl=cwl,
         status="queued",
+        err_message="",
+        retry_count=0,
         time_started=datetime.now(),
         time_finished=None, #*
         pid=-1, #*
-        exec_profile=app.config["EXEC_PROFILES"][exec_profile_name]
+        exec_profile=app.config["EXEC_PROFILES"][exec_profile_name],
+        exec_profile_name=exec_profile_name
     )
     #* will be set by the background process itself
     db.session.add(exec_db_entry)
