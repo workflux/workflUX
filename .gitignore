@@ -1,5 +1,6 @@
 *.pyc
 /migrations
 /scratch/database
+/scratch/exec
 .vscode
 test
