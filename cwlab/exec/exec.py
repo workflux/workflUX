@@ -20,7 +20,6 @@ def create_background_process(command_list):
     assert not p.poll()
 
 def exec_run(job_id, run_id, exec_profile_name, cwl):
-
     # create new exec entry in database:
     exec_db_entry = Exec(
         job_id=job_id,
