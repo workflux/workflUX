@@ -11,10 +11,16 @@ class RunListElement extends React.Component {
         }
         this.handleSelectionChange = this.handleSelectionChange.bind(this)
         this.statusColorClass = {
+            "Loading": "w3-grey",
+            "could not connect to database": "w3-red",
             "not started yet": "w3-grey",
-            "running": "w3-amber",
+            "queued": "w3-grey",
+            "preparing for execution": "w3-amber",
+            "executing": "w3-amber",
+            "evaluating results": "w3-amber",
+            "finishing": "w3-amber",
             "finished": "w3-green",
-            "failed": "w3-failed"
+            "failed": "w3-red"
         }
     }
 
@@ -52,7 +58,74 @@ class RunList extends React.Component {
     constructor(props){
         super(props)
         // props.runsIDs
+        // props.jobID
         // props.changeRunSelection
+        this.messages = []
+        let initStatus = {}
+        this.props.runIDs.map( (r) => initStatus[r]="Loading")
+        this.state = {actionStatus: "none", runStatus: initStatus}
+        this.getRunInfo = this.getRunInfo.bind(this)
+    }
+
+    getRunInfo(){
+        console.log("peep")
+        this.setState({actionStatus: "updating"}) 
+        const sendData = {
+            job_id: this.props.jobID,
+            run_ids: this.props.runIDs
+        }
+        fetch(routeGetRunStatus, {
+            method: "POST",
+            body: JSON.stringify(sendData),
+            headers: new Headers({
+                'Content-Type': 'application/json'
+            }),
+            cache: "no-cache"
+        }).then(res => res.json())
+        .then(
+            (result) => {
+                this.messages = result.messages;
+                let errorOccured = false;
+                for( let i=0;  i<this.messages.length; i++){
+                    if(this.messages[i].type == "error"){
+                        errorOccured = true;
+                        break;
+                    }
+                }
+                if (! errorOccured){
+                    // nothing just display messages
+                    console.log(result.data.run_status)
+                    this.setState({actionStatus: "none", runStatus: result.data.run_status}) 
+                }
+                else{
+                    console.log("error2")
+                    this.setState({actionStatus: "none"}) 
+                }       
+            },
+            (error) => {
+                // server could not be reached
+                console.log("error")
+                this.actionMessages = [{type: "error", text: serverNotReachableError}];
+                let initStatus = {}
+                this.props.runIDs.map( (r) => initStatus[r]="could not connect to database")
+                this.setState({actionStatus: "none", runStatus: initStatus}) 
+            }
+        )
+
+    }
+
+    componentDidMount(){
+        // initial loading
+        this.getRunInfo()
+        // setup timer to automatically update
+        this.timerID = setInterval(
+            () => this.getRunInfo(),
+            1000
+          );
+    }
+
+    componentWillUnmount() {
+        clearInterval(this.timerID);
     }
 
     render(){
@@ -74,7 +147,7 @@ class RunList extends React.Component {
                             <RunListElement 
                                 key={r}
                                 runID={r}
-                                status="not started yet"
+                                status={this.state.runStatus[r]}
                                 duration="-"
                                 execType="-"
                                 onSelectionChange={this.props.changeRunSelection}
@@ -82,6 +155,7 @@ class RunList extends React.Component {
                         ))}
                     </tbody>
                 </table>
+                <DisplayServerMessages messages={this.messages} />
             </div>
         )
     }
@@ -120,8 +194,8 @@ class JobContent extends React.Component {
         })
     }
 
-    changeExecProfile(execProfile){
-        this.setState({execProfile: execProfile})
+    changeExecProfile(event){
+        this.setState({execProfile: event.currentTarget.value})
     }
 
     execRuns(){
@@ -175,6 +249,7 @@ class JobContent extends React.Component {
             <div>
                 <h3>List of Runs:</h3>
                 <RunList 
+                    jobID={this.props.jobId}
                     runIDs={this.props.runs}
                     changeRunSelection={this.changeRunSelection}
                 />

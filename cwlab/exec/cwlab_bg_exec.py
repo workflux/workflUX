@@ -121,6 +121,8 @@ def run_step(step_name):
         return exec_db_entry.err_message
 step_order = ["pre_exec", "exec", "eval", "post_exec"]
 [run_step(step) for step in step_order]
+exec_db_entry.status = "finished"
+session.commit()
 
 subprocess.call(
     "echo " + exec_dir + " " +

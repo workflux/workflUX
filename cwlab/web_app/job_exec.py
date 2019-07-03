@@ -12,6 +12,8 @@ from cwlab.xls2cwl_job.web_interface import get_param_config_info as get_param_c
 from cwlab.xls2cwl_job.web_interface import gen_form_sheet
 from cwlab.xls2cwl_job import only_validate_xls, transcode as make_yaml_runs
 from cwlab.exec.exec import exec_run
+from cwlab import db
+from cwlab.exec.db import Exec
 from time import sleep
 from shutil import move
 
@@ -91,6 +93,41 @@ def get_job_list():
             "data": {
                 "exec_profiles": exec_profile_names,
                 "jobs": jobs
+            },
+            "messages": messages
+        }
+    )
+
+
+
+@app.route('/get_run_status/', methods=['GET','POST'])
+def get_run_status():
+    messages = []
+    run_status = {}
+    # try:
+    data = request.get_json()
+    db_job_id_request = db.session.query(Exec).filter(Exec.job_id==data["job_id"])
+    for run_id in data["run_ids"]:
+        db_run_id_request = db_job_id_request.filter(Exec.run_id==run_id).distinct()
+        if db_run_id_request.count() == 0:
+            run_status[run_id] = "not started yet"
+        else:
+            # find latest:
+            run_status[run_id] = db_run_id_request.filter(Exec.id==max([r.id for r in db_run_id_request])).\
+                first().status
+    # except SystemExit as e:
+    #     messages.append( { 
+    #         "type":"error", 
+    #         "text": str(e) 
+    #     } )
+    # except:
+    #     messages.append( { 
+    #         "type":"error", 
+    #         "text":"An uknown error occured reading the execution directory." 
+    #     } )
+    return jsonify({
+            "data": {
+                "run_status": run_status,
             },
             "messages": messages
         }
