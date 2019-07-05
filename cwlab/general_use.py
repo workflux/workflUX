@@ -1,5 +1,6 @@
 import os
 import re
+from datetime import datetime
 
 def fetch_files_in_dir(dir_path, # searches for files in dir_path
     file_exts, # match files with extensions in this list
@@ -49,3 +50,12 @@ def is_allowed_file(filename, type="CWL"):
     # validates uploaded files
     return '.' in filename and \
            os.path.splitext(filename)[1].strip(".").lower() in allowed_extensions_by_type[type]
+
+def get_duration(start_time, end_time):
+    if not end_time:
+        end_time=datetime.now()
+    delta = end_time - start_time
+    days = delta.days
+    hours = delta.seconds//3600
+    minutes = (delta.seconds//60)%60
+    return [days, hours, minutes]
