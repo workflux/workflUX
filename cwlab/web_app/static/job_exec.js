@@ -2,6 +2,10 @@ class RunListElement extends React.Component {
     // Inputs:
     // props.runID
     // props.checked
+    // props.status
+    // props.duration
+    // props.execProfile
+    // props.retryCount
     // props.onSelectionChange function to handle change
     //  takes 2 arguments: runID, is_checked
     constructor(props){
@@ -29,6 +33,20 @@ class RunListElement extends React.Component {
     }
 
     render(){
+        let duration = ""
+        if ( this.props.duration == "-" ){
+            duration = "-"
+        }
+        else{
+            if (this.props.duration[0] > 0){
+                duration += this.props.duration[0].toString() + "d "
+            }
+            if (this.props.duration[1] > 0){
+                duration += this.props.duration[1].toString() + "h "
+            }
+            duration += this.props.duration[2].toString() + "m "
+        }
+
         return (
             <tr>
                 <td>
@@ -43,9 +61,15 @@ class RunListElement extends React.Component {
                 <td>{this.props.runID}</td>
                 <td className={this.statusColorClass[this.props.status]}>
                     {this.props.status}
+                    {
+                        this.props.retryCount > 0 && 
+                            "(retry: " + this.props.retryCount.toString() + "\")"
+                    }
                 </td>
-                <td>{this.props.duration}</td>
-                <td>{this.props.execType}</td>
+                <td>
+                    {duration}
+                </td>
+                <td>{this.props.execProfile}</td>
                 <td>
                     <a><i className="fas fa-eye w3-button w3-text-green"></i></a>
                 </td>
@@ -61,9 +85,15 @@ class RunList extends React.Component {
         // props.jobID
         // props.changeRunSelection
         this.messages = []
-        let initStatus = {}
-        this.props.runIDs.map( (r) => initStatus[r]="Loading")
-        this.state = {actionStatus: "none", runStatus: initStatus}
+        this.initRunInfo = {}
+        this.props.runIDs.map( (r) => this.initRunInfo[r] = {
+                status: "Loading", 
+                duration: "-", 
+                exec_profile: "-", 
+                retry_count: 0
+            }
+        )
+        this.state = {actionStatus: "none", runInfo: this.initRunInfo}
         this.getRunInfo = this.getRunInfo.bind(this)
     }
 
@@ -94,8 +124,8 @@ class RunList extends React.Component {
                 }
                 if (! errorOccured){
                     // nothing just display messages
-                    console.log(result.data.run_status)
-                    this.setState({actionStatus: "none", runStatus: result.data.run_status}) 
+                    console.log(result.data)
+                    this.setState({actionStatus: "none", runInfo: result.data}) 
                 }
                 else{
                     console.log("error2")
@@ -106,9 +136,9 @@ class RunList extends React.Component {
                 // server could not be reached
                 console.log("error")
                 this.actionMessages = [{type: "error", text: serverNotReachableError}];
-                let initStatus = {}
-                this.props.runIDs.map( (r) => initStatus[r]="could not connect to database")
-                this.setState({actionStatus: "none", runStatus: initStatus}) 
+                let initRunInfo = this.initRunInfo
+                this.props.runIDs.map( (r) => initRunInfo[r].status="could not connect to database")
+                this.setState({actionStatus: "none", runInfo: initRunInfo}) 
             }
         )
 
@@ -138,7 +168,7 @@ class RunList extends React.Component {
                             <th>Run ID</th>
                             <th>Status</th>
                             <th>Duration</th>
-                            <th>Exec Type</th>
+                            <th>Exec Profile</th>
                             <th>Details</th>
                         </tr>
                     </thead>
@@ -147,9 +177,10 @@ class RunList extends React.Component {
                             <RunListElement 
                                 key={r}
                                 runID={r}
-                                status={this.state.runStatus[r]}
-                                duration="-"
-                                execType="-"
+                                status={this.state.runInfo[r].status}
+                                duration={this.state.runInfo[r].duration}
+                                execProfile={this.state.runInfo[r].exec_profile}
+                                retryCount={this.state.runInfo[r].retry_count}
                                 onSelectionChange={this.props.changeRunSelection}
                             />
                         ))}

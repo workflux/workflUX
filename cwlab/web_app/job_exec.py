@@ -4,7 +4,7 @@ from flask import render_template, jsonify, redirect, flash, url_for, request, s
 # from flask_login import current_user, login_user, logout_user, login_required
 from werkzeug.urls import url_parse
 from cwlab import app 
-from cwlab.general_use import fetch_files_in_dir, allowed_extensions_by_type
+from cwlab.general_use import fetch_files_in_dir, allowed_extensions_by_type, get_duration
 import requests
 from re import sub, match
 from cwlab.xls2cwl_job.web_interface import read_template_attributes as read_template_attributes_from_xls
@@ -103,18 +103,26 @@ def get_job_list():
 @app.route('/get_run_status/', methods=['GET','POST'])
 def get_run_status():
     messages = []
-    run_status = {}
+    data={}
     # try:
-    data = request.get_json()
-    db_job_id_request = db.session.query(Exec).filter(Exec.job_id==data["job_id"])
-    for run_id in data["run_ids"]:
+    data_req = request.get_json()
+    db_job_id_request = db.session.query(Exec).filter(Exec.job_id==data_req["job_id"])
+    for run_id in data_req["run_ids"]:
+        data[run_id] = {}
         db_run_id_request = db_job_id_request.filter(Exec.run_id==run_id).distinct()
         if db_run_id_request.count() == 0:
-            run_status[run_id] = "not started yet"
+            data[run_id]["status"] = "not started yet"
+            data[run_id]["duration"] = "-"
+            data[run_id]["exec_profile"] = "-"
+            data[run_id]["retry_count"] = "0"
+
         else:
             # find latest:
-            run_status[run_id] = db_run_id_request.filter(Exec.id==max([r.id for r in db_run_id_request])).\
-                first().status
+            run_info =  db_run_id_request.filter(Exec.id==max([r.id for r in db_run_id_request])).first()
+            data[run_id]["status"] = run_info.status
+            data[run_id]["duration"] = get_duration(run_info.time_started, run_info.time_finished)
+            data[run_id]["exec_profile"] = run_info.exec_profile_name
+            data[run_id]["retry_count"] = run_info.retry_count
     # except SystemExit as e:
     #     messages.append( { 
     #         "type":"error", 
@@ -126,9 +134,7 @@ def get_run_status():
     #         "text":"An uknown error occured reading the execution directory." 
     #     } )
     return jsonify({
-            "data": {
-                "run_status": run_status,
-            },
+            "data": data,
             "messages": messages
         }
     )
