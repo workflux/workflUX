@@ -2,7 +2,6 @@ import os
 from flask import Flask
 from .config import Config
 from flask_sqlalchemy import SQLAlchemy
-from flask_migrate import Migrate
 
 basedir = os.path.abspath(os.path.dirname(__file__))
 
@@ -27,11 +26,11 @@ if not os.path.isdir(app.config['DB_DIR']):
     os.makedirs(app.config['DB_DIR'])
 
 db = SQLAlchemy(app)
-migrate = Migrate(app, db)
-
-# login = LoginManager(app)
-# login.login_view = 'login'
+db.init_app(app)
 
 from .web_app import main, import_cwl, create_job, job_exec
-from . import exec
+from .exec import db as exec_db
+
+db.create_all()
+
 
