@@ -6,6 +6,7 @@ from sqlalchemy.orm import sessionmaker
 from sqlalchemy.ext.automap import automap_base
 import pexpect
 import json
+from datetime import datetime
 
 # commandline arguments
 exec_dir = sys.argv[1]
@@ -116,12 +117,14 @@ def run_step(step_name):
         exec_db_entry.status = "system error"
         exec_db_entry.err_message = "System Error occured while \"" + \
                 status_message[step_name] + "\""
+        exec_db_entry.time_finshed = datetime.now()
         session.commit()
         sys.exit()
         return exec_db_entry.err_message
 step_order = ["pre_exec", "exec", "eval", "post_exec"]
 [run_step(step) for step in step_order]
 exec_db_entry.status = "finished"
+exec_db_entry.time_finshed = datetime.now()
 session.commit()
 
 subprocess.call(
