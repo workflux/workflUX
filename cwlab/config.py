@@ -1,6 +1,6 @@
 import os
 import sys
-from yaml import safe_load
+from yaml import safe_load, YAMLError
 from time import strftime, gmtime
 basedir = os.path.abspath(os.path.dirname(__file__))
 
@@ -31,7 +31,7 @@ class Config(object):
     SECRET_KEY = (
         os.environ.get('CWLAB_SECRET_KEY') or 
         config_file_content.get('SECRET_KEY') or  
-        time.strftime("%Y%m%d%H%M%S", time.gmtime())
+        strftime("%Y%m%d%H%M%S", gmtime())
     )
 
     TEMP_DIR = (
