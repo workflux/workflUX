@@ -84,22 +84,31 @@ class RunList extends React.Component {
         // props.runsIDs
         // props.jobID
         // props.changeRunSelection
-        this.messages = []
-        this.initRunInfo = {}
-        this.props.runIDs.map( (r) => this.initRunInfo[r] = {
-                status: "Loading", 
-                duration: "-", 
+        this.initRunInfo = {
+            status: "Loading", 
+            duration: "-", 
                 exec_profile: "-", 
                 retry_count: 0
-            }
-        )
-        this.state = {actionStatus: "none", runInfo: this.initRunInfo}
+        }
+        this.errorRunInfo = {
+            status: "could not connect to database", 
+            duration: "-", 
+                exec_profile: "-", 
+                retry_count: 0
+        }
+        let runInfo = {}
+        this.props.runIDs.map( (r) => runInfo[r] = this.initRunInfo)
+        this.messages = []
+        this.state = {
+            actionStatus: "none", 
+            runInfo: runInfo,
+            mirroredJobID: this.props.jobID
+        }
         this.getRunInfo = this.getRunInfo.bind(this)
     }
 
     getRunInfo(){
-        console.log("peep")
-        this.setState({actionStatus: "updating"}) 
+        this.setState({actionStatus: "updating"})
         const sendData = {
             job_id: this.props.jobID,
             run_ids: this.props.runIDs
@@ -124,32 +133,32 @@ class RunList extends React.Component {
                 }
                 if (! errorOccured){
                     // nothing just display messages
-                    console.log(result.data)
                     this.setState({actionStatus: "none", runInfo: result.data}) 
                 }
                 else{
-                    console.log("error2")
-                    this.setState({actionStatus: "none"}) 
+                    let runInfo = {}
+                    this.props.runIDs.map( (r) => runInfo[r] = this.errorRunInfo)
+                    this.setState({actionStatus: "none", runInfo: runInfo}) 
                 }       
             },
             (error) => {
                 // server could not be reached
-                console.log("error")
                 this.actionMessages = [{type: "error", text: serverNotReachableError}];
-                let initRunInfo = this.initRunInfo
-                this.props.runIDs.map( (r) => initRunInfo[r].status="could not connect to database")
-                this.setState({actionStatus: "none", runInfo: initRunInfo}) 
+                let runInfo = {}
+                this.props.runIDs.map( (r) => runInfo[r] = this.errorRunInfo)
+                this.setState({actionStatus: "none", runInfo: runInfo}) 
             }
         )
 
     }
 
     componentDidMount(){
-        // initial loading
         this.getRunInfo()
         // setup timer to automatically update
         this.timerID = setInterval(
-            () => this.getRunInfo(),
+            () => {
+                this.getRunInfo()
+            },
             1000
           );
     }
@@ -158,6 +167,28 @@ class RunList extends React.Component {
         clearInterval(this.timerID);
     }
 
+    static getDerivedStateFromProps(nextProps, prevState) {
+        console.log("peep")
+        if(nextProps.jobID !== prevState.mirroredJobID){
+            let runInfo = {}
+            nextProps.runIDs.map( (r) => runInfo[r] = {
+                    status: "Loading", 
+                    duration: "-", 
+                        exec_profile: "-", 
+                        retry_count: 0
+                }
+            )
+            return({runInfo: runInfo, mirroredJobID: nextProps.jobID, actionStatus: "none"})
+        }
+        return(null)
+    }
+
+    // componentDidUpdate(){
+    //     if(this.state.runInfo === {}){
+    //         this.getRunInfo()
+    //     }
+    // }
+    
     render(){
         return(
             <div style={ {maxHeight:"50vh", overflowY: "auto"} }>
