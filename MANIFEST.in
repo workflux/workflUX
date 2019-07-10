@@ -1,0 +1,5 @@
+include cwlab/web_app/static/*.js
+include cwlab/web_app/static/*.css
+include cwlab/web_app/templates/*.html
+include cwlab/default_config.yml
+include README.md
