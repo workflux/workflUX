@@ -1,1 +1,8 @@
 *.pyc
+/migrations
+/scratch/database
+/scratch/exec
+.vscode
+test
+/scratch/temp
+/dist

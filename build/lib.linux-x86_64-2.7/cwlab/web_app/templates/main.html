@@ -1,0 +1,53 @@
+<!DOCTYPE html>
+<html lang="en">
+    <head>
+        <title>CWLab</title>
+        <link rel="stylesheet" href="https://www.w3schools.com/w3css/4/w3.css">
+        <link rel="stylesheet" href="https://www.w3schools.com/lib/w3-colors-metro.css">
+        <link rel="stylesheet" href="https://www.w3schools.com/lib/w3-theme-dark-grey.css">
+        <link rel="stylesheet" 
+            href="https://use.fontawesome.com/releases/v5.4.2/css/all.css" 
+            integrity="sha384-/rXc/GQVaYpyDdyxK+ecHPVYJSN9bmVFBvjA/9eOB+pb3F2w2N6fc5qB9Ew5yIns" 
+            crossorigin="anonymous">
+        <link rel="stylesheet" href="/static/custom.css">
+        <script src="https://unpkg.com/react@16/umd/react.development.js" crossorigin></script>
+        <script src="https://unpkg.com/react-dom@16/umd/react-dom.development.js" crossorigin></script>
+        <script src="https://unpkg.com/babel-standalone/babel.min.js"></script>
+        <script src="/static/general_use.js" type="text/babel"></script>
+        <script src="/static/import_cwl.js" type="text/babel"></script>
+        <script src="/static/create_job.js" type="text/babel"></script>
+        <script src="/static/job_exec.js" type="text/babel"></script>
+        <script src="/static/main.js" type="text/babel"></script>
+
+        <script > 
+            // global params feeded by back end
+            const routeCwlImport = "{{ url_for('import_cwl') }}"
+            const routeGetJobTemplList = "{{ url_for('get_job_templ_list') }}"
+            const routeGetJobTemplConfigInfo = "{{ url_for('get_job_templ_config_info') }}"
+            const routeGenParamFormSheet = "{{ url_for('generate_param_form_sheet') }}"
+            const routeSendFilledParamFormSheet = "{{ url_for('send_filled_param_form_sheet') }}"
+            const routeCreateJob = "{{ url_for('create_job') }}"
+            const routeGetJobList = "{{ url_for('get_job_list') }}"
+            const routeStartExec = "{{ url_for('start_exec') }}"
+            const routeGetRunStatus = "{{ url_for('get_run_status') }}"
+
+
+            // other global params:
+            const serverNotReachableError = "The server could not be reached."
+            const serverReachedWithError = "The server failed to work on your request."
+
+        </script>
+
+        <script type="text/babel">
+            ReactDOM.render(
+                <Root />,
+                document.getElementById('root')
+            );
+        </script>
+
+    </head>
+    <body class="w3-theme-d3 w3-medium">
+            <div id="root"></div>
+    </body>
+
+</html>

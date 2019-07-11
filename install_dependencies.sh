@@ -4,7 +4,8 @@ pip install flask \
     flask_wtf \
     flask-sqlalchemy \
     flask-migrate \
-    flask-login
+    flask-login \
+    flask-sqlalchemy
 
 pip install pyexcel \
     pyexcel-io \
