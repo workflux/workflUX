@@ -1,0 +1,3 @@
+[console_scripts]
+cwlab = cwlab.__main__:main
+
