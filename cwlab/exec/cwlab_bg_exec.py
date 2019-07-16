@@ -7,6 +7,8 @@ from sqlalchemy.ext.automap import automap_base
 import pexpect
 import json
 from datetime import datetime
+from time import sleep
+from random import random
 
 # commandline arguments
 exec_dir = sys.argv[1]
@@ -34,23 +36,45 @@ subprocess.call(
 #     sqlite:////mnt/c/Users/kerst/OneDrive/home/CWLab/scratch/database/cwlab.db \
 #     1
 
+retry_delays = [1, 5, 20, 60, 600]
 
-# open connection to database
-engine = create_engine(db_uri)
-Session = sessionmaker(bind=engine)
-session = Session()
-Base = automap_base()
-Base.prepare(engine, reflect=True)
-Exec = Base.classes["exec"]
+for retry_delay in retry_delays:
+    try:
+        # open connection to database
+        engine = create_engine(db_uri)
+        Session = sessionmaker(bind=engine)
+        session = Session()
+        Base = automap_base()
+        Base.prepare(engine, reflect=True)
+        Exec = Base.classes["exec"]
 
-# retrieve infos from database
-exec_db_entry = session.query(Exec).get(int(exec_db_id))
+        # retrieve infos from database
+        exec_db_entry = session.query(Exec).get(int(exec_db_id))
 
-job_id = exec_db_entry.job_id
-run_id = exec_db_entry.run_id
-cwl = exec_db_entry.cwl
-exec_profile = exec_db_entry.exec_profile
+        job_id = exec_db_entry.job_id
+        run_id = exec_db_entry.run_id
+        cwl = exec_db_entry.cwl
+        exec_profile = exec_db_entry.exec_profile
+        break
+    except Exception as e:
+        print("retry db query: " + str(retry_delay))
+        if retry_delay == retry_delays[-1]:
+            sys.exit(str(e))
+        else:
+            sleep(retry_delay + retry_delay*random())
 
+# retry on commit:
+def commit():
+    for retry_delay in retry_delays:
+        try:
+            session.commit()
+            break
+        except Exception as e:
+            print("retry db commit: " + str(retry_delay))
+            if retry_delay == retry_delays[-1]:
+                sys.exit(str(e))
+            else:
+                sleep(retry_delay + retry_delay*random())
 
 # construct paths:
 cwl_path = os.path.join(cwl_dir, cwl)
@@ -101,7 +125,7 @@ status_message={
 def run_step(step_name):
     # update the state of the exec in the database:
     exec_db_entry.status = status_message[step_name]
-    session.commit()
+    commit()
     # run commands specified in the exec profile
     cmdls = exec_profile[step_name].splitlines()
     [p.sendline(cmdl) for cmdl in cmdls]
@@ -118,14 +142,14 @@ def run_step(step_name):
         exec_db_entry.err_message = "System Error occured while \"" + \
                 status_message[step_name] + "\""
         exec_db_entry.time_finshed = datetime.now()
-        session.commit()
+        commit()
         sys.exit()
         return exec_db_entry.err_message
 step_order = ["pre_exec", "exec", "eval", "post_exec"]
 [run_step(step) for step in step_order]
 exec_db_entry.status = "finished"
 exec_db_entry.time_finshed = datetime.now()
-session.commit()
+commit()
 
 subprocess.call(
     "echo " + exec_dir + " " +

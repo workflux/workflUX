@@ -15,6 +15,7 @@ from cwlab.exec.exec import exec_runs
 from cwlab import db
 from cwlab.exec.db import Exec
 from time import sleep
+from random import random
 from shutil import move
 
 
@@ -106,7 +107,20 @@ def get_run_status():
     data={}
     # try:
     data_req = request.get_json()
-    db_job_id_request = db.session.query(Exec).filter(Exec.job_id==data_req["job_id"])
+    retry_delays = [1, 4]
+    for retry_delay in retry_delays:
+        try:
+            db_job_id_request = db.session.query(Exec).filter(Exec.job_id==data_req["job_id"])
+            break
+        except Exception as e:
+            if retry_delay == retry_delays[-1]:
+                messages.append( { 
+                    "type":"error", 
+                    "text":"Could not connect to database." 
+                } )
+            else:
+                sleep(retry_delay + retry_delay*random())
+    
     for run_id in data_req["run_ids"]:
         data[run_id] = {}
         db_run_id_request = db_job_id_request.filter(Exec.run_id==run_id).distinct()

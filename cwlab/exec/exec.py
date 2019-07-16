@@ -4,6 +4,8 @@ from cwlab import db
 from datetime import datetime
 import os, sys, platform
 from subprocess import Popen, PIPE
+from time import sleep
+from random import random
 basedir = os.path.abspath(os.path.dirname(__file__))
 python_interpreter = sys.executable
 
@@ -38,7 +40,17 @@ def exec_runs(job_id, run_ids, exec_profile_name, cwl):
         )
         #* will be set by the background process itself
         db.session.add(exec_db_entry[run_id])
-    db.session.commit()
+    
+    retry_delays = [1, 4]
+    for retry_delay in retry_delays:
+        try:
+            db.session.commit()
+            break
+        except Exception as e:
+            if retry_delay == retry_delays[-1]:
+                sys.exit(str(e))
+            else:
+                sleep(retry_delay + retry_delay*random())
 
     # start the background process:
     # the child process will be detached from the parent
