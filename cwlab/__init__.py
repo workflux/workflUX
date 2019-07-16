@@ -20,7 +20,6 @@ app.config.from_object(Config())
 db = SQLAlchemy(app)
 
 from .web_app import main, import_cwl, create_job, job_exec
-from .exec import db as exec_db
 
 def up(config_file=None):
     # server up
@@ -40,9 +39,10 @@ def up(config_file=None):
     if not os.path.isdir(app.config['DB_DIR']):
         os.makedirs(app.config['DB_DIR'])
 
-    db = SQLAlchemy(app)
+    from .exec.db import Exec
     db.init_app(app)
     db.create_all()
+    db.session.commit()
     app.run()
 
 
