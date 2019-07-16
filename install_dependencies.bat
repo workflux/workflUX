@@ -1,4 +1,4 @@
-pip install flask flask_wtf flask-sqlalchemy flask-migrate flask-login flask-sqlalchemy
+pip install flask flask_wtf flask-sqlalchemy flask-login
 
 pip install pyexcel pyexcel-io pyexcel-ods pyexcel-ods3 pyexcel-xls pyexcel-xlsx
 
