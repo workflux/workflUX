@@ -1,0 +1,65 @@
+SECRET_KEY: 'you-will-never-guess'
+
+TEMP_DIR: '/mnt/c/Users/kerst/OneDrive/home/CWLab/scratch/temp'
+CWL_DIR: '/mnt/c/Users/kerst/OneDrive/home/CWLab/scratch/CWL'
+EXEC_DIR: '/mnt/c/Users/kerst/OneDrive/home/CWLab/scratch/exec'
+INPUT_DIR: '/mnt/c/Users/kerst/OneDrive/home/CWLab/scratch/input'
+DB_DIR: '/mnt/c/Users/kerst/OneDrive/home/CWLab/scratch/database'
+
+EXEC_PROFILES:
+  cwltool_local: # name of the exec profile
+    # Choose the shell to use:
+    #   bash (Linux/MacOs), cmd (Windows)
+    shell: bash
+    
+    # timeout for each step in seconds 
+    # if not specified the defaults are used:
+    #   120 (pre_exec, eval, post_eval) and 86400 = 14h (exec),
+    # to disable timeout set Null
+    time_out:
+      pre_exec: 120
+      exec: 86400
+      eval: 120
+      post_exec: 120
+
+    # available variables are:
+    #   - JOB_ID
+    #   - RUN_ID (please note: is only unique within a job)
+    #   - CWL
+    #   - RUN_YAML
+    #   - OUTPUT_DIR
+    #   - LOG_FILE
+    pre_exec: |
+      touch "${OUTPUT_DIR}/pre_exec"
+    exec: |
+      cwltool --outdir "${OUTPUT_DIR}" "${CWL}" "${RUN_YAML}" >> "${LOG_FILE}" 2>&1
+    eval: | 
+      LAST_LINE=$(tail -n 1 ${LOG_FILE})
+      if [[ "${LAST_LINE}" == *"Final process status is success"* ]]
+      then
+        SUCCESS=true
+      else
+        SUCCESS=false
+        ERR_MESSAGE="cwltool failed - ${LAST_LINE}"
+      fi
+    # Please note:
+    # A SUCCESS vaiable has to be filled with true/false
+    # If SUCCESS==false: the ERR_MESSAGE can provide further information 
+    # such as error messages
+    post_exec: |
+      touch "${OUTPUT_DIR}/post_exec"
+  test:
+    shell: bash
+    time_out:
+      pre_exec: 120
+      exec: 86400
+      eval: 120
+      post_exec: 120
+    pre_exec: |
+      touch "${OUTPUT_DIR}/pre_exec_test"
+    exec: |
+      touch "${OUTPUT_DIR}/exec_test"
+    eval: | 
+      touch "${OUTPUT_DIR}/eval"
+    post_exec: |
+      touch "${OUTPUT_DIR}/post_execs"
