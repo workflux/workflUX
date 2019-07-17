@@ -56,6 +56,14 @@ class Config(object):
             os.path.join( cwlab_fallback_dir, "database")
         )
         
+        self.DEBUG = (
+            os.environ.get('CWLAB_DEBUG') == "True" or
+            self.config_file_content.get('DEBUG')
+        )
+
+        if self.DEBUG:
+            print("Debug mode turned on, don't use this on production machines.")
+
         self.SQLALCHEMY_DATABASE_URI = (
             os.environ.get('CWLAB_DATABASE_URL') or
             self.config_file_content.get('CWLAB_DATABASE_URL') or  

@@ -6,6 +6,8 @@ EXEC_DIR: '/mnt/c/Users/kerst/OneDrive/home/CWLab/scratch/exec'
 INPUT_DIR: '/mnt/c/Users/kerst/OneDrive/home/CWLab/scratch/input'
 DB_DIR: '/mnt/c/Users/kerst/OneDrive/home/CWLab/scratch/database'
 
+DEBUG: True
+
 EXEC_PROFILES:
   cwltool_local: # name of the exec profile
     # Choose the shell to use:
