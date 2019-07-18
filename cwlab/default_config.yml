@@ -16,7 +16,7 @@ EXEC_PROFILES:
     # if not specified the defaults are used:
     #   120 (pre_exec, eval, post_eval) and 86400 = 14h (exec),
     # to disable timeout set Null
-    time_out:
+    timeout:
       pre_exec: 120
       exec: 86400
       eval: 120
@@ -50,7 +50,7 @@ EXEC_PROFILES:
       touch "${OUTPUT_DIR}/post_exec"
   test:
     shell: bash
-    time_out:
+    timeout:
       pre_exec: 120
       exec: 86400
       eval: 120
