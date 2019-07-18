@@ -78,3 +78,13 @@ class Config(object):
 
         # execution profile:
         self.EXEC_PROFILES = self.config_file_content.get('EXEC_PROFILES') or {}
+        timeout_defaults = {
+            "pre_exec": 120,
+            "exec": 86400,
+            "eval": 120,
+            "post_exec": 120
+        }
+        for exec_profile in self.EXEC_PROFILES.keys():
+            if "timeout" in self.EXEC_PROFILES[exec_profile].keys():
+                timeout_defaults.update(self.EXEC_PROFILES[exec_profile]["timeout"])
+            self.EXEC_PROFILES[exec_profile]["timeout"] = timeout_defaults
