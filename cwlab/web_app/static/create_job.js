@@ -260,10 +260,10 @@ class JobCreationPrep extends React.Component {
 
         const genParamForm = (
             <div className="w3-container">
-                <div className="w3-container">
+                {/* <div className="w3-container">
                     <span className="w3-text-green">As HTML form:</span>
                 </div>
-                <hr></hr>
+                <hr></hr> */}
                 <div className="w3-container">
                     <span className="w3-text-green">As spreadsheet form:</span>
                     <ol>
