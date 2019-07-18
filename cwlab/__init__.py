@@ -43,6 +43,6 @@ def up(config_file=None):
     db.init_app(app)
     db.create_all()
     db.session.commit()
-    app.run()
+    app.run(host=app.config["WEB_SERVER_HOST"], port=app.config["WEB_SERVER_PORT"])
 
 
