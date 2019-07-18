@@ -1,4 +1,7 @@
-SECRET_KEY: 'you-will-never-guess'
+WEB_SERVER_HOST: localhost # If it shall only be available on the local machine, use "localhost".
+                        # If it shall be remotely accessible from other machines on the same network, use "0.0.0.0".
+## (2) choose the port:
+WEB_SERVER_PORT: 5000 # The default is 5000, if this port is blocked choose a different one
 
 TEMP_DIR: '/mnt/c/Users/kerst/OneDrive/home/CWLab/scratch/temp'
 CWL_DIR: '/mnt/c/Users/kerst/OneDrive/home/CWLab/scratch/CWL'
@@ -9,7 +12,7 @@ DB_DIR: '/mnt/c/Users/kerst/OneDrive/home/CWLab/scratch/database'
 DEBUG: True
 
 EXEC_PROFILES:
-  cwltool_local: # name of the exec profile
+  cwltool_local_test: # name of the exec profile
     # Choose the shell to use:
     #   bash (Linux/MacOs), cmd (Windows)
     shell: bash
@@ -65,3 +68,40 @@ EXEC_PROFILES:
       touch "${OUTPUT_DIR}/eval"
     post_exec: |
       touch "${OUTPUT_DIR}/post_execs"
+  cwltool_local: # name of the exec profile
+    # Choose the shell to use:
+    #   bash (Linux/MacOs), cmd (Windows)
+    shell: bash
+    
+    # timeout for each step in seconds 
+    # if not specified the defaults are used:
+    #   120 (pre_exec, eval, post_eval) and 86400 = 14h (exec),
+    # to disable timeout set Null
+    timeout:
+      pre_exec: 120
+      exec: 86400
+      eval: 120
+      post_exec: 120
+
+    # available variables are:
+    #   - JOB_ID
+    #   - RUN_ID (please note: is only unique within a job)
+    #   - CWL
+    #   - RUN_YAML
+    #   - OUTPUT_DIR
+    #   - LOG_FILE
+    exec: |
+      cwltool --outdir "${OUTPUT_DIR}" "${CWL}" "${RUN_YAML}" >> "${LOG_FILE}" 2>&1
+    eval: | 
+      LAST_LINE=$(tail -n 1 ${LOG_FILE})
+      if [[ "${LAST_LINE}" == *"Final process status is success"* ]]
+      then
+        SUCCESS=true
+      else
+        SUCCESS=false
+        ERR_MESSAGE="cwltool failed - ${LAST_LINE}"
+      fi
+    # Please note:
+    # A SUCCESS vaiable has to be filled with true/false
+    # If SUCCESS==false: the ERR_MESSAGE can provide further information 
+    # such as error messages
