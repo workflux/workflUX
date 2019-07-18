@@ -4,11 +4,10 @@ from flask import render_template, jsonify, redirect, flash, url_for, request, s
 # from flask_login import current_user, login_user, logout_user, login_required
 from werkzeug.urls import url_parse
 from cwlab import app 
-from cwlab.general_use import fetch_files_in_dir, is_allowed_file, allowed_extensions_by_type
+from cwlab.general_use import fetch_files_in_dir, is_allowed_file, allowed_extensions_by_type, get_job_templates, \
+    get_job_templ_info, get_path
 import requests
-from re import sub, match
-from cwlab.xls2cwl_job.web_interface import read_template_attributes as read_template_attributes_from_xls
-from cwlab.xls2cwl_job.web_interface import get_param_config_info as get_param_config_info_from_xls
+from re import match
 from cwlab.xls2cwl_job.web_interface import gen_form_sheet
 from cwlab.xls2cwl_job import only_validate_xls, transcode as make_yaml_runs
 from time import sleep
@@ -22,16 +21,7 @@ def get_job_templ_list():   # returns list of job templates
     messages = []
     templates = []
     try:
-        # read list of template files:
-        templates = fetch_files_in_dir(
-            dir_path=app.config['CWL_DIR'], 
-            file_exts=["xlsx"],
-            search_string=".job_templ",
-            ignore_subdirs=True
-        )
-        # add field for cwl_target
-        for i, t  in enumerate(templates):
-            templates[i]["cwl_target"] = sub(r'\.job_templ$', '', t["file_nameroot"])
+        templates = get_job_templates()
     except SystemExit as e:
         messages.append( { 
             "type":"error", 
@@ -53,13 +43,12 @@ def get_job_templ_list():   # returns list of job templates
 def get_job_templ_config_info():    # returns all parmeter and its default mode (global/job specific) 
                                     # for a given xls config
     cwl_target = request.get_json()["cwl_target"]
-    job_templ_filepath = os.path.join(app.config['CWL_DIR'], cwl_target + ".job_templ.xlsx")
     messages = []
     param_config_info = []
     template_attributes = []
     try:
-        param_config_info = get_param_config_info_from_xls(job_templ_filepath)
-        template_attributes = read_template_attributes_from_xls(job_templ_filepath)
+        param_config_info = get_job_templ_info("config", cwl_target)
+        template_attributes = get_job_templ_info("attributes", cwl_target)
     except SystemExit as e:
         messages.append( { 
             "type":"error", 
@@ -92,10 +81,7 @@ def generate_param_form_sheet():    # generate param form sheet with data sent
                 app.config["TEMP_DIR"],
                 filename
             ),
-            template_config_file_path = os.path.join(
-                app.config['CWL_DIR'], 
-                request_json["cwl_target"] + ".job_templ.xlsx"
-            ),
+            template_config_file_path = get_path("job_templ", cwl_target=request_json["cwl_target"]),
             has_multiple_runs= request_json["run_mode"],
             run_names=request_json["run_names"],
             param_is_run_specific=request_json["param_modes"],
@@ -103,7 +89,6 @@ def generate_param_form_sheet():    # generate param form sheet with data sent
             config_attributes={"CWL": request_json["cwl_target"]}
         )
         data["get_form_sheet_href"] = url_for("get_param_form_sheet", form_sheet_filename=filename)
-        print(data)
     except SystemExit as e:
         messages.append( { 
             "type":"error", 
@@ -216,23 +201,34 @@ def create_job():    # generate param form sheet with data sent
         # prepare job directory
         job_dir = os.path.join(app.config["EXEC_DIR"], job_id)
         os.mkdir(job_dir)
+        runs_yaml_dir = get_path("runs_yaml_dir", job_id)
+        os.mkdir(runs_yaml_dir)
+        runs_out_dir = get_path("runs_out_dir", job_id)
+        os.mkdir(runs_out_dir)
+        runs_log_dir = get_path("runs_log_dir", job_id)
+        os.mkdir(runs_log_dir)
 
         # Move form sheet to job dir:
-        sheet_form_dest_path = os.path.join(job_dir, sheet_form)
+        sheet_form_dest_path = get_path("job_param_sheet", job_id=job_id, param_sheet_format=str(request_json["sheet_format"]))
         move(sheet_form_path, sheet_form_dest_path)
         
         # create yaml runs:
         make_yaml_runs(
             sheet_file=sheet_form_dest_path,
-            output_basename="run",
+            output_basename="",
             output_suffix=".yaml",
-            output_dir=job_dir,
+            output_dir=runs_yaml_dir,
             validate_paths=False, search_paths=False, search_subdirs=False, input_dir=""
         )
 
         messages.append( { 
             "type":"success", 
             "text":"Successfully created job \"" + job_id + "\"." 
+        } )
+    except FileExistsError as e:
+        messages.append( { 
+            "type":"error", 
+            "text": "Job already exists."
         } )
     except SystemExit as e:
         messages.append( { 

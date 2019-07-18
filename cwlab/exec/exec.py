@@ -1,4 +1,5 @@
 from cwlab import app
+from cwlab.general_use import get_path
 from .db import Exec
 from cwlab import db
 from datetime import datetime
@@ -32,7 +33,10 @@ def exec_runs(job_id, run_ids, exec_profile_name, cwl):
         exec_db_entry[run_id] = Exec(
             job_id=job_id,
             run_id=run_id,
-            cwl=cwl,
+            cwl=get_path("cwl", cwl_target=cwl),
+            yaml=get_path("run_yaml", job_id=job_id, run_id=run_id),
+            out_dir=get_path("run_out_dir", job_id=job_id, run_id=run_id),
+            log=get_path("run_log", job_id=job_id, run_id=run_id),
             status="queued",
             err_message="",
             retry_count=0,
@@ -61,20 +65,19 @@ def exec_runs(job_id, run_ids, exec_profile_name, cwl):
     # and manages the its status in the database autonomously,
     # even if the parent process is terminated / fails,
     # the child process will continue
-    log_dir = os.path.join(app.config["TEMP_DIR"], "job_log")
-    if not os.path.isdir(log_dir):
+    log_dir = get_path("backgr_logs_dir", job_id=job_id)
+    if not os.path.isdir(log_dir) and app.config["DEBUG"]:
         os.makedirs(log_dir)
     for run_id in run_ids:
         create_background_process(
             [
                 python_interpreter,
                 os.path.join(basedir, "cwlab_bg_exec.py"),
-                app.config["EXEC_DIR"],
-                app.config["CWL_DIR"],
                 app.config["SQLALCHEMY_DATABASE_URI"],
-                str(exec_db_entry[run_id].id)
+                str(exec_db_entry[run_id].id),
+                str(app.config["DEBUG"])
             ],
-            os.path.join(log_dir, job_id + "_" + run_id + "_" + str(exec_db_entry[run_id].id))
+            get_path("backgr_log", job_id=job_id, run_id=run_id)
         )
 
 

@@ -4,7 +4,7 @@ from flask import render_template, jsonify, redirect, flash, url_for, request
 from werkzeug.urls import url_parse
 from werkzeug.utils import secure_filename
 from cwlab import app
-from cwlab.general_use import is_allowed_file, allowed_extensions_by_type
+from cwlab.general_use import is_allowed_file, allowed_extensions_by_type, get_path
 from cwlab.xls2cwl_job import generate_xls_from_cwl as generate_job_template_from_cwl
 
 
@@ -31,7 +31,7 @@ def import_cwl():
         import_file.save(imported_filepath)
 
         # generate job template config:
-        job_templ_filepath = imported_filepath + ".job_templ.xlsx"
+        job_templ_filepath = get_path("job_templ", cwl_target=import_filename)
         generate_job_template_from_cwl(
             cwl_file=imported_filepath, 
             output_file=job_templ_filepath, 
