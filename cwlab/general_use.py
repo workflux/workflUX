@@ -4,6 +4,7 @@ from datetime import datetime
 from . import app
 from cwlab.xls2cwl_job.web_interface import read_template_attributes as read_template_attributes_from_xls
 from cwlab.xls2cwl_job.web_interface import get_param_config_info as get_param_config_info_from_xls
+basedir = os.path.abspath(os.path.dirname(__file__))
 
 def fetch_files_in_dir(dir_path, # searches for files in dir_path
     file_exts, # match files with extensions in this list
@@ -133,6 +134,13 @@ def get_job_templ_info(which, cwl_target=None, job_templ_filepath=None):
     elif which =="attributes":
         info = read_template_attributes_from_xls(job_templ_filepath)
     return info
+
+def output_example_config():
+    example_config_file = open(os.path.join(basedir, "example_config.yaml"), "r")
+    example_config_content = example_config_file.read()
+    example_config_file.close()
+    print(example_config_content)
+    
 
 
     
