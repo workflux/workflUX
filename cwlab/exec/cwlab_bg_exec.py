@@ -145,7 +145,8 @@ def run_step(step_name):
         sys.exit()
         return exec_db_entry.err_message
 step_order = ["pre_exec", "exec", "eval", "post_exec"]
-[run_step(step) for step in step_order]
+
+[run_step(step) for step in step_order if step in exec_profile.keys()]
 exec_db_entry.status = "finished"
 exec_db_entry.time_finshed = datetime.now()
 commit()
