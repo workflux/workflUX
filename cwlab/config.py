@@ -8,7 +8,7 @@ class Config(object):
     def __init__(self,config_file=None):
         self.config_file = config_file or \
                 os.environ.get('CWLAB_CONFIG') or \
-                os.path.join(basedir, "default_config.yml")
+                os.path.join(basedir, "default_config.yaml")
         if not os.path.exists(self.config_file):
             sys.exit(
                 "Error: the specified config file \"" +
