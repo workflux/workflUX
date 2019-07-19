@@ -10,17 +10,17 @@ With CWLab, we would like to hide the complexity of workflow management so that 
 ## Installation and Quick Start:
 **Attention: CWLab is in alpha state currently and not all features are available yet. However, the core functionalies are working and we are happy if you test it. We are working hard to push out a stable version in the comming weeks. Please press the watch button to not miss it.**
 
-Installation can be performed using pip:  
-`pip install cwlab`
+Installation can be done using pip:  
+`python3 -m pip install cwlab`
 
 Please see the section "Configuration" for a discussion of available options.
 
-Start the web server with your configurations:  
+Start the web server with your costum configuration (or leave out the `--config` flag to use the default one):  
 `cwlab up --config config.yaml`
 
-## Usage:
+The usage of the web interface should be self explanatory with build-in instruction. The following section give an overview of the basic usage senario.
 
-Following quick start instructions will cover basic usage senarios. A more extensive documentation is on the way. In the meantime, please notify us if you have any questions (see contact information below). We are happy to help.
+## Usage:
 
 ### Connect to the web interface:
 Open a modern browser of your choice like Chrome, Firefox, Safari, or Edge (Internet Explorer might be partially incompatible).
@@ -30,16 +30,13 @@ Type in the URL of your web server. The URL depends on your configuration:
  - If the webserver is running on the same machine and uses port 5000 is used (this is the default), type:  
  `https://localhost:5000/`  
 
- - If CWLab is running on a remote machine in the same network, type in the machine's IP address and the used port. For instance if the IP adress is 172.22.0.1 and port 5000 is used:  
+ - If CWLab is running on a remote machine in the same network, type in the machine's IP address and the used port. For instance, if the IP adress is 172.22.0.1 and port 5000 is used:  
   `https://172.22.0.1:5000/`
-
-For more advanced configurations, please refer to the Flask documentation:
-https://flask.palletsprojects.com/en/1.1.x/config/#configuration-basics
 
 Once connected you should see a welcome screen like this:
 
 ### Import a CWL workflow or tool:
-CWLab can be used to run any workflow or tool that has been wrapped using the the Common Workflow Language. Of course you can write workflows or tool wrappers yourself (we recommend rabix-composer https://rabix.io/), however, for many especially bioinformatic tasks, existing CWL solution are publicly available. Check the CWL website as a starting point:  
+CWLab can be used to run any workflow or tool that has been wrapped using the the Common Workflow Language. Of course, you can write workflows or tool wrappers yourself (we recommend rabix-composer https://rabix.io/), however, for many especially bioinformatic tasks, existing CWL solution are publicly available. Check the CWL website as a starting point:  
 https://www.commonwl.org/#Repositories_of_CWL_Tools_and_Workflows.
 
 To import a CWL document:  
@@ -59,26 +56,29 @@ To run a workflow or tool with your data, you have to create a new job. One job 
 
 - Click on the button "Create New Job" in the top bar and select the desired CWL document in the side bar
 - Specify a discriptive job name (the job ID will be composed of the date, time, and the name)
-- If this job shall contain multiple runs toggle the "runs per job" switch:
+- If the job shall contain multiple runs toggle the "runs per job" switch, then:
     - Specify run names as comma-seperated list in the dedicated text field
-    - In the parameter list, select which parameters are run-specific
-- To provide parameter values, CWLab will automatically create a form based on your selection:
-    - export/download the form in the desired format
-    - open it in a spreadsheet editor (e.g. Microsoft Excel or Open Office)
-    - depending on our selection the file will contain multiple sheets:
+    - In the parameter list, select which parameters should be run-specific
+- CWLab will automatically create a parameter form**\*** for you to fill in:
+    - Export/download the form in the desired format
+    - Open it in a spreadsheet editor (e.g. Microsoft Excel or Open Office)
+    - The file may contain the following sheets (depends on the type of input parameters and your selections for "global"/"run-specific" specification):
         - ``global single values``: parameters that take only one value and are defined globally (one for all runs)
         - ``run-specific single values``: parameters that take only one value but are specified per run
         - ``global arrays``: array parameters (takes a list of values) that are defined globally
-        - For each run-specific array parameters, there will be a seperate sheet titled with the parameters name
-        - ``config``: This form configuration options that only need adaption in adavance use cases
+        -  A seperate sheet will be created for each run-specific array parameter. It will be titled with the parameters name
+        - ``config``: This sheet contains configuration options that only need adaption in adavance use cases.
     - Fill in the sheet and import/upload the edited file to CWLab
 - Your parameter settings are automatically validated. (E.g. it is checked whether the specified values match the parameter's type and whether the paths of specified files or direcories exist.)
 - If valid, you can press the "create job" button and head over to "Job Execution & Results" in the top bar
 
+**\* Please note:** For specifying file or directory parameters, there are two options:  
+- Either specify the absolute path
+- Specify a character string that can be uniquely matched to a file/directory in the default input directory (please see the **INPUT_DIR** parameter in the config section).
 ### Job execution:
 - Click on "Job Execution & Results" in the top bar and choose the job of interest in the side bar
 - Select the runs you want to start
-- Select an execution profile (...) and press "start"
+- Select an execution profile (see the "Configuration" for details) and press "start"
 - The execution status will be displayed in the run list
 - Pressing the "Details/Results" button will show (not implemented yet):
     - the deployed input parameter
@@ -87,12 +87,12 @@ To run a workflow or tool with your data, you have to create a new job. One job 
 - Once finished the output can be found in the "exec" directory (set in the configuration) along with the used parameter values, CWL document, and log files
 
 ## Configuration:
-CWLab is a higly versatile package and makes almost no assumtions on your hard- and software environment used for execution of CWL. To achieve this a set of configuration option are available:
+CWLab is a higly versatile package and makes almost no assumtions on your hard- and software environment used for execution of CWL. To adapt it to your system and use case, a set of configuration option are available:  
     - General configs, including: 
         - web server (hosting ip address and port, remotely or locally available, login protected or not)
         - paths of working directories
     - Execution profiles:  
-        This flexible API allows you to adapt CWLab to your local software environemnt and to integrate a CWL runner of your choice (such as Cwltool, Toil, or Cromwell)
+        This flexible API allows you to adapt CWLab to your local software environemnt and to integrate a CWL runner of your choice (such as Cwltool, Toil, or Cromwell).
 
 All configuration options can be specified in a single YAML file which is provided to CWLab upon start:  
 `cwlab up --config my_config.yaml`
@@ -103,59 +103,60 @@ To get an example config file, run following command:
 
 ### General Configs:
 
-    - **WEB_SERVER_HOST**
-        Specify host or IP address on which the web server shall run. Use `localhost` for local usage on your machine only. Use `0.0.0.0` to allow remote accessibility by other machines in the same network.
-        Default: `localhost`
-    - **WEB_SERVER_PORT**:
-        Specify the port used by the web server.
-        Default: 5000
+- **WEB_SERVER_HOST**:  
+    Specify the host or IP address on which the web server shall run. Use `localhost` for local usage on your machine only. Use `0.0.0.0` to allow remote accessibility by other machines in the same network.  
+    *Default*: `localhost`
+- **WEB_SERVER_PORT**:  
+    Specify the port used by the web server.  
+    *Default*: 5000
 
-    - **TEMP_DIR**:
-        Directory for temporary files.
-        Default: cwlab/temp in the home directory
-    - **CWL_DIR**:
-        Directory for saving CWL documents.
-        Default: cwlab/cwl in the home directory
-    - **EXEC_DIR**:
-        Directory for saving execution data including output files.
-        Default: cwlab/exec in the home directory
-    - **INPUT_DIR**:
-        Directory where input files are expected by default (if the full path is not specified).
-        DB_DIR: cwlab/input in the home directory
-    - **DB_DIR**:
-        Directory for databases.
-        Default: cwlab/database in the home directory
+- **TEMP_DIR**:  
+    Directory for temporary files.  
+    *Default*: a subfolder "cwlab/temp" in the home directory
+- **CWL_DIR**:  
+    Directory for saving CWL documents.  
+    *Default*: a subfolder "cwlab/temp" in the home directory
+- **EXEC_DIR**:  
+    Directory for saving execution data including output files.  
+    *Default*: a subfolder "cwlab/temp" in the home directory
+- **INPUT_DIR**:  
+    Directory where input files are expected by default (if the full path is not specified).  
+    *Default*: a subfolder "cwlab/temp" in the home directory
+- **DB_DIR**:  
+    Directory for databases.  
+    *Default*: a subfolder "cwlab/temp" in the home directory
 
-    - **DEBUG**:
-        If set to True, debugging mode is turned. Do not use on production systems.
+- **DEBUG**:  
+    If set to True, debugging mode is turned on. Do not use on production systems.  
+    *Default*: False
     
 ### Exec Profiles:  
 This is where you configure how to execute cwl jobs on your system. A profile consists of four steps: pre_exec, exec, eval, and post_exec (only exec required, the rest is optional). For each step you can specify commands that are executed in bash or cmd terminal.  
 
 You can define multiple execution profile as shown in the config example below. This allows frontend users to chooce between different execution options (e.g. using different CWL runners, different dependency management systems, or even chooce a between multiple available batch execution infrastructures like lsf, pbs, ...). For each execution profile, following configuration parameters are available (but only **shell** and **exec** is required):  
 
-    - **shell**:
-        Specify which shell to use. For Linux or MacOS use `bash`. For Windows, use `cmd`.
-        Required.
-    - **timeout**:
-        For each step in the execution profile, you can set a timeout limit.
-        Default:
-            ```pre_exec: 120
-            exec: 86400
-            eval: 120
-            post_exec: 120```
+- **shell**:  
+    Specify which shell to use. For Linux or MacOS use `bash`. For Windows, use `cmd`.  
+    *Required*.
+- **timeout**:  
+    For each step in the execution profile, you can set a timeout limit.  
+    *Default*:  
+        ```pre_exec: 120
+        exec: 86400
+        eval: 120
+        post_exec: 120```
 
-    - **pre_exec**\*:
-        Shell commands that are executed before the actual CWL execution. For instance to load required python/conda environments.
-        Optional.
-    - **exec**\*:
-        Shell commands to start the CWL execution. Usually this is only the command line to execute the CWL runner. The stdout and stderr of the CWL runner should be redirected to the predefined log file.
-        Required.
-    - **eval**\*:
-        The exit status at the end of the *exec* step is automatically checked. Here you can specify shell commands to additionally evaluate the content of the execution log to determine if the execution succeeded. To communicate failure to CWLab, set the `SUCCESS` variable to `False`
-        Optional.
-    - **post_exec**\*:
-        Shell commands that are executed after *exec* and *eval*. For instance, this can be used to cleanup temporary files.
+- **pre_exec**\*:  
+    Shell commands that are executed before the actual CWL execution. For instance to load required python/conda environments.  
+    *Optional*.
+- **exec**\*:  
+    Shell commands to start the CWL execution. Usually this is only the command line to execute the CWL runner. The stdout and stderr of the CWL runner should be redirected to the predefined log file.  
+    *Required*.
+- **eval**\*:  
+    The exit status at the end of the *exec* step is automatically checked. Here you can specify shell commands to additionally evaluate the content of the execution log to determine if the execution succeeded. To communicate failure to CWLab, set the `SUCCESS` variable to `False`.  
+    *Optional*.
+- **post_exec**\*:
+    Shell commands that are executed after *exec* and *eval*. For instance, this can be used to cleanup temporary files.
 
     
 \* **Additional notes regarding execution profile steps:**  
@@ -171,3 +172,20 @@ You can define multiple execution profile as shown in the config example below. 
 - Thus you may define your own variables that will also be available in all downstream steps.
 - At the end of each step. The exit code is checked. If it is non-zero, the run will be marked as failed. Please note, if a step consists of multiple commands and an intermediate command fails, this will not be recognized by CWLab as long as the final command of the step will succeed. To manually communicate a failure to CWLab, please set the `SUCCESS` variable to `False`.
 - The steps are executed using pexpect (https://pexpect.readthedocs.io/en/stable/overview.html), this allows you also connect to a remote infrastructure via ssh (recommended to use an ssh key). Please be aware that the path of files or directories specified in the input parameter YAML will not be adapted to the new host. We are working on solutions to achieve an automated path correction and/or upload functionality if the execution host ist not the CWLab server host.
+
+## Documentation:
+
+** Please note: A much more detailed documentation is on the way. In the meantime, please notify us if you have any questions (see the "Contact and Contribution" section). We are happy to help. **
+
+## Contact and Contribution:
+If you have any question or are experiencing problems with CWLab, please contact us at ``k.breuer@dkfz.de`` or open an issue in github.
+
+If you would like to contribute to the development and like to extend the functionality of CWLab to meet your requirements, you are more than welcome. We will do our best to support you and your contribution will be acknowledged.
+
+## About Us:
+CWLab is developed with love in the Devision of Cancer Epigenomics at the German Cancer Research Center (DKFZ) in the beautiful university city of Heidelberg. We are an interdisziplinary team with wet-lab scientists and bioinformatians working closely together. Our DNA sequencing-drive methodologies produce challenging amounts of data. CWLab helps us by giving all members of our team the ability to perform common bioinformatic analyses autonomously without having to aquire programming skills. This allows our bioinformatic stuff to focus on method development and interpretation of computationally complex data interpretation and integration.
+
+If you like to know more about us, please visit our website https://www.dkfz.de/en/CanEpi/contact.html.
+
+## Licence:
+This package is free to use and modify under the Apache 2.0 Licence.
