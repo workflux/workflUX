@@ -33,8 +33,6 @@ Type in the URL of your web server. The URL depends on your configuration:
  - If CWLab is running on a remote machine in the same network, type in the machine's IP address and the used port. For instance, if the IP adress is 172.22.0.1 and port 5000 is used:  
   `https://172.22.0.1:5000/`
 
-Once connected you should see a welcome screen like this:
-
 ### Import a CWL workflow or tool:
 CWLab can be used to run any workflow or tool that has been wrapped using the the Common Workflow Language. Of course, you can write workflows or tool wrappers yourself (we recommend rabix-composer https://rabix.io/), however, for many especially bioinformatic tasks, existing CWL solution are publicly available. Check the CWL website as a starting point:  
 https://www.commonwl.org/#Repositories_of_CWL_Tools_and_Workflows.
@@ -44,7 +42,7 @@ To import a CWL document:
 - Choose a CWL document (workflow or tool)\*
 - Press the import button
 
-The workflow will be automatically validated:
+The workflow will be automatically validated.
 
 
 *\*Please note: Currently, workflows can only be imported in the "packed" format. We will add support for the unpacked format soon. To pack a CWL workflow, use:*  
@@ -59,7 +57,7 @@ To run a workflow or tool with your data, you have to create a new job. One job 
 - If the job shall contain multiple runs toggle the "runs per job" switch, then:
     - Specify run names as comma-seperated list in the dedicated text field
     - In the parameter list, select which parameters should be run-specific
-- CWLab will automatically create a parameter form**\*** for you to fill in:
+- CWLab will automatically create a parameter form for you to fill in:
     - Export/download the form in the desired format
     - Open it in a spreadsheet editor (e.g. Microsoft Excel or Open Office)
     - The file may contain the following sheets (depends on the type of input parameters and your selections for "global"/"run-specific" specification):
@@ -68,13 +66,15 @@ To run a workflow or tool with your data, you have to create a new job. One job 
         - ``global arrays``: array parameters (takes a list of values) that are defined globally
         -  A seperate sheet will be created for each run-specific array parameter. It will be titled with the parameters name
         - ``config``: This sheet contains configuration options that only need adaption in adavance use cases.
-    - Fill in the sheet and import/upload the edited file to CWLab
+    - Fill in the sheet and import/upload the edited file to CWLab **\***
 - Your parameter settings are automatically validated. (E.g. it is checked whether the specified values match the parameter's type and whether the paths of specified files or direcories exist.)
-- If valid, you can press the "create job" button and head over to "Job Execution & Results" in the top bar
+- If valid, you can press the "create job" button and head over to "Job Execution & Results" in the top bar  
+  
 
-**\* Please note:** For specifying file or directory parameters, there are two options:  
+**\* Please note:** For specifying file or directory parameters, there are two options:
 - Either specify the absolute path
 - Specify a character string that can be uniquely matched to a file/directory in the default input directory (please see the **INPUT_DIR** parameter in the config section).
+
 ### Job execution:
 - Click on "Job Execution & Results" in the top bar and choose the job of interest in the side bar
 - Select the runs you want to start
@@ -83,7 +83,7 @@ To run a workflow or tool with your data, you have to create a new job. One job 
 - Pressing the "Details/Results" button will show (not implemented yet):
     - the deployed input parameter
     - execution logs (from the CWL runner)
-    - a QC report (once finished)
+    - a QC report
 - Once finished the output can be found in the "exec" directory (set in the configuration) along with the used parameter values, CWL document, and log files
 
 ## Configuration:
@@ -173,9 +173,44 @@ You can define multiple execution profile as shown in the config example below. 
 - At the end of each step. The exit code is checked. If it is non-zero, the run will be marked as failed. Please note, if a step consists of multiple commands and an intermediate command fails, this will not be recognized by CWLab as long as the final command of the step will succeed. To manually communicate a failure to CWLab, please set the `SUCCESS` variable to `False`.
 - The steps are executed using pexpect (https://pexpect.readthedocs.io/en/stable/overview.html), this allows you also connect to a remote infrastructure via ssh (recommended to use an ssh key). Please be aware that the path of files or directories specified in the input parameter YAML will not be adapted to the new host. We are working on solutions to achieve an automated path correction and/or upload functionality if the execution host ist not the CWLab server host.
 
+### Example comfiguration file:
+```
+WEB_SERVER_HOST: localhost 
+WEB_SERVER_PORT: 5000
+
+DEBUG: False  
+
+TEMP_DIR: '/home/cwlab_user/cwlab/temp'
+CWL_DIR: '/home/cwlab_user/cwlab/cwl'
+EXEC_DIR: '/home/cwlab_user/cwlab/exec'
+INPUT_DIR: '/home/cwlab_user/cwlab/input'
+DB_DIR: '/home/cwlab_user/cwlab/db'
+
+EXEC_PROFILES:
+
+  cwltool_local:
+    shell: bash
+    timeout:
+      pre_exec: 120
+      exec: 86400
+      eval: 120
+      post_exec: 120
+    exec: |
+      cwltool --outdir "${OUTPUT_DIR}" "${CWL}" "${RUN_YAML}" >> "${LOG_FILE}" 2>&1
+    eval: | 
+      LAST_LINE=$(tail -n 1 ${LOG_FILE})
+      if [[ "${LAST_LINE}" == *"Final process status is success"* ]]
+      then
+        SUCCESS=True
+      else
+        SUCCESS=False
+        ERR_MESSAGE="cwltool failed - ${LAST_LINE}"
+      fi
+```
+
 ## Documentation:
 
-** Please note: A much more detailed documentation is on the way. In the meantime, please notify us if you have any questions (see the "Contact and Contribution" section). We are happy to help. **
+**Please note: A much more detailed documentation is on the way. In the meantime, please notify us if you have any questions (see the "Contact and Contribution" section). We are happy to help.**
 
 ## Contact and Contribution:
 If you have any question or are experiencing problems with CWLab, please contact us at ``k.breuer@dkfz.de`` or open an issue in github.
