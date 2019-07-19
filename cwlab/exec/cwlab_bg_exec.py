@@ -74,7 +74,7 @@ var_cmdls = [
     "RUN_YAML=" +  yaml,
     "OUTPUT_DIR=" +  out_dir,
     "LOG_FILE=" +  log,
-    "SUCCESS=False",
+    "SUCCESS=True",
     "ERR_MESSAGE=None",
     "FINISH_TAG=DONE"
 ]
@@ -111,16 +111,18 @@ def run_step(step_name):
 
     # check final exit status:
     if exec_profile["shell"]=="bash":
-        p.sendline('echo "[${FINISH_TAG}:EXITCODE:$?:${FINISH_TAG}]"')
+        p.sendline('echo "[${FINISH_TAG}:EXITCODE:$?:SUCCESS:${SUCCESS}:${FINISH_TAG}]"')
     elif exec_profile["shell"]=="cmd":
-        p.sendline('echo "[%FINISH_TAG%:EXITCODE:%ERRORLEVEL%:%FINISH_TAG%]"')
+        p.sendline('echo "[%FINISH_TAG%:EXITCODE:%ERRORLEVEL%:SUCCESS:%SUCCESS%:%FINISH_TAG%]"')
 
     # wait for expected tag:
     try:
         p.expect("DONE:EXITCODE:.*:DONE", timeout=exec_profile["timeout"][step_name])
         exit_code = int(p.after.decode().split(":")[2].strip())
+        success = str(p.after.decode().split(":")[4].strip()) == "True"
     except pexpect.TIMEOUT:
         exit_code = 1
+        success = False
         err_message = "timeout waiting for expected pattern"
         timeout = True
 
@@ -131,9 +133,10 @@ def run_step(step_name):
             log_text = log_text + \
                 "Err_message: " + err_message + "\n"
         log_text = log_text + \
-            "Exit_code: " + str(exit_code) + "\n"
+            "Exit_code: " + str(exit_code) + "\n"\
+            "Success: " + str(success) + "\n"
         print(log_text)
-    if exit_code != 0:
+    if exit_code != 0 or not success:
         exec_db_entry.status = "system error"
         exec_db_entry.err_message = "System Error occured while \"" + \
                 status_message[step_name] + "\""

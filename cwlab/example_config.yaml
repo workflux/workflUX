@@ -44,18 +44,19 @@ EXEC_PROFILES:
     #   - RUN_YAML
     #   - OUTPUT_DIR
     #   - LOG_FILE
+    #   - False
     exec: |
       cwltool --outdir "${OUTPUT_DIR}" "${CWL}" "${RUN_YAML}" >> "${LOG_FILE}" 2>&1
     eval: | 
       LAST_LINE=$(tail -n 1 ${LOG_FILE})
       if [[ "${LAST_LINE}" == *"Final process status is success"* ]]
       then
-        SUCCESS=true
+        SUCCESS=True
       else
-        SUCCESS=false
+        SUCCESS=False
         ERR_MESSAGE="cwltool failed - ${LAST_LINE}"
       fi
     # Please note:
-    # A SUCCESS vaiable has to be filled with true/false
+    # A SUCCESS vaiable has to be filled with True/False
     # If SUCCESS==false: the ERR_MESSAGE can provide further information 
     # such as error messages
