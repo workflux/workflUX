@@ -22,12 +22,13 @@ const modules = {   // each entry corresponds to one wep app module,
         text:  "Job Execution & Results",
         icon: "fas fa-rocket",
         content: (<JobExecRoot />)
-    },
-    help: {
-        text: "Help",
-        icon: "fas fa-info-circle",
-        content: "Under construction"
     }
+    // ,
+    // help: {
+    //     text: "Help",
+    //     icon: "fas fa-info-circle",
+    //     content: "Under construction"
+    // }
 };
 
 

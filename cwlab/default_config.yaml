@@ -1,0 +1,62 @@
+## Configure the Webserver:
+## (1) choose an IP/host to run on:
+WEB_SERVER_HOST: localhost # If it shall only be available on the local machine, use "localhost".
+                        # If it shall be remotely accessible from other machines on the same network, use "0.0.0.0".
+## (2) choose the port:
+WEB_SERVER_PORT: 5000 # The default is 5000, if this port is blocked choose a different one
+
+## DEBUG mode
+DEBUG: False  # If set to True, additional debugging messages will be printed.
+              # This is only for testing/debugging purposes, please do not use on production system.
+
+## Specify the location of required directories:
+##  by default they will be created in a subdirectory named "cwlab" in your home
+# TEMP_DIR: '/path/to/temp/dir'
+# CWL_DIR: '/path/to/cwl/dir'
+# EXEC_DIR: '/path/to/exec/dir'
+# INPUT_DIR: '/path/to/input/dir'
+# DB_DIR: '/path/to/database/dir'
+
+## Specify execution profiles:
+##   This is where you configure how to execute cwl jobs on your system.
+##   The profile consits of four steps: pre_exec, exec, eval, and post_exec (only exec required, the rest is optional).
+##   For each step you can specify command that shall be executed in bash or cmd terminal.
+EXEC_PROFILES:
+  cwltool_local: # name of the exec profile
+    # Choose the shell to use:
+    #   bash (Linux/MacOs), cmd (Windows)
+    shell: bash
+    
+    # timeout for each step in seconds 
+    # if not specified the defaults are used:
+    #   120 (pre_exec, eval, post_eval) and 86400 = 14h (exec),
+    # to disable timeout set Null
+    timeout:
+      pre_exec: 120
+      exec: 86400
+      eval: 120
+      post_exec: 120
+
+    # available variables are:
+    #   - JOB_ID
+    #   - RUN_ID (please note: is only unique within a job)
+    #   - CWL
+    #   - RUN_YAML
+    #   - OUTPUT_DIR
+    #   - LOG_FILE
+    #   - False
+    exec: |
+      cwltool --outdir "${OUTPUT_DIR}" "${CWL}" "${RUN_YAML}" >> "${LOG_FILE}" 2>&1
+    eval: | 
+      LAST_LINE=$(tail -n 1 ${LOG_FILE})
+      if [[ "${LAST_LINE}" == *"Final process status is success"* ]]
+      then
+        SUCCESS=True
+      else
+        SUCCESS=False
+        ERR_MESSAGE="cwltool failed - ${LAST_LINE}"
+      fi
+    # Please note:
+    # A SUCCESS vaiable has to be filled with True/False
+    # If SUCCESS==false: the ERR_MESSAGE can provide further information 
+    # such as error messages

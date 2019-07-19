@@ -1,19 +1,18 @@
 #!/bin/bash
 
-pip3 install flask \
+python3 -m pip install flask \
     flask_wtf \
     flask-sqlalchemy \
-    flask-migrate \
     flask-login 
     
-pip3 install pyexcel \
+python3 -m pip install pyexcel \
     pyexcel-io \
     pyexcel-ods \
     pyexcel-ods3 \
     pyexcel-xls \
     pyexcel-xlsx
 
-pip3 install PyYAML \
+python3 -m pip install PyYAML \
     unidecode
 
-pip3 install cwltool
+python3 -m pip install cwltool

@@ -28,7 +28,6 @@ setup(
                       'flask_wtf',
                       'flask-login',
                       'flask-sqlalchemy',
-                      'flask-migrate',
                       'pyexcel',
                       'pyexcel-io',
                       'pyexcel-ods',
