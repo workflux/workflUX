@@ -32,6 +32,9 @@ Type in the URL of your web server. The URL depends on your configuration:
 
  - If CWLab is running on a remote machine in the same network, type in the machine's IP address and the used port. For instance, if the IP adress is 172.22.0.1 and port 5000 is used:  
   `https://172.22.0.1:5000/`
+  
+ You should see a Welcome page like this:  
+![welcome screenshot](https://github.com/CompEpigen/CWLab/blob/dev/screenshots/welcome.png?raw=true)
 
 ### Import a CWL workflow or tool:
 CWLab can be used to run any workflow or tool that has been wrapped using the the Common Workflow Language. Of course, you can write workflows or tool wrappers yourself (we recommend rabix-composer https://rabix.io/), however, for many especially bioinformatic tasks, existing CWL solution are publicly available. Check the CWL website as a starting point:  
@@ -42,8 +45,8 @@ To import a CWL document:
 - Choose a CWL document (workflow or tool)\*
 - Press the import button
 
-The workflow will be automatically validated.
-
+The workflow will be automatically validated:  
+![import screenshot](https://github.com/CompEpigen/CWLab/blob/dev/screenshots/import.png?raw=true)
 
 *\*Please note: Currently, workflows can only be imported in the "packed" format. We will add support for the unpacked format soon. To pack a CWL workflow, use:*  
 `cwltool --pack my_workflow.cwl > my_workflow_packed.cwl`
@@ -75,6 +78,11 @@ To run a workflow or tool with your data, you have to create a new job. One job 
 - Either specify the absolute path
 - Specify a character string that can be uniquely matched to a file/directory in the default input directory (please see the **INPUT_DIR** parameter in the config section).
 
+
+This is an example screenshot for creating a job for an ATAC-seq workflow:  
+![create job screenshot](https://github.com/CompEpigen/CWLab/blob/dev/screenshots/create_job.png?raw=true)
+
+
 ### Job execution:
 - Click on "Job Execution & Results" in the top bar and choose the job of interest in the side bar
 - Select the runs you want to start
@@ -85,6 +93,10 @@ To run a workflow or tool with your data, you have to create a new job. One job 
     - execution logs (from the CWL runner)
     - a QC report
 - Once finished the output can be found in the "exec" directory (set in the configuration) along with the used parameter values, CWL document, and log files
+
+
+An example screenshot of the execution interface:  
+![execution screenshot](https://github.com/CompEpigen/CWLab/blob/dev/screenshots/execution.png?raw=true)
 
 ## Configuration:
 CWLab is a higly versatile package and makes almost no assumtions on your hard- and software environment used for execution of CWL. To adapt it to your system and use case, a set of configuration option are available:  

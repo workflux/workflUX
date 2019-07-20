@@ -1,4 +1,19 @@
 
+class Welcome extends React.Component {
+    render() {
+        return(
+            <div className="w3-panel">
+                <p style={ {fontSize: 40} } className="w3-center">
+                    Welcome to CW<span className="w3-text-green">Lab</span>
+                </p>
+                <p style={ {fontSize: 20} } className="w3-center">
+                    An open-source framework for simplified deployment of the 
+                    Common Workflow Language using a graphical web interface
+                </p>
+            </div>
+        )
+    }
+}
 
 const modules = {   // each entry corresponds to one wep app module,
                     // each module has a dedicated button in the top bar
@@ -6,7 +21,7 @@ const modules = {   // each entry corresponds to one wep app module,
     home: {
         text: (<span>CW<span className="w3-text-green">Lab</span></span>),
         icon: "",
-        content: "Welcome to CWLab"
+        content: (<Welcome />)
     },
     import_cwl:  {
         text: "Import CWL Workflow/Tool",
@@ -30,7 +45,6 @@ const modules = {   // each entry corresponds to one wep app module,
     //     content: "Under construction"
     // }
 };
-
 
 class TopBar extends React.Component { // controlled by Root Component
     constructor(props){
