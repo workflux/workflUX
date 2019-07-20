@@ -6,7 +6,7 @@ README = os.path.join(SETUP_DIR, 'README.md')
 
 setup(
     name='cwlab',
-    version='0.1.0',    
+    version='0.1.1',    
     description='A platform-agnostic, cloud-ready framework ' + \
         'for simplified deployment of the Common Workflow Language ' + \
         'using a graphical web interface',
@@ -39,7 +39,7 @@ setup(
                       'cwltool'               
                       ],
     classifiers=[
-        'Development Status :: 2 - Pre-Alpha',
+        'Development Status :: 3 - Alpha',
         'Intended Audience :: Developers',
         'Intended Audience :: Science/Research',
         'License :: OSI Approved :: Apache Software License',
