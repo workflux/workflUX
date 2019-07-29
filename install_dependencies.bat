@@ -7,3 +7,5 @@ pip install PyYAML unidecode
 pip install cwltool
 
 pip install pyfladesk
+
+pip install psutil

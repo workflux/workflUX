@@ -36,7 +36,8 @@ setup(
                       'pyexcel-xlsx',
                       'PyYAML',
                       'unidecode',
-                      'cwltool'               
+                      'cwltool',
+                      'psutil'               
                       ],
     classifiers=[
         'Development Status :: 3 - Alpha',
