@@ -28,7 +28,7 @@ class RunListElement extends React.Component {
             "finishing": "w3-amber",
             "finished": "w3-green",
         }
-        if (status in Object.keys(statusColorClass)){
+        if (Object.keys(statusColorClass).includes(status)){
             return(statusColorClass[status])
         } else{
             return("w3-red")
