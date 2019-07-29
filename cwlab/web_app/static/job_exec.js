@@ -175,7 +175,6 @@ class RunList extends React.Component {
     }
 
     static getDerivedStateFromProps(nextProps, prevState) {
-        console.log("peep")
         if(nextProps.jobID !== prevState.mirroredJobID){
             let runInfo = {}
             nextProps.runIDs.map( (r) => runInfo[r] = {
