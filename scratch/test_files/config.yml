@@ -42,9 +42,9 @@ EXEC_PROFILES:
       LAST_LINE=$(tail -n 1 ${LOG_FILE})
       if [[ "${LAST_LINE}" == *"Final process status is success"* ]]
       then
-        SUCCESS=true
+        SUCCESS=True
       else
-        SUCCESS=false
+        SUCCESS=False
         ERR_MESSAGE="cwltool failed - ${LAST_LINE}"
       fi
     # Please note:
