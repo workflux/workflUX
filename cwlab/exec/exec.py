@@ -1,5 +1,5 @@
 from cwlab import app
-from cwlab.general_use import get_path
+from cwlab.general_use import get_path, get_duration
 from .db import Exec
 from cwlab import db
 from datetime import datetime
@@ -80,6 +80,37 @@ def exec_runs(job_id, run_ids, exec_profile_name, cwl):
             get_path("backgr_log", job_id=job_id, run_id=run_id)
         )
 
+def get_run_info(job_id, run_ids):
+    data = {}
+    retry_delays = [1, 4]
+    for retry_delay in retry_delays:
+        try:
+            db_job_id_request = db.session.query(Exec).filter(Exec.job_id==job_id)
+            break
+        except:
+            if retry_delay == retry_delays[-1]:
+                sys.exit("Could not connect to database.")
+            else:
+                sleep(retry_delay + retry_delay*random())
+    
+    for run_id in run_ids:
+        data[run_id] = {}
+        db_run_id_request = db_job_id_request.filter(Exec.run_id==run_id).distinct()
+        if db_run_id_request.count() == 0:
+            data[run_id]["status"] = "not started yet"
+            data[run_id]["duration"] = "-"
+            data[run_id]["exec_profile"] = "-"
+            data[run_id]["retry_count"] = "0"
+
+        else:
+            # find latest:
+            run_info =  db_run_id_request.filter(Exec.id==max([r.id for r in db_run_id_request])).first()
+            data[run_id]["status"] = run_info.status
+            data[run_id]["duration"] = get_duration(run_info.time_started, run_info.time_finished)
+            data[run_id]["exec_profile"] = run_info.exec_profile_name
+            data[run_id]["retry_count"] = run_info.retry_count
+    return data
+    
 
     
     
