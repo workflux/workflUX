@@ -137,7 +137,7 @@ def run_step(step_name):
             "Success: " + str(success) + "\n"
         print(log_text)
     if exit_code != 0 or not success:
-        exec_db_entry.status = "system error"
+        exec_db_entry.status = status_message[step_name] + " failed"
         exec_db_entry.err_message = "System Error occured while \"" + \
                 status_message[step_name] + "\""
         if err_message:
