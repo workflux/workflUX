@@ -41,7 +41,7 @@ def get_param_config_info(file_path):
 def gen_form_sheet(
     output_file_path,
     template_config_file_path, # basic information on params and their defaults
-    has_multiple_runs="single",  # can be single or multiple
+    has_multiple_runs=False,  # can be single or multiple
     run_names=[],   # if run_mode is multiple, run names are provided here
     param_is_run_specific={},  # only relevant id run_mode is multiple,
                     # dict with param names as keys, and true (run specific) or false (global)
@@ -56,15 +56,10 @@ def gen_form_sheet(
     param_values = fill_in_param_defaults({}, configs, show_please_fill)
 
     param_names = sorted(configs.keys())
-    if not has_multiple_runs:
-        for param in  param_names:
-            param_is_run_specific[param] = False
-    
+
     # adjust according to the run mode:
     for param in param_names:
-        if not param_is_run_specific[param]:
-            configs[param]["split_into_runs_by"] = [""]
-        else:
+        if has_multiple_runs and param_is_run_specific[param]:
             if configs[param]["is_array"]:
                 run_id_param_name = "run_id_" + param
                 configs[run_id_param_name] = {"type": "helper", "is_array": True}
@@ -76,6 +71,8 @@ def gen_form_sheet(
                 param_values["run_id"] = run_names
                 configs[param]["split_into_runs_by"] = ["run_id", "single_value"]
                 param_values[param] = [param_values[param][0]]*len(run_names)
+        else:
+            configs[param]["split_into_runs_by"] = [""]
 
     # fill in config defaults
     configs = fill_in_config_defaults(configs)
