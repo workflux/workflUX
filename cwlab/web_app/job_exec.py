@@ -111,12 +111,14 @@ def start_exec():    # returns all parmeter and its default mode (global/job spe
     run_ids = data["run_ids"]
     exec_profile_name = data["exec_profile"]
     try:
-        exec_runs(
+        warnings = exec_runs(
             job_id,
             run_ids,
             exec_profile_name,
             cwl_target
         )
+        
+
         messages.append({
             "type":"success",
             "text":"Execution started successfully."

@@ -35,7 +35,29 @@ def cleanup_zombie_process(pid):
         if p.status() == STATUS_ZOMBIE:
             p.wait()
 
+def query_info_from_db(job_id):
+    retry_delays = [1, 4]
+    for retry_delay in retry_delays:
+        try:
+            db_job_id_request = db.session.query(Exec).filter(Exec.job_id==job_id)
+            break
+        except:
+            if retry_delay == retry_delays[-1]:
+                sys.exit("Could not connect to database.")
+            else:
+                sleep(retry_delay + retry_delay*random())
+    return db_job_id_request
+
 def exec_runs(job_id, run_ids, exec_profile_name, cwl):
+    
+    # check if runs are already running:
+    already_running = []
+    db_job_id_request = query_info_from_db(job_id)
+    for run_id in run_ids:
+        db_run_id_request = db_job_id_request.filter(Exec.run_id==run_id).distinct()
+        if db_run_id_request.filter(Exec.time_started is None).count() > 0:
+            already_running.append(run_id)
+
     # create new exec entry in database:
     exec_db_entry = {}
     for run_id in run_ids:
@@ -82,17 +104,8 @@ def exec_runs(job_id, run_ids, exec_profile_name, cwl):
 
 def get_run_info(job_id, run_ids):
     data = {}
-    retry_delays = [1, 4]
-    for retry_delay in retry_delays:
-        try:
-            db_job_id_request = db.session.query(Exec).filter(Exec.job_id==job_id)
-            break
-        except:
-            if retry_delay == retry_delays[-1]:
-                sys.exit("Could not connect to database.")
-            else:
-                sleep(retry_delay + retry_delay*random())
-    
+    db_job_id_request = query_info_from_db(job_id)
+
     for run_id in run_ids:
         data[run_id] = {}
         db_run_id_request = db_job_id_request.filter(Exec.run_id==run_id).distinct()
