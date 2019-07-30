@@ -105,4 +105,7 @@ class Config(object):
             self.config_file_content.get('WEB_SERVER_PORT') or  
             "5000"
         )
+
+        # not accessible by user:
+        self.SEND_FILE_MAX_AGE_DEFAULT = 0 # disables caching
         
