@@ -21,7 +21,7 @@ from . import match_types
 from . import web_interface 
 
 def validate_manipulate_split_type_match( param_values, configs,
-    validate_paths=True, search_paths=True, search_subdirs=True, input_dir=""):
+    validate_paths=True, search_paths=True, search_subdirs=True, input_dir="", default_run_id="global"):
     print_pref = "[validate_manipulate_split_type_match]:"
     # fill in config defaults:
     try:
@@ -40,7 +40,7 @@ def validate_manipulate_split_type_match( param_values, configs,
         sys.exit(print_pref + "E: failed manipulation: " + str(e))
     # split into runs:
     try:
-        params_by_run_id = split_by_run.split_all_parameters_by_run_id( param_values, configs ) 
+        params_by_run_id = split_by_run.split_all_parameters_by_run_id( param_values, configs, default_run_id ) 
     except SystemExit as e:
         sys.exit(print_pref + "E: failed run splitting: " + str(e))
     type_matched_params_by_run_id = {}
@@ -58,7 +58,7 @@ def validate_manipulate_split_type_match( param_values, configs,
     return type_matched_params_by_run_id, params_by_run_id, configs
 
 def import_from_xls(sheet_file="", sheet_files=[],
-    validate_paths=True, search_paths=True, search_subdirs=True, input_dir=""):
+    validate_paths=True, search_paths=True, search_subdirs=True, input_dir="", default_run_id="global"):
     # read spread sheets
     if sheet_file == "":
         if len(sheet_files) == 0:
@@ -67,7 +67,7 @@ def import_from_xls(sheet_file="", sheet_files=[],
     else:
         param_values, configs = read_xls.sheet_file(sheet_file, verbose_level=0)
     # split into runs, validate parameters, and manipulate them:
-    type_matched_params_by_run_id, params_by_run_id, configs = validate_manipulate_split_type_match( param_values, configs, validate_paths, search_paths, search_subdirs, input_dir)
+    type_matched_params_by_run_id, params_by_run_id, configs = validate_manipulate_split_type_match( param_values, configs, validate_paths, search_paths, search_subdirs, input_dir, default_run_id)
     return type_matched_params_by_run_id, params_by_run_id, configs
 
 
@@ -81,11 +81,12 @@ def only_validate_xls(sheet_file="", sheet_files=[],
 
 
 # main function of this module:
-def transcode( sheet_file="", sheet_files=[], output_basename="",  output_suffix=".cwl_run.yaml", 
-    output_dir=".", verbose_level=2, validate_paths=True, search_paths=True, search_subdirs=True, input_dir=""):
+def transcode( sheet_file="", sheet_files=[], output_basename="",  default_run_id="global", 
+    always_include_run_in_output_name=False, # if False, run_id will be hidden in the names of the output yaml files
+    output_suffix=".cwl_run.yaml", output_dir=".", verbose_level=2, validate_paths=True, search_paths=True, search_subdirs=True, input_dir=""):
     try:
-        type_matched_params_by_run_id, params_by_run_id, configs = import_from_xls(sheet_file, sheet_files, validate_paths, search_paths, search_subdirs, input_dir)
-        make_yaml.write_multiple_runs(type_matched_params_by_run_id, output_dir, output_basename, output_suffix)
+        type_matched_params_by_run_id, params_by_run_id, configs = import_from_xls(sheet_file, sheet_files, validate_paths, search_paths, search_subdirs, input_dir, default_run_id)
+        make_yaml.write_multiple_runs(type_matched_params_by_run_id, output_dir, output_basename, output_suffix, always_include_run_in_output_name)
     except SystemExit as e:
         sys.exit( 'Failed to translate - the error was:' + str(e))
     if verbose_level == 2:

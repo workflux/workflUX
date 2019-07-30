@@ -11,6 +11,7 @@ class Exec(db.Model):
     status = db.Column(db.String(64))
     err_message = db.Column(db.String(1500))
     retry_count = db.Column(db.Integer())
+    max_retries = db.Column(db.Integer())
     time_started = db.Column(db.DateTime())
     time_finished = db.Column(db.DateTime())
     pid = db.Column(db.Integer())

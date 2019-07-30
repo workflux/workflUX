@@ -84,10 +84,14 @@ class Config(object):
             "eval": 120,
             "post_exec": 120
         }
+        max_retries_default = 3
+        
         for exec_profile in self.EXEC_PROFILES.keys():
             if "timeout" in self.EXEC_PROFILES[exec_profile].keys():
                 timeout_defaults.update(self.EXEC_PROFILES[exec_profile]["timeout"])
             self.EXEC_PROFILES[exec_profile]["timeout"] = timeout_defaults
+            if not "max_retries" in self.EXEC_PROFILES.keys():
+                self.EXEC_PROFILES[exec_profile]["max_retries"] = max_retries_default
 
 
         # Configure web server:
@@ -101,4 +105,7 @@ class Config(object):
             self.config_file_content.get('WEB_SERVER_PORT') or  
             "5000"
         )
+
+        # not accessible by user:
+        self.SEND_FILE_MAX_AGE_DEFAULT = 0 # disables caching
         

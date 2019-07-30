@@ -10,7 +10,7 @@ import requests
 from re import sub, match
 from cwlab.xls2cwl_job.web_interface import gen_form_sheet as gen_job_param_sheet
 from cwlab.xls2cwl_job import only_validate_xls, transcode as make_yaml_runs
-from cwlab.exec.exec import exec_runs
+from cwlab.exec.exec import exec_runs, get_run_info
 from cwlab import db
 from cwlab.exec.db import Exec
 from time import sleep
@@ -80,48 +80,19 @@ def get_job_list():
 def get_run_status():
     messages = []
     data={}
-    try:
-        data_req = request.get_json()
-        retry_delays = [1, 4]
-        for retry_delay in retry_delays:
-            try:
-                db_job_id_request = db.session.query(Exec).filter(Exec.job_id==data_req["job_id"])
-                break
-            except Exception as e:
-                if retry_delay == retry_delays[-1]:
-                    messages.append( { 
-                        "type":"error", 
-                        "text":"Could not connect to database." 
-                    } )
-                else:
-                    sleep(retry_delay + retry_delay*random())
-        
-        for run_id in data_req["run_ids"]:
-            data[run_id] = {}
-            db_run_id_request = db_job_id_request.filter(Exec.run_id==run_id).distinct()
-            if db_run_id_request.count() == 0:
-                data[run_id]["status"] = "not started yet"
-                data[run_id]["duration"] = "-"
-                data[run_id]["exec_profile"] = "-"
-                data[run_id]["retry_count"] = "0"
-
-            else:
-                # find latest:
-                run_info =  db_run_id_request.filter(Exec.id==max([r.id for r in db_run_id_request])).first()
-                data[run_id]["status"] = run_info.status
-                data[run_id]["duration"] = get_duration(run_info.time_started, run_info.time_finished)
-                data[run_id]["exec_profile"] = run_info.exec_profile_name
-                data[run_id]["retry_count"] = run_info.retry_count
-    except SystemExit as e:
-        messages.append( { 
-            "type":"error", 
-            "text": str(e) 
-        } )
-    except:
-        messages.append( { 
-            "type":"error", 
-            "text":"An uknown error occured reading the execution directory." 
-        } )
+    # try:
+    data_req = request.get_json()
+    data = get_run_info(data_req["job_id"], data_req["run_ids"])
+    # except SystemExit as e:
+    #     messages.append( { 
+    #         "type":"error", 
+    #         "text": str(e) 
+    #     } )
+    # except:
+    #     messages.append( { 
+    #         "type":"error", 
+    #         "text":"An uknown error occured reading the execution directory." 
+    #     } )
     return jsonify({
             "data": data,
             "messages": messages
@@ -140,12 +111,14 @@ def start_exec():    # returns all parmeter and its default mode (global/job spe
     run_ids = data["run_ids"]
     exec_profile_name = data["exec_profile"]
     try:
-        exec_runs(
+        warnings = exec_runs(
             job_id,
             run_ids,
             exec_profile_name,
             cwl_target
         )
+        
+
         messages.append({
             "type":"success",
             "text":"Execution started successfully."

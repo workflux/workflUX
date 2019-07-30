@@ -16,3 +16,5 @@ python2 -m pip install PyYAML \
     unidecode
 
 python2 -m pip install cwltool
+
+python2 -m pip install psutil

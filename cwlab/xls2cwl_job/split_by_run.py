@@ -3,7 +3,7 @@ import re
 # import custom modules:
 from . import validate 
 
-def split_parameter_by_run_id( parameter_name, all_parameters, instruction ):
+def split_parameter_by_run_id( parameter_name, all_parameters, instruction, default_run_id="global" ):
     print_pref = "[split_parameter_by_run_id]:"
     parameter_values = all_parameters[parameter_name]
     parameter_by_run_id = {}
@@ -35,11 +35,11 @@ def split_parameter_by_run_id( parameter_name, all_parameters, instruction ):
                 parameter_by_run_id[run_id][parameter_name].append( parameter_values[idx] )
     else:
         # parameter is global and not assigned to a specific run
-        parameter_by_run_id["global"] = {parameter_name:parameter_values}
+        parameter_by_run_id[default_run_id] = {parameter_name:parameter_values}
     return parameter_by_run_id
 
 
-def split_all_parameters_by_run_id( all_parameters, configs ):
+def split_all_parameters_by_run_id( all_parameters, configs, default_run_id="global" ):
     print_pref = "[split_all_parameters_by_run_id]:"
     parameters_by_run_id = {} # nested dict:
                               # 1st level: runs (run ids as key)
@@ -47,7 +47,7 @@ def split_all_parameters_by_run_id( all_parameters, configs ):
     for param_name in all_parameters.keys():
         try:
             parameter_by_run_id_tmp = split_parameter_by_run_id( param_name, all_parameters, 
-                                        configs[param_name]["split_into_runs_by"] )
+                                        configs[param_name]["split_into_runs_by"], default_run_id )
         except SystemExit as e:
             sys.exit(print_pref + str(e))
         # update parameters_by_run_id with splitted parameter
@@ -57,11 +57,11 @@ def split_all_parameters_by_run_id( all_parameters, configs ):
             else:
                 parameters_by_run_id.update(parameter_by_run_id_tmp)
     # add global parameters to all runs:
-    if "global" in parameters_by_run_id.keys() and len(parameters_by_run_id.keys()) > 1:
+    if default_run_id in parameters_by_run_id.keys() and len(parameters_by_run_id.keys()) > 1:
         for run_id in parameters_by_run_id.keys():
-            if run_id == "global":
+            if run_id == default_run_id:
                 continue
             else:
-                parameters_by_run_id[run_id].update(parameters_by_run_id["global"])
-        del parameters_by_run_id["global"]
+                parameters_by_run_id[run_id].update(parameters_by_run_id[default_run_id])
+        del parameters_by_run_id[default_run_id]
     return parameters_by_run_id

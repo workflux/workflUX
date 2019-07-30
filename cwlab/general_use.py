@@ -4,6 +4,8 @@ from datetime import datetime
 from . import app
 from cwlab.xls2cwl_job.web_interface import read_template_attributes as read_template_attributes_from_xls
 from cwlab.xls2cwl_job.web_interface import get_param_config_info as get_param_config_info_from_xls
+from cwlab import db
+from random import random
 basedir = os.path.abspath(os.path.dirname(__file__))
 
 def fetch_files_in_dir(dir_path, # searches for files in dir_path
@@ -68,6 +70,9 @@ def get_job_ids():
     exec_dir = app.config["EXEC_DIR"]
     job_ids = [d for d in os.listdir(exec_dir) if os.path.isdir(os.path.join(exec_dir, d))]
     return job_ids
+
+def get_job_name_from_job_id(job_id):
+    return match('(\d+)_(\d+)_(.+)', job_id).group(3)
 
 def get_path(which, job_id=None, run_id=None, param_sheet_format=None, cwl_target=None):
     if which == "job_dir":
@@ -141,6 +146,17 @@ def output_example_config():
     example_config_file.close()
     print(example_config_content)
     
+def db_commit(retry_delays=[1,4]):
+    for retry_delay in retry_delays:
+        try:
+            db.session.commit()
+            break
+        except Exception as e:
+            if retry_delay == retry_delays[-1]:
+                sys.exit("Could not connect to database.")
+            else:
+                sleep(retry_delay + retry_delay*random())
+
 
 
     

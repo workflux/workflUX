@@ -14,9 +14,12 @@ class RunListElement extends React.Component {
             checked: false
         }
         this.handleSelectionChange = this.handleSelectionChange.bind(this)
-        this.statusColorClass = {
+        this.get_status_color = this.get_status_color.bind(this)
+    }
+
+    get_status_color(status){
+        const statusColorClass = {
             "Loading": "w3-grey",
-            "could not connect to database": "w3-red",
             "not started yet": "w3-grey",
             "queued": "w3-grey",
             "preparing for execution": "w3-amber",
@@ -24,10 +27,14 @@ class RunListElement extends React.Component {
             "evaluating results": "w3-amber",
             "finishing": "w3-amber",
             "finished": "w3-green",
-            "failed": "w3-red"
+        }
+        if (Object.keys(statusColorClass).includes(status)){
+            return(statusColorClass[status])
+        } else{
+            return("w3-red")
         }
     }
-
+    
     handleSelectionChange(event){
         this.props.onSelectionChange(this.props.runID, event.target.checked)
     }
@@ -59,7 +66,7 @@ class RunListElement extends React.Component {
                     />
                 </td>
                 <td>{this.props.runID}</td>
-                <td className={this.statusColorClass[this.props.status]}>
+                <td className={this.get_status_color(this.props.status)}>
                     {this.props.status}
                     {
                         this.props.retryCount > 0 && 
@@ -168,7 +175,6 @@ class RunList extends React.Component {
     }
 
     static getDerivedStateFromProps(nextProps, prevState) {
-        console.log("peep")
         if(nextProps.jobID !== prevState.mirroredJobID){
             let runInfo = {}
             nextProps.runIDs.map( (r) => runInfo[r] = {

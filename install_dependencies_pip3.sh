@@ -16,3 +16,5 @@ python3 -m pip install PyYAML \
     unidecode
 
 python3 -m pip install cwltool
+
+python3 -m pip install psutil
