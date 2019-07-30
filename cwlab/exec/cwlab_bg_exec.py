@@ -59,6 +59,11 @@ def commit():
             else:
                 sleep(retry_delay + retry_delay*random())
 
+# set pid:
+pid = os.getpid()
+exec_db_entry.pid = pid
+commit()
+
 # create out_dir:
 if not os.path.exists(out_dir):
     os.mkdir(out_dir)
@@ -100,7 +105,6 @@ status_message={
     "post_exec":"finishing",
 }
 def run_step(step_name):
-    timeout = False
     err_message = None
     # update the state of the exec in the database:
     exec_db_entry.status = status_message[step_name]
@@ -143,7 +147,7 @@ def run_step(step_name):
         if err_message:
             exec_db_entry.err_message = exec_db_entry.err_message + \
                 ": " + err_message
-        exec_db_entry.time_finshed = datetime.now()
+        exec_db_entry.time_finished = datetime.now()
         commit()
         sys.exit()
         return exec_db_entry.err_message
@@ -151,5 +155,5 @@ step_order = ["pre_exec", "exec", "eval", "post_exec"]
 
 [run_step(step) for step in step_order if step in exec_profile.keys()]
 exec_db_entry.status = "finished"
-exec_db_entry.time_finshed = datetime.now()
+exec_db_entry.time_finished = datetime.now()
 commit()
