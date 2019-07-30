@@ -63,6 +63,8 @@ def assign_params_to_sheets(configs):
     used_as_run_id=[]   # id a param was already used as run_id
                         # it will be removed from the params lists
     for param in configs.keys():
+        if configs[param]["type"] == "helper":
+            continue
         run_id = configs[param]["split_into_runs_by"][0]
         is_run_specific = run_id != ""
         is_array = configs[param]["is_array"]
