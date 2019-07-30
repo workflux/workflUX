@@ -5,7 +5,7 @@ from flask import render_template, jsonify, redirect, flash, url_for, request, s
 from werkzeug.urls import url_parse
 from cwlab import app 
 from cwlab.general_use import fetch_files_in_dir, is_allowed_file, allowed_extensions_by_type, get_job_templates, \
-    get_job_templ_info, get_path
+    get_job_templ_info, get_path, get_job_name_from_job_id
 import requests
 from re import match
 from cwlab.xls2cwl_job.web_interface import gen_form_sheet
@@ -216,6 +216,8 @@ def create_job():    # generate param form sheet with data sent
         make_yaml_runs(
             sheet_file=sheet_form_dest_path,
             output_basename="",
+            default_run_id=get_job_name_from_job_id(job_id),
+            always_include_run_in_output_name=True,
             output_suffix=".yaml",
             output_dir=runs_yaml_dir,
             validate_paths=False, search_paths=False, search_subdirs=False, input_dir=""

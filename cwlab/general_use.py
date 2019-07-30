@@ -71,6 +71,9 @@ def get_job_ids():
     job_ids = [d for d in os.listdir(exec_dir) if os.path.isdir(os.path.join(exec_dir, d))]
     return job_ids
 
+def get_job_name_from_job_id(job_id):
+    return match('(\d+)_(\d+)_(.+)', job_id).group(3)
+
 def get_path(which, job_id=None, run_id=None, param_sheet_format=None, cwl_target=None):
     if which == "job_dir":
         path = os.path.join(app.config["EXEC_DIR"], job_id)
