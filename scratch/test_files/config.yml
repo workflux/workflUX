@@ -13,9 +13,13 @@ DEBUG: True
 
 EXEC_PROFILES:
   cwltool_local_test: # name of the exec profile
+    
     # Choose the shell to use:
     #   bash (Linux/MacOs), cmd (Windows)
     shell: bash
+
+    # how many times execution should be retried (default 3):
+    max_retries: 3
     
     # timeout for each step in seconds 
     # if not specified the defaults are used:

@@ -80,19 +80,19 @@ def get_job_list():
 def get_run_status():
     messages = []
     data={}
-    try:
-        data_req = request.get_json()
-        data = get_run_info(data_req["job_id"], data_req["run_ids"])
-    except SystemExit as e:
-        messages.append( { 
-            "type":"error", 
-            "text": str(e) 
-        } )
-    except:
-        messages.append( { 
-            "type":"error", 
-            "text":"An uknown error occured reading the execution directory." 
-        } )
+    # try:
+    data_req = request.get_json()
+    data = get_run_info(data_req["job_id"], data_req["run_ids"])
+    # except SystemExit as e:
+    #     messages.append( { 
+    #         "type":"error", 
+    #         "text": str(e) 
+    #     } )
+    # except:
+    #     messages.append( { 
+    #         "type":"error", 
+    #         "text":"An uknown error occured reading the execution directory." 
+    #     } )
     return jsonify({
             "data": data,
             "messages": messages
