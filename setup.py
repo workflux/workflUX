@@ -6,7 +6,7 @@ README = os.path.join(SETUP_DIR, 'README.md')
 
 setup(
     name='cwlab',
-    version='0.1.1',    
+    version='0.1.2',    
     description='A platform-agnostic, cloud-ready framework ' + \
         'for simplified deployment of the Common Workflow Language ' + \
         'using a graphical web interface',
