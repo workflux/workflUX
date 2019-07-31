@@ -1,17 +1,16 @@
+#!/usr/bin/env python3
 import os
 from setuptools import find_packages, setup
 
 SETUP_DIR = os.path.dirname(__file__)
-README = os.path.join(SETUP_DIR, 'README.md')
+README = os.path.join(SETUP_DIR, 'README.rst')
 
 setup(
     name='cwlab',
     version='0.1.2',    
-    description='A platform-agnostic, cloud-ready framework ' + \
-        'for simplified deployment of the Common Workflow Language ' + \
-        'using a graphical web interface',
+    description='A platform-agnostic, cloud-ready framework for simplified deployment of the Common Workflow Language using a graphical web interface',
     long_description=open(README).read(),
-    long_description_content_type="text/markdown",
+    long_description_content_type="text/x-rst",
     url='https://github.com/CompEpigen/CWLab',
     download_url="https://github.com/CompEpigen/CWLab",
     author='Kersten Henrik Breuer',
@@ -60,5 +59,5 @@ setup(
         'Topic :: Scientific/Engineering :: Information Analysis',
         'Topic :: Scientific/Engineering :: Medical Science Apps.',
         'Topic :: System :: Distributed Computing',
-    ],
+    ]
 )

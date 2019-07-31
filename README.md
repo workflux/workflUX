@@ -27,13 +27,11 @@ Open a modern browser of your choice like Chrome, Firefox, Safari, or Edge (Inte
 
 Type in the URL of your web server. The URL depends on your configuration:  
 
- - If the webserver is running on the same machine and uses port 5000 is used (this is the default), type:  
- `https://localhost:5000/`  
- - If CWLab is running on a remote machine in the same network, type in the machine's IP address and the used port. For instance, if the IP address is 172.22.0.1 and port 5000 is used:  
-  `https://172.22.0.1:5000/`
+ - If the webserver is running on the same machine and uses port 5000 is used (this is the default), type:  `https://localhost:5000/`  
+ - If CWLab is running on a remote machine in the same network, type in the machine's IP address and the used port. For instance, if the IP address is 172.22.0.1 and port 5000 is used:`https://172.22.0.1:5000/`
   
- You should see a Welcome page like this:  
-![welcome screenshot](https://github.com/CompEpigen/CWLab/blob/dev/screenshots/welcome.png?raw=true)
+You should see a Welcome page like this:  
+![welcome screenshot](https://github.com/CompEpigen/CWLab/blob/master/screenshots/welcome.png?raw=true)  
 
 ### Import a CWL workflow or tool:
 CWLab can be used to run any workflow or tool that has been wrapped using the Common Workflow Language. Of course, you can write workflows or tool wrappers yourself (we recommend rabix-composer https://rabix.io/), however, for many especially bioinformatic tasks, existing CWL solutions are publicly available. Check the CWL website as a starting point:  
@@ -45,7 +43,7 @@ To import a CWL document:
 - Press the import button
 
 The workflow will be automatically validated:  
-![import screenshot](https://github.com/CompEpigen/CWLab/blob/dev/screenshots/import.png?raw=true)
+![import screenshot](https://github.com/CompEpigen/CWLab/blob/master/screenshots/import.png?raw=true)
 
 *\*Please note: Currently, workflows can only be imported in the "packed" format. We will add support for the unpacked format soon. To pack a CWL workflow, use:*  
 `cwltool --pack my_workflow.cwl > my_workflow_packed.cwl`
@@ -79,15 +77,16 @@ To run a workflow or tool with your data, you have to create a new job. One job 
 
 
 This is an example screenshot for creating a job for an ATAC-seq workflow:  
-![create job screenshot](https://github.com/CompEpigen/CWLab/blob/dev/screenshots/create_job.png?raw=true)
+![create job screenshot](https://github.com/CompEpigen/CWLab/blob/master/screenshots/create_job.png?raw=true)
 
 
-### Job execution:
+### Job execution:  
+
 - Click on "Job Execution & Results" in the top bar and choose the job of interest in the side bar
 - Select the runs you want to start
 - Select an execution profile (see the "Configuration" for details) and press "start"
 - The execution status will be displayed in the run-list
-- Pressing the "Details/Results" button will show (not implemented yet):
+- Pressing the "DetailsResults" button will show (not implemented yet):
     - the deployed input parameter
     - execution logs (from the CWL runner)
     - a QC report
@@ -95,10 +94,11 @@ This is an example screenshot for creating a job for an ATAC-seq workflow:
 
 
 An example screenshot of the execution interface:  
-![execution screenshot](https://github.com/CompEpigen/CWLab/blob/dev/screenshots/execution.png?raw=true)
+![execution screenshot](https://github.com/CompEpigen/CWLab/blob/master/screenshots/execution.png?raw=true)
 
 ## Configuration:
 CWLab is a highly versatile package and makes almost no assumptions on your hard- and software environment used for the execution of CWL. To adapt it to your system and use case, a set of configuration option is available:  
+
     - General configs, including: 
         - web server (hosting IP address and port, remotely or locally available, login protected or not)
         - paths of working directories
@@ -152,10 +152,12 @@ You can define multiple execution profile as shown in the config example below. 
 - **timeout**:  
     For each step in the execution profile, you can set a timeout limit.  
     *Default*:  
-        ```pre_exec: 120
-        exec: 86400
-        eval: 120
-        post_exec: 120```
+    ```yaml
+    pre_exec: 120
+    exec: 86400
+    eval: 120
+    post_exec: 120
+    ```
 
 - **pre_exec**\*:  
     Shell commands that are executed before the actual CWL execution. For instance to load required python/conda environments.  
@@ -171,6 +173,7 @@ You can define multiple execution profile as shown in the config example below. 
 
     
 \* **Additional notes regarding execution profile steps:**  
+
 - In each step following predefined variables are available:
     - ``JOB_ID``
     - ``RUN_ID`` (please note: is only unique within a job)
@@ -185,7 +188,8 @@ You can define multiple execution profile as shown in the config example below. 
 - The steps are executed using pexpect (https://pexpect.readthedocs.io/en/stable/overview.html), this allows you also connect to a remote infrastructure via ssh (recommended to use an ssh key). Please be aware that the path of files or directories specified in the input parameter YAML will not be adapted to the new host. We are working on solutions to achieve an automated path correction and/or upload functionality if the execution host is not the CWLab server host.
 
 ### Example comfiguration file:
-```
+  
+```yaml  
 WEB_SERVER_HOST: localhost 
 WEB_SERVER_PORT: 5000
 
@@ -199,24 +203,25 @@ DB_DIR: '/home/cwlab_user/cwlab/db'
 
 EXEC_PROFILES:
 
-  cwltool_local:
+cwltool_local:
     shell: bash
     timeout:
-      pre_exec: 120
-      exec: 86400
-      eval: 120
-      post_exec: 120
+        pre_exec: 120
+        exec: 86400
+        eval: 120
+        post_exec: 120
     exec: |
-      cwltool --outdir "${OUTPUT_DIR}" "${CWL}" "${RUN_YAML}" >> "${LOG_FILE}" 2>&1
+        cwltool --outdir "${OUTPUT_DIR}" "${CWL}" "${RUN_YAML}" \
+            >> "${LOG_FILE}" 2>&1
     eval: | 
-      LAST_LINE=$(tail -n 1 ${LOG_FILE})
-      if [[ "${LAST_LINE}" == *"Final process status is success"* ]]
-      then
-        SUCCESS=True
-      else
-        SUCCESS=False
-        ERR_MESSAGE="cwltool failed - ${LAST_LINE}"
-      fi
+        LAST_LINE=$(tail -n 1 ${LOG_FILE})
+        if [[ "${LAST_LINE}" == *"Final process status is success"* ]]
+        then
+            SUCCESS=True
+        else
+            SUCCESS=False
+            ERR_MESSAGE="cwltool failed - ${LAST_LINE}"
+        fi
 ```
 
 ## Documentation:
@@ -235,3 +240,4 @@ If you like to know more about us, please visit our website https://www.dkfz.de/
 
 ## Licence:
 This package is free to use and modify under the Apache 2.0 Licence.
+
