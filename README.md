@@ -29,7 +29,6 @@ Type in the URL of your web server. The URL depends on your configuration:
 
  - If the webserver is running on the same machine and uses port 5000 is used (this is the default), type:  
  `https://localhost:5000/`  
-
  - If CWLab is running on a remote machine in the same network, type in the machine's IP address and the used port. For instance, if the IP address is 172.22.0.1 and port 5000 is used:  
   `https://172.22.0.1:5000/`
   
