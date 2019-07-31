@@ -186,13 +186,16 @@ your hard- and software environment used for the execution of CWL. To
 adapt it to your system and use case, a set of configuration option is
 available:
 
-::
+-  General configs, including:
 
-    - General configs, including: 
-        - web server (hosting IP address and port, remotely or locally available, login protected or not)
-        - paths of working directories
-    - Execution profiles:  
-        This flexible API allows you to adapt CWLab to your local software environment and to integrate a CWL runner of your choice (such as Cwltool, Toil, or Cromwell).
+   -  web server (hosting IP address and port, remotely or locally
+      available, login protected or not)
+   -  paths of working directories
+
+-  Execution profiles:
+   This flexible API allows you to adapt CWLab to your local software
+   environment and to integrate a CWL runner of your choice (such as
+   Cwltool, Toil, or Cromwell).
 
 | All configuration options can be specified in a single YAML file which
   is provided to CWLab upon start:
