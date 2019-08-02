@@ -4,12 +4,19 @@ import subprocess
 from sqlalchemy import create_engine, MetaData
 from sqlalchemy.orm import sessionmaker
 from sqlalchemy.ext.automap import automap_base
-import pexpect
+from platform import system as platform_system
+from pexpect import TIMEOUT
 import json
 from datetime import datetime
 from time import sleep
 from random import random
 from re import sub
+
+if platform_system() == 'Windows':
+    from pexpect.popen_spawn import PopenSpawn as spawn
+else:
+    from pexpect import spawn
+
 
 # commandline arguments
 db_uri = sys.argv[1]
@@ -47,7 +54,7 @@ for db_retry_delay in db_retry_delays:
     except Exception as e:
         print(">>> retry db query: " + str(db_retry_delay))
         if db_retry_delay == db_retry_delays[-1]:
-            sys.exit(str(e))
+            sys.exit("Exception query to database: \n" + str(e))
         else:
             sleep(db_retry_delay + db_retry_delay*random())
 
@@ -60,7 +67,7 @@ def commit():
         except Exception as e:
             print(">>> retry db commit: " + str(db_retry_delay))
             if db_retry_delay == db_retry_delays[-1]:
-                sys.exit(str(e))
+                sys.exit("Exception during commit to database:  \n" + str(e))
             else:
                 sleep(db_retry_delay + db_retry_delay*random())
 
@@ -98,10 +105,7 @@ for retry_count in range(0, exec_profile["max_retries"]+1):
         var_cmdls = [(init_pref + c) for c in var_cmdls]
 
         # set up shell session
-        if exec_profile["shell"]=="bash":
-            p = pexpect.spawn("bash", timeout=None)
-        elif exec_profile["shell"]=="cmd":
-            p = pexpect.popen_spawn.PopenSpawn("cmd", timeout=None)
+        p = spawn("bash", timeout=None)
         [p.sendline(cmdl) for cmdl in var_cmdls]
 
         # run steps:
@@ -132,7 +136,7 @@ for retry_count in range(0, exec_profile["max_retries"]+1):
                 p.expect("DONE:EXITCODE:.*:DONE", timeout=exec_profile["timeout"][step_name])
                 exit_code = int(p.after.decode().split(":")[2].strip())
                 success = str(p.after.decode().split(":")[4].strip()) == "True"
-            except pexpect.TIMEOUT:
+            except TIMEOUT:
                 exit_code = 1
                 success = False
                 err_message = "timeout waiting for expected pattern"
