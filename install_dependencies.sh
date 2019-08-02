@@ -13,7 +13,8 @@ python2 -m pip install pyexcel \
     pyexcel-xlsx
 
 python2 -m pip install PyYAML \
-    unidecode
+    unidecode \
+    pexpect
 
 python2 -m pip install cwltool
 

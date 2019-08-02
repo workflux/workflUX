@@ -34,6 +34,7 @@ setup(
                       'pyexcel-xls',
                       'pyexcel-xlsx',
                       'PyYAML',
+                      'pexpect',
                       'unidecode',
                       'cwltool',
                       'psutil'               
