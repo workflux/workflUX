@@ -67,6 +67,7 @@ def exec_runs(job_id, run_ids, exec_profile_name, cwl):
             cwl=get_path("cwl", cwl_target=cwl),
             yaml=get_path("run_yaml", job_id=job_id, run_id=run_id),
             out_dir=get_path("run_out_dir", job_id=job_id, run_id=run_id),
+            global_temp_dir=app.config["TEMP_DIR"],
             log=get_path("run_log", job_id=job_id, run_id=run_id),
             status="queued",
             err_message="",

@@ -8,6 +8,7 @@ class Exec(db.Model):
     yaml = db.Column(db.String(4096))
     log = db.Column(db.String(4096))
     out_dir = db.Column(db.String(4096))
+    global_temp_dir = db.Column(db.String(4096))
     status = db.Column(db.String(64))
     err_message = db.Column(db.String(1500))
     retry_count = db.Column(db.Integer())
