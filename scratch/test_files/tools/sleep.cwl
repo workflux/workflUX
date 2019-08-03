@@ -1,21 +1,21 @@
 cwlVersion: v1.0
 class: CommandLineTool
-requirements:
-  InlineJavascriptRequirement: {}
-
 hints:
+  DockerRequirement:
+    dockerPull: ubuntu:latest
   ResourceRequirement:
     coresMin: 1
-    ramMin: 100
-    #tmpdirMin: 10000
-  
+    ramMin: 5000
+    tmpdirMin: 1000
+
 baseCommand: ["sleep"]
-arguments:
-  - valueFrom: ${return(Math.random()*10)}
-    position: 1
 
 inputs:
-  file:
-    type: File
-    
+  sleep_time:
+    type: int
+    inputBinding:
+      position: 1
+
 outputs: []
+  
+  
