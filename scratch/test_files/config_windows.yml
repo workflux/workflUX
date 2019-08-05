@@ -15,55 +15,11 @@ DB_DIR: 'C:\Users\kerst\OneDrive\home\CWLab\scratch\database'
 DEBUG: True
 
 EXEC_PROFILES:
-  cwltool_windows: # name of the exec profile
+  cwltool_windows:
     
-    # Choose the shell to use:
-    #   bash (Linux/MacOs), powershell (Windows)
     shell: powershell
 
-    # how many times execution should be retried (default 3):
     max_retries: 0
 
-    # available variables are:
-    #   - JOB_ID
-    #   - RUN_ID (please note: is only unique within a job)
-    #   - CWL
-    #   - RUN_YAML
-    #   - OUTPUT_DIR
-    #   - LOG_FILE
-    pre_exec: |
-      $VENV_DIR = "${GLOBAL_TEMP_DIR}\cwltool_venv"
-      $CWLTOOL_VERSION = "1.0.20180809224403"
-      if (-not (Test-Path -LiteralPath "${VENV_DIR}")) {
-        try {
-          "Creating Python virtual environment for cwltool."
-          python.exe -m venv "${VENV_DIR}"
-        }
-        catch {
-          "Error: Could not create python virtual environment."
-          $SUCCESS="False"
-        }
-      }
-      
-      try {
-        "Activating python virtual environment."
-        . "${VENV_DIR}\Scripts\Activate.ps1"
-      catch {
-        "Error: Could not activate python virtual environment."
-        $SUCCESS="False"
-      }
-
-      $cwltool_version = python.exe -m cwltool --version 2>&1
-      if (-not ($cwltool_version.Contains($CWLTOOL_VERSION))){
-        try {
-          "Not the right version of cwltool is installed. Installing version ${CWLTOOL_VERSION}."
-          python.exe -m pip install cwltool=="${CWLTOOL_VERSION}""
-        }
-        catch {
-          "Could not install cwltool."
-          $SUCCESS="False"
-        }
-      }
-
     exec: |
-      python.exe -m cwltool --default-container ubuntu:16.04 --outdir "${OUTPUT_DIR}" "${CWL}" "${RUN_YAML}" > "${LOG_FILE}" 2>&1
+      . ${PYTHON_PATH} -m cwltool --default-container ubuntu:16.04 --outdir "${OUTPUT_DIR}" "${CWL}" "${RUN_YAML}" > "${LOG_FILE}" 2>&1
