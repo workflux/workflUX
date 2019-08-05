@@ -5,7 +5,7 @@ from sqlalchemy import create_engine, MetaData
 from sqlalchemy.orm import sessionmaker
 from sqlalchemy.ext.automap import automap_base
 from platform import system as platform_system
-from pexpect import TIMEOUT
+from pexpect import TIMEOUT, EOF
 import json
 from datetime import datetime
 from time import sleep
@@ -17,6 +17,8 @@ if platform_system() == 'Windows':
     from pexpect.popen_spawn import PopenSpawn as spawn
 else:
     from pexpect import spawn
+
+python_interpreter = sys.executable
 
 
 # commandline arguments
@@ -95,7 +97,8 @@ def prepare_shell():
         "LOG_FILE=\"" +  log + "\"",
         "SUCCESS=\"True\"",
         "ERR_MESSAGE=\"None\"",
-        "FINISH_TAG=\"DONE\""
+        "FINISH_TAG=\"DONE\"",
+        "PYTHON_PATH=\"" + python_interpreter + "\""
     ]
 
     if exec_profile["shell"] == "bash":
@@ -137,7 +140,10 @@ def run_step(p, step_name):
     # wait for expected tag:
     try:
         p.expect("DONE:EXITCODE:.*:DONE", timeout=exec_profile["timeout"][step_name])
-        exit_code = int(p.after.decode().split(":")[2].strip())
+        exit_code_str = p.after.decode().split(":")[2].strip()
+        if exit_code_str == "":
+            exit_code_str = "0"
+        exit_code = int(exit_code_str)
         success = str(p.after.decode().split(":")[4].strip()) == "True"
     except TIMEOUT:
         exit_code = 1
@@ -146,7 +152,7 @@ def run_step(p, step_name):
     except:
         exit_code = 1
         success = False
-        err_message = "Unkown error checking for exit code. Maybe not exit code was set."
+        err_message = "Unkown error checking for exit code."
 
     if debug:
         log_text = "\n>>> " + step_name + ":\n" + \
@@ -166,7 +172,7 @@ def run_step(p, step_name):
             exec_db_entry.err_message = exec_db_entry.err_message + \
                 ": " + err_message
         sys.exit(err_message)
-
+    
 def terminate_shell(p):
     try:
         if exec_profile["shell"] == "bash":
@@ -184,16 +190,12 @@ for retry_count in range(0, exec_profile["max_retries"]+1):
     print(">>> retry count: " + str(retry_count))
     try:
         # # create empty log file:
-        # print("peep")
-        # open(log, 'w').close()
-        print("peep")
-        # prepare shell:
         p = prepare_shell()
 
-        print("peep")
         # run steps:
         [run_step(p, step) for step in step_order if step in exec_profile.keys()]
         exec_db_entry.status = "finished" 
+        terminate_shell(p)
         break
     except SystemExit as e:
         print(">>> A step could not be finished sucessfully: \n" + str(e))
@@ -203,10 +205,10 @@ for retry_count in range(0, exec_profile["max_retries"]+1):
         print(">>> System error occured: \n " + str(e))
         exec_db_entry.status = "system error"
         exec_db_entry.err_message = "System Error occured"
+        terminate_shell(p) 
         break
  
 
-terminate_shell(p) 
-# close and set finish time     
+# set finish time     
 exec_db_entry.time_finished = datetime.now()
 commit()
