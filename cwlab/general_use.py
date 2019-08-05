@@ -146,6 +146,8 @@ def output_example_config():
     example_config_file = open(os.path.join(basedir, "default_config.yaml"), "r")
     example_config_content = example_config_file.read()
     example_config_file.close()
+    print("# For help, please visit: " + 
+        "https://github.com/CompEpigen/CWLab#configuration")
     print(example_config_content)
     
 def db_commit(retry_delays=[1,4]):
