@@ -90,7 +90,7 @@ def transcode( sheet_file="", sheet_files=[], output_basename="",  default_run_i
     except SystemExit as e:
         sys.exit( 'Failed to translate - the error was:' + str(e))
     if verbose_level == 2:
-        print( "Translation successful.")
+        print( "Translation successful.", file=sys.stderr)
 
 def generate_xls_from_cwl(cwl_file, output_file="", show_please_fill=False):
     if output_file == "":

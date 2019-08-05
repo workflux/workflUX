@@ -21,6 +21,7 @@ class Config(object):
                 self.CONFIG_FILE +
                 "\" does not exist."
             )
+
         with open(self.CONFIG_FILE, 'r') as stream:
             try:
                 self.CONFIG_FILE_content = safe_load(stream)
@@ -68,7 +69,7 @@ class Config(object):
         )
 
         if self.DEBUG:
-            print("Debug mode turned on, don't use this on production machines.")
+            print("Debug mode turned on, don't use this on production machines.", file=sys.stderr)
 
         self.SQLALCHEMY_DATABASE_URI = (
             os.environ.get('CWLAB_DATABASE_URL') or
