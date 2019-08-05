@@ -22,4 +22,11 @@ EXEC_PROFILES:
     max_retries: 0
 
     exec: |
-      . ${PYTHON_PATH} -m cwltool --default-container ubuntu:16.04 --outdir "${OUTPUT_DIR}" "${CWL}" "${RUN_YAML}" > "${LOG_FILE}" 2>&1
+      . "${PYTHON_PATH}" -m cwltool --default-container ubuntu:16.04 --outdir "${OUTPUT_DIR}" "${CWL}" "${RUN_YAML}" > "${LOG_FILE}" 2>&1
+
+    eval: |
+      $LAST_LINES = (Get-Content -Tail 2 "${LOG_FILE}")
+
+      if ($LAST_LINES.Contains("Final process status is success")){$SUCCESS="True"} 
+      else {$SUCCESS="False"; $ERR_MESSAGE = "cwltool failed - ${LAST_LINE}"}
+
