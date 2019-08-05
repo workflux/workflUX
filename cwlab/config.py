@@ -90,7 +90,7 @@ class Config(object):
             if "timeout" in self.EXEC_PROFILES[exec_profile].keys():
                 timeout_defaults.update(self.EXEC_PROFILES[exec_profile]["timeout"])
             self.EXEC_PROFILES[exec_profile]["timeout"] = timeout_defaults
-            if not "max_retries" in self.EXEC_PROFILES.keys():
+            if not "max_retries" in self.EXEC_PROFILES[exec_profile].keys():
                 self.EXEC_PROFILES[exec_profile]["max_retries"] = max_retries_default
 
 
