@@ -11,11 +11,11 @@ EXEC_PROFILES:
     exec: |
       "${PYTHON_PATH}" -m cwltool --outdir "${OUTPUT_DIR}" "${CWL}" "${RUN_YAML}" >> "${LOG_FILE}" 2>&1
     eval: | 
-      LAST_LINE=$(tail -n 1 ${LOG_FILE})
-      if [[ "${LAST_LINE}" == *"Final process status is success"* ]]
+      LAST_LINES=$(tail -n 2 ${LOG_FILE})
+      if [[ "${LAST_LINES}" == *"Final process status is success"* ]]
       then
         SUCCESS=True
       else
         SUCCESS=False
-        ERR_MESSAGE="cwltool failed - ${LAST_LINE}"
+        ERR_MESSAGE="cwltool failed -  ${LAST_LINES}"
       fi
