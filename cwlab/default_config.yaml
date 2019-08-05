@@ -8,14 +8,8 @@ EXEC_PROFILES:
   cwltool_local: 
     shell: bash
     
-    timeout:
-      pre_exec: 120
-      exec: 86400
-      eval: 120
-      post_exec: 120
-
     exec: |
-      cwltool --outdir "${OUTPUT_DIR}" "${CWL}" "${RUN_YAML}" >> "${LOG_FILE}" 2>&1
+      "${PYTHON_PATH}" -m cwltool --outdir "${OUTPUT_DIR}" "${CWL}" "${RUN_YAML}" >> "${LOG_FILE}" 2>&1
     eval: | 
       LAST_LINE=$(tail -n 1 ${LOG_FILE})
       if [[ "${LAST_LINE}" == *"Final process status is success"* ]]
