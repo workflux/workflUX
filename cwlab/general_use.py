@@ -143,7 +143,7 @@ def get_job_templ_info(which, cwl_target=None, job_templ_filepath=None):
     return info
 
 def output_example_config():
-    example_config_file = open(os.path.join(basedir, "example_config.yaml"), "r")
+    example_config_file = open(os.path.join(basedir, "default_config.yaml"), "r")
     example_config_content = example_config_file.read()
     example_config_file.close()
     print(example_config_content)
