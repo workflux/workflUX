@@ -15,12 +15,15 @@ class Config(object):
         self.CONFIG_FILE = CONFIG_FILE or \
                 os.environ.get('CWLAB_CONFIG') or \
                 self.DEFAULT_CONFIG_FILE
+
         if not os.path.exists(self.CONFIG_FILE):
             sys.exit(
                 "Error: the specified config file \"" +
                 self.CONFIG_FILE +
                 "\" does not exist."
             )
+
+        print(">>> Using config file: " + self.CONFIG_FILE, file=sys.stderr)
 
         with open(self.CONFIG_FILE, 'r') as stream:
             try:
