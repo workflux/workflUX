@@ -33,7 +33,15 @@ def get_job_list():
         #       - get list of runs
         for job_id in job_ids:
             job_dir = get_path("job_dir", job_id=job_id)
-            job_param_sheet = get_path("job_param_sheet", job_id=job_id)
+            try:
+                job_param_sheet = get_path("job_param_sheet", job_id=job_id)
+            except SystemExit as e:
+                messages.append( { 
+                    "type":"warning", 
+                    "text": str(e) + " Skipping."
+                } )
+                continue
+                
             job_param_sheet_attributes = get_job_templ_info("attributes", job_templ_filepath=job_param_sheet)
             if "CWL" not in job_param_sheet_attributes.keys() or job_param_sheet_attributes["CWL"] == "":
                 messages.append( { 
@@ -49,7 +57,7 @@ def get_job_list():
                 "job_abs_path": job_dir,
                 "runs": run_ids,
                 "cwl_target": cwl_target
-            })
+                })
     except SystemExit as e:
         messages.append( { 
             "type":"error", 
@@ -111,7 +119,7 @@ def start_exec():    # returns all parmeter and its default mode (global/job spe
     run_ids = data["run_ids"]
     exec_profile_name = data["exec_profile"]
     try:
-        warnings = exec_runs(
+        exec_runs(
             job_id,
             run_ids,
             exec_profile_name,

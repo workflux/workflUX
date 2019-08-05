@@ -1,4 +1,4 @@
-import os
+import os, sys
 from re import sub, match
 from datetime import datetime
 from . import app
@@ -87,6 +87,8 @@ def get_path(which, job_id=None, run_id=None, param_sheet_format=None, cwl_targe
         else:
             path = os.path.join(app.config["EXEC_DIR"], job_id)
             hits = fetch_files_in_dir(path, allowed_extensions_by_type["spreadsheet"], "param_sheet")
+            if len(hits) == 0:
+                sys.exit("No spreadsheet found for job " + job_id)
             path = os.path.join(path, hits[0]["file_name"])
     elif which == "runs_yaml_dir":
         path = os.path.join(app.config["EXEC_DIR"], job_id, "runs_params")
