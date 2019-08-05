@@ -30,10 +30,13 @@ def create_background_process(command_list, log_file):
     assert not p.poll()
 
 def cleanup_zombie_process(pid):
-    if pid_exists(pid):
-        p = Process(pid)
-        if p.status() == STATUS_ZOMBIE:
-            p.wait()
+    try:
+        if pid_exists(pid):
+            p = Process(pid)
+            if p.status() == STATUS_ZOMBIE:
+                p.wait()
+    except:
+        pass
 
 def query_info_from_db(job_id):
     retry_delays = [1, 4]
