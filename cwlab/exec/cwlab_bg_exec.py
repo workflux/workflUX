@@ -7,7 +7,7 @@ from sqlalchemy.ext.automap import automap_base
 from platform import system as platform_system
 from pexpect import TIMEOUT, EOF
 import json
-from datetime import datetime
+from datetime import datetime, timedelta
 from time import sleep
 from random import random
 from re import sub
@@ -123,10 +123,13 @@ def run_step(p, step_name):
         "post_exec":"finishing",
     }
     err_message = None
+    timeout = int(exec_profile["timeout"][step_name])
     # update the state of the exec in the database:
+    exec_db_entry.timeout_limit = datetime.now() + timedelta(0, timeout)
     exec_db_entry.status = status_message[step_name]
     exec_db_entry.retry_count = retry_count
     commit()
+    
     # run commands specified in the exec profile
     cmdls = exec_profile[step_name].splitlines()
     [p.sendline(cmdl) for cmdl in cmdls]
@@ -139,7 +142,7 @@ def run_step(p, step_name):
 
     # wait for expected tag:
     try:
-        p.expect("DONE:EXITCODE:.*:DONE", timeout=exec_profile["timeout"][step_name])
+        p.expect("DONE:EXITCODE:.*:DONE", timeout=timeout)
         exit_code_str = p.after.decode().split(":")[2].strip()
         if exit_code_str == "":
             exit_code_str = "0"
