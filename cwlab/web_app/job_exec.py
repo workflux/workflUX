@@ -88,19 +88,19 @@ def get_job_list():
 def get_run_status():
     messages = []
     data={}
-    # try:
-    data_req = request.get_json()
-    data = get_run_info(data_req["job_id"], data_req["run_ids"])
-    # except SystemExit as e:
-    #     messages.append( { 
-    #         "type":"error", 
-    #         "text": str(e) 
-    #     } )
-    # except:
-    #     messages.append( { 
-    #         "type":"error", 
-    #         "text":"An uknown error occured reading the execution directory." 
-    #     } )
+    try:
+        data_req = request.get_json()
+        data = get_run_info(data_req["job_id"], data_req["run_ids"])
+    except SystemExit as e:
+        messages.append( { 
+            "type":"error", 
+            "text": str(e) 
+        } )
+    except:
+        messages.append( { 
+            "type":"error", 
+            "text":"An uknown error occured reading the execution directory." 
+        } )
     return jsonify({
             "data": data,
             "messages": messages
@@ -118,34 +118,34 @@ def start_exec():    # returns all parmeter and its default mode (global/job spe
     job_id = data["job_id"]
     run_ids = data["run_ids"]
     exec_profile_name = data["exec_profile"]
-    # try:
-    started_runs, already_running_runs = exec_runs(
-        job_id,
-        run_ids,
-        exec_profile_name,
-        cwl_target
-    )
-    
-    if len(started_runs) > 0:
-        messages.append({
-            "type":"success",
-            "text":"Successfully started execution for jobs: " + ", ".join(started_runs)
-        })
-    if len(already_running_runs) > 0:
-        messages.append({
-            "type":"warning",
-            "text":"Following jobs are already running: " + ", ".join(already_running_runs) + ". To restart them, use terminate them first."
-        })
-    # except SystemExit as e:
-    #     messages.append( { 
-    #         "type":"error", 
-    #         "text": str(e) 
-    #     } )
-    # except:
-    #     messages.append( { 
-    #         "type":"error", 
-    #         "text":"An uknown error occured." 
-    #     } )
+    try:
+        started_runs, already_running_runs = exec_runs(
+            job_id,
+            run_ids,
+            exec_profile_name,
+            cwl_target
+        )
+        
+        if len(started_runs) > 0:
+            messages.append({
+                "type":"success",
+                "text":"Successfully started execution for jobs: " + ", ".join(started_runs)
+            })
+        if len(already_running_runs) > 0:
+            messages.append({
+                "type":"warning",
+                "text":"Following jobs are already running: " + ", ".join(already_running_runs) + ". To restart them, use terminate them first."
+            })
+    except SystemExit as e:
+        messages.append( { 
+            "type":"error", 
+            "text": str(e) 
+        } )
+    except:
+        messages.append( { 
+            "type":"error", 
+            "text":"An uknown error occured." 
+        } )
     return jsonify({
         "data":{},
         "messages":messages
