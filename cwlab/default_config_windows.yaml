@@ -1,0 +1,19 @@
+WEB_SERVER_HOST: localhost
+
+WEB_SERVER_PORT: 5000
+
+DEBUG: False
+
+EXEC_PROFILES:
+  cwltool_windows:
+    
+    shell: powershell
+
+    exec: |
+      . "${PYTHON_PATH}" -m cwltool --default-container ubuntu:16.04 --outdir "${OUTPUT_DIR}" "${CWL}" "${RUN_YAML}" > "${LOG_FILE}" 2>&1
+
+    eval: |
+      $LAST_LINES = (Get-Content -Tail 2 "${LOG_FILE}")
+
+      if ($LAST_LINES.Contains("Final process status is success")){$SUCCESS="True"} 
+      else {$SUCCESS="False"; $ERR_MESSAGE = "cwltool failed - ${LAST_LINE}"}

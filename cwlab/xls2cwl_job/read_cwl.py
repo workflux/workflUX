@@ -76,15 +76,15 @@ def read_config_from_cwl_file(cwl_file):
                             default_value.append(clean_string(entry))
                         else:
                             print(print_pref + "W: invalid default value for parameter " + name + 
-                                ": will be ignored")
+                                ": will be ignored", file=sys.stderr)
                             default_value = [""]
                 elif type_ == "File" and isinstance(inp_rec["default"], dict):
                     print(print_pref + "W: invalid default value for parameter " + name + 
-                        ": defaults for File class are not supported yet; will be ignored")
+                        ": defaults for File class are not supported yet; will be ignored", file=sys.stderr)
                     default_value = [""]
                 else:
                     print(print_pref + "W: invalid default value for parameter " + name + 
-                        ": will be ignored")
+                        ": will be ignored", file=sys.stderr)
                     default_value = [""]
         else:
             default_value = [""]

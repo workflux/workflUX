@@ -34,8 +34,10 @@ setup(
                       'pyexcel-xls',
                       'pyexcel-xlsx',
                       'PyYAML',
+                      'pexpect',
                       'unidecode',
-                      'cwltool',
+                      'cwltool==1.0.20180809224403; platform_system=="Windows"',
+                      'cwltool; platform_system!="Windows"',
                       'psutil'               
                       ],
     classifiers=[

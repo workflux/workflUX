@@ -1,4 +1,4 @@
-import os
+import os, sys
 from re import sub, match
 from datetime import datetime
 from . import app
@@ -87,6 +87,8 @@ def get_path(which, job_id=None, run_id=None, param_sheet_format=None, cwl_targe
         else:
             path = os.path.join(app.config["EXEC_DIR"], job_id)
             hits = fetch_files_in_dir(path, allowed_extensions_by_type["spreadsheet"], "param_sheet")
+            if len(hits) == 0:
+                sys.exit("No spreadsheet found for job " + job_id)
             path = os.path.join(path, hits[0]["file_name"])
     elif which == "runs_yaml_dir":
         path = os.path.join(app.config["EXEC_DIR"], job_id, "runs_params")
@@ -141,9 +143,11 @@ def get_job_templ_info(which, cwl_target=None, job_templ_filepath=None):
     return info
 
 def output_example_config():
-    example_config_file = open(os.path.join(basedir, "example_config.yaml"), "r")
+    example_config_file = open(app.config["DEFAULT_CONFIG_FILE"])
     example_config_content = example_config_file.read()
     example_config_file.close()
+    print("# For help, please visit: " + 
+        "https://github.com/CompEpigen/CWLab#configuration")
     print(example_config_content)
     
 def db_commit(retry_delays=[1,4]):

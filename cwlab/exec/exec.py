@@ -30,10 +30,20 @@ def create_background_process(command_list, log_file):
     assert not p.poll()
 
 def cleanup_zombie_process(pid):
-    if pid_exists(pid):
-        p = Process(pid)
-        if p.status() == STATUS_ZOMBIE:
-            p.wait()
+    try:
+        if pid_exists(pid):
+            p = Process(pid)
+            if p.status() == STATUS_ZOMBIE:
+                p.wait()
+    except:
+        pass
+
+def check_for_timeout(db_request, job_id, run_ids):
+    db_job_id_request = db_request.filter(Exec.job_id==job_id)
+    for run_id in run_ids:
+        db_run_id_request = db_job_id_request.filter(Exec.run_id==run_id).distinct()
+
+
 
 def query_info_from_db(job_id):
     retry_delays = [1, 4]
@@ -51,12 +61,16 @@ def query_info_from_db(job_id):
 def exec_runs(job_id, run_ids, exec_profile_name, cwl):
     
     # check if runs are already running:
-    already_running = []
+    already_running_runs = []
     db_job_id_request = query_info_from_db(job_id)
     for run_id in run_ids:
         db_run_id_request = db_job_id_request.filter(Exec.run_id==run_id).distinct()
-        if db_run_id_request.filter(Exec.time_started is None).count() > 0:
-            already_running.append(run_id)
+        if db_run_id_request.count() > 0:
+            # find latest:
+            run_info =  db_run_id_request.filter(Exec.id==max([r.id for r in db_run_id_request])).first()
+            if run_info.time_finished is None:
+                already_running_runs.append(run_id)
+    run_ids = list(set(run_ids) - set(already_running_runs))
 
     # create new exec entry in database:
     exec_db_entry = {}
@@ -67,12 +81,14 @@ def exec_runs(job_id, run_ids, exec_profile_name, cwl):
             cwl=get_path("cwl", cwl_target=cwl),
             yaml=get_path("run_yaml", job_id=job_id, run_id=run_id),
             out_dir=get_path("run_out_dir", job_id=job_id, run_id=run_id),
+            global_temp_dir=app.config["TEMP_DIR"],
             log=get_path("run_log", job_id=job_id, run_id=run_id),
             status="queued",
             err_message="",
             retry_count=0,
             time_started=datetime.now(),
             time_finished=None, #*
+            timeout_limit=None, #*
             pid=-1, #*
             exec_profile=app.config["EXEC_PROFILES"][exec_profile_name],
             exec_profile_name=exec_profile_name
@@ -87,6 +103,7 @@ def exec_runs(job_id, run_ids, exec_profile_name, cwl):
     # and manages the its status in the database autonomously,
     # even if the parent process is terminated / fails,
     # the child process will continue
+    started_runs = []
     log_dir = get_path("backgr_logs_dir", job_id=job_id)
     if not os.path.isdir(log_dir) and app.config["DEBUG"]:
         os.makedirs(log_dir)
@@ -101,6 +118,8 @@ def exec_runs(job_id, run_ids, exec_profile_name, cwl):
             ],
             get_path("backgr_log", job_id=job_id, run_id=run_id)
         )
+        started_runs.append(run_id)
+    return started_runs, already_running_runs
 
 def get_run_info(job_id, run_ids):
     data = {}
@@ -121,13 +140,14 @@ def get_run_info(job_id, run_ids):
             
             # check if background process still running:
             cleanup_zombie_process(run_info.pid)
+            
             if (not isinstance(run_info.time_finished, datetime)) and \
                 (not run_info.pid == -1) and \
                 (not pid_exists(run_info.pid)):
                 run_info.status = "process ended unexpectedly"
                 run_info.time_finished = datetime.now()
                 db_commit()
-
+                    
             # if not ended, set end time to now for calc of duration
             if run_info.time_finished:
                 time_finished = run_info.time_finished

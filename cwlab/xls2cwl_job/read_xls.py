@@ -43,7 +43,7 @@ def integer_field( field_string ):
     try:
         int_value = int(int_string)
     except ValueError as e:
-        print(print_pref + "E: " + str(e))
+        print(print_pref + "E: " + str(e), file=sys.stderr)
     return int_value
 
 def boolean_field( field_string ):

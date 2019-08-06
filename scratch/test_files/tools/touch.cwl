@@ -1,12 +1,13 @@
 cwlVersion: v1.0
 class: CommandLineTool
-
 hints:
+  DockerRequirement:
+    dockerPull: ubuntu:latest
   ResourceRequirement:
     coresMin: 1
-    ramMin: 100
-    #tmpdirMin: 10000
-  
+    ramMin: 5000
+    tmpdirMin: 1000
+
 baseCommand: ["touch"]
 
 inputs:
@@ -14,9 +15,9 @@ inputs:
     type: string
     inputBinding:
       position: 1
-    
+
 outputs:
-  file:
+  test_file:
     type: File
     outputBinding:
       glob: $(inputs.filename)
