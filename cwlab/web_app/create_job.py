@@ -157,7 +157,7 @@ def send_filled_param_form_sheet():
             # validate the uploaded form sheet:
             validation_result = only_validate_xls(
                 sheet_file=import_filepath,
-                validate_paths=False, search_paths=False, search_subdirs=False, input_dir=""
+                validate_paths=True, search_paths=True, search_subdirs=True, input_dir=app.config["INPUT_DIR"]
             )
             if validation_result != "VALID":
                 os.remove(import_filepath)
@@ -220,7 +220,7 @@ def create_job():    # generate param form sheet with data sent
             always_include_run_in_output_name=True,
             output_suffix=".yaml",
             output_dir=runs_yaml_dir,
-            validate_paths=False, search_paths=False, search_subdirs=False, input_dir=""
+            validate_paths=True, search_paths=True, search_subdirs=True, input_dir=app.config["INPUT_DIR"]
         )
 
         messages.append( { 

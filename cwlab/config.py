@@ -88,20 +88,28 @@ class Config(object):
 
         # execution profile:
         self.EXEC_PROFILES = self.CONFIG_FILE_content.get('EXEC_PROFILES') or {}
+        
+        # set defaults:
         timeout_defaults = {
             "pre_exec": 120,
             "exec": 86400,
             "eval": 120,
             "post_exec": 120
         }
-        max_retries_default = 3
-        
+        general_defaults = {
+            "max_retries_default": 3,
+            "max_parallel_runs_default": 3, # if exceeded, jobs will be queued
+            "wait_when_queued": 10, # When beeing queued, wait this long before trying to start again
+        }
         for exec_profile in self.EXEC_PROFILES.keys():
+            timeout = timeout_defaults
             if "timeout" in self.EXEC_PROFILES[exec_profile].keys():
-                timeout_defaults.update(self.EXEC_PROFILES[exec_profile]["timeout"])
-            self.EXEC_PROFILES[exec_profile]["timeout"] = timeout_defaults
-            if not "max_retries" in self.EXEC_PROFILES[exec_profile].keys():
-                self.EXEC_PROFILES[exec_profile]["max_retries"] = max_retries_default
+                timeout.update(self.EXEC_PROFILES[exec_profile]["timeout"])
+            self.EXEC_PROFILES[exec_profile]["timeout"] = timeout
+            general = general_defaults
+            general.update(self.EXEC_PROFILES[exec_profile])
+            self.EXEC_PROFILES[exec_profile] = general
+
 
 
         # Configure web server:

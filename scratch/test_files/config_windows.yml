@@ -9,7 +9,7 @@ WEB_SERVER_PORT: 5000 # The default is 5000, if this port is blocked choose a di
 TEMP_DIR: 'C:\Users\kerst\OneDrive\home\CWLab\scratch\temp'
 CWL_DIR: 'C:\Users\kerst\OneDrive\home\CWLab\scratch\CWL'
 EXEC_DIR: 'C:\Users\kerst\OneDrive\home\CWLab\scratch\exec'
-INPUT_DIR: 'C:\Users\kerst\OneDrive\home\CWLab\scratch\input'
+INPUT_DIR: 'C:\Users\kerst\OneDrive\home\CWLab\scratch\test_files\test_data'
 DB_DIR: 'C:\Users\kerst\OneDrive\home\CWLab\scratch\database'
 
 DEBUG: True
@@ -20,6 +20,10 @@ EXEC_PROFILES:
     shell: powershell
 
     max_retries: 0
+
+    max_parallel_runs: 3
+
+    wait_when_queued: 1
 
     exec: |
       . "${PYTHON_PATH}" -m cwltool --default-container ubuntu:16.04 --outdir "${OUTPUT_DIR}" "${CWL}" "${RUN_YAML}" > "${LOG_FILE}" 2>&1

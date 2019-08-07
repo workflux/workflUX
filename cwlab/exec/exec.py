@@ -38,12 +38,6 @@ def cleanup_zombie_process(pid):
     except:
         pass
 
-def check_for_timeout(db_request, job_id, run_ids):
-    db_job_id_request = db_request.filter(Exec.job_id==job_id)
-    for run_id in run_ids:
-        db_run_id_request = db_job_id_request.filter(Exec.run_id==run_id).distinct()
-
-
 
 def query_info_from_db(job_id):
     retry_delays = [1, 4]

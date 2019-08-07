@@ -203,25 +203,25 @@ DB_DIR: '/home/cwlab_user/cwlab/db'
 
 EXEC_PROFILES:
 
-cwltool_local:
-    shell: bash
-    timeout:
-        pre_exec: 120
-        exec: 86400
-        eval: 120
-        post_exec: 120
-    exec: |
-        cwltool --outdir "${OUTPUT_DIR}" "${CWL}" "${RUN_YAML}" \
-            >> "${LOG_FILE}" 2>&1
-    eval: | 
-        LAST_LINE=$(tail -n 1 ${LOG_FILE})
-        if [[ "${LAST_LINE}" == *"Final process status is success"* ]]
-        then
-            SUCCESS=True
-        else
-            SUCCESS=False
-            ERR_MESSAGE="cwltool failed - ${LAST_LINE}"
-        fi
+  cwltool_local:
+      shell: bash
+      timeout:
+          pre_exec: 120
+          exec: 86400
+          eval: 120
+          post_exec: 120
+      exec: |
+          cwltool --outdir "${OUTPUT_DIR}" "${CWL}" "${RUN_YAML}" \
+              >> "${LOG_FILE}" 2>&1
+      eval: | 
+          LAST_LINE=$(tail -n 1 ${LOG_FILE})
+          if [[ "${LAST_LINE}" == *"Final process status is success"* ]]
+          then
+              SUCCESS=True
+          else
+              SUCCESS=False
+              ERR_MESSAGE="cwltool failed - ${LAST_LINE}"
+          fi
 ```
 
 ## Documentation:
