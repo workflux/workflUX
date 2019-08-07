@@ -64,12 +64,12 @@ def class_file(value_string, secondary_files, validate_paths=True, search_paths=
             if sec_ext[0] == "^":
                 capture_sec_ext = re.search('^(\^+)(.*)', sec_ext)
                 n_exts_to_rm = len(capture_sec_ext.group(1))
-                value_root = value_string 
+                value_root = path 
                 for idx in range(0,n_exts_to_rm):
                   value_root = os.path.splitext(value_root)[0]
                 sec_file_item_path =value_root + capture_sec_ext.group(2)
             else:
-                sec_file_item_path =value_string + sec_ext
+                sec_file_item_path = path + sec_ext
             try:
                 sec_file_item_path = get_file_or_dir_path(sec_file_item_path, False, False, validate_paths)
             except SystemExit as e:
