@@ -2,9 +2,11 @@
 /migrations
 /scratch/database
 /scratch/exec
+/scratch/CWL
 .vscode
 test
 /scratch/temp
 /dist
 /cwlab.egg-info
 /build
+/scratch_
