@@ -21,6 +21,10 @@ EXEC_PROFILES:
 
     max_retries: 0
 
+    max_parallel_runs: 3
+
+    wait_when_queued: 1
+
     exec: |
       . "${PYTHON_PATH}" -m cwltool --default-container ubuntu:16.04 --outdir "${OUTPUT_DIR}" "${CWL}" "${RUN_YAML}" > "${LOG_FILE}" 2>&1
 
