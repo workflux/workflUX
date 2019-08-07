@@ -33,34 +33,52 @@ if debug:
     db_retry_delays = [1, 5, 20]
 else:
     db_retry_delays = [1, 5, 20, 60, 600]
+
+# open connection to database
 for db_retry_delay in db_retry_delays:
     try:
-        # open connection to database
         engine = create_engine(db_uri)
         Session = sessionmaker(bind=engine)
         session = Session()
         Base = automap_base()
         Base.prepare(engine, reflect=True)
         Exec = Base.classes["exec"]
-
-        # retrieve infos from database
-        exec_db_entry = session.query(Exec).get(int(exec_db_id))
-
-        job_id = exec_db_entry.job_id
-        run_id = exec_db_entry.run_id
-        cwl = exec_db_entry.cwl
-        yaml = exec_db_entry.yaml
-        out_dir = exec_db_entry.out_dir
-        global_temp_dir = exec_db_entry.global_temp_dir
-        log = exec_db_entry.log
-        exec_profile = exec_db_entry.exec_profile
         break
     except Exception as e:
         print(">>> retry db query: " + str(db_retry_delay))
         if db_retry_delay == db_retry_delays[-1]:
-            sys.exit("Exception query to database: \n" + str(e))
+            sys.exit("Could not connect to database: \n" + str(e))
         else:
             sleep(db_retry_delay + db_retry_delay*random())
+
+def query_info_from_db(what):
+    for db_retry_delay in db_retry_delays:
+        try:
+            if what == "run_info":
+                db_request = session.query(Exec).get(int(exec_db_id))
+            else:
+                pass #! no other options yet
+            break
+        except:
+            if db_retry_delay == db_retry_delays[-1]:
+                sys.exit("Exception query to database: \n" + str(e))
+            else:
+                sleep(db_retry_delay + db_retry_delay*random())
+    return db_request
+
+# retrieve infos from database
+exec_db_entry = query_info_from_db("run_info")
+
+job_id = exec_db_entry.job_id
+run_id = exec_db_entry.run_id
+cwl = exec_db_entry.cwl
+yaml = exec_db_entry.yaml
+out_dir = exec_db_entry.out_dir
+global_temp_dir = exec_db_entry.global_temp_dir
+log = exec_db_entry.log
+exec_profile = exec_db_entry.exec_profile
+exec_profile_name = exec_db_entry.exec_profile_name
+
 
 # retry on commit:
 def commit():
@@ -115,7 +133,7 @@ def prepare_shell():
     return p
 
 
-def run_step(p, step_name):
+def run_step(p, step_name, retry_count):
     status_message={
         "pre_exec":"preparing for execution",
         "exec":"executing",
@@ -186,9 +204,7 @@ def terminate_shell(p):
     except Exception as e:
         print(">>> could not terminate shell session: \n " + str(e))
 
-
 step_order = ["pre_exec", "exec", "eval", "post_exec"]
-
 for retry_count in range(0, exec_profile["max_retries"]+1):
     print(">>> retry count: " + str(retry_count))
     try:
@@ -196,7 +212,7 @@ for retry_count in range(0, exec_profile["max_retries"]+1):
         p = prepare_shell()
 
         # run steps:
-        [run_step(p, step) for step in step_order if step in exec_profile.keys()]
+        [run_step(p, step, retry_count) for step in step_order if step in exec_profile.keys()]
         exec_db_entry.status = "finished" 
         terminate_shell(p)
         break
@@ -210,7 +226,6 @@ for retry_count in range(0, exec_profile["max_retries"]+1):
         exec_db_entry.err_message = "System Error occured"
         terminate_shell(p) 
         break
- 
 
 # set finish time     
 exec_db_entry.time_finished = datetime.now()
