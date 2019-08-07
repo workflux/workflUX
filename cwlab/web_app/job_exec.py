@@ -129,12 +129,12 @@ def start_exec():    # returns all parmeter and its default mode (global/job spe
         if len(started_runs) > 0:
             messages.append({
                 "type":"success",
-                "text":"Successfully started execution for jobs: " + ", ".join(started_runs)
+                "text":"Successfully started execution for runs: " + ", ".join(started_runs)
             })
         if len(already_running_runs) > 0:
             messages.append({
                 "type":"warning",
-                "text":"Following jobs are already running: " + ", ".join(already_running_runs) + ". To restart them, use terminate them first."
+                "text":"Following runs are already running: " + ", ".join(already_running_runs) + ". To restart them, terminate them first."
             })
     except SystemExit as e:
         messages.append( { 
