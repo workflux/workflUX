@@ -36,7 +36,7 @@ setup(
                       'PyYAML',
                       'pexpect',
                       'unidecode',
-                      'cwltool==1.0.20180809224403; platform_system=="Windows"',
+                      'cwltool==1.0.20181201184214; platform_system=="Windows"',
                       'cwltool; platform_system!="Windows"',
                       'psutil'               
                       ],
