@@ -63,30 +63,36 @@ scenario.
 Supported Systems:
 ------------------
 
-| CWLab is written in platform-agnostic python and can therefore be
-  executed on:
-| - **Linux** - **MacOs** - **Windows**\ \*
+CWLab is written in platform-agnostic python and can therefore be
+executed on:
 
-| Any CWL runner that has a command-line interface can be integrated
-  into CWLab in order to execute CWL workflows or tool-wrappers, such
-  as:
-| - **cwltool** (the reference implementation) -
-  https://github.com/common-workflow-language/cwltool - **Toil** (UCSC)
-  - https://github.com/DataBiosphere/toil - **Cromwell** (Broad
-  Institute) - https://github.com/broadinstitute/cromwell - **Reana**
-  (CERN) - https://reana.readthedocs.io/en/latest/index.html -
-  **CWLEXEC** (IBM) - https://github.com/IBMSpectrumComputing/cwlexec
-  (Please find a constantly updated list at:
-  https://www.commonwl.org/#Implementations)
+-  **Linux**
+-  **MacOs**
+-  **Windows**\ \*
 
-| therefore, CWLab can be used on any infrastructure supported by these
-  CWL-runners, including:
-| - **single workstations** - **HPC clusters** (PBS, LSF, slurm, ...) -
-  **clouds** (AWS, GCP, Azure, OpenStack)
+Any CWL runner that has a command-line interface can be integrated into
+CWLab in order to execute CWL workflows or tool-wrappers, such as:
+
+-  **cwltool** (the reference implementation) -
+   https://github.com/common-workflow-language/cwltool
+-  **Toil** (UCSC) - https://github.com/DataBiosphere/toil
+-  **Cromwell** (Broad Institute) -
+   https://github.com/broadinstitute/cromwell
+-  **Reana** (CERN) - https://reana.readthedocs.io/en/latest/index.html
+-  **CWLEXEC** (IBM) - https://github.com/IBMSpectrumComputing/cwlexec
+   (Please find a constantly updated list at:
+   https://www.commonwl.org/#Implementations)
+
+Therefore, CWLab can be used on any infrastructure supported by these
+CWL-runners, including:
+
+-  **single workstations**
+-  **HPC clusters** (PBS, LSF, slurm, ...)
+-  **clouds** (AWS, GCP, Azure, OpenStack)
 
 | \*\ **Please Note:**
 | Execution on Windows is only supported by cwltool which talks to
-  docker for windows. therefore, CWL-wrapped tools and workflows which
+  docker for windows. Therefore, CWL-wrapped tools and workflows which
   where originally designed for Linux/MacOs can be executed on Windows
   with a graphical interface provided by CWLab.
 
