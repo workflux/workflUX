@@ -235,7 +235,6 @@ INPUT_DIR: '/home/cwlab_user/cwlab/input'
 DB_DIR: '/home/cwlab_user/cwlab/db'
 
 EXEC_PROFILES:
-
     cwltool_local:
         shell: bash
         max_retries: 2
