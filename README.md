@@ -147,7 +147,7 @@ This is where you configure how to execute cwl jobs on your system. A profile co
 You can define multiple execution profile as shown in the config example below. This allows frontend users to choose between different execution options (e.g. using different CWL runners, different dependency management systems, or even choose a between multiple available batch execution infrastructures like lsf, pbs, ...). For each execution profile, following configuration parameters are available (but only **shell** and **exec** is required):  
 
 - **shell**:  
-    Specify which shell to use. For Linux or MacOS use `bash`. For Windows, use `cmd`.  
+    Specify which shell to use. For Linux or MacOS use `bash`. For Windows, use `powershell`.  
     *Required*.
 - **timeout**:  
     For each step in the execution profile, you can set a timeout limit.  
@@ -186,9 +186,14 @@ You can define multiple execution profile as shown in the config example below. 
 - Thus you may define your own variables that will also be available in all downstream steps.
 - At the end of each step. The exit code is checked. If it is non-zero, the run will be marked as failed. Please note, if a step consists of multiple commands and an intermediate command fails, this will not be recognized by CWLab as long as the final command of the step will succeed. To manually communicate failure to CWLab, please set the `SUCCESS` variable to `False`.
 - The steps are executed using pexpect (https://pexpect.readthedocs.io/en/stable/overview.html), this allows you also connect to a remote infrastructure via ssh (recommended to use an ssh key). Please be aware that the path of files or directories specified in the input parameter YAML will not be adapted to the new host. We are working on solutions to achieve an automated path correction and/or upload functionality if the execution host is not the CWLab server host.
+- On Windows, please be aware that each code block (contained in ``{...}``) has to be in one line.
 
 ### Example comfiguration file:
   
+Below, you can find example configurations for running locally with cwltool.
+
+#### Linux / MacOs:
+
 ```yaml  
 WEB_SERVER_HOST: localhost 
 WEB_SERVER_PORT: 5000
@@ -203,26 +208,59 @@ DB_DIR: '/home/cwlab_user/cwlab/db'
 
 EXEC_PROFILES:
 
-cwltool_local:
-    shell: bash
-    timeout:
-        pre_exec: 120
-        exec: 86400
-        eval: 120
-        post_exec: 120
-    exec: |
-        cwltool --outdir "${OUTPUT_DIR}" "${CWL}" "${RUN_YAML}" \
-            >> "${LOG_FILE}" 2>&1
-    eval: | 
-        LAST_LINE=$(tail -n 1 ${LOG_FILE})
-        if [[ "${LAST_LINE}" == *"Final process status is success"* ]]
-        then
-            SUCCESS=True
-        else
-            SUCCESS=False
-            ERR_MESSAGE="cwltool failed - ${LAST_LINE}"
-        fi
+    cwltool_local:
+        shell: bash
+        timeout:
+            pre_exec: 120
+            exec: 86400
+            eval: 120
+            post_exec: 120
+        exec: |
+            cwltool --outdir "${OUTPUT_DIR}" "${CWL}" "${RUN_YAML}" \
+                >> "${LOG_FILE}" 2>&1
+        eval: | 
+            LAST_LINE=$(tail -n 1 ${LOG_FILE})
+            if [[ "${LAST_LINE}" == *"Final process status is success"* ]]
+            then
+                SUCCESS=True
+            else
+                SUCCESS=False
+                ERR_MESSAGE="cwltool failed - ${LAST_LINE}"
+            fi
 ```
+
+#### Windows:
+
+```yaml
+WEB_SERVER_HOST: localhost
+WEB_SERVER_PORT: 5000
+
+DEBUG: False  
+
+TEMP_DIR: '/home/cwlab_user/cwlab/temp'
+CWL_DIR: '/home/cwlab_user/cwlab/cwl'
+EXEC_DIR: '/home/cwlab_user/cwlab/exec'
+INPUT_DIR: '/home/cwlab_user/cwlab/input'
+DB_DIR: '/home/cwlab_user/cwlab/db'
+
+EXEC_PROFILES:
+    cwltool_windows:
+        shell: powershell
+        timeout:
+            pre_exec: 120
+            exec: 86400
+            eval: 120
+            post_exec: 120
+        exec: |
+            . "${PYTHON_PATH}" -m cwltool --debug --default-container ubuntu:16.04 --outdir "${OUTPUT_DIR}" "${CWL}" "${RUN_YAML}" > "${LOG_FILE}" 2>&1
+
+        eval: |
+            $LAST_LINES = (Get-Content -Tail 2 "${LOG_FILE}")
+
+            if ($LAST_LINES.Contains("Final process status is success")){$SUCCESS="True"}
+            else {$SUCCESS="False"; $ERR_MESSAGE = "cwltool failed - ${LAST_LINE}"}
+```
+
 
 ## Documentation:
 
