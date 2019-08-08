@@ -84,7 +84,7 @@ CWLab in order to execute CWL workflows or tool-wrappers, such as:
    https://www.commonwl.org/#Implementations)
 
 Therefore, CWLab can be used on any infrastructure supported by these
-CWL-runners, including:
+CWL runners, including:
 
 -  **single workstations**
 -  **HPC clusters** (PBS, LSF, slurm, ...)
