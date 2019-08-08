@@ -144,12 +144,13 @@ def get_type_matched_param_values( param_values, configs, validate_paths=True, s
         param_value = param_values[param_name]
         if configs[param_name]["type"] == "helper":
             continue
-        if param_values[param_name][0] == "" and len(param_values[param_name]) == 1:
+        if len(param_value) == 0 or (len(param_values[param_name]) == 1 and param_value[0] == ""):
             if configs[param_name]["null_allowed"]:
+                param_values_type_matched[param_name] = None
                 continue
             else:
                 sys.exit( print_pref + " parameter \"" + param_name + "\" failes type matching: " + 
-                    "parameter was empty (\"\") but null is not allowed.")
+                    "parameter was empty but null is not allowed.")
         try:
             param_values_type_matched[param_name] = match_type(param_name, param_values, configs,
                 validate_paths, search_paths, search_subdirs, input_dir)

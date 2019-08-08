@@ -7,7 +7,7 @@ README = os.path.join(SETUP_DIR, 'README.rst')
 
 setup(
     name='cwlab',
-    version='0.1.2',    
+    version='0.1.3',    
     description='A platform-agnostic, cloud-ready framework for simplified deployment of the Common Workflow Language using a graphical web interface',
     long_description=open(README).read(),
     long_description_content_type="text/x-rst",
