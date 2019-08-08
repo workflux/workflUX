@@ -15,7 +15,7 @@ CWLab allows life-science researchers with all levels of computational
 proficiency to create, execute and monitor jobs for CWL-wrapped tools
 and workflows. Input parameters for large sample batches are specified
 using a simple HTML form or a spreadsheet and are automatically
-validated. The integrated web server allows to remotely control the
+validated. The integrated webserver allows to remotely control the
 execution on clusters as well as single workstations. Moreover,
 automatic infrastructure provisioning and scaling for OpenStack-based
 clouds is being implemented. CWLab can also be used as a local desktop
@@ -43,13 +43,58 @@ in the coming weeks. Please press the watch button to not miss it.**
 Please see the section "Configuration" for a discussion of available
 options.
 
-| Start the web server with your custom configuration (or leave out the
+| Start the webserver with your custom configuration (or leave out the
   ``--config`` flag to use the default one):
 | ``cwlab up --config config.yaml``
+
+If you like to make use of containers for dependency management, you
+need to install `Docker <https://docs.docker.com/install/>`__ or a
+Docker-compatible containerization solution like
+`singularity <https://singularity.lbl.gov/>`__ or
+`udocker <https://github.com/indigo-dc/udocker>`__. To run on Windows or
+MacOs, please install the dedicated docker versions: `Docker for
+Windows <https://docs.docker.com/docker-for-windows/>`__, `Docker for
+Mac <https://docs.docker.com/docker-for-mac/>`__
 
 The usage of the web interface should be self-explanatory with build-in
 instruction. The following section gives an overview of the basic usage
 scenario.
+
+Supported Systems:
+------------------
+
+CWLab is written in platform-agnostic python and can therefore be
+executed on:
+
+-  **Linux**
+-  **MacOs**
+-  **Windows**\ \*
+
+Any CWL runner that has a command-line interface can be integrated into
+CWLab in order to execute CWL workflows or tool-wrappers, such as:
+
+-  **cwltool** (the reference implementation) -
+   https://github.com/common-workflow-language/cwltool
+-  **Toil** (UCSC) - https://github.com/DataBiosphere/toil
+-  **Cromwell** (Broad Institute) -
+   https://github.com/broadinstitute/cromwell
+-  **Reana** (CERN) - https://reana.readthedocs.io/en/latest/index.html
+-  **CWLEXEC** (IBM) - https://github.com/IBMSpectrumComputing/cwlexec
+   (Please find a constantly updated list at:
+   https://www.commonwl.org/#Implementations)
+
+Therefore, CWLab can be used on any infrastructure supported by these
+CWL-runners, including:
+
+-  **single workstations**
+-  **HPC clusters** (PBS, LSF, slurm, ...)
+-  **clouds** (AWS, GCP, Azure, OpenStack)
+
+| \*\ **Please Note:**
+| Execution on Windows is only supported by cwltool which talks to
+  docker for windows. Therefore, CWL-wrapped tools and workflows which
+  where originally designed for Linux/MacOs can be executed on Windows
+  with a graphical interface provided by CWLab.
 
 Usage:
 ------
@@ -60,7 +105,7 @@ Connect to the web interface:
 Open a modern browser of your choice like Chrome, Firefox, Safari, or
 Edge (Internet Explorer might be partially incompatible).
 
-Type in the URL of your web server. The URL depends on your
+Type in the URL of your webserver. The URL depends on your
 configuration:
 
 -  If the webserver is running on the same machine and uses port 5000 is
@@ -106,7 +151,7 @@ parameters. For each parameter, you can choose whether to specify it
 globally (all runs of a job will get the same value) or per run.
 
 -  Click on the button "Create New Job" in the top bar and select the
-   desired CWL document in the side bar
+   desired CWL document in the sidebar
 -  Specify a descriptive job name (the job ID will be composed of the
    date, time, and the name)
 -  If the job shall contain multiple runs toggle the "runs per job"
@@ -160,7 +205,7 @@ Job execution:
 ~~~~~~~~~~~~~~
 
 -  Click on "Job Execution & Results" in the top bar and choose the job
-   of interest in the side bar
+   of interest in the sidebar
 -  Select the runs you want to start
 -  Select an execution profile (see the "Configuration" for details) and
    press "start"
@@ -183,12 +228,12 @@ Configuration:
 
 CWLab is a highly versatile package and makes almost no assumptions on
 your hard- and software environment used for the execution of CWL. To
-adapt it to your system and use case, a set of configuration option is
+adapt it to your system and use case, a set of configuration options is
 available:
 
 -  General configs, including:
 
-   -  web server (hosting IP address and port, remotely or locally
+   -  webserver (hosting IP address and port, remotely or locally
       available, login protected or not)
    -  paths of working directories
 
@@ -208,12 +253,12 @@ General Configs:
 ~~~~~~~~~~~~~~~~
 
 -  **WEB\_SERVER\_HOST**:
-   Specify the host or IP address on which the web server shall run. Use
+   Specify the host or IP address on which the webserver shall run. Use
    ``localhost`` for local usage on your machine only. Use ``0.0.0.0``
    to allow remote accessibility by other machines in the same network.
    *Default*: ``localhost``
 -  | **WEB\_SERVER\_PORT**:
-   | Specify the port used by the web server.
+   | Specify the port used by the webserver.
    | *Default*: 5000
 
 -  **TEMP\_DIR**:
@@ -243,7 +288,7 @@ Exec Profiles:
 
 This is where you configure how to execute cwl jobs on your system. A
 profile consists of four steps: pre\_exec, exec, eval, and post\_exec
-(only exec required, the rest is optional). For each step you can
+(only exec required, the rest is optional). For each step, you can
 specify commands that are executed in bash or cmd terminal.
 
 You can define multiple execution profile as shown in the config example
@@ -256,8 +301,10 @@ profile, following configuration parameters are available (but only
 
 -  **shell**:
    Specify which shell to use. For Linux or MacOS use ``bash``. For
-   Windows, use ``cmd``.
+   Windows, use ``powershell``.
    *Required*.
+-  **max\_retries**: Specify how many times the execution (all steps) is
+   retried before marking a run as failed.
 -  | **timeout**:
    | For each step in the execution profile, you can set a timeout
      limit.
@@ -303,10 +350,12 @@ profile, following configuration parameters are available (but only
       stdout and stderr of CWL runner)
    -  ``SUCCESS`` (if set to ``False`` the run will be marked as failed
       and terminated)
+   -  ``PYTHON_PATH`` (the path to the python interpreter used to run
+      CWLab)
 
 -  The four steps will be executed in the same shell session and
    therefore can be treated as one connected script. (Between the steps,
-   CWLab communicates the status to the database allowing the User to
+   CWLab communicates the status to the database allowing the user to
    get status notifications via the front end).
 -  Thus you may define your own variables that will also be available in
    all downstream steps.
@@ -324,9 +373,17 @@ profile, following configuration parameters are available (but only
    to the new host. We are working on solutions to achieve an automated
    path correction and/or upload functionality if the execution host is
    not the CWLab server host.
+-  On Windows, please be aware that each code block (contained in
+   ``{...}``) has to be in one line.
 
-Example comfiguration file:
-~~~~~~~~~~~~~~~~~~~~~~~~~~~
+Example configuration files:
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+Below, you can find example configurations for local execution of CWL
+workflows or tools with cwltool.
+
+Linux / MacOs:
+^^^^^^^^^^^^^^
 
 .. code:: yaml
 
@@ -342,26 +399,60 @@ Example comfiguration file:
     DB_DIR: '/home/cwlab_user/cwlab/db'
 
     EXEC_PROFILES:
+        cwltool_local:
+            shell: bash
+            max_retries: 2
+            timeout:
+                pre_exec: 120
+                exec: 86400
+                eval: 120
+                post_exec: 120
+            exec: |
+                cwltool --outdir "${OUTPUT_DIR}" "${CWL}" "${RUN_YAML}" \
+                    >> "${LOG_FILE}" 2>&1
+            eval: | 
+                LAST_LINE=$(tail -n 1 ${LOG_FILE})
+                if [[ "${LAST_LINE}" == *"Final process status is success"* ]]
+                then
+                    SUCCESS=True
+                else
+                    SUCCESS=False
+                    ERR_MESSAGE="cwltool failed - ${LAST_LINE}"
+                fi
 
-    cwltool_local:
-        shell: bash
-        timeout:
-            pre_exec: 120
-            exec: 86400
-            eval: 120
-            post_exec: 120
-        exec: |
-            cwltool --outdir "${OUTPUT_DIR}" "${CWL}" "${RUN_YAML}" \
-                >> "${LOG_FILE}" 2>&1
-        eval: | 
-            LAST_LINE=$(tail -n 1 ${LOG_FILE})
-            if [[ "${LAST_LINE}" == *"Final process status is success"* ]]
-            then
-                SUCCESS=True
-            else
-                SUCCESS=False
-                ERR_MESSAGE="cwltool failed - ${LAST_LINE}"
-            fi
+Windows:
+^^^^^^^^
+
+.. code:: yaml
+
+    WEB_SERVER_HOST: localhost
+    WEB_SERVER_PORT: 5000
+
+    DEBUG: False  
+
+    TEMP_DIR: '/home/cwlab_user/cwlab/temp'
+    CWL_DIR: '/home/cwlab_user/cwlab/cwl'
+    EXEC_DIR: '/home/cwlab_user/cwlab/exec'
+    INPUT_DIR: '/home/cwlab_user/cwlab/input'
+    DB_DIR: '/home/cwlab_user/cwlab/db'
+
+    EXEC_PROFILES:
+        cwltool_windows:
+            shell: powershell
+            max_retries: 2
+            timeout:
+                pre_exec: 120
+                exec: 86400
+                eval: 120
+                post_exec: 120
+            exec: |
+                . "${PYTHON_PATH}" -m cwltool --debug --default-container ubuntu:16.04 --outdir "${OUTPUT_DIR}" "${CWL}" "${RUN_YAML}" > "${LOG_FILE}" 2>&1
+
+            eval: |
+                $LAST_LINES = (Get-Content -Tail 2 "${LOG_FILE}")
+
+                if ($LAST_LINES.Contains("Final process status is success")){$SUCCESS="True"}
+                else {$SUCCESS="False"; $ERR_MESSAGE = "cwltool failed - ${LAST_LINE}"}
 
 Documentation:
 --------------
@@ -407,3 +498,4 @@ This package is free to use and modify under the Apache 2.0 Licence.
 .. |import screenshot| image:: https://github.com/CompEpigen/CWLab/blob/master/screenshots/import.png?raw=true
 .. |create job screenshot| image:: https://github.com/CompEpigen/CWLab/blob/master/screenshots/create_job.png?raw=true
 .. |execution screenshot| image:: https://github.com/CompEpigen/CWLab/blob/master/screenshots/execution.png?raw=true
+
