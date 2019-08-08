@@ -182,7 +182,7 @@ You can define multiple execution profile as shown in the config example below. 
     - ``OUTPUT_DIR`` (the path of the run-specific output directory)
     - ``LOG_FILE`` (the path of the log file that should receive the stdout and stderr of CWL runner)
     - ``SUCCESS`` (if set to `False` the run will be marked as failed and terminated)
-    - ``PYTHON_PATH`` the path to the python interpreter used to run CWLab
+    - ``PYTHON_PATH`` (the path to the python interpreter used to run CWLab)
 - The four steps will be executed in the same shell session and therefore can be treated as one connected script. (Between the steps, CWLab communicates the status to the database allowing the User to get status notifications via the front end).
 - Thus you may define your own variables that will also be available in all downstream steps.
 - At the end of each step. The exit code is checked. If it is non-zero, the run will be marked as failed. Please note, if a step consists of multiple commands and an intermediate command fails, this will not be recognized by CWLab as long as the final command of the step will succeed. To manually communicate failure to CWLab, please set the `SUCCESS` variable to `False`.
