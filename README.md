@@ -18,6 +18,8 @@ Please see the section "Configuration" for a discussion of available options.
 Start the web server with your custom configuration (or leave out the `--config` flag to use the default one):  
 `cwlab up --config config.yaml`
 
+If you like to make use of containers for dependency management, you need to install [Docker](https://docs.docker.com/install/) or a Docker-compatible containerization solution like [singularity](https://singularity.lbl.gov/) or [udocker](https://github.com/indigo-dc/udocker). To run on Windows or MacOs, please install the dedicated docker versions: [Docker for Windows](https://docs.docker.com/docker-for-windows/), [Docker for Mac](https://docs.docker.com/docker-for-mac/) 
+
 The usage of the web interface should be self-explanatory with build-in instruction. The following section gives an overview of the basic usage scenario.
 
 ## Usage:
