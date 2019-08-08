@@ -149,6 +149,8 @@ You can define multiple execution profile as shown in the config example below. 
 - **shell**:  
     Specify which shell to use. For Linux or MacOS use `bash`. For Windows, use `powershell`.  
     *Required*.
+- **max_retries**:
+    Specify how many times the execution (all steps) is retried before marking a run as failed.
 - **timeout**:  
     For each step in the execution profile, you can set a timeout limit.  
     *Default*:  
@@ -211,6 +213,7 @@ EXEC_PROFILES:
 
     cwltool_local:
         shell: bash
+        max_retries: 2
         timeout:
             pre_exec: 120
             exec: 86400
@@ -247,6 +250,7 @@ DB_DIR: '/home/cwlab_user/cwlab/db'
 EXEC_PROFILES:
     cwltool_windows:
         shell: powershell
+        max_retries: 2
         timeout:
             pre_exec: 120
             exec: 86400
