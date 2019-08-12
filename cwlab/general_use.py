@@ -46,6 +46,20 @@ def fetch_files_in_dir(dir_path, # searches for files in dir_path
     return hits
 
 
+def read_file_content(
+    file_path,
+    start_pos=0, # anticipated starting point
+    max_chars=100000 # maximum number of charcters to read in
+):
+    content = []
+    fsize = os.stat(file_path).st_size
+    if fsize > max_chars:
+        start_pos = max(fsize-max_chars, start_pos)
+    with open(file_path, 'r') as f:
+        f.seek(start_pos)
+        content = f.read()
+        end_pos = f.tell()
+    return str(content), end_pos
 
 allowed_extensions_by_type = {
     "CWL": ["cwl", "yaml"],
