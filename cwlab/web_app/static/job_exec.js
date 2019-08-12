@@ -10,9 +10,6 @@ class RunListElement extends React.Component {
     //  takes 2 arguments: runID, is_checked
     constructor(props){
         super(props)
-        this.state = {
-            checked: false
-        }
         this.handleSelectionChange = this.handleSelectionChange.bind(this)
         this.get_status_color = this.get_status_color.bind(this)
     }
@@ -58,11 +55,11 @@ class RunListElement extends React.Component {
             <tr>
                 <td>
                     <input 
-                            type="checkbox" 
-                            name="runs"
-                            value={this.props.runID}
-                            checked={this.props.checked}
-                            onChange={this.handleSelectionChange}
+                        type="checkbox" 
+                        name="runs"
+                        value={this.props.runID}
+                        checked={this.props.checked}
+                        onChange={this.handleSelectionChange}
                     />
                 </td>
                 <td>{this.props.runID}</td>
@@ -91,6 +88,8 @@ class RunList extends React.Component {
         // props.runsIDs
         // props.jobID
         // props.changeRunSelection
+        // props.toggelRunSelectionAll
+        // props.runSelection
         this.initRunInfo = {
             status: "Loading", 
             duration: "-", 
@@ -201,7 +200,14 @@ class RunList extends React.Component {
                 <table className="w3-table w3-bordered w3-border">
                     <thead className="w3-text-green">
                         <tr>
-                            <th></th>
+                            <th>
+                                <ActionButton 
+                                    name="select all"
+                                    value="select all"
+                                    label="all"
+                                    onAction={this.props.toggelRunSelectionAll}
+                                />
+                            </th>
                             <th>Run ID</th>
                             <th>Status</th>
                             <th>Duration</th>
@@ -218,6 +224,7 @@ class RunList extends React.Component {
                                 duration={this.state.runInfo[r].duration}
                                 execProfile={this.state.runInfo[r].exec_profile}
                                 retryCount={this.state.runInfo[r].retry_count}
+                                checked={this.props.runSelection[r]}
                                 onSelectionChange={this.props.changeRunSelection}
                             />
                         ))}
@@ -250,8 +257,22 @@ class JobContent extends React.Component {
         this.actionMessages = []
 
         this.changeRunSelection = this.changeRunSelection.bind(this)
+        this.toggelRunSelectionAll = this.toggelRunSelectionAll.bind(this)
         this.execRuns = this.execRuns.bind(this)
         this.changeExecProfile = this.changeExecProfile.bind(this)
+    }
+
+    
+    toggelRunSelectionAll(){
+        // if all runs are selected, deselect all:
+        const select = !Object.values(this.state.runSelection).every(Boolean) 
+        let update = {}
+        this.props.runs.map((r) =>
+            (update[r] = select)
+        )
+        this.setState({
+            runSelection: update
+        })
     }
 
     changeRunSelection(runID, is_checked){
@@ -320,6 +341,8 @@ class JobContent extends React.Component {
                     jobID={this.props.jobId}
                     runIDs={this.props.runs}
                     changeRunSelection={this.changeRunSelection}
+                    toggelRunSelectionAll={this.toggelRunSelectionAll}
+                    runSelection={this.state.runSelection}
                 />
                 <i 
                     className="fas fa-arrow-up" 
