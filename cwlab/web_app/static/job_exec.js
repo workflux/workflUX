@@ -1,3 +1,49 @@
+class RunDetailsLog extends React.Component {
+    constructor(props) {
+        super(props);
+        // props.logContent
+        this.scrollToBottom = this.scrollToBottom.bind(this);
+        this.scrollToTop = this.scrollToTop.bind(this);
+    }
+
+    componentDidMount() {
+        this.scrollToTop("auto");
+        this.scrollToBottom();
+    }
+  
+    componentDidUpdate() {
+        this.scrollToBottom();
+    }
+  
+    scrollToTop(behavior="smooth") {
+        this.logStart.scrollIntoView({ behavior: behavior });
+    }
+    scrollToBottom(behavior="smooth") {
+        this.logEnd.scrollIntoView({ behavior: behavior });
+    }
+
+    render(){
+        return(
+            <div>
+                <h3>Execution Log:</h3>
+                <div 
+                    className="w3-metro-darken w3-panel"
+                    style={ {whiteSpace: "pre-wrap", maxHeight:"50vh", overflowY: "auto"} }  
+                >   
+                    <div style={{ float:"left", clear: "both" }}
+                        ref={(el) => { this.logStart = el; }}>
+                    </div>
+                    {this.props.logContent}
+                    <div style={{ float:"left", clear: "both" }}
+                        ref={(el) => { this.logEnd = el; }}>
+                    </div>
+                </div>
+            </div>
+        )
+    }
+
+}
+
 class RunDetails extends React.Component {
     constructor(props) {
         super(props);
@@ -10,9 +56,14 @@ class RunDetails extends React.Component {
         return (
             <div>
                 <h3>Input Parameters:</h3>
-                <div className="w3-black">
+                <div 
+                    className="w3-metro-darken w3-panel"
+                    style={ {whiteSpace: "pre-wrap", maxHeight:"50vh", overflowY: "auto"} } 
+                >
                     {data.yaml}
                 </div>
+                <RunDetailsLog logContent={data.log} />
+
             </div>
         );
     }
