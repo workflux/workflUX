@@ -114,8 +114,6 @@ class Config(object):
             self.EXEC_PROFILES[exec_profile]["timeout"] = timeout
             general = general_defaults
             general.update(self.EXEC_PROFILES[exec_profile])
-            self.EXEC_PROFILES[exec_profile] = general
-
 
 
         # Configure web server:
