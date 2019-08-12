@@ -81,9 +81,15 @@ class Config(object):
         )
         
         self.SQLALCHEMY_TRACK_MODIFICATIONS = (
-            os.environ.get('DATABASE_TRACK_MODIFICATIONS') or
-            self.CONFIG_FILE_content.get('CWLAB_DATABASE_TRACK_MODIFICATIONS') or  
+            os.environ.get('CWLAB_DATABASE_TRACK_MODIFICATIONS') or
+            self.CONFIG_FILE_content.get('DATABASE_TRACK_MODIFICATIONS') or  
             False
+        )
+        
+        self.READ_MAX_CHARS_FROM_FILE = (
+            os.environ.get('CWLAB_READ_MAX_CHARS_FROM_FILE') or
+            self.CONFIG_FILE_content.get('READ_MAX_CHARS_FROM_FILE') or  
+            100000
         )
 
         # execution profile:
