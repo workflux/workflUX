@@ -1,5 +1,5 @@
 from cwlab import app
-from cwlab.general_use import get_path, get_duration, db_commit
+from cwlab.general_use import get_path, get_duration, db_commit, read_file_content
 from .db import Exec
 from cwlab import db
 from datetime import datetime
@@ -154,6 +154,14 @@ def get_run_info(job_id, run_ids):
             data[run_id]["retry_count"] = run_info.retry_count
     return data
     
-
+def read_run_log(job_id, run_id, start_pos=0):
+    log_path = get_path("run_log", job_id, run_id)
+    content = read_file_content(log_path, start_pos, max_chars=app.config["READ_MAX_CHARS_FROM_FILE"])
+    return content
+    
+def read_run_yaml(job_id, run_id):
+    yaml_path = get_path("run_yaml", job_id, run_id)
+    content = read_file_content(yaml_path, start_pos=0, max_chars=app.config["READ_MAX_CHARS_FROM_FILE"])
+    return content
     
     
