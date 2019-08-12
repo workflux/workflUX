@@ -10,14 +10,12 @@ import requests
 from re import sub, match
 from cwlab.xls2cwl_job.web_interface import gen_form_sheet as gen_job_param_sheet
 from cwlab.xls2cwl_job import only_validate_xls, transcode as make_yaml_runs
-from cwlab.exec.exec import exec_runs, get_run_info
+from cwlab.exec.exec import exec_runs, get_run_info, read_run_log, read_run_yaml
 from cwlab import db
 from cwlab.exec.db import Exec
 from time import sleep
 from random import random
 from shutil import move
-
-
 
 @app.route('/get_job_list/', methods=['GET','POST'])
 def get_job_list():
@@ -66,7 +64,7 @@ def get_job_list():
     except:
         messages.append( { 
             "type":"error", 
-            "text":"An uknown error occured reading the execution directory." 
+            "text":"An unkown error occured reading the execution directory." 
         } )
     
     # get exec profiles names:
@@ -99,7 +97,7 @@ def get_run_status():
     except:
         messages.append( { 
             "type":"error", 
-            "text":"An uknown error occured reading the execution directory." 
+            "text":"An unkown error occured reading the execution directory." 
         } )
     return jsonify({
             "data": data,
@@ -144,9 +142,40 @@ def start_exec():    # returns all parmeter and its default mode (global/job spe
     except:
         messages.append( { 
             "type":"error", 
-            "text":"An uknown error occured." 
+            "text":"An unkown error occured." 
         } )
     return jsonify({
         "data":{},
+        "messages":messages
+    })
+
+
+
+@app.route('/get_run_details/', methods=['GET','POST'])
+def get_run_details():    
+    messages = []
+    data = {}
+    req_data = request.get_json()
+    job_id = req_data["job_id"]
+    run_id = req_data["run_id"]
+    # try:
+    log_content = read_run_log(job_id, run_id)
+    yaml_content = read_run_yaml(job_id, run_id)
+    data = {
+        "log": log_content,
+        "yaml": yaml_content
+    }
+    # except SystemExit as e:
+    #     messages.append( { 
+    #         "type":"error", 
+    #         "text": str(e) 
+    #     } )
+    # except:
+    #     messages.append( { 
+    #         "type":"error", 
+    #         "text":"An unkown error occured." 
+    #     } )
+    return jsonify({
+        "data":data,
         "messages":messages
     })
