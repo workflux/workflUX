@@ -292,11 +292,17 @@ class RunList extends React.Component {
                     <thead className="w3-text-green">
                         <tr>
                             <th>
+                                <i 
+                                    className="fas fa-arrow-down" 
+                                    style={ {paddingRight:"10px"} }
+                                />
                                 <ActionButton 
                                     name="select all"
                                     value="select all"
                                     label="all"
                                     onAction={this.props.toggelRunSelectionAll}
+                                    colorClass="w3-black w3-text-green"
+                                    smallPadding={true}
                                 />
                             </th>
                             <th>Run Id</th>

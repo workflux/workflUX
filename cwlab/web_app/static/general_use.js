@@ -79,6 +79,7 @@ class ActionButton extends React.Component {
         // props.label labeling
         // props.loading if true, button will be disabled and loading indicator is shown
         // props.disabled if true, disable without loading indicator
+        // props.smallPadding true/false
         this.handleAction = this.handleAction.bind(this)
     }
     
@@ -92,7 +93,11 @@ class ActionButton extends React.Component {
             <button style={style}
                 name={this.props.name}
                 value={this.props.value}
-                className={this.props.colorClass ? ("w3-button" + this.props.colorClass) : "w3-button w3-black"}
+                className={
+                    "w3-button" +
+                    (this.props.colorClass ? (" " + this.props.colorClass) : " w3-black") +
+                    (this.props.smallPadding ? (" w3-padding-small") : "")
+                }
                 onClick={this.handleAction}
                 disabled={this.props.loading || this.props.disabled ? true : false}
                 > 
