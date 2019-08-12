@@ -26,7 +26,7 @@ EXEC_PROFILES:
     wait_when_queued: 1
 
     exec: |
-      . "${PYTHON_PATH}" -m cwltool --default-container ubuntu:16.04 --outdir "${OUTPUT_DIR}" "${CWL}" "${RUN_YAML}" > "${LOG_FILE}" 2>&1
+      . "${PYTHON_PATH}" -m cwltool --default-container ubuntu:16.04 --outdir "${OUTPUT_DIR}" "${CWL}" "${RUN_YAML}" 2>&1 | %{ "$_" } | Out-File -Encoding "UTF8" "${LOG_FILE}"
 
     eval: |
       $LAST_LINES = (Get-Content -Tail 2 "${LOG_FILE}")
