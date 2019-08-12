@@ -18,6 +18,7 @@ class RunDetailsLog extends React.Component {
     scrollToTop(behavior="smooth") {
         this.logStart.scrollIntoView({ behavior: behavior });
     }
+    
     scrollToBottom(behavior="smooth") {
         this.logEnd.scrollIntoView({ behavior: behavior });
     }
