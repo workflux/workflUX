@@ -1,17 +1,51 @@
+class RunDetails extends React.Component {
+    constructor(props) {
+        super(props);
+        // props.jobId
+        // props.runId
+        this.buildContentOnSuccess = this.buildContentOnSuccess.bind(this);
+    }
+
+    buildContentOnSuccess(data, messages){ // when AJAX request succeeds
+        return (
+            <div>
+                <h3>Input Parameters:</h3>
+                <div className="w3-black">
+                    {data.yaml}
+                </div>
+            </div>
+        );
+    }
+
+    render() {
+        return (
+            <AjaxComponent
+                requestRoute={routeGetRunDetails}
+                sendData={ {job_id: this.props.jobId, run_id: this.props.runId} }
+                buildContentOnSuccess={this.buildContentOnSuccess}
+                loaderSize="large"
+                loaderMessage="Loading run details."
+            />
+        );
+    }
+}
+
 class RunListElement extends React.Component {
     // Inputs:
-    // props.runID
+    // props.runId
     // props.checked
     // props.status
     // props.duration
     // props.execProfile
     // props.retryCount
     // props.onSelectionChange function to handle change
-    //  takes 2 arguments: runID, is_checked
+    //  takes 2 arguments: runId, is_checked
+    // props.showRunDetails
     constructor(props){
         super(props)
         this.handleSelectionChange = this.handleSelectionChange.bind(this)
         this.get_status_color = this.get_status_color.bind(this)
+        this.handleShowDetails = this.handleShowDetails.bind(this)
     }
 
     get_status_color(status){
@@ -33,7 +67,11 @@ class RunListElement extends React.Component {
     }
     
     handleSelectionChange(event){
-        this.props.onSelectionChange(this.props.runID, event.target.checked)
+        this.props.onSelectionChange(this.props.runId, event.target.checked)
+    }
+
+    handleShowDetails(){
+        this.props.showRunDetails(this.props.runId)
     }
 
     render(){
@@ -57,12 +95,12 @@ class RunListElement extends React.Component {
                     <input 
                         type="checkbox" 
                         name="runs"
-                        value={this.props.runID}
+                        value={this.props.runId}
                         checked={this.props.checked}
                         onChange={this.handleSelectionChange}
                     />
                 </td>
-                <td>{this.props.runID}</td>
+                <td>{this.props.runId}</td>
                 <td className={this.get_status_color(this.props.status)}>
                     {this.props.status}
                     {
@@ -75,7 +113,7 @@ class RunListElement extends React.Component {
                 </td>
                 <td>{this.props.execProfile}</td>
                 <td>
-                    <a><i className="fas fa-eye w3-button w3-text-green"></i></a>
+                    <a onClick={this.handleShowDetails}><i className="fas fa-eye w3-button w3-text-green"></i></a>
                 </td>
             </tr>
         )
@@ -85,11 +123,12 @@ class RunListElement extends React.Component {
 class RunList extends React.Component {
     constructor(props){
         super(props)
-        // props.runsIDs
-        // props.jobID
+        // props.runsIds
+        // props.jobId
         // props.changeRunSelection
         // props.toggelRunSelectionAll
         // props.runSelection
+        // props.showRunDetails
         this.initRunInfo = {
             status: "Loading", 
             duration: "-", 
@@ -103,12 +142,12 @@ class RunList extends React.Component {
                 retry_count: 0
         }
         let runInfo = {}
-        this.props.runIDs.map( (r) => runInfo[r] = this.initRunInfo)
+        this.props.runIds.map( (r) => runInfo[r] = this.initRunInfo)
         this.messages = []
         this.state = {
             actionStatus: "none", 
             runInfo: runInfo,
-            mirroredJobID: this.props.jobID
+            mirroredJobId: this.props.jobId
         }
         this.getRunInfo = this.getRunInfo.bind(this)
     }
@@ -116,8 +155,8 @@ class RunList extends React.Component {
     getRunInfo(){
         this.setState({actionStatus: "updating"})
         const sendData = {
-            job_id: this.props.jobID,
-            run_ids: this.props.runIDs
+            job_id: this.props.jobId,
+            run_ids: this.props.runIds
         }
         fetch(routeGetRunStatus, {
             method: "POST",
@@ -143,7 +182,7 @@ class RunList extends React.Component {
                 }
                 else{
                     let runInfo = {}
-                    this.props.runIDs.map( (r) => runInfo[r] = this.errorRunInfo)
+                    this.props.runIds.map( (r) => runInfo[r] = this.errorRunInfo)
                     this.setState({actionStatus: "none", runInfo: runInfo}) 
                 }       
             },
@@ -151,7 +190,7 @@ class RunList extends React.Component {
                 // server could not be reached
                 this.actionMessages = [{type: "error", text: serverNotReachableError}];
                 let runInfo = {}
-                this.props.runIDs.map( (r) => runInfo[r] = this.errorRunInfo)
+                this.props.runIds.map( (r) => runInfo[r] = this.errorRunInfo)
                 this.setState({actionStatus: "none", runInfo: runInfo}) 
             }
         )
@@ -161,7 +200,7 @@ class RunList extends React.Component {
     componentDidMount(){
         this.getRunInfo()
         // setup timer to automatically update
-        this.timerID = setInterval(
+        this.timerId = setInterval(
             () => {
                 this.getRunInfo()
             },
@@ -170,20 +209,20 @@ class RunList extends React.Component {
     }
 
     componentWillUnmount() {
-        clearInterval(this.timerID);
+        clearInterval(this.timerId);
     }
 
     static getDerivedStateFromProps(nextProps, prevState) {
-        if(nextProps.jobID !== prevState.mirroredJobID){
+        if(nextProps.jobId !== prevState.mirroredJobId){
             let runInfo = {}
-            nextProps.runIDs.map( (r) => runInfo[r] = {
+            nextProps.runIds.map( (r) => runInfo[r] = {
                     status: "Loading", 
                     duration: "-", 
                         exec_profile: "-", 
                         retry_count: 0
                 }
             )
-            return({runInfo: runInfo, mirroredJobID: nextProps.jobID, actionStatus: "none"})
+            return({runInfo: runInfo, mirroredJobId: nextProps.jobId, actionStatus: "none"})
         }
         return(null)
     }
@@ -208,7 +247,7 @@ class RunList extends React.Component {
                                     onAction={this.props.toggelRunSelectionAll}
                                 />
                             </th>
-                            <th>Run ID</th>
+                            <th>Run Id</th>
                             <th>Status</th>
                             <th>Duration</th>
                             <th>Exec Profile</th>
@@ -216,16 +255,17 @@ class RunList extends React.Component {
                         </tr>
                     </thead>
                     <tbody>
-                        {this.props.runIDs.map( (r) => (
+                        {this.props.runIds.map( (r) => (
                             <RunListElement 
                                 key={r}
-                                runID={r}
+                                runId={r}
                                 status={this.state.runInfo[r].status}
                                 duration={this.state.runInfo[r].duration}
                                 execProfile={this.state.runInfo[r].exec_profile}
                                 retryCount={this.state.runInfo[r].retry_count}
                                 checked={this.props.runSelection[r]}
                                 onSelectionChange={this.props.changeRunSelection}
+                                showRunDetails={this.props.showRunDetails}
                             />
                         ))}
                     </tbody>
@@ -252,7 +292,8 @@ class JobContent extends React.Component {
         this.state = {
             runSelection: runSelection,
             actionStatus: "none",
-            execProfile: this.props.execProfiles[0]
+            execProfile: this.props.execProfiles[0],
+            showRunDetails: null
         }
         this.actionMessages = []
 
@@ -260,6 +301,8 @@ class JobContent extends React.Component {
         this.toggelRunSelectionAll = this.toggelRunSelectionAll.bind(this)
         this.execRuns = this.execRuns.bind(this)
         this.changeExecProfile = this.changeExecProfile.bind(this)
+        this.showRunDetails = this.showRunDetails.bind(this)
+        this.showRunList = this.showRunList.bind(this)
     }
 
     
@@ -275,9 +318,9 @@ class JobContent extends React.Component {
         })
     }
 
-    changeRunSelection(runID, is_checked){
+    changeRunSelection(runId, is_checked){
         let update = {}
-        update[runID] = is_checked
+        update[runId] = is_checked
         this.setState({
             runSelection: Object.assign(this.state.runSelection, update)
         })
@@ -331,53 +374,70 @@ class JobContent extends React.Component {
         )
     }
 
+    showRunDetails(runId){
+        this.setState({showRunDetails:runId})
+    }
+
+    showRunList(){
+        this.setState({showRunDetails:null})
+    }
+
     render(){
-        const is_job_selected=Object.values(this.state.runSelection).includes(true)
-        
-        return(
-            <div>
-                <h3>List of Runs:</h3>
-                <RunList 
-                    jobID={this.props.jobId}
-                    runIDs={this.props.runs}
-                    changeRunSelection={this.changeRunSelection}
-                    toggelRunSelectionAll={this.toggelRunSelectionAll}
-                    runSelection={this.state.runSelection}
-                />
-                <i 
-                    className="fas fa-arrow-up" 
-                    style={ {paddingLeft:"20px", paddingRight:"10px"} }
-                />
-                select one or multiple jobs for following actions:
-                <h3>Actions:</h3>
-                <span className="w3-text-green">Start Execution:</span>
-                <div className="w3-container">
-                    <label>
-                        Select execution profile:
-                        <select className="w3-button w3-white w3-border" 
-                            name="exec_profile"
-                            onChange={this.changeExecProfile}
-                            value={this.state.execProfile}
-                            >
-                            {
-                                this.props.execProfiles.map((execProfile) =>
-                                    <option key={execProfile} value={execProfile}>{execProfile}</option>
-                                )
-                            }
-                        </select> 
-                    </label>
-                    <br/>
-                    <ActionButton
-                        name="start"
-                        value="start"
-                        onAction={this.execRuns}
-                        label={<span><i className="fas fa-rocket w3-text-green"/>&nbsp;start</span>}
-                        disabled={!is_job_selected}
+        const is_run_selected=Object.values(this.state.runSelection).includes(true)
+        if (this.state.showRunDetails == null){
+            return(
+                <div>
+                    <h3>List of Runs:</h3>
+                    <RunList 
+                        jobId={this.props.jobId}
+                        runIds={this.props.runs}
+                        changeRunSelection={this.changeRunSelection}
+                        toggelRunSelectionAll={this.toggelRunSelectionAll}
+                        runSelection={this.state.runSelection}
+                        showRunDetails={this.showRunDetails}
                     />
+                    <i 
+                        className="fas fa-arrow-up" 
+                        style={ {paddingLeft:"20px", paddingRight:"10px"} }
+                    />
+                    select one or multiple jobs for following actions:
+                    <h3>Actions:</h3>
+                    <span className="w3-text-green">Start Execution:</span>
+                    <div className="w3-container">
+                        <label>
+                            Select execution profile:
+                            <select className="w3-button w3-white w3-border" 
+                                name="exec_profile"
+                                onChange={this.changeExecProfile}
+                                value={this.state.execProfile}
+                                >
+                                {
+                                    this.props.execProfiles.map((execProfile) =>
+                                        <option key={execProfile} value={execProfile}>{execProfile}</option>
+                                    )
+                                }
+                            </select> 
+                        </label>
+                        <br/>
+                        <ActionButton
+                            name="start"
+                            value="start"
+                            onAction={this.execRuns}
+                            label={<span><i className="fas fa-rocket w3-text-green"/>&nbsp;start</span>}
+                            disabled={!is_run_selected}
+                        />
+                    </div>
+                    <DisplayServerMessages messages={this.actionMessages} />
                 </div>
-                <DisplayServerMessages messages={this.actionMessages} />
-            </div>
-        )
+            )
+        } else {
+            return(
+                <RunDetails 
+                    jobId={this.props.jobId}
+                    runId={this.state.showRunDetails}
+                />
+            )
+        }
     }
 }
 
