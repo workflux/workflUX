@@ -158,24 +158,23 @@ def get_run_details():
     req_data = request.get_json()
     job_id = req_data["job_id"]
     run_id = req_data["run_id"]
-    # try:
-    log_content, _ = read_run_log(job_id, run_id)
-    yaml_content, _ = read_run_yaml(job_id, run_id)
-    data = {
-        "log": log_content,
-        "yaml": yaml_content,
-        "log_end_pos": log_end_pos
-    }
-    # except SystemExit as e:
-    #     messages.append( { 
-    #         "type":"error", 
-    #         "text": str(e) 
-    #     } )
-    # except:
-    #     messages.append( { 
-    #         "type":"error", 
-    #         "text":"An unkown error occured." 
-    #     } )
+    try:
+        log_content, _ = read_run_log(job_id, run_id)
+        yaml_content, _ = read_run_yaml(job_id, run_id)
+        data = {
+            "log": log_content,
+            "yaml": yaml_content
+        }
+    except SystemExit as e:
+        messages.append( { 
+            "type":"error", 
+            "text": str(e) 
+        } )
+    except:
+        messages.append( { 
+            "type":"error", 
+            "text":"An unkown error occured." 
+        } )
     return jsonify({
         "data":data,
         "messages":messages
