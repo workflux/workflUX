@@ -438,6 +438,9 @@ class JobContent extends React.Component {
     // props.jobId
     // props.cwlTarget
     // props.execProfiles
+    // props.whichRunDetails
+    // props.showRunDetails
+    // props.showRunList
     constructor(props){
         super(props)
         let runSelection = {}
@@ -447,8 +450,7 @@ class JobContent extends React.Component {
         this.state = {
             runSelection: runSelection,
             actionStatus: "none",
-            execProfile: this.props.execProfiles[0],
-            showRunDetails: null
+            execProfile: this.props.execProfiles[0]
         }
         this.actionMessages = []
 
@@ -456,8 +458,6 @@ class JobContent extends React.Component {
         this.toggelRunSelectionAll = this.toggelRunSelectionAll.bind(this)
         this.execRuns = this.execRuns.bind(this)
         this.changeExecProfile = this.changeExecProfile.bind(this)
-        this.showRunDetails = this.showRunDetails.bind(this)
-        this.showRunList = this.showRunList.bind(this)
     }
 
     
@@ -529,17 +529,9 @@ class JobContent extends React.Component {
         )
     }
 
-    showRunDetails(runId){
-        this.setState({showRunDetails:runId})
-    }
-
-    showRunList(){
-        this.setState({showRunDetails:null})
-    }
-
     render(){
         const is_run_selected=Object.values(this.state.runSelection).includes(true)
-        if (this.state.showRunDetails == null){
+        if (this.props.whichRunDetails == null){
             return(
                 <div>
                     <h3>List of Runs:</h3>
@@ -549,7 +541,7 @@ class JobContent extends React.Component {
                         changeRunSelection={this.changeRunSelection}
                         toggelRunSelectionAll={this.toggelRunSelectionAll}
                         runSelection={this.state.runSelection}
-                        showRunDetails={this.showRunDetails}
+                        showRunDetails={this.props.showRunDetails}
                     />
                     <i 
                         className="fas fa-arrow-up" 
@@ -589,8 +581,8 @@ class JobContent extends React.Component {
             return(
                 <RunDetails 
                     jobId={this.props.jobId}
-                    runId={this.state.showRunDetails}
-                    handleBack={this.showRunList}
+                    runId={this.props.whichRunDetails}
+                    handleBack={this.props.showRunList}
                 />
             )
         }
@@ -603,13 +595,30 @@ class JobList extends React.Component {
         super(props);
         // props.jobInfo
         // props.execProfiles
-        this.state = {whichFocus: ""}; // no list item is focues by default
+        this.state = {
+            whichFocus: "",
+            whichRunDetails: null
+        }; // no list item is focues by default
         this.changeFocus = this.changeFocus.bind(this);
+        this.showRunDetails = this.showRunDetails.bind(this);
+        this.showRunList = this.showRunList.bind(this);
     }
 
     changeFocus(newFocusValue){
-        this.setState({whichFocus: newFocusValue});
+        this.setState({
+            whichFocus: newFocusValue,
+            whichRunDetails: null
+        });
     }
+
+    showRunDetails(runId){
+        this.setState({whichRunDetails: runId})
+    }
+
+    showRunList(){
+        this.setState({whichRunDetails: null})
+    }
+
 
     render() {
         const itemValues = this.props.jobInfo.map( (job) => job.job_id);
@@ -651,7 +660,10 @@ class JobList extends React.Component {
                 jobId={this.state.whichFocus} 
                 runs={jobInfo.runs} 
                 cwlTarget={jobInfo.cwl_target} 
-                execProfiles={this.props.execProfiles} 
+                execProfiles={this.props.execProfiles}
+                whichRunDetails={this.state.whichRunDetails}
+                showRunDetails={this.showRunDetails}
+                showRunList={this.showRunList}
             />
         }
 
