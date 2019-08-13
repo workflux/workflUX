@@ -159,7 +159,7 @@ def get_run_details():
     job_id = req_data["job_id"]
     run_id = req_data["run_id"]
     # try:
-    log_content, log_end_pos = read_run_log(job_id, run_id)
+    log_content, _ = read_run_log(job_id, run_id)
     yaml_content, _ = read_run_yaml(job_id, run_id)
     data = {
         "log": log_content,

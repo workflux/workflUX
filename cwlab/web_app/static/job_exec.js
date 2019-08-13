@@ -72,7 +72,6 @@ class RunDetails extends React.Component {
         // props.runId
         this.state = {
             actionStatus: "none",
-            logEndPos: 0,
             logContent: "Loading",
             yamlContent: "Loading",
             actionMessages: [],
@@ -104,8 +103,7 @@ class RunDetails extends React.Component {
         this.setState({actionStatus: "updating"})
         const sendData = {
             job_id: this.props.jobId,
-            run_id: this.props.runId,
-            log_end_pos: this.state.logEndPos
+            run_id: this.props.runId
         }
         fetch(routeGetRunDetails, {
             method: "POST",
@@ -131,7 +129,6 @@ class RunDetails extends React.Component {
                         actionStatus: "none", 
                         logContent: result.data.log,
                         yamlContent: result.data.yaml,
-                        logEndPos: result.data.log_end_pos, 
                         actionMessages: this.messages
                     }) 
                 }
