@@ -9,4 +9,8 @@ from cwlab import app
 @app.route('/home/', methods=['GET','POST'])
 @app.route('/main/', methods=['GET','POST'])
 def main():
-    return render_template('main.html')
+    return render_template(
+        'main.html', 
+        auto_refresh_interval = app.config["WEB_AUTO_REFRESH_INTERVAL"],
+        read_max_chars_from_file = app.config["READ_MAX_CHARS_FROM_FILE"]
+    )

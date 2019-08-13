@@ -31,6 +31,8 @@
             const routeStartExec = "{{ url_for('start_exec') }}"
             const routeGetRunStatus = "{{ url_for('get_run_status') }}"
             const routeGetRunDetails = "{{ url_for('get_run_details') }}"
+            const autoRefreshInterval = parseInt(parseFloat("{{ auto_refresh_interval }}")*1000)
+            const readMaxCharsFromFile = parseInt("{{ read_max_chars_from_file }}")
 
 
             // other global params:

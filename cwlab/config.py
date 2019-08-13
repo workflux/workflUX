@@ -92,6 +92,12 @@ class Config(object):
             100000
         )
 
+        self.WEB_AUTO_REFRESH_INTERVAL = (
+            os.environ.get('CWLAB_WEB_AUTO_REFRESH_INTERVAL') or
+            self.CONFIG_FILE_content.get('WEB_AUTO_REFRESH_INTERVAL') or  
+            1
+        )
+
         # execution profile:
         self.EXEC_PROFILES = self.CONFIG_FILE_content.get('EXEC_PROFILES') or {}
         
