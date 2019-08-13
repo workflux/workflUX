@@ -18,11 +18,13 @@ class RunDetailsLog extends React.Component {
     }
   
     scrollToTop(behavior="smooth") {
-        this.logStart.scrollIntoView({ behavior: behavior });
+        this.logContentContainer.scrollTop = 0
     }
     
     scrollToBottom(behavior="smooth") {
-        this.logEnd.scrollIntoView({ behavior: behavior });
+        // const {logContentContainer} = this.refs
+        this.logContentContainer.scrollTop = this.logContentContainer.scrollHeight - this.logContentContainer.clientHeight
+        // this.logEnd.scrollIntoView({ behavior: behavior });
     }
 
     render(){
@@ -50,14 +52,9 @@ class RunDetailsLog extends React.Component {
                 <div 
                     className="w3-metro-darken w3-panel"
                     style={ {whiteSpace: "pre-wrap", maxHeight:"50vh", overflowY: "auto"} }  
-                >   
-                    <div style={{ float:"left", clear: "both" }}
-                        ref={(el) => { this.logStart = el; }}>
-                    </div>
+                    ref={(el) => { this.logContentContainer = el; }}
+                >
                     {this.props.logContent}
-                    <div style={{ float:"left", clear: "both" }}
-                        ref={(el) => { this.logEnd = el; }}>
-                    </div>
                 </div>
             </div>
         )
@@ -70,6 +67,7 @@ class RunDetails extends React.Component {
         super(props);
         // props.jobId
         // props.runId
+        // props.handleBack
         this.state = {
             actionStatus: "none",
             logContent: "Loading",
@@ -79,6 +77,7 @@ class RunDetails extends React.Component {
         }
         this.getRunDetails = this.getRunDetails.bind(this);
         this.toggleAutoRefresh = this.toggleAutoRefresh.bind(this);
+        this.handleBackButton = this.handleBackButton.bind(this);
     }
 
     componentDidMount(){
@@ -145,13 +144,24 @@ class RunDetails extends React.Component {
     }
 
     toggleAutoRefresh(dummy, autoRefresh){
-        console.log("peep")
         this.setState({autoRefresh: autoRefresh})
+    }
+
+    handleBackButton(event){
+        this.props.handleBack()
     }
 
     render() {
         return (
             <div>
+                <ActionButton
+                    name="back"
+                    value="back"
+                    label={
+                        <span><i className="fas fa-caret-left"></i>&nbsp;back to job overview</span>
+                    }
+                    onAction={this.handleBackButton}
+                />
                 <h3>Input Parameters:</h3>
                 <div 
                     className="w3-metro-darken w3-panel"
@@ -580,6 +590,7 @@ class JobContent extends React.Component {
                 <RunDetails 
                     jobId={this.props.jobId}
                     runId={this.state.showRunDetails}
+                    handleBack={this.showRunList}
                 />
             )
         }
