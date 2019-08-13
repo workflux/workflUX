@@ -61,7 +61,7 @@ class BooleanSlider extends React.Component {
                     value={this.props.value}
                     onChange={this.handleChange}
                     disabled={this.props.disabled ? true : false}
-                    // checked={this.props.checked}
+                    checked={this.props.checked}
                 />
                 <span className="slider round"></span>
             </label>

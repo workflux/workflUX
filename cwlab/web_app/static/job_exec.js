@@ -2,6 +2,8 @@ class RunDetailsLog extends React.Component {
     constructor(props) {
         super(props);
         // props.logContent
+        // props.toggleAutoRefresh
+        // props.autoRefresh
         this.scrollToBottom = this.scrollToBottom.bind(this);
         this.scrollToTop = this.scrollToTop.bind(this);
     }
@@ -26,7 +28,25 @@ class RunDetailsLog extends React.Component {
     render(){
         return(
             <div>
-                <h3>Execution Log:</h3>
+                <div className="w3-cell-row">
+                    <div className="w3-cell">
+                        <h3>Execution Log:</h3>
+                    </div>
+                    <div className="w3-cell w3-right">
+                        auto refresh: off &nbsp;
+                        <BooleanSlider
+                            name="toggle_auto_refresh"
+                            value={"toggle_auto_refresh"}
+                            onChange={this.props.toggleAutoRefresh}
+                            checked={this.props.autoRefresh}
+                        />
+                        &nbsp; on
+
+                    </div>
+                </div>
+                <div>
+                    (Maximally the last {readMaxCharsFromFile} characters are shown. To scroll up disable auto refresh.)
+                </div>
                 <div 
                     className="w3-metro-darken w3-panel"
                     style={ {whiteSpace: "pre-wrap", maxHeight:"50vh", overflowY: "auto"} }  
@@ -50,10 +70,89 @@ class RunDetails extends React.Component {
         super(props);
         // props.jobId
         // props.runId
-        this.buildContentOnSuccess = this.buildContentOnSuccess.bind(this);
+        this.state = {
+            actionStatus: "none",
+            logEndPos: 0,
+            logContent: "Loading",
+            yamlContent: "Loading",
+            actionMessages: [],
+            autoRefresh: true
+        }
+        this.getRunDetails = this.getRunDetails.bind(this);
+        this.toggleAutoRefresh = this.toggleAutoRefresh.bind(this);
     }
 
-    buildContentOnSuccess(data, messages){ // when AJAX request succeeds
+    componentDidMount(){
+        // setup timer to automatically update
+        this.getRunDetails()
+        this.timerId = setInterval(
+            () => {
+                if(this.state.autoRefresh){
+                    this.getRunDetails()
+                }
+            },
+            autoRefreshInterval
+          );
+    }
+
+    componentWillUnmount() {
+        clearInterval(this.timerId);
+    }
+  
+    
+    getRunDetails(){
+        this.setState({actionStatus: "updating"})
+        const sendData = {
+            job_id: this.props.jobId,
+            run_id: this.props.runId,
+            log_end_pos: this.state.logEndPos
+        }
+        fetch(routeGetRunDetails, {
+            method: "POST",
+            body: JSON.stringify(sendData),
+            headers: new Headers({
+                'Content-Type': 'application/json'
+            }),
+            cache: "no-cache"
+        }).then(res => res.json())
+        .then(
+            (result) => {
+                this.messages = result.messages;
+                let errorOccured = false;
+                for( let i=0;  i<this.messages.length; i++){
+                    if(this.messages[i].type == "error"){
+                        errorOccured = true;
+                        break;
+                    }
+                }
+                if (! errorOccured){
+                    // nothing just display messages
+                    this.setState({
+                        actionStatus: "none", 
+                        logContent: result.data.log,
+                        yamlContent: result.data.yaml,
+                        logEndPos: result.data.log_end_pos, 
+                        actionMessages: this.messages
+                    }) 
+                }
+                else{
+                    this.setState({actionStatus: "none", actionMessages: this.messages}) 
+                }       
+            },
+            (error) => {
+                // server could not be reached
+                this.setState({actionStatus: "none", actionMessages: [{type: "error", text: serverNotReachableError}]}) 
+            }
+        )
+
+    }
+
+    toggleAutoRefresh(dummy, autoRefresh){
+        console.log("peep")
+        this.setState({autoRefresh: autoRefresh})
+    }
+
+    render() {
         return (
             <div>
                 <h3>Input Parameters:</h3>
@@ -61,23 +160,14 @@ class RunDetails extends React.Component {
                     className="w3-metro-darken w3-panel"
                     style={ {whiteSpace: "pre-wrap", maxHeight:"50vh", overflowY: "auto"} } 
                 >
-                    {data.yaml}
+                    {this.state.yamlContent}
                 </div>
-                <RunDetailsLog logContent={data.log} />
-
+                <RunDetailsLog 
+                    logContent={this.state.logContent}
+                    toggleAutoRefresh={this.toggleAutoRefresh}
+                    autoRefresh={this.state.autoRefresh}
+                />
             </div>
-        );
-    }
-
-    render() {
-        return (
-            <AjaxComponent
-                requestRoute={routeGetRunDetails}
-                sendData={ {job_id: this.props.jobId, run_id: this.props.runId} }
-                buildContentOnSuccess={this.buildContentOnSuccess}
-                loaderSize="large"
-                loaderMessage="Loading run details."
-            />
         );
     }
 }
@@ -256,7 +346,7 @@ class RunList extends React.Component {
             () => {
                 this.getRunInfo()
             },
-            1000
+            autoRefreshInterval
           );
     }
 
