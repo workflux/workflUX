@@ -50,7 +50,7 @@ def fetch_files_in_dir(dir_path, # searches for files in dir_path
 def read_file_content(
     file_path,
     start_pos=0, # anticipated starting point
-    max_chars=100000 # maximum number of charcters to read in
+    max_chars=app.config["READ_MAX_CHARS_FROM_FILE"] # maximum number of charcters to read in
 ):
     content = []
     fsize = os.stat(file_path).st_size

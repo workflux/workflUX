@@ -154,14 +154,16 @@ def get_run_info(job_id, run_ids):
             data[run_id]["retry_count"] = run_info.retry_count
     return data
     
-def read_run_log(job_id, run_id, start_pos=0):
+def read_run_log(job_id, run_id):
     log_path = get_path("run_log", job_id, run_id)
-    content = read_file_content(log_path, start_pos, max_chars=app.config["READ_MAX_CHARS_FROM_FILE"])
+    if not os.path.isfile(log_path):
+        return "Run not started yet."
+    content, _ = read_file_content(log_path)
     return content
     
 def read_run_yaml(job_id, run_id):
     yaml_path = get_path("run_yaml", job_id, run_id)
-    content = read_file_content(yaml_path, start_pos=0, max_chars=app.config["READ_MAX_CHARS_FROM_FILE"])
+    content, _ = read_file_content(yaml_path)
     return content
     
     
