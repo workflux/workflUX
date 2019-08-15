@@ -204,6 +204,7 @@ def build_parameter_sheet(
         header_row = build_attribute_header({
             "type": "param", 
             "format": "wide",
+            "param": param,
             "run_id_param": run_id
         })
         data.append([header_row])
