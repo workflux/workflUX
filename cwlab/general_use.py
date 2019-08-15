@@ -1,6 +1,7 @@
 import os, sys
 from re import sub, match
 from datetime import datetime
+from time import sleep
 from . import app
 from cwlab.xls2cwl_job.web_interface import read_template_attributes as read_template_attributes_from_xls
 from cwlab.xls2cwl_job.web_interface import get_param_config_info as get_param_config_info_from_xls
@@ -174,9 +175,6 @@ def db_commit(retry_delays=[1,4]):
                 sys.exit("Could not connect to database.")
             else:
                 sleep(retry_delay + retry_delay*random())
-
-
-
     
     
         
