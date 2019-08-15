@@ -376,13 +376,22 @@ class RunList extends React.Component {
         return(null)
     }
 
-    // componentDidUpdate(){
-    //     if(this.state.runInfo === {}){
-    //         this.getRunInfo()
-    //     }
-    // }
+    componentDidUpdate(){
+        if(this.state.runInfo === {}){
+            this.getRunInfo()
+        }
+    }
     
     render(){
+        let runInfo = {}
+        this.props.runIds.map( (r) => (
+            Object.keys(this.state.runInfo).includes(r) ? (
+                runInfo[r] = this.state.runInfo[r]
+            ) : (
+                runInfo[r] = this.initRunInfo
+            )
+        ))
+
         return(
             <div style={ {maxHeight:"50vh", overflowY: "auto"} }>
                 <table className="w3-table w3-bordered w3-border">
@@ -414,10 +423,10 @@ class RunList extends React.Component {
                             <RunListElement 
                                 key={r}
                                 runId={r}
-                                status={this.state.runInfo[r].status}
-                                duration={this.state.runInfo[r].duration}
-                                execProfile={this.state.runInfo[r].exec_profile}
-                                retryCount={this.state.runInfo[r].retry_count}
+                                status={runInfo[r].status}
+                                duration={runInfo[r].duration}
+                                execProfile={runInfo[r].exec_profile}
+                                retryCount={runInfo[r].retry_count}
                                 checked={this.props.runSelection[r]}
                                 onSelectionChange={this.props.changeRunSelection}
                                 showRunDetails={this.props.showRunDetails}
