@@ -459,7 +459,8 @@ class JobContent extends React.Component {
         this.state = {
             runSelection: runSelection,
             actionStatus: "none",
-            execProfile: this.props.execProfiles[0]
+            execProfile: this.props.execProfiles[0],
+            dangerZoneUnlocked: false
         }
         this.actionMessages = []
 
@@ -467,8 +468,14 @@ class JobContent extends React.Component {
         this.toggelRunSelectionAll = this.toggelRunSelectionAll.bind(this)
         this.execRuns = this.execRuns.bind(this)
         this.changeExecProfile = this.changeExecProfile.bind(this)
+        this.toggleDangerZoneLock = this.toggleDangerZoneLock.bind(this)
     }
 
+    toggleDangerZoneLock(_, unlocked){
+            this.setState({
+                dangerZoneUnlocked: unlocked
+            })
+    }
     
     toggelRunSelectionAll(){
         // if all runs are selected, deselect all:
@@ -495,7 +502,10 @@ class JobContent extends React.Component {
     }
 
     execRuns(){
-        this.setState({actionStatus: "starting"})
+        // this.setState({
+        //     actionStatus: "starting",
+        //     dangerZoneUnlocked: false
+        // })
         const runSelection = this.state.runSelection
         let selectedRuns = []
         this.props.runs.map((run) =>
@@ -539,7 +549,9 @@ class JobContent extends React.Component {
     }
 
     render(){
-        const is_run_selected=Object.values(this.state.runSelection).includes(true)
+        const is_run_selected= Object.values(this.state.runSelection).includes(true)
+        const disable_actions = (! is_run_selected) || (this.state.actionStatus != "none")
+        const disable_danger_actions = disable_actions || (! this.state.dangerZoneUnlocked)
         if (this.props.whichRunDetails == null){
             return(
                 <div>
@@ -556,32 +568,94 @@ class JobContent extends React.Component {
                         className="fas fa-arrow-up" 
                         style={ {paddingLeft:"20px", paddingRight:"10px"} }
                     />
-                    select one or multiple jobs for following actions:
+                        Please select one or multiple jobs for following actions:
                     <h3>Actions:</h3>
-                    <span className="w3-text-green">Start Execution:</span>
-                    <div className="w3-container">
-                        <label>
-                            Select execution profile:
-                            <select className="w3-button w3-white w3-border" 
-                                name="exec_profile"
-                                onChange={this.changeExecProfile}
-                                value={this.state.execProfile}
-                                >
-                                {
-                                    this.props.execProfiles.map((execProfile) =>
-                                        <option key={execProfile} value={execProfile}>{execProfile}</option>
+                    <div
+                        style={
+                            disable_actions ? ({opacity: 0.4}) : ({})
+                        }
+                    >  
+                        <span className="w3-text-green">Start Execution:</span>
+                        <div className="w3-panel">
+                            <p>
+                                <label>
+                                    Select execution profile:
+                                    <select className="w3-button w3-white w3-border w3-padding-small" 
+                                        name="exec_profile"
+                                        onChange={this.changeExecProfile}
+                                        value={this.state.execProfile}
+                                        disabled={disable_actions}
+                                    >
+                                        {
+                                            this.props.execProfiles.map((execProfile) =>
+                                                <option key={execProfile} value={execProfile}>{execProfile}</option>
+                                            )
+                                        }
+                                    </select> 
+                                </label>
+                            </p>
+                            <p>
+                                <ActionButton
+                                    name="start"
+                                    value="start"
+                                    onAction={this.execRuns}
+                                    label={<span><i className="fas fa-rocket w3-text-green"/>&nbsp;start</span>}
+                                    disabled={disable_actions}
+                                    loading={this.state.actionStatus == "starting"} 
+                                />
+                            </p>
+                        </div >
+                        <span className="w3-text-red">Danger Zone:</span>
+                        <div 
+                            className="w3-panel"
+                            style={ 
+                                disable_danger_actions ? (
+                                        {backgroundColor: "hsl(0, 20%, 50%)"}
+                                    ) : (
+                                        {backgroundColor: "hsl(0, 40%, 50%)"}
                                     )
+                            }
+                        >
+                            <p>
+                                <BooleanSlider
+                                    name="unlock danger zone"
+                                    value="unlock danger zone"
+                                    onChange={this.toggleDangerZoneLock}
+                                    disabled={disable_actions}
+                                    checked={this.state.dangerZoneUnlocked}
+                                /> &nbsp; unlock
+                            </p>
+                            <p
+                                style={
+                                    disable_danger_actions && !disable_actions ? ({opacity: 0.4}) : ({})
                                 }
-                            </select> 
-                        </label>
-                        <br/>
-                        <ActionButton
-                            name="start"
-                            value="start"
-                            onAction={this.execRuns}
-                            label={<span><i className="fas fa-rocket w3-text-green"/>&nbsp;start</span>}
-                            disabled={!is_run_selected}
-                        />
+                            >
+                                <ActionButton
+                                    name="terminate"
+                                    value="terminate"
+                                    // onAction={this.terminateRuns}
+                                    label={<span><i className="fas fa-stop-circle w3-text-red"/>&nbsp;terminate</span>}
+                                    disabled={disable_danger_actions}
+                                    loading={this.state.actionStatus == "terminating"} 
+                                />
+                                <ActionButton
+                                    name="reset"
+                                    value="reset"
+                                    // onAction={this.terminateRuns}
+                                    label={<span><i className="fas fa-undo w3-text-red"/>&nbsp;reset</span>}
+                                    disabled={disable_danger_actions}
+                                    loading={this.state.actionStatus == "resetting"} 
+                                />
+                                <ActionButton
+                                    name="delete"
+                                    value="delete"
+                                    // onAction={this.terminateRuns}
+                                    label={<span><i className="fas fa-trash-alt w3-text-red"/>&nbsp;delete</span>}
+                                    disabled={disable_danger_actions}
+                                    loading={this.state.actionStatus == "delete"} 
+                                />
+                            </p>
+                        </div>
                     </div>
                     <DisplayServerMessages messages={this.actionMessages} />
                 </div>
