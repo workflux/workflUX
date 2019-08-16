@@ -716,7 +716,7 @@ class JobContent extends React.Component {
                         <div 
                             className="w3-panel"
                             style={ 
-                                disable_danger_global_actions ? (
+                                disable_danger_run_actions ? (
                                         {backgroundColor: "hsl(0, 20%, 50%)"}
                                     ) : (
                                         {backgroundColor: "hsl(0, 40%, 50%)"}
@@ -791,23 +791,19 @@ class JobContent extends React.Component {
                             </div>
                         </div>
                     </div>
-                    <h3>Global Actions:</h3><div
-                        style={
-                            disable_run_actions ? ({opacity: 0.4}) : ({})
-                        }
-                    >
+                    <h3>Global Actions:</h3><div>
                         <span className="w3-text-red">Danger Zone:</span>
                         <div 
                             className="w3-panel"
                             style={ 
-                                disable_danger_run_actions ? (
+                                disable_danger_global_actions ? (
                                         {backgroundColor: "hsl(0, 20%, 50%)"}
                                     ) : (
                                         {backgroundColor: "hsl(0, 40%, 50%)"}
                                     )
                             }
                         >
-                            <div className="w3-padding-16">
+                            <div className="w3-padding-16" style>
                                 <BooleanSlider
                                     name="unlock danger zone"
                                     value="unlock danger zone"
@@ -818,9 +814,6 @@ class JobContent extends React.Component {
                             </div>
                             <div
                                 className="w3-padding-16"
-                                style={
-                                    disable_danger_run_actions && !disable_run_actions ? ({opacity: 0.4}) : ({})
-                                }
                             >
                                 <table className="w3-table">
                                     <tr>
@@ -835,8 +828,7 @@ class JobContent extends React.Component {
                                             />
                                         </td>
                                         <td>
-                                            Stop execution of selected runs and deleted them entirely.
-                                            They will no longer show up in the list of runs.
+                                            Delete the entire job. All runs will be stopped and deleted.
                                         </td>
                                     </tr>
                                 </table>
