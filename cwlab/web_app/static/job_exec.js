@@ -72,7 +72,7 @@ class RunDetails extends React.Component {
             actionStatus: "none",
             logContent: "Loading",
             yamlContent: "Loading",
-            actionMessages: [],
+            serverMessages: [],
             autoRefresh: true
         }
         this.getRunDetails = this.getRunDetails.bind(this);
@@ -128,16 +128,16 @@ class RunDetails extends React.Component {
                         actionStatus: "none", 
                         logContent: result.data.log,
                         yamlContent: result.data.yaml,
-                        actionMessages: this.messages
+                        serverMessages: this.messages
                     }) 
                 }
                 else{
-                    this.setState({actionStatus: "none", actionMessages: this.messages}) 
+                    this.setState({actionStatus: "none", serverMessages: this.messages}) 
                 }       
             },
             (error) => {
                 // server could not be reached
-                this.setState({actionStatus: "none", actionMessages: [{type: "error", text: serverNotReachableError}]}) 
+                this.setState({actionStatus: "none", serverMessages: [{type: "error", text: serverNotReachableError}]}) 
             }
         )
 
@@ -174,6 +174,7 @@ class RunDetails extends React.Component {
                     toggleAutoRefresh={this.toggleAutoRefresh}
                     autoRefresh={this.state.autoRefresh}
                 />
+                <DisplayServerMessages messages={this.state.serverMessages} />
             </div>
         );
     }
@@ -469,6 +470,7 @@ class JobContent extends React.Component {
         this.execRuns = this.execRuns.bind(this)
         this.changeExecProfile = this.changeExecProfile.bind(this)
         this.toggleDangerZoneLock = this.toggleDangerZoneLock.bind(this)
+        this.terminateRuns = this.terminateRuns.bind(this)
     }
 
     toggleDangerZoneLock(_, unlocked){
@@ -502,10 +504,9 @@ class JobContent extends React.Component {
     }
 
     execRuns(){
-        // this.setState({
-        //     actionStatus: "starting",
-        //     dangerZoneUnlocked: false
-        // })
+        this.setState({
+            actionStatus: "starting"
+        })
         const runSelection = this.state.runSelection
         let selectedRuns = []
         this.props.runs.map((run) =>
@@ -518,6 +519,51 @@ class JobContent extends React.Component {
             exec_profile: this.state.execProfile
         }
         fetch(routeStartExec, {
+            method: "POST",
+            body: JSON.stringify(sendData),
+            headers: new Headers({
+                'Content-Type': 'application/json'
+            }),
+            cache: "no-cache"
+        }).then(res => res.json())
+        .then(
+            (result) => {
+                this.actionMessages = result.messages;
+                let errorOccured = false;
+                for( let i=0;  i<this.actionMessages.length; i++){
+                    if(this.actionMessages[i].type == "error"){
+                        errorOccured = true;
+                        break;
+                    }
+                }
+                if (! errorOccured){
+                    // nothing just display messages
+                }    
+                this.setState({actionStatus: "none"})        
+            },
+            (error) => {
+                // server could not be reached
+                this.actionMessages = [{type: "error", text: serverNotReachableError}];
+                this.setState({actionStatus: "none"}) 
+            }
+        )
+    }
+
+    terminateRuns(mode="terminate"){
+        this.setState({
+            actionStatus: "terminating"
+        })
+        const runSelection = this.state.runSelection
+        let selectedRuns = []
+        this.props.runs.map((run) =>
+            runSelection[run] && (selectedRuns.push(run))
+        )
+        const sendData = {
+            job_id: this.props.jobId,
+            run_ids: selectedRuns,
+            mode: mode
+        }
+        fetch(routeTerminateRuns, {
             method: "POST",
             body: JSON.stringify(sendData),
             headers: new Headers({
@@ -630,30 +676,56 @@ class JobContent extends React.Component {
                                     disable_danger_actions && !disable_actions ? ({opacity: 0.4}) : ({})
                                 }
                             >
-                                <ActionButton
-                                    name="terminate"
-                                    value="terminate"
-                                    // onAction={this.terminateRuns}
-                                    label={<span><i className="fas fa-stop-circle w3-text-red"/>&nbsp;terminate</span>}
-                                    disabled={disable_danger_actions}
-                                    loading={this.state.actionStatus == "terminating"} 
-                                />
-                                <ActionButton
-                                    name="reset"
-                                    value="reset"
-                                    // onAction={this.terminateRuns}
-                                    label={<span><i className="fas fa-undo w3-text-red"/>&nbsp;reset</span>}
-                                    disabled={disable_danger_actions}
-                                    loading={this.state.actionStatus == "resetting"} 
-                                />
-                                <ActionButton
-                                    name="delete"
-                                    value="delete"
-                                    // onAction={this.terminateRuns}
-                                    label={<span><i className="fas fa-trash-alt w3-text-red"/>&nbsp;delete</span>}
-                                    disabled={disable_danger_actions}
-                                    loading={this.state.actionStatus == "delete"} 
-                                />
+                                <table className="w3-table">
+                                    <tr>
+                                        <td>
+                                            <ActionButton
+                                                name="terminate"
+                                                value="terminate"
+                                                onAction={this.terminateRuns}
+                                                label={<span><i className="fas fa-stop-circle w3-text-red"/>&nbsp;terminate</span>}
+                                                disabled={disable_danger_actions}
+                                                loading={this.state.actionStatus == "terminating"} 
+                                            />
+                                        </td>
+                                        <td>
+                                            Stop execution of selected runs. Intermediate results will be maintained.
+                                            Runs will be marked as "terminated by user".
+                                        </td>
+                                    </tr>
+                                    <tr>
+                                        <td>
+                                            <ActionButton
+                                                name="reset"
+                                                value="reset"
+                                                onAction={this.terminateRuns}
+                                                label={<span><i className="fas fa-undo w3-text-red"/>&nbsp;reset</span>}
+                                                disabled={disable_danger_actions}
+                                                loading={this.state.actionStatus == "resetting"} 
+                                            />
+                                        </td>
+                                        <td>
+                                            Stop execution of selected runs and clear their (intermediate) results.
+                                            Runs will be appear as "not started yet".
+                                        </td>
+                                    </tr>
+                                    <tr>
+                                        <td>
+                                            <ActionButton
+                                                name="delete"
+                                                value="delete"
+                                                onAction={this.terminateRuns}
+                                                label={<span><i className="fas fa-trash-alt w3-text-red"/>&nbsp;delete</span>}
+                                                disabled={disable_danger_actions}
+                                                loading={this.state.actionStatus == "delete"} 
+                                            />
+                                        </td>
+                                        <td>
+                                            Stop execution of selected runs and deleted them entirely.
+                                            They will no longer show up in the list of runs.
+                                        </td>
+                                    </tr>
+                                </table>
                             </p>
                         </div>
                     </div>

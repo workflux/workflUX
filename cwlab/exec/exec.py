@@ -7,8 +7,9 @@ import os, sys, platform
 from subprocess import Popen, PIPE
 from time import sleep
 from random import random
-from psutil import pid_exists, Process, STATUS_ZOMBIE
+from psutil import pid_exists, Process, STATUS_ZOMBIE, wait_procs
 from platform import system as platform_system
+from shutil import rmtree
 basedir = os.path.abspath(os.path.dirname(__file__))
 python_interpreter = sys.executable
 
@@ -115,7 +116,7 @@ def exec_runs(job_id, run_ids, exec_profile_name, cwl):
         started_runs.append(run_id)
     return started_runs, already_running_runs
 
-def get_run_info(job_id, run_ids):
+def get_run_info(job_id, run_ids, return_pid=False, return_db_request=False):
     data = {}
     db_job_id_request = query_info_from_db(job_id)
 
@@ -148,12 +149,94 @@ def get_run_info(job_id, run_ids):
             else:
                 time_finished = datetime.now()
 
+            if return_pid:
+                data[run_id]["pid"] = run_info.pid
+            if return_db_request:
+                data[run_id]["db_id"] = run_info.id
             data[run_id]["status"] = run_info.status
+            data[run_id]["time_started"] = run_info.time_started
+            data[run_id]["time_finished"] = run_info.time_finished
             data[run_id]["duration"] = get_duration(run_info.time_started, time_finished)
             data[run_id]["exec_profile"] = run_info.exec_profile_name
             data[run_id]["retry_count"] = run_info.retry_count
-    return data
+    if return_db_request:
+        return data, db_job_id_request
+    else:
+        return data
     
+
+def kill_proc_tree(pid, include_parent=True,
+                   timeout=1, on_terminate=None):
+    # adapted from: https://psutil.readthedocs.io/en/latest/#kill-process-tree
+    assert pid != os.getpid(), "won't kill myself"
+    parent = Process(pid)
+    children = parent.children(recursive=True)
+    if include_parent:
+        children.append(parent)
+    for p in children:
+        try:
+            p.terminate()
+        except:
+            pass
+    _, survived_terminate = wait_procs(children, timeout=timeout,
+                                    callback=on_terminate)
+    for p in survived_terminate:
+        try:
+            p.kill()
+        except:
+            pass
+    _, survived_kill = wait_procs(survived_terminate, timeout=timeout,
+                                    callback=on_terminate)
+    if len(survived_kill) > 0:
+        return False
+    else:
+        return True
+
+
+def terminate_runs(
+    job_id, 
+    run_ids, 
+    mode="terminate" # can be one of terminate, reset, or delete
+):
+    could_not_be_terminated = []
+    could_not_be_cleaned = []
+    succeeded = []
+    run_info, db_request = get_run_info(job_id, run_ids, return_pid=True, return_db_request=True)
+    db_changed = False
+    for run_id in run_info.keys():
+        if not isinstance(run_info[run_id]["time_finished"], datetime):
+            p = Process(run_info[run_id]["pid"])
+            print(run_info[run_id]["pid"])
+            is_killed = kill_proc_tree(run_info[run_id]["pid"])
+            if not is_killed:
+                could_not_be_terminated.append(run_id)
+                continue
+            cleanup_zombie_process(run_info[run_id]["pid"])
+            db_run_entry = db_request.filter(Exec.id==run_info[run_id]["db_id"])
+            db_run_entry.time_finished = datetime.now()
+            db_run_entry.status = "terminated by user"
+            db_changed = True
+        if mode in ["reset", "delete"]:
+            try:
+                log_path = get_path("run_log", job_id, run_id)
+                os.remove(log_path)
+                run_out_dir = get_path("run_out_dir", job_id, run_id)
+                rmtree(run_out_dir)
+            except:
+                could_not_be_cleaned.append(run_id)
+                continue
+        if mode == "delete":
+            try:
+                db_request.filter(Exec.run_id==run_id).delete(synchronize_session=False)
+                db_changed = True
+            except:
+                could_not_be_cleaned.append(run_id)
+                continue
+        succeeded.append(run_id)
+    if db_changed:
+        db_commit()
+    return succeeded, could_not_be_terminated, could_not_be_cleaned
+            
 def read_run_log(job_id, run_id):
     log_path = get_path("run_log", job_id, run_id)
     if not os.path.isfile(log_path):
