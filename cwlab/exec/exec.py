@@ -124,7 +124,13 @@ def get_run_info(job_id, run_ids, return_pid=False, return_db_request=False):
         data[run_id] = {}
         db_run_id_request = db_job_id_request.filter(Exec.run_id==run_id).distinct()
         if db_run_id_request.count() == 0:
+            if return_pid:
+                data[run_id]["pid"] = None
+            if return_db_request:
+                data[run_id]["db_id"] = None
             data[run_id]["status"] = "not started yet"
+            data[run_id]["time_started"] = "-"
+            data[run_id]["time_finished"] = "-"
             data[run_id]["duration"] = "-"
             data[run_id]["exec_profile"] = "-"
             data[run_id]["retry_count"] = "0"
@@ -204,7 +210,8 @@ def terminate_runs(
     run_info, db_request = get_run_info(job_id, run_ids, return_pid=True, return_db_request=True)
     db_changed = False
     for run_id in run_info.keys():
-        if not isinstance(run_info[run_id]["time_finished"], datetime):
+        if isinstance(run_info[run_id]["time_started"], datetime) and \
+            not isinstance(run_info[run_id]["time_finished"], datetime):
             p = Process(run_info[run_id]["pid"])
             print(run_info[run_id]["pid"])
             is_killed = kill_proc_tree(run_info[run_id]["pid"])
@@ -224,8 +231,9 @@ def terminate_runs(
                 run_out_dir = get_path("run_out_dir", job_id, run_id)
                 if os.path.exists(run_out_dir):
                     rmtree(run_out_dir)
-                db_request.filter(Exec.run_id==run_id).delete(synchronize_session=False)
-                db_changed = True
+                if isinstance(run_info[run_id]["time_started"], datetime):
+                    db_request.filter(Exec.run_id==run_id).delete(synchronize_session=False)
+                    db_changed = True
             except:
                 could_not_be_cleaned.append(run_id)
                 continue

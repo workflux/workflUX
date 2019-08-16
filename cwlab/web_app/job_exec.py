@@ -82,11 +82,12 @@ def get_job_list():
 @app.route('/get_run_list/', methods=['GET','POST'])
 def get_run_list():
     messages = []
-    data = []
+    data = {}
     try:
         data_req = request.get_json()
         job_id = data_req["job_id"]
-        data = get_run_ids(job_id)
+        run_ids = get_run_ids(job_id)
+        data["run_ids"] = run_ids
     except SystemExit as e:
         messages.append( { 
             "type":"error", 
@@ -97,6 +98,7 @@ def get_run_list():
             "type":"error", 
             "text":"An unkown error occured reading the execution directory." 
         } )
+    print(data)
     return jsonify({
             "data": data,
             "messages": messages

@@ -114,10 +114,10 @@ class RunDetails extends React.Component {
         }).then(res => res.json())
         .then(
             (result) => {
-                this.messages = result.messages;
+                const messages = result.messages;
                 let errorOccured = false;
-                for( let i=0;  i<this.messages.length; i++){
-                    if(this.messages[i].type == "error"){
+                for( let i=0;  i<messages.length; i++){
+                    if(messages[i].type == "error"){
                         errorOccured = true;
                         break;
                     }
@@ -128,11 +128,11 @@ class RunDetails extends React.Component {
                         actionStatus: "none", 
                         logContent: result.data.log,
                         yamlContent: result.data.yaml,
-                        serverMessages: this.messages
+                        serverMessages: messages
                     }) 
                 }
                 else{
-                    this.setState({actionStatus: "none", serverMessages: this.messages}) 
+                    this.setState({actionStatus: "none", serverMessages: messages}) 
                 }       
             },
             (error) => {
@@ -453,15 +453,13 @@ class JobContent extends React.Component {
     // props.showRunList
     constructor(props){
         super(props)
-        let runSelection = {}
-        this.props.runs.map((r) =>
-            (runSelection[r] = false)
-        )
         this.state = {
-            runSelection: runSelection,
-            actionStatus: "none",
+            runIds: [],
+            runSelection: [],
+            actionStatus: "loading",
             execProfile: this.props.execProfiles[0],
-            dangerZoneUnlocked: false
+            runDangerZoneUnlocked: false,
+            serverMessages: []
         }
         this.actionMessages = []
 
@@ -471,11 +469,17 @@ class JobContent extends React.Component {
         this.changeExecProfile = this.changeExecProfile.bind(this)
         this.toggleDangerZoneLock = this.toggleDangerZoneLock.bind(this)
         this.terminateRuns = this.terminateRuns.bind(this)
+        this.getRunList = this.getRunList.bind(this)
+    }
+
+    componentDidMount(){
+        // setup timer to automatically update
+        this.getRunList()
     }
 
     toggleDangerZoneLock(_, unlocked){
             this.setState({
-                dangerZoneUnlocked: unlocked
+                runDangerZoneUnlocked: unlocked
             })
     }
     
@@ -483,7 +487,7 @@ class JobContent extends React.Component {
         // if all runs are selected, deselect all:
         const select = !Object.values(this.state.runSelection).every(Boolean) 
         let update = {}
-        this.props.runs.map((r) =>
+        this.state.runIds.map((r) =>
             (update[r] = select)
         )
         this.setState({
@@ -503,13 +507,63 @@ class JobContent extends React.Component {
         this.setState({execProfile: event.currentTarget.value})
     }
 
+    getRunList(){
+        this.setState({
+            actionStatus: "get_run_list"
+        })
+        const sendData = {
+            job_id: this.props.jobId
+        }
+        fetch(routeGetRunList, {
+            method: "POST",
+            body: JSON.stringify(sendData),
+            headers: new Headers({
+                'Content-Type': 'application/json'
+            }),
+            cache: "no-cache"
+        }).then(res => res.json())
+        .then(
+            (result) => {
+                const messages = result.messages;
+                const data = result.data;
+                let errorOccured = false;
+                for( let i=0;  i<messages.length; i++){
+                    if(messages[i].type == "error"){
+                        errorOccured = true;
+                        break;
+                    }
+                }
+                if (! errorOccured){
+                    let runSelection = {}
+                    data.run_ids.map((r) =>
+                        (runSelection[r] = false)
+                    )
+                    this.setState({
+                        runIds: data.run_ids, 
+                        runSelection: runSelection,
+                        actionStatus: "none", 
+                        serverMessages: messages
+                    })  
+                } 
+                else {
+                    this.setState({actionStatus: "none", serverMessages: messages})  
+                }    
+            },
+            (error) => {
+                // server could not be reached
+                this.serverMessages = [{type: "error", text: serverNotReachableError}];
+                this.setState({actionStatus: "none"}) 
+            }
+        )
+    }
+
     execRuns(){
         this.setState({
             actionStatus: "starting"
         })
         const runSelection = this.state.runSelection
         let selectedRuns = []
-        this.props.runs.map((run) =>
+        this.state.runIds.map((run) =>
             runSelection[run] && (selectedRuns.push(run))
         )
         const sendData = {
@@ -555,7 +609,7 @@ class JobContent extends React.Component {
         })
         const runSelection = this.state.runSelection
         let selectedRuns = []
-        this.props.runs.map((run) =>
+        this.state.runIds.map((run) =>
             runSelection[run] && (selectedRuns.push(run))
         )
         const sendData = {
@@ -581,10 +635,8 @@ class JobContent extends React.Component {
                         break;
                     }
                 }
-                if (! errorOccured){
-                    // nothing just display messages
-                }    
-                this.setState({actionStatus: "none"})        
+                this.setState({actionStatus: "none"}) 
+                this.getRunList()       
             },
             (error) => {
                 // server could not be reached
@@ -595,16 +647,25 @@ class JobContent extends React.Component {
     }
 
     render(){
-        const is_run_selected= Object.values(this.state.runSelection).includes(true)
-        const disable_actions = (! is_run_selected) || (this.state.actionStatus != "none")
-        const disable_danger_actions = disable_actions || (! this.state.dangerZoneUnlocked)
-        if (this.props.whichRunDetails == null){
+        if (this.actionStatus == "loading"){
+            return(
+                <LoadingIndicator 
+                    message="Loading list of runs." 
+                    size="large" 
+                />
+            )
+        }
+        else if (this.props.whichRunDetails == null){
+            const is_run_selected= Object.values(this.state.runSelection).includes(true)
+            const disable_run_actions = (! is_run_selected) || (this.state.actionStatus != "none")
+            const disable_danger_run_actions = disable_run_actions || (! this.state.runDangerZoneUnlocked)
+            const disable_danger_global_actions = disable_run_actions || (! this.state.globalDangerZoneUnlocked)
             return(
                 <div>
                     <h3>List of Runs:</h3>
                     <RunList 
                         jobId={this.props.jobId}
-                        runIds={this.props.runs}
+                        runIds={this.state.runIds}
                         changeRunSelection={this.changeRunSelection}
                         toggelRunSelectionAll={this.toggelRunSelectionAll}
                         runSelection={this.state.runSelection}
@@ -615,10 +676,10 @@ class JobContent extends React.Component {
                         style={ {paddingLeft:"20px", paddingRight:"10px"} }
                     />
                         Please select one or multiple jobs for following actions:
-                    <h3>Actions:</h3>
+                    <h3>Actions on Selected Runs:</h3>
                     <div
                         style={
-                            disable_actions ? ({opacity: 0.4}) : ({})
+                            disable_run_actions ? ({opacity: 0.4}) : ({})
                         }
                     >  
                         <span className="w3-text-green">Start Execution:</span>
@@ -630,7 +691,7 @@ class JobContent extends React.Component {
                                         name="exec_profile"
                                         onChange={this.changeExecProfile}
                                         value={this.state.execProfile}
-                                        disabled={disable_actions}
+                                        disabled={disable_run_actions}
                                     >
                                         {
                                             this.props.execProfiles.map((execProfile) =>
@@ -646,7 +707,7 @@ class JobContent extends React.Component {
                                     value="start"
                                     onAction={this.execRuns}
                                     label={<span><i className="fas fa-rocket w3-text-green"/>&nbsp;start</span>}
-                                    disabled={disable_actions}
+                                    disabled={disable_run_actions}
                                     loading={this.state.actionStatus == "starting"} 
                                 />
                             </p>
@@ -655,25 +716,26 @@ class JobContent extends React.Component {
                         <div 
                             className="w3-panel"
                             style={ 
-                                disable_danger_actions ? (
+                                disable_danger_global_actions ? (
                                         {backgroundColor: "hsl(0, 20%, 50%)"}
                                     ) : (
                                         {backgroundColor: "hsl(0, 40%, 50%)"}
                                     )
                             }
                         >
-                            <p>
+                            <div className="w3-padding-16">
                                 <BooleanSlider
                                     name="unlock danger zone"
                                     value="unlock danger zone"
                                     onChange={this.toggleDangerZoneLock}
-                                    disabled={disable_actions}
-                                    checked={this.state.dangerZoneUnlocked}
+                                    disabled={disable_run_actions}
+                                    checked={this.state.runDangerZoneUnlocked}
                                 /> &nbsp; unlock
-                            </p>
-                            <p
+                            </div>
+                            <div
+                                className="w3-padding-16"
                                 style={
-                                    disable_danger_actions && !disable_actions ? ({opacity: 0.4}) : ({})
+                                    disable_danger_run_actions && !disable_run_actions ? ({opacity: 0.4}) : ({})
                                 }
                             >
                                 <table className="w3-table">
@@ -684,7 +746,7 @@ class JobContent extends React.Component {
                                                 value="terminate"
                                                 onAction={this.terminateRuns}
                                                 label={<span><i className="fas fa-stop-circle w3-text-red"/>&nbsp;terminate</span>}
-                                                disabled={disable_danger_actions}
+                                                disabled={disable_danger_run_actions}
                                                 loading={this.state.actionStatus == "terminating"} 
                                             />
                                         </td>
@@ -700,7 +762,7 @@ class JobContent extends React.Component {
                                                 value="reset"
                                                 onAction={this.terminateRuns}
                                                 label={<span><i className="fas fa-undo w3-text-red"/>&nbsp;reset</span>}
-                                                disabled={disable_danger_actions}
+                                                disabled={disable_danger_run_actions}
                                                 loading={this.state.actionStatus == "resetting"} 
                                             />
                                         </td>
@@ -716,7 +778,7 @@ class JobContent extends React.Component {
                                                 value="delete"
                                                 onAction={this.terminateRuns}
                                                 label={<span><i className="fas fa-trash-alt w3-text-red"/>&nbsp;delete</span>}
-                                                disabled={disable_danger_actions}
+                                                disabled={disable_danger_run_actions}
                                                 loading={this.state.actionStatus == "delete"} 
                                             />
                                         </td>
@@ -726,7 +788,59 @@ class JobContent extends React.Component {
                                         </td>
                                     </tr>
                                 </table>
-                            </p>
+                            </div>
+                        </div>
+                    </div>
+                    <h3>Global Actions:</h3><div
+                        style={
+                            disable_run_actions ? ({opacity: 0.4}) : ({})
+                        }
+                    >
+                        <span className="w3-text-red">Danger Zone:</span>
+                        <div 
+                            className="w3-panel"
+                            style={ 
+                                disable_danger_run_actions ? (
+                                        {backgroundColor: "hsl(0, 20%, 50%)"}
+                                    ) : (
+                                        {backgroundColor: "hsl(0, 40%, 50%)"}
+                                    )
+                            }
+                        >
+                            <div className="w3-padding-16">
+                                <BooleanSlider
+                                    name="unlock danger zone"
+                                    value="unlock danger zone"
+                                    onChange={this.toggleDangerZoneLock}
+                                    disabled={disable_run_actions}
+                                    checked={this.state.runDangerZoneUnlocked}
+                                /> &nbsp; unlock
+                            </div>
+                            <div
+                                className="w3-padding-16"
+                                style={
+                                    disable_danger_run_actions && !disable_run_actions ? ({opacity: 0.4}) : ({})
+                                }
+                            >
+                                <table className="w3-table">
+                                    <tr>
+                                        <td>
+                                            <ActionButton
+                                                name="delete entire job"
+                                                value="delete entire job"
+                                                onAction={this.deleteJob}
+                                                label={<span><i className="fas fa-trash-alt w3-text-red"/>&nbsp;delete</span>}
+                                                disabled={disable_danger_run_actions}
+                                                loading={this.state.actionStatus == "delete"} 
+                                            />
+                                        </td>
+                                        <td>
+                                            Stop execution of selected runs and deleted them entirely.
+                                            They will no longer show up in the list of runs.
+                                        </td>
+                                    </tr>
+                                </table>
+                            </div>
                         </div>
                     </div>
                     <DisplayServerMessages messages={this.actionMessages} />
@@ -813,7 +927,6 @@ class JobList extends React.Component {
             )
             itemContent = <JobContent 
                 jobId={this.state.whichFocus} 
-                runs={jobInfo.runs} 
                 cwlTarget={jobInfo.cwl_target} 
                 execProfiles={this.props.execProfiles}
                 whichRunDetails={this.state.whichRunDetails}
