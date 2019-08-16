@@ -49,11 +49,9 @@ def get_job_list():
                 } )
                 continue
             cwl_target = job_param_sheet_attributes["CWL"]
-            run_ids = get_run_ids(job_id)
             jobs.append({
                 "job_id": job_id,
                 "job_abs_path": job_dir,
-                "runs": run_ids,
                 "cwl_target": cwl_target
                 })
     except SystemExit as e:
@@ -81,6 +79,29 @@ def get_job_list():
     )
 
 
+@app.route('/get_run_list/', methods=['GET','POST'])
+def get_run_list():
+    messages = []
+    data = []
+    try:
+        data_req = request.get_json()
+        job_id = data_req["job_id"]
+        data = get_run_ids(job_id)
+    except SystemExit as e:
+        messages.append( { 
+            "type":"error", 
+            "text": str(e) 
+        } )
+    except:
+        messages.append( { 
+            "type":"error", 
+            "text":"An unkown error occured reading the execution directory." 
+        } )
+    return jsonify({
+            "data": data,
+            "messages": messages
+        }
+    )
 
 @app.route('/get_run_status/', methods=['GET','POST'])
 def get_run_status():
