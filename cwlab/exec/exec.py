@@ -219,16 +219,21 @@ def terminate_runs(
         if mode in ["reset", "delete"]:
             try:
                 log_path = get_path("run_log", job_id, run_id)
-                os.remove(log_path)
+                if os.path.exists(log_path):
+                    os.remove(log_path)
                 run_out_dir = get_path("run_out_dir", job_id, run_id)
-                rmtree(run_out_dir)
+                if os.path.exists(run_out_dir):
+                    rmtree(run_out_dir)
+                db_request.filter(Exec.run_id==run_id).delete(synchronize_session=False)
+                db_changed = True
             except:
                 could_not_be_cleaned.append(run_id)
                 continue
         if mode == "delete":
             try:
-                db_request.filter(Exec.run_id==run_id).delete(synchronize_session=False)
-                db_changed = True
+                yaml_path = get_path("run_yaml", job_id, run_id)
+                if os.path.exists(yaml_path):
+                    os.remove(yaml_path)
             except:
                 could_not_be_cleaned.append(run_id)
                 continue
