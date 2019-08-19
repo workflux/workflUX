@@ -459,6 +459,7 @@ class JobContent extends React.Component {
             actionStatus: "loading",
             execProfile: this.props.execProfiles[0],
             runDangerZoneUnlocked: false,
+            globalDangerZoneUnlocked: false,
             serverMessages: []
         }
         this.actionMessages = []
@@ -477,10 +478,17 @@ class JobContent extends React.Component {
         this.getRunList()
     }
 
-    toggleDangerZoneLock(_, unlocked){
+    toggleDangerZoneLock(value, unlocked){
+        if (value == "unlock run danger zone"){
             this.setState({
                 runDangerZoneUnlocked: unlocked
             })
+        }
+        else if (value == "unlock global danger zone"){
+            this.setState({
+                globalDangerZoneUnlocked: unlocked
+            })
+        }
     }
     
     toggelRunSelectionAll(){
@@ -659,7 +667,6 @@ class JobContent extends React.Component {
             const is_run_selected= Object.values(this.state.runSelection).includes(true)
             const disable_run_actions = (! is_run_selected) || (this.state.actionStatus != "none")
             const disable_danger_run_actions = disable_run_actions || (! this.state.runDangerZoneUnlocked)
-            const disable_danger_global_actions = disable_run_actions || (! this.state.globalDangerZoneUnlocked)
             return(
                 <div>
                     <h3>List of Runs:</h3>
@@ -671,12 +678,12 @@ class JobContent extends React.Component {
                         runSelection={this.state.runSelection}
                         showRunDetails={this.props.showRunDetails}
                     />
-                    <i 
-                        className="fas fa-arrow-up" 
-                        style={ {paddingLeft:"20px", paddingRight:"10px"} }
-                    />
-                        Please select one or multiple jobs for following actions:
                     <h3>Actions on Selected Runs:</h3>
+                    {disable_run_actions &&
+                        <Message type="hint">
+                            Please select one or multiple runs in the above list to enable following actions.
+                        </Message>
+                    }
                     <div
                         style={
                             disable_run_actions ? ({opacity: 0.4}) : ({})
@@ -725,8 +732,8 @@ class JobContent extends React.Component {
                         >
                             <div className="w3-padding-16">
                                 <BooleanSlider
-                                    name="unlock danger zone"
-                                    value="unlock danger zone"
+                                    name="unlock run danger zone"
+                                    value="unlock run danger zone"
                                     onChange={this.toggleDangerZoneLock}
                                     disabled={disable_run_actions}
                                     checked={this.state.runDangerZoneUnlocked}
@@ -739,54 +746,56 @@ class JobContent extends React.Component {
                                 }
                             >
                                 <table className="w3-table">
-                                    <tr>
-                                        <td>
-                                            <ActionButton
-                                                name="terminate"
-                                                value="terminate"
-                                                onAction={this.terminateRuns}
-                                                label={<span><i className="fas fa-stop-circle w3-text-red"/>&nbsp;terminate</span>}
-                                                disabled={disable_danger_run_actions}
-                                                loading={this.state.actionStatus == "terminating"} 
-                                            />
-                                        </td>
-                                        <td>
-                                            Stop execution of selected runs. Intermediate results will be maintained.
-                                            Runs will be marked as "terminated by user".
-                                        </td>
-                                    </tr>
-                                    <tr>
-                                        <td>
-                                            <ActionButton
-                                                name="reset"
-                                                value="reset"
-                                                onAction={this.terminateRuns}
-                                                label={<span><i className="fas fa-undo w3-text-red"/>&nbsp;reset</span>}
-                                                disabled={disable_danger_run_actions}
-                                                loading={this.state.actionStatus == "resetting"} 
-                                            />
-                                        </td>
-                                        <td>
-                                            Stop execution of selected runs and clear their (intermediate) results.
-                                            Runs will be appear as "not started yet".
-                                        </td>
-                                    </tr>
-                                    <tr>
-                                        <td>
-                                            <ActionButton
-                                                name="delete"
-                                                value="delete"
-                                                onAction={this.terminateRuns}
-                                                label={<span><i className="fas fa-trash-alt w3-text-red"/>&nbsp;delete</span>}
-                                                disabled={disable_danger_run_actions}
-                                                loading={this.state.actionStatus == "delete"} 
-                                            />
-                                        </td>
-                                        <td>
-                                            Stop execution of selected runs and deleted them entirely.
-                                            They will no longer show up in the list of runs.
-                                        </td>
-                                    </tr>
+                                    <tbody>
+                                        <tr>
+                                            <td>
+                                                <ActionButton
+                                                    name="terminate"
+                                                    value="terminate"
+                                                    onAction={this.terminateRuns}
+                                                    label={<span><i className="fas fa-stop-circle w3-text-red"/>&nbsp;terminate</span>}
+                                                    disabled={disable_danger_run_actions}
+                                                    loading={this.state.actionStatus == "terminating"} 
+                                                />
+                                            </td>
+                                            <td>
+                                                Stop execution of selected runs. Intermediate results will be maintained.
+                                                Runs will be marked as "terminated by user".
+                                            </td>
+                                        </tr>
+                                        <tr>
+                                            <td>
+                                                <ActionButton
+                                                    name="reset"
+                                                    value="reset"
+                                                    onAction={this.terminateRuns}
+                                                    label={<span><i className="fas fa-undo w3-text-red"/>&nbsp;reset</span>}
+                                                    disabled={disable_danger_run_actions}
+                                                    loading={this.state.actionStatus == "resetting"} 
+                                                />
+                                            </td>
+                                            <td>
+                                                Stop execution of selected runs and clear their (intermediate) results.
+                                                Runs will be appear as "not started yet".
+                                            </td>
+                                        </tr>
+                                        <tr>
+                                            <td>
+                                                <ActionButton
+                                                    name="delete"
+                                                    value="delete"
+                                                    onAction={this.terminateRuns}
+                                                    label={<span><i className="fas fa-trash-alt w3-text-red"/>&nbsp;delete</span>}
+                                                    disabled={disable_danger_run_actions}
+                                                    loading={this.state.actionStatus == "delete"} 
+                                                />
+                                            </td>
+                                            <td>
+                                                Stop execution of selected runs and deleted them entirely.
+                                                They will no longer show up in the list of runs.
+                                            </td>
+                                        </tr>
+                                    </tbody>
                                 </table>
                             </div>
                         </div>
@@ -796,41 +805,42 @@ class JobContent extends React.Component {
                         <div 
                             className="w3-panel"
                             style={ 
-                                disable_danger_global_actions ? (
-                                        {backgroundColor: "hsl(0, 20%, 50%)"}
-                                    ) : (
+                                this.state.globalDangerZoneUnlocked ? (
                                         {backgroundColor: "hsl(0, 40%, 50%)"}
+                                    ) : (
+                                        {backgroundColor: "hsl(0, 20%, 50%)"}
                                     )
                             }
                         >
-                            <div className="w3-padding-16" style>
+                            <div className="w3-padding-16">
                                 <BooleanSlider
-                                    name="unlock danger zone"
-                                    value="unlock danger zone"
+                                    name="unlock global danger zone"
+                                    value="unlock global danger zone"
                                     onChange={this.toggleDangerZoneLock}
-                                    disabled={disable_run_actions}
-                                    checked={this.state.runDangerZoneUnlocked}
+                                    checked={this.state.globalDangerZoneUnlocked}
                                 /> &nbsp; unlock
                             </div>
                             <div
                                 className="w3-padding-16"
                             >
                                 <table className="w3-table">
-                                    <tr>
-                                        <td>
-                                            <ActionButton
-                                                name="delete entire job"
-                                                value="delete entire job"
-                                                onAction={this.deleteJob}
-                                                label={<span><i className="fas fa-trash-alt w3-text-red"/>&nbsp;delete</span>}
-                                                disabled={disable_danger_run_actions}
-                                                loading={this.state.actionStatus == "delete"} 
-                                            />
-                                        </td>
-                                        <td>
-                                            Delete the entire job. All runs will be stopped and deleted.
-                                        </td>
-                                    </tr>
+                                    <tbody>
+                                        <tr>
+                                            <td>
+                                                <ActionButton
+                                                    name="delete entire job"
+                                                    value="delete entire job"
+                                                    // onAction={this.deleteJob}
+                                                    label={<span><i className="fas fa-trash-alt w3-text-red"/>&nbsp;delete job</span>}
+                                                    disabled={!this.state.globalDangerZoneUnlocked}
+                                                    loading={this.state.actionStatus == "delete"} 
+                                                />
+                                            </td>
+                                            <td>
+                                                Delete the entire job. All runs will be stopped and deleted.
+                                            </td>
+                                        </tr>
+                                    </tbody>
                                 </table>
                             </div>
                         </div>
