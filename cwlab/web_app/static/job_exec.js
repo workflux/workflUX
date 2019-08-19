@@ -461,7 +461,8 @@ class JobContent extends React.Component {
             runDangerZoneUnlocked: false,
             globalDangerZoneUnlocked: false,
             serverMessages: [],
-            actionRunExecMessages: []
+            actionRunExecMessages: [],
+            actionRunDangerMessages: []
         }
         this.actionMessages = []
 
@@ -521,7 +522,6 @@ class JobContent extends React.Component {
         this.ajaxRequest({
             statusVar: "actionStatus",
             statusValueDuringRequest: "get_run_list",
-            statusValueAfterRequest: "none",
             messageVar: "serverMessages",
             sendData: {
                 job_id: this.props.jobId
@@ -549,7 +549,6 @@ class JobContent extends React.Component {
         this.ajaxRequest({
             statusVar: "actionStatus",
             statusValueDuringRequest: "starting",
-            statusValueAfterRequest: "none",
             messageVar: "actionRunExecMessages",
             sendData: {
                 cwl_target: this.props.cwlTarget,
@@ -562,46 +561,30 @@ class JobContent extends React.Component {
     }
 
     terminateRuns(mode="terminate"){
-        this.setState({
-            actionStatus: "terminating"
-        })
         const runSelection = this.state.runSelection
         let selectedRuns = []
         this.state.runIds.map((run) =>
             runSelection[run] && (selectedRuns.push(run))
         )
-        const sendData = {
-            job_id: this.props.jobId,
-            run_ids: selectedRuns,
-            mode: mode
-        }
-        fetch(routeTerminateRuns, {
-            method: "POST",
-            body: JSON.stringify(sendData),
-            headers: new Headers({
-                'Content-Type': 'application/json'
-            }),
-            cache: "no-cache"
-        }).then(res => res.json())
-        .then(
-            (result) => {
-                this.actionMessages = result.messages;
-                let errorOccured = false;
-                for( let i=0;  i<this.actionMessages.length; i++){
-                    if(this.actionMessages[i].type == "error"){
-                        errorOccured = true;
-                        break;
-                    }
-                }
-                this.setState({actionStatus: "none"}) 
-                this.getRunList()       
+        this.ajaxRequest({
+            statusVar: "actionStatus",
+            statusValueDuringRequest: "terminating",
+            messageVar: "actionRunDangerMessages",
+            sendData: {
+                job_id: this.props.jobId,
+                run_ids: selectedRuns,
+                mode: mode
             },
-            (error) => {
-                // server could not be reached
-                this.actionMessages = [{type: "error", text: serverNotReachableError}];
-                this.setState({actionStatus: "none"}) 
+            route: routeTerminateRuns,
+            onSuccess: (data, messages) => {
+                this.getRunList()       
+                return({})
+            },
+            onError: (data, messages) => {
+                this.getRunList()       
+                return({})
             }
-        )
+        })
     }
 
     render(){
@@ -752,6 +735,7 @@ class JobContent extends React.Component {
                             </div>
                         </div>
                     </div>
+                    <DisplayServerMessages messages={this.state.actionRunDangerMessages} />
                     <h3>Global Actions:</h3><div>
                         <span className="w3-text-red">Danger Zone:</span>
                         <div 
