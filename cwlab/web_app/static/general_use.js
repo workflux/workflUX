@@ -1,6 +1,72 @@
 // contains general utilities important for multiple modules
 // import styled from "styled-components"
 
+
+function ajaxRequest({
+    // in a component bind this function: this.ajaxRequest = ajaxRequest.bind(this)
+    statusVar="actionStatus",
+    statusValueDuringRequest="action",
+    statusValueAfterRequest="none",
+    messageVar="serverMessages",
+    sendData={},
+    route,
+    onSuccess= (data, messages) => {
+                return({})
+            }, //function taking arguments data and messages, return state update
+    onError= (messages) => { //function taking argument messages, return state update
+        return({})
+    } 
+}){
+    this.setState({
+        [statusVar]: statusValueDuringRequest
+    })
+    fetch(route, {
+        method: "POST",
+        body: JSON.stringify(sendData),
+        headers: new Headers({
+            'Content-Type': 'application/json'
+        }),
+        cache: "no-cache"
+    }).then(res => res.json())
+    .then(
+        (result) => {
+            const messages = result.messages;
+            const data = result.data
+            let errorOccured = false;
+            for( let i=0;  i<messages.length; i++){
+                if(messages[i].type == "error"){
+                    errorOccured = true;
+                    break;
+                }
+            }
+            let stateUpdate = {
+                [statusVar]: statusValueAfterRequest,
+                [messageVar]: messages
+            }
+            if (! errorOccured){
+                // success
+                Object.assign(stateUpdate, onSuccess(data, messages))
+            }
+            else{
+                // server returned error
+                Object.assign(stateUpdate, onError(messages))
+            } 
+            this.setState(stateUpdate)     
+        },
+        (error) => {
+            // server could not be reached
+            const messages = [{type: "error", text: serverNotReachableError}];
+            let stateUpdate = {
+                [statusVar]: statusValueAfterRequest,
+                [messageVar]: messages
+            }
+            Object.assign(stateUpdate, onError(messages))
+            this.setState(stateUpdate)     
+        }
+    )
+
+}
+
 String.prototype.replaceAll = function(search, replacement) {
     // in contrast to replace() replaces not only the first occurence
     var target = this;

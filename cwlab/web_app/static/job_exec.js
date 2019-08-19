@@ -460,7 +460,8 @@ class JobContent extends React.Component {
             execProfile: this.props.execProfiles[0],
             runDangerZoneUnlocked: false,
             globalDangerZoneUnlocked: false,
-            serverMessages: []
+            serverMessages: [],
+            actionRunExecMessages: []
         }
         this.actionMessages = []
 
@@ -470,6 +471,7 @@ class JobContent extends React.Component {
         this.changeExecProfile = this.changeExecProfile.bind(this)
         this.toggleDangerZoneLock = this.toggleDangerZoneLock.bind(this)
         this.terminateRuns = this.terminateRuns.bind(this)
+        this.ajaxRequest = ajaxRequest.bind(this)
         this.getRunList = this.getRunList.bind(this)
     }
 
@@ -566,49 +568,24 @@ class JobContent extends React.Component {
     }
 
     execRuns(){
-        this.setState({
-            actionStatus: "starting"
-        })
         const runSelection = this.state.runSelection
         let selectedRuns = []
         this.state.runIds.map((run) =>
             runSelection[run] && (selectedRuns.push(run))
         )
-        const sendData = {
-            cwl_target: this.props.cwlTarget,
-            job_id: this.props.jobId,
-            run_ids: selectedRuns,
-            exec_profile: this.state.execProfile
-        }
-        fetch(routeStartExec, {
-            method: "POST",
-            body: JSON.stringify(sendData),
-            headers: new Headers({
-                'Content-Type': 'application/json'
-            }),
-            cache: "no-cache"
-        }).then(res => res.json())
-        .then(
-            (result) => {
-                this.actionMessages = result.messages;
-                let errorOccured = false;
-                for( let i=0;  i<this.actionMessages.length; i++){
-                    if(this.actionMessages[i].type == "error"){
-                        errorOccured = true;
-                        break;
-                    }
-                }
-                if (! errorOccured){
-                    // nothing just display messages
-                }    
-                this.setState({actionStatus: "none"})        
+        this.ajaxRequest({
+            statusVar: "actionStatus",
+            statusValueDuringRequest: "starting",
+            statusValueAfterRequest: "none",
+            messageVar: "actionRunExecMessages",
+            sendData: {
+                cwl_target: this.props.cwlTarget,
+                job_id: this.props.jobId,
+                run_ids: selectedRuns,
+                exec_profile: this.state.execProfile
             },
-            (error) => {
-                // server could not be reached
-                this.actionMessages = [{type: "error", text: serverNotReachableError}];
-                this.setState({actionStatus: "none"}) 
-            }
-        )
+            route: routeStartExec
+        })
     }
 
     terminateRuns(mode="terminate"){
@@ -719,6 +696,7 @@ class JobContent extends React.Component {
                                 />
                             </p>
                         </div >
+                        <DisplayServerMessages messages={this.state.actionRunExecMessages} />
                         <span className="w3-text-red">Danger Zone:</span>
                         <div 
                             className="w3-panel"
