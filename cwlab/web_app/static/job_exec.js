@@ -518,53 +518,26 @@ class JobContent extends React.Component {
     }
 
     getRunList(){
-        this.setState({
-            actionStatus: "get_run_list"
-        })
-        const sendData = {
-            job_id: this.props.jobId
-        }
-        fetch(routeGetRunList, {
-            method: "POST",
-            body: JSON.stringify(sendData),
-            headers: new Headers({
-                'Content-Type': 'application/json'
-            }),
-            cache: "no-cache"
-        }).then(res => res.json())
-        .then(
-            (result) => {
-                const messages = result.messages;
-                const data = result.data;
-                let errorOccured = false;
-                for( let i=0;  i<messages.length; i++){
-                    if(messages[i].type == "error"){
-                        errorOccured = true;
-                        break;
-                    }
-                }
-                if (! errorOccured){
-                    let runSelection = {}
-                    data.run_ids.map((r) =>
-                        (runSelection[r] = false)
-                    )
-                    this.setState({
-                        runIds: data.run_ids, 
-                        runSelection: runSelection,
-                        actionStatus: "none", 
-                        serverMessages: messages
-                    })  
-                } 
-                else {
-                    this.setState({actionStatus: "none", serverMessages: messages})  
-                }    
+        this.ajaxRequest({
+            statusVar: "actionStatus",
+            statusValueDuringRequest: "get_run_list",
+            statusValueAfterRequest: "none",
+            messageVar: "serverMessages",
+            sendData: {
+                job_id: this.props.jobId
             },
-            (error) => {
-                // server could not be reached
-                this.serverMessages = [{type: "error", text: serverNotReachableError}];
-                this.setState({actionStatus: "none"}) 
+            route: routeGetRunList,
+            onSuccess: (data, messages) => {
+                let runSelection = {}
+                data.run_ids.map((r) =>
+                    (runSelection[r] = false)
+                )
+                return({
+                    runIds: data.run_ids, 
+                    runSelection: runSelection
+                }) 
             }
-        )
+        })
     }
 
     execRuns(){
@@ -646,6 +619,7 @@ class JobContent extends React.Component {
             const disable_danger_run_actions = disable_run_actions || (! this.state.runDangerZoneUnlocked)
             return(
                 <div>
+                    <DisplayServerMessages messages={this.state.serverMessages} />
                     <h3>List of Runs:</h3>
                     <RunList 
                         jobId={this.props.jobId}
@@ -823,7 +797,6 @@ class JobContent extends React.Component {
                             </div>
                         </div>
                     </div>
-                    <DisplayServerMessages messages={this.actionMessages} />
                 </div>
             )
         } else {
