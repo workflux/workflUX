@@ -107,41 +107,16 @@ class JobCreationPrep extends React.Component {
     }
 
     createJob() {
-        this.setState({job_creation_status: "in_progress"})
-        const sendData = {
-            job_id: (this.jobIdNum + "_" + this.state.job_name),
-            sheet_format: this.state.sheet_format //#! problematic: if format selector is changed after sheet was already submitted
-        }
-
-        fetch(routeCreateJob, {
-            method: "POST",
-            body: JSON.stringify(sendData),
-            headers: new Headers({
-                'Content-Type': 'application/json'
-              }),
-              cache: "no-cache"
-        }).then(res => res.json())
-        .then(
-            (result) => {
-                this.jobCreationMessages = result.messages;
-                let errorOccured = false;
-                for( let i=0;  i<this.jobCreationMessages.length; i++){
-                    if(this.jobCreationMessages[i].type == "error"){
-                        errorOccured = true;
-                        break;
-                    }
-                }
-                if (! errorOccured){
-                    // nothing just display messages
-                }    
-                this.setState({job_creation_status: "none"})        
+        this.ajaxRequest({
+            statusVar: "job_creation_status",
+            statusValueDuringRequest: "in_progress",
+            messageVar: "jobCreationMessages",
+            sendData: {
+                job_id: (this.jobIdNum + "_" + this.state.job_name),
+                sheet_format: this.state.sheet_format //#! problematic: if format selector is changed after sheet was already submitted
             },
-            (error) => {
-                // server could not be reached
-                this.jobCreationMessages = [{type: "error", text: serverNotReachableError}];
-                this.setState({job_creation_status: "none"}) 
-            }
-        )
+            route: routeCreateJob
+        })
     }
 
     render() {
@@ -289,7 +264,7 @@ class JobCreationPrep extends React.Component {
                         loading={this.state.job_creation_status != "none"}
                         onAction={this.createJob}
                     />
-                    <DisplayServerMessages messages={this.jobCreationMessages} />
+                    <DisplayServerMessages messages={this.state.jobCreationMessages} />
 
                 </div>
             </div>   
