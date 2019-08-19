@@ -78,6 +78,7 @@ class RunDetails extends React.Component {
         this.getRunDetails = this.getRunDetails.bind(this);
         this.toggleAutoRefresh = this.toggleAutoRefresh.bind(this);
         this.handleBackButton = this.handleBackButton.bind(this);
+        this.ajaxRequest = ajaxRequest.bind(this)
     }
 
     componentDidMount(){
@@ -99,48 +100,22 @@ class RunDetails extends React.Component {
   
     
     getRunDetails(){
-        this.setState({actionStatus: "updating"})
-        const sendData = {
-            job_id: this.props.jobId,
-            run_id: this.props.runId
-        }
-        fetch(routeGetRunDetails, {
-            method: "POST",
-            body: JSON.stringify(sendData),
-            headers: new Headers({
-                'Content-Type': 'application/json'
-            }),
-            cache: "no-cache"
-        }).then(res => res.json())
-        .then(
-            (result) => {
-                const messages = result.messages;
-                let errorOccured = false;
-                for( let i=0;  i<messages.length; i++){
-                    if(messages[i].type == "error"){
-                        errorOccured = true;
-                        break;
-                    }
-                }
-                if (! errorOccured){
-                    // nothing just display messages
-                    this.setState({
-                        actionStatus: "none", 
-                        logContent: result.data.log,
-                        yamlContent: result.data.yaml,
-                        serverMessages: messages
-                    }) 
-                }
-                else{
-                    this.setState({actionStatus: "none", serverMessages: messages}) 
-                }       
+        this.ajaxRequest({
+            statusVar: "actionStatus",
+            statusValueDuringRequest: "updating",
+            messageVar: "serverMessages",
+            sendData: {
+                job_id: this.props.jobId,
+                run_id: this.props.runId
             },
-            (error) => {
-                // server could not be reached
-                this.setState({actionStatus: "none", serverMessages: [{type: "error", text: serverNotReachableError}]}) 
+            route: routeGetRunDetails,
+            onSuccess: (data, messages) => {
+                return({
+                    logContent: data.log,
+                    yamlContent: data.yaml
+                })
             }
-        )
-
+        })
     }
 
     toggleAutoRefresh(dummy, autoRefresh){
