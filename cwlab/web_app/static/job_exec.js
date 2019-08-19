@@ -293,58 +293,35 @@ class RunList extends React.Component {
         }
         let runInfo = {}
         this.props.runIds.map( (r) => runInfo[r] = this.initRunInfo)
-        this.messages = []
         this.state = {
             actionStatus: "none", 
+            serverMessages: [],
             runInfo: runInfo,
             mirroredJobId: this.props.jobId
         }
         this.getRunInfo = this.getRunInfo.bind(this)
+        this.ajaxRequest = ajaxRequest.bind(this)
     }
 
     getRunInfo(){
-        this.setState({actionStatus: "updating"})
-        const sendData = {
-            job_id: this.props.jobId,
-            run_ids: this.props.runIds
-        }
-        fetch(routeGetRunStatus, {
-            method: "POST",
-            body: JSON.stringify(sendData),
-            headers: new Headers({
-                'Content-Type': 'application/json'
-            }),
-            cache: "no-cache"
-        }).then(res => res.json())
-        .then(
-            (result) => {
-                this.messages = result.messages;
-                let errorOccured = false;
-                for( let i=0;  i<this.messages.length; i++){
-                    if(this.messages[i].type == "error"){
-                        errorOccured = true;
-                        break;
-                    }
-                }
-                if (! errorOccured){
-                    // nothing just display messages
-                    this.setState({actionStatus: "none", runInfo: result.data}) 
-                }
-                else{
-                    let runInfo = {}
-                    this.props.runIds.map( (r) => runInfo[r] = this.errorRunInfo)
-                    this.setState({actionStatus: "none", runInfo: runInfo}) 
-                }       
+        this.ajaxRequest({
+            statusVar: "actionStatus",
+            statusValueDuringRequest: "updating",
+            messageVar: "serverMessages",
+            sendData: {
+                job_id: this.props.jobId,
+                run_ids: this.props.runIds
             },
-            (error) => {
-                // server could not be reached
-                this.actionMessages = [{type: "error", text: serverNotReachableError}];
+            route: routeGetRunStatus,
+            onSuccess: (data, messages) => {
+                return({runInfo: data})
+            },
+            onError: (messages) => {
                 let runInfo = {}
                 this.props.runIds.map( (r) => runInfo[r] = this.errorRunInfo)
-                this.setState({actionStatus: "none", runInfo: runInfo}) 
+                return({runInfo: runInfo})
             }
-        )
-
+        })
     }
 
     componentDidMount(){
@@ -394,48 +371,50 @@ class RunList extends React.Component {
         ))
 
         return(
-            <div style={ {maxHeight:"50vh", overflowY: "auto"} }>
-                <table className="w3-table w3-bordered w3-border">
-                    <thead className="w3-text-green">
-                        <tr>
-                            <th>
-                                <i 
-                                    className="fas fa-arrow-down" 
-                                    style={ {paddingRight:"10px"} }
+            <div>
+                <DisplayServerMessages messages={this.state.serverMessages} />
+                <div style={ {maxHeight:"50vh", overflowY: "auto"} }>
+                    <table className="w3-table w3-bordered w3-border">
+                        <thead className="w3-text-green">
+                            <tr>
+                                <th>
+                                    <i 
+                                        className="fas fa-arrow-down" 
+                                        style={ {paddingRight:"10px"} }
+                                    />
+                                    <ActionButton 
+                                        name="select all"
+                                        value="select all"
+                                        label="all"
+                                        onAction={this.props.toggelRunSelectionAll}
+                                        colorClass="w3-black w3-text-green"
+                                        smallPadding={true}
+                                    />
+                                </th>
+                                <th>Run Id</th>
+                                <th>Status</th>
+                                <th>Duration</th>
+                                <th>Exec Profile</th>
+                                <th>Details</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {this.props.runIds.map( (r) => (
+                                <RunListElement 
+                                    key={r}
+                                    runId={r}
+                                    status={runInfo[r].status}
+                                    duration={runInfo[r].duration}
+                                    execProfile={runInfo[r].exec_profile}
+                                    retryCount={runInfo[r].retry_count}
+                                    checked={this.props.runSelection[r]}
+                                    onSelectionChange={this.props.changeRunSelection}
+                                    showRunDetails={this.props.showRunDetails}
                                 />
-                                <ActionButton 
-                                    name="select all"
-                                    value="select all"
-                                    label="all"
-                                    onAction={this.props.toggelRunSelectionAll}
-                                    colorClass="w3-black w3-text-green"
-                                    smallPadding={true}
-                                />
-                            </th>
-                            <th>Run Id</th>
-                            <th>Status</th>
-                            <th>Duration</th>
-                            <th>Exec Profile</th>
-                            <th>Details</th>
-                        </tr>
-                    </thead>
-                    <tbody>
-                        {this.props.runIds.map( (r) => (
-                            <RunListElement 
-                                key={r}
-                                runId={r}
-                                status={runInfo[r].status}
-                                duration={runInfo[r].duration}
-                                execProfile={runInfo[r].exec_profile}
-                                retryCount={runInfo[r].retry_count}
-                                checked={this.props.runSelection[r]}
-                                onSelectionChange={this.props.changeRunSelection}
-                                showRunDetails={this.props.showRunDetails}
-                            />
-                        ))}
-                    </tbody>
-                </table>
-                <DisplayServerMessages messages={this.messages} />
+                            ))}
+                        </tbody>
+                    </table>
+                </div>
             </div>
         )
     }
@@ -462,7 +441,8 @@ class JobContent extends React.Component {
             globalDangerZoneUnlocked: false,
             serverMessages: [],
             actionRunExecMessages: [],
-            actionRunDangerMessages: []
+            actionRunDangerMessages: [],
+            actionGlobalDangerMessages: []
         }
         this.actionMessages = []
 
@@ -781,6 +761,7 @@ class JobContent extends React.Component {
                             </div>
                         </div>
                     </div>
+                    <DisplayServerMessages messages={this.state.actionGlobalDangerMessages} />
                 </div>
             )
         } else {
