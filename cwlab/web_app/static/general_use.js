@@ -405,49 +405,29 @@ class AjaxComponent extends React.Component {
 
         this.state = {
             loading: true,
-            error: false
+            serverMessages: [],
+            data: []
         };  
-
-        this.data = []; // container for requested server info
-        this.serverMessages = [];    // container for errors/warnings/infos 
-                                    //from server upon ajax request
                                     
         this.request = this.request.bind(this);
+        this.ajaxRequest = ajaxRequest.bind(this)
     }
 
     request(){ // ajax request to server
-        fetch(this.props.requestRoute, {
-            method: "POST",
-            body: JSON.stringify(this.props.sendData),
-            headers: new Headers({
-                'Content-Type': 'application/json'
-              }),
-              cache: "no-cache"
-        }).then(res => res.json())
-        .then(
-            (result) => {
-                this.serverMessages = result.messages;
-                let errorOccured = false;
-                for( let i=0;  i<this.serverMessages.length; i++){
-                    if(this.serverMessages[i].type == "error"){
-                        errorOccured = true;
-                        break;
-                    }
-                }
-                if (errorOccured){
-                    this.setState({loading: false, error: true})
-                } 
-                else {
-                    this.data = result.data;
-                    this.setState({loading: false, error: false});
-                }
-            },
-            (error) => {
-                // server could not be reached
-                this.serverMessages = [{type: "error", text: serverNotReachableError}];
-                this.setState({loading: false, error: true});
+        
+        this.ajaxRequest({
+            statusVar: "loading",
+            statusValueDuringRequest: true,
+            statusValueAfterRequest: false,
+            messageVar: "serverMessages",
+            sendData: this.props.sendData,
+            route: this.props.requestRoute,
+            onSuccess: (data, messages) => {
+                return({
+                    data: data
+                })
             }
-        )
+        })
     }
 
     componentDidMount() {
@@ -461,14 +441,11 @@ class AjaxComponent extends React.Component {
             return(
                 <LoadingIndicator message={this.props.loaderMessage} size={this.props.loaderSize} />
             )
-        } else if (this.state.error) {
-            return (
-                <DisplayServerMessages messages={this.serverMessages} />
-            )
         } else{
             return (
                 <div>
-                    {this.props.buildContentOnSuccess(this.data, this.serverMessages)}
+                    <DisplayServerMessages messages={this.state.serverMessages} />
+                    {this.props.buildContentOnSuccess(this.state.data, this.state.serverMessages)}
                 </div>
             )
         }
