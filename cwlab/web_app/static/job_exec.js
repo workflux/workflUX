@@ -405,6 +405,7 @@ class JobContent extends React.Component {
     // props.whichRunDetails
     // props.showRunDetails
     // props.showRunList
+    // props.triggerJobListReload
     constructor(props){
         super(props)
         this.state = {
@@ -429,6 +430,7 @@ class JobContent extends React.Component {
         this.terminateRuns = this.terminateRuns.bind(this)
         this.ajaxRequest = ajaxRequest.bind(this)
         this.getRunList = this.getRunList.bind(this)
+        this.deleteJob = this.deleteJob.bind(this)
     }
 
     componentDidMount(){
@@ -538,6 +540,22 @@ class JobContent extends React.Component {
             onError: (data, messages) => {
                 this.getRunList()       
                 return({})
+            }
+        })
+    }
+
+    deleteJob(){
+        this.ajaxRequest({
+            statusVar: "actionStatus",
+            statusValueDuringRequest: "deleting_job",
+            messageVar: "actionGlobalDangerMessages",
+            sendData: {
+                job_id: this.props.jobId
+            },
+            route: routeDeleteJob,
+            onSuccess: (data, messages) => {
+                this.props.triggerJobListReload()
+                return({doNotUpdate: true}) 
             }
         })
     }
@@ -721,7 +739,7 @@ class JobContent extends React.Component {
                                                 <ActionButton
                                                     name="delete entire job"
                                                     value="delete entire job"
-                                                    // onAction={this.deleteJob}
+                                                    onAction={this.deleteJob}
                                                     label={<span><i className="fas fa-trash-alt w3-text-red"/>&nbsp;delete job</span>}
                                                     disabled={!this.state.globalDangerZoneUnlocked}
                                                     loading={this.state.actionStatus == "delete"} 
@@ -757,6 +775,7 @@ class JobList extends React.Component {
         super(props);
         // props.jobInfo
         // props.execProfiles
+        // props.triggerReload
         this.state = {
             whichFocus: "",
             whichRunDetails: null
@@ -825,6 +844,7 @@ class JobList extends React.Component {
                 whichRunDetails={this.state.whichRunDetails}
                 showRunDetails={this.showRunDetails}
                 showRunList={this.showRunList}
+                triggerJobListReload={this.props.triggerReload}
             />
         }
 
@@ -847,11 +867,16 @@ class JobExecRoot extends React.Component {
         this.buildContentOnSuccess = this.buildContentOnSuccess.bind(this);
     }
 
-    buildContentOnSuccess(data, messages){ // when AJAX request succeeds
+    buildContentOnSuccess(data, messages, triggerReload){ // when AJAX request succeeds
         return (
             <div>
                 { data.jobs.length > 0 ? (
-                        <JobList jobInfo={data.jobs} execProfiles={data.exec_profiles} initMessages={messages}/>
+                        <JobList 
+                            jobInfo={data.jobs} 
+                            execProfiles={data.exec_profiles} 
+                            initMessages={messages}
+                            triggerReload={triggerReload}
+                        />
                     ) : (
                         <Message type="info">
                             No jobs found.

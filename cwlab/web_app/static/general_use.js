@@ -51,7 +51,9 @@ function ajaxRequest({
                 // server returned error
                 Object.assign(stateUpdate, onError(messages))
             } 
-            this.setState(stateUpdate)     
+            if (!(stateUpdate.hasOwnProperty("doNotUpdate") && stateUpdate.doNotUpdate)){
+                this.setState(stateUpdate)
+            }
         },
         (error) => {
             // server could not be reached
@@ -61,7 +63,9 @@ function ajaxRequest({
                 [messageVar]: messages
             }
             Object.assign(stateUpdate, onError(messages))
-            this.setState(stateUpdate)     
+            if (!(stateUpdate.hasOwnProperty("doNotUpdate") && stateUpdate.doNotUpdate)){
+                this.setState(stateUpdate)
+            }
         }
     )
 
@@ -414,7 +418,6 @@ class AjaxComponent extends React.Component {
     }
 
     request(){ // ajax request to server
-        
         this.ajaxRequest({
             statusVar: "loading",
             statusValueDuringRequest: true,
@@ -445,7 +448,7 @@ class AjaxComponent extends React.Component {
             return (
                 <div>
                     <DisplayServerMessages messages={this.state.serverMessages} />
-                    {this.props.buildContentOnSuccess(this.state.data, this.state.serverMessages)}
+                    {this.props.buildContentOnSuccess(this.state.data, this.state.serverMessages, this.request)}
                 </div>
             )
         }

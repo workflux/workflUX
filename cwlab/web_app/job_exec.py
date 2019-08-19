@@ -10,7 +10,8 @@ import requests
 from re import sub, match
 from cwlab.xls2cwl_job.web_interface import gen_form_sheet as gen_job_param_sheet
 from cwlab.xls2cwl_job import only_validate_xls, transcode as make_yaml_runs
-from cwlab.exec.exec import exec_runs, get_run_info, read_run_log, read_run_yaml, terminate_runs as terminate
+from cwlab.exec.exec import exec_runs, get_run_info, read_run_log, read_run_yaml, \
+    terminate_runs as terminate_runs_by_id, delete_job as delete_job_by_id
 from cwlab import db
 from cwlab.exec.db import Exec
 from time import sleep
@@ -213,7 +214,7 @@ def terminate_runs():
     run_ids = req_data["run_ids"]
     mode = req_data["mode"] # one of terminate, reset, delete
     try:
-        succeeded, could_not_be_terminated, could_not_be_cleaned = terminate(job_id, run_ids, mode)
+        succeeded, could_not_be_terminated, could_not_be_cleaned = terminate_runs_by_id(job_id, run_ids, mode)
         if len(succeeded) > 0:
             messages.append({
                 "type":"success",
@@ -239,6 +240,48 @@ def terminate_runs():
             "type":"error", 
             "text":"An unkown error occured." 
         } )
+    return jsonify({
+        "data":data,
+        "messages":messages
+    })
+
+
+@app.route('/delete_job/', methods=['GET','POST'])
+def delete_job():    
+    messages = []
+    data = {}
+    # try:
+    req_data = request.get_json()
+    job_id = req_data["job_id"]
+    results = delete_job_by_id(job_id)
+    if results["status"] == "success":
+        pass
+    elif results["status"] == "failed run termination":
+        if len(results["could_not_be_terminated"]) > 0:
+            messages.append({
+                "type":"error",
+                "text":"Following runs could not be terminated: " + ", ".join(results["could_not_be_terminated"])
+            })
+        if len(results["could_not_be_cleaned"]) > 0:
+            messages.append({
+                "type":"error",
+                "text":"Following runs could not be cleaned: " + ", ".join(results["could_not_be_cleaned"])
+            })
+    else:
+        messages.append({
+            "type":"error",
+            "text":"Could not delete job dir for \"" + job_id + "\"."
+        })
+    # except SystemExit as e:
+    #     messages.append( { 
+    #         "type":"error", 
+    #         "text": str(e) 
+    #     } )
+    # except:
+    #     messages.append( { 
+    #         "type":"error", 
+    #         "text":"An unkown error occured." 
+    #     } )
     return jsonify({
         "data":data,
         "messages":messages

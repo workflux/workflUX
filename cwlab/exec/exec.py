@@ -1,5 +1,5 @@
 from cwlab import app
-from cwlab.general_use import get_path, get_duration, db_commit, read_file_content
+from cwlab.general_use import get_path, get_duration, db_commit, read_file_content, get_run_ids
 from .db import Exec
 from cwlab import db
 from datetime import datetime
@@ -262,4 +262,25 @@ def read_run_yaml(job_id, run_id):
     content, _ = read_file_content(yaml_path)
     return content
     
-    
+def delete_job(job_id):
+    run_ids = get_run_ids(job_id)
+    _, could_not_be_terminated, could_not_be_cleaned = terminate_runs(job_id, run_ids, mode="delete")
+    if len(could_not_be_terminated) > 0 or len(could_not_be_cleaned) > 0 :
+        return {
+            "status": "failed run termination",
+            "could_not_be_terminated": could_not_be_terminated,
+            "could_not_be_cleaned": could_not_be_cleaned
+        }
+    try:
+        job_dir = get_path("job_dir", job_id)
+        if os.path.exists(job_dir):
+            rmtree(job_dir)
+        return {
+            "status": "success"
+        }
+    except Exception as e:
+        return {
+            "status": "failed to remove job dir",
+            "errorMessage": str(e)
+        }
+
