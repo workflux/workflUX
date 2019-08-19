@@ -1,6 +1,76 @@
 // contains general utilities important for multiple modules
 // import styled from "styled-components"
 
+
+function ajaxRequest({
+    // in a component bind this function: this.ajaxRequest = ajaxRequest.bind(this)
+    statusVar="actionStatus",
+    statusValueDuringRequest="action",
+    statusValueAfterRequest="none",
+    messageVar="serverMessages",
+    sendData={},
+    route,
+    onSuccess= (data, messages) => {
+                return({})
+            }, //function taking arguments data and messages, return state update
+    onError= (messages) => { //function taking argument messages, return state update
+        return({})
+    } 
+}){
+    this.setState({
+        [statusVar]: statusValueDuringRequest
+    })
+    fetch(route, {
+        method: "POST",
+        body: JSON.stringify(sendData),
+        headers: new Headers({
+            'Content-Type': 'application/json'
+        }),
+        cache: "no-cache"
+    }).then(res => res.json())
+    .then(
+        (result) => {
+            const messages = result.messages;
+            const data = result.data
+            let errorOccured = false;
+            for( let i=0;  i<messages.length; i++){
+                if(messages[i].type == "error"){
+                    errorOccured = true;
+                    break;
+                }
+            }
+            let stateUpdate = {
+                [statusVar]: statusValueAfterRequest,
+                [messageVar]: messages
+            }
+            if (! errorOccured){
+                // success
+                Object.assign(stateUpdate, onSuccess(data, messages))
+            }
+            else{
+                // server returned error
+                Object.assign(stateUpdate, onError(messages))
+            } 
+            if (!(stateUpdate.hasOwnProperty("doNotUpdate") && stateUpdate.doNotUpdate)){
+                this.setState(stateUpdate)
+            }
+        },
+        (error) => {
+            // server could not be reached
+            const messages = [{type: "error", text: serverNotReachableError}];
+            let stateUpdate = {
+                [statusVar]: statusValueAfterRequest,
+                [messageVar]: messages
+            }
+            Object.assign(stateUpdate, onError(messages))
+            if (!(stateUpdate.hasOwnProperty("doNotUpdate") && stateUpdate.doNotUpdate)){
+                this.setState(stateUpdate)
+            }
+        }
+    )
+
+}
+
 String.prototype.replaceAll = function(search, replacement) {
     // in contrast to replace() replaces not only the first occurence
     var target = this;
@@ -61,7 +131,7 @@ class BooleanSlider extends React.Component {
                     value={this.props.value}
                     onChange={this.handleChange}
                     disabled={this.props.disabled ? true : false}
-                    // checked={this.props.checked}
+                    checked={this.props.checked}
                 />
                 <span className="slider round"></span>
             </label>
@@ -79,6 +149,7 @@ class ActionButton extends React.Component {
         // props.label labeling
         // props.loading if true, button will be disabled and loading indicator is shown
         // props.disabled if true, disable without loading indicator
+        // props.smallPadding true/false
         this.handleAction = this.handleAction.bind(this)
     }
     
@@ -92,7 +163,11 @@ class ActionButton extends React.Component {
             <button style={style}
                 name={this.props.name}
                 value={this.props.value}
-                className={this.props.colorClass ? ("w3-button" + this.props.colorClass) : "w3-button w3-black"}
+                className={
+                    "w3-button" +
+                    (this.props.colorClass ? (" " + this.props.colorClass) : " w3-black") +
+                    (this.props.smallPadding ? (" w3-padding-small") : "")
+                }
                 onClick={this.handleAction}
                 disabled={this.props.loading || this.props.disabled ? true : false}
                 > 
@@ -334,49 +409,28 @@ class AjaxComponent extends React.Component {
 
         this.state = {
             loading: true,
-            error: false
+            serverMessages: [],
+            data: []
         };  
-
-        this.data = []; // container for requested server info
-        this.serverMessages = [];    // container for errors/warnings/infos 
-                                    //from server upon ajax request
                                     
         this.request = this.request.bind(this);
+        this.ajaxRequest = ajaxRequest.bind(this)
     }
 
     request(){ // ajax request to server
-        fetch(this.props.requestRoute, {
-            method: "POST",
-            body: JSON.stringify(this.props.sendData),
-            headers: new Headers({
-                'Content-Type': 'application/json'
-              }),
-              cache: "no-cache"
-        }).then(res => res.json())
-        .then(
-            (result) => {
-                this.serverMessages = result.messages;
-                let errorOccured = false;
-                for( let i=0;  i<this.serverMessages.length; i++){
-                    if(this.serverMessages[i].type == "error"){
-                        errorOccured = true;
-                        break;
-                    }
-                }
-                if (errorOccured){
-                    this.setState({loading: false, error: true})
-                } 
-                else {
-                    this.data = result.data;
-                    this.setState({loading: false, error: false});
-                }
-            },
-            (error) => {
-                // server could not be reached
-                this.serverMessages = [{type: "error", text: serverNotReachableError}];
-                this.setState({loading: false, error: true});
+        this.ajaxRequest({
+            statusVar: "loading",
+            statusValueDuringRequest: true,
+            statusValueAfterRequest: false,
+            messageVar: "serverMessages",
+            sendData: this.props.sendData,
+            route: this.props.requestRoute,
+            onSuccess: (data, messages) => {
+                return({
+                    data: data
+                })
             }
-        )
+        })
     }
 
     componentDidMount() {
@@ -390,14 +444,11 @@ class AjaxComponent extends React.Component {
             return(
                 <LoadingIndicator message={this.props.loaderMessage} size={this.props.loaderSize} />
             )
-        } else if (this.state.error) {
-            return (
-                <DisplayServerMessages messages={this.serverMessages} />
-            )
         } else{
             return (
                 <div>
-                    {this.props.buildContentOnSuccess(this.data, this.serverMessages)}
+                    <DisplayServerMessages messages={this.state.serverMessages} />
+                    {this.props.buildContentOnSuccess(this.state.data, this.state.serverMessages, this.request)}
                 </div>
             )
         }

@@ -39,7 +39,7 @@ Any CWL runner that has a command-line interface can be integrated into CWLab in
 - **CWLEXEC** (IBM) - https://github.com/IBMSpectrumComputing/cwlexec
 (Please find a constantly updated list at: https://www.commonwl.org/#Implementations)
 
-Therefore, CWLab can be used on any infrastructure supported by these CWL-runners, including:  
+Therefore, CWLab can be used on any infrastructure supported by these CWL runners, including:  
 
 - **single workstations**
 - **HPC clusters** (PBS, LSF, slurm, ...)

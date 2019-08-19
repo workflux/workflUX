@@ -81,9 +81,21 @@ class Config(object):
         )
         
         self.SQLALCHEMY_TRACK_MODIFICATIONS = (
-            os.environ.get('DATABASE_TRACK_MODIFICATIONS') or
-            self.CONFIG_FILE_content.get('CWLAB_DATABASE_TRACK_MODIFICATIONS') or  
+            os.environ.get('CWLAB_DATABASE_TRACK_MODIFICATIONS') or
+            self.CONFIG_FILE_content.get('DATABASE_TRACK_MODIFICATIONS') or  
             False
+        )
+        
+        self.READ_MAX_CHARS_FROM_FILE = (
+            os.environ.get('CWLAB_READ_MAX_CHARS_FROM_FILE') or
+            self.CONFIG_FILE_content.get('READ_MAX_CHARS_FROM_FILE') or  
+            100000
+        )
+
+        self.WEB_AUTO_REFRESH_INTERVAL = (
+            os.environ.get('CWLAB_WEB_AUTO_REFRESH_INTERVAL') or
+            self.CONFIG_FILE_content.get('WEB_AUTO_REFRESH_INTERVAL') or  
+            1
         )
 
         # execution profile:
@@ -108,8 +120,6 @@ class Config(object):
             self.EXEC_PROFILES[exec_profile]["timeout"] = timeout
             general = general_defaults
             general.update(self.EXEC_PROFILES[exec_profile])
-            self.EXEC_PROFILES[exec_profile] = general
-
 
 
         # Configure web server:

@@ -28,8 +28,14 @@
             const routeSendFilledParamFormSheet = "{{ url_for('send_filled_param_form_sheet') }}"
             const routeCreateJob = "{{ url_for('create_job') }}"
             const routeGetJobList = "{{ url_for('get_job_list') }}"
+            const routeGetRunList = "{{ url_for('get_run_list') }}"
             const routeStartExec = "{{ url_for('start_exec') }}"
             const routeGetRunStatus = "{{ url_for('get_run_status') }}"
+            const routeGetRunDetails = "{{ url_for('get_run_details') }}"
+            const routeTerminateRuns = "{{ url_for('terminate_runs') }}"
+            const routeDeleteJob = "{{ url_for('delete_job') }}"
+            const autoRefreshInterval = parseInt(parseFloat("{{ auto_refresh_interval }}")*1000)
+            const readMaxCharsFromFile = parseInt("{{ read_max_chars_from_file }}")
 
 
             // other global params:

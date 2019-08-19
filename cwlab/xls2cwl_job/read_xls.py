@@ -309,9 +309,9 @@ def parameter_sheet(sheet, sheet_attributes, verbose_level=2):
             sys.exit(print_pref + "E: sheet format was \"wide\" but no attribute \"run_id_param\" was specified")
         param_name = sheet_attributes["param"]
         run_id_param = sheet_attributes["run_id_param"]
+        sheet.delete_rows([0]) # delete header rows
         sheet.name_rows_by_column(0)
         runs = sheet.rownames
-        del(runs[0]) # header lines
         param_value = []
         aligned_run_ids = []
         for run in runs:

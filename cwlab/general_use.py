@@ -1,6 +1,7 @@
 import os, sys
 from re import sub, match
 from datetime import datetime
+from time import sleep
 from . import app
 from cwlab.xls2cwl_job.web_interface import read_template_attributes as read_template_attributes_from_xls
 from cwlab.xls2cwl_job.web_interface import get_param_config_info as get_param_config_info_from_xls
@@ -46,6 +47,20 @@ def fetch_files_in_dir(dir_path, # searches for files in dir_path
     return hits
 
 
+def read_file_content(
+    file_path,
+    start_pos=0, # anticipated starting point
+    max_chars=app.config["READ_MAX_CHARS_FROM_FILE"] # maximum number of charcters to read in
+):
+    content = []
+    fsize = os.stat(file_path).st_size
+    if fsize > max_chars:
+        start_pos = max(fsize-max_chars, start_pos)
+    with open(file_path, 'r') as f:
+        f.seek(start_pos)
+        content = f.read()
+        end_pos = f.tell()
+    return str(content), end_pos
 
 allowed_extensions_by_type = {
     "CWL": ["cwl", "yaml"],
@@ -160,9 +175,6 @@ def db_commit(retry_delays=[1,4]):
                 sys.exit("Could not connect to database.")
             else:
                 sleep(retry_delay + retry_delay*random())
-
-
-
     
     
         

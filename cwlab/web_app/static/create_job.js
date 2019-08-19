@@ -23,7 +23,9 @@ class JobCreationPrep extends React.Component {
             sheet_format: "xlsx",
             file_transfer_status: "none", // if not none, all input will be disabled
             job_creation_status: "none",
-            form_passed_validation: false
+            form_passed_validation: false,
+            sheetFormMessages: [],
+            jobCreationMessages: [],
         }
 
         // construct job_id:
@@ -37,10 +39,6 @@ class JobCreationPrep extends React.Component {
         let randomNumber = Math.round(Math.random()*1000)
         randomNumber = (randomNumber < 100) ? ("0" + randomNumber.toString()) : (randomNumber.toString())
         this.jobIdNum = dateString + "_" + randomNumber
-
-        this.sheetFormMessages = [] // stores messages conserding generation,
-                                             // download, upload, and validation of the form sheet
-        this.jobCreationMessages = []
         
 
         this.changeJobName = this.changeJobName.bind(this);
@@ -51,6 +49,7 @@ class JobCreationPrep extends React.Component {
         this.genFormSheet = this.genFormSheet.bind(this);
         this.handleFormSheetUpload = this.handleFormSheetUpload.bind(this)
         this.createJob = this.createJob.bind(this)
+        this.ajaxRequest = ajaxRequest.bind(this)
     }
 
     changeJobName(event){
@@ -83,46 +82,24 @@ class JobCreationPrep extends React.Component {
     }
 
     genFormSheet(){
-        this.setState({file_transfer_status: "downloading"})
-        const sendData = {
-            cwl_target: this.props.cwlTarget,
-            param_modes: this.state.param_modes,
-            run_mode: this.state.run_mode, 
-            run_names: this.state.run_names.filter((r) => r != ""),
-            job_id: (this.jobIdNum + "_" + this.state.job_name),
-            sheet_format: this.state.sheet_format
-        }
-
-        fetch(routeGenParamFormSheet, {
-            method: "POST",
-            body: JSON.stringify(sendData),
-            headers: new Headers({
-                'Content-Type': 'application/json'
-              }),
-              cache: "no-cache"
-        }).then(res => res.json())
-        .then(
-            (result) => {
-                this.sheetFormMessages = result.messages;
-                let errorOccured = false;
-                for( let i=0;  i<this.sheetFormMessages.length; i++){
-                    if(this.sheetFormMessages[i].type == "error"){
-                        errorOccured = true;
-                        break;
-                    }
-                }
-                if (! errorOccured){
-                    window.location.href = result.data.get_form_sheet_href
-                }
-                this.setState({file_transfer_status: "none"})                
+        this.ajaxRequest({
+            statusVar: "file_transfer_status",
+            statusValueDuringRequest: "downloading",
+            messageVar: "sheetFormMessages",
+            sendData: {
+                cwl_target: this.props.cwlTarget,
+                param_modes: this.state.param_modes,
+                run_mode: this.state.run_mode, 
+                run_names: this.state.run_names.filter((r) => r != ""),
+                job_id: (this.jobIdNum + "_" + this.state.job_name),
+                sheet_format: this.state.sheet_format
             },
-            (error) => {
-                // server could not be reached
-                this.sheetFormMessages = [{type: "error", text: serverNotReachableError}];
-                this.setState({file_transfer_status: "none"})
+            route: routeGenParamFormSheet,
+            onSuccess: (data, messages) => {
+                window.location.href = data.get_form_sheet_href
+                return({sheetFormMessages: []})
             }
-        )
-
+        })
     }
 
     handleFormSheetUpload(isSuccess){
@@ -130,41 +107,16 @@ class JobCreationPrep extends React.Component {
     }
 
     createJob() {
-        this.setState({job_creation_status: "in_progress"})
-        const sendData = {
-            job_id: (this.jobIdNum + "_" + this.state.job_name),
-            sheet_format: this.state.sheet_format //#! problematic: if format selector is changed after sheet was already submitted
-        }
-
-        fetch(routeCreateJob, {
-            method: "POST",
-            body: JSON.stringify(sendData),
-            headers: new Headers({
-                'Content-Type': 'application/json'
-              }),
-              cache: "no-cache"
-        }).then(res => res.json())
-        .then(
-            (result) => {
-                this.jobCreationMessages = result.messages;
-                let errorOccured = false;
-                for( let i=0;  i<this.jobCreationMessages.length; i++){
-                    if(this.jobCreationMessages[i].type == "error"){
-                        errorOccured = true;
-                        break;
-                    }
-                }
-                if (! errorOccured){
-                    // nothing just display messages
-                }    
-                this.setState({job_creation_status: "none"})        
+        this.ajaxRequest({
+            statusVar: "job_creation_status",
+            statusValueDuringRequest: "in_progress",
+            messageVar: "jobCreationMessages",
+            sendData: {
+                job_id: (this.jobIdNum + "_" + this.state.job_name),
+                sheet_format: this.state.sheet_format //#! problematic: if format selector is changed after sheet was already submitted
             },
-            (error) => {
-                // server could not be reached
-                this.jobCreationMessages = [{type: "error", text: serverNotReachableError}];
-                this.setState({job_creation_status: "none"}) 
-            }
-        )
+            route: routeCreateJob
+        })
     }
 
     render() {
@@ -301,7 +253,7 @@ class JobCreationPrep extends React.Component {
                             />
                         </li>
                     </ol>
-                    <DisplayServerMessages messages={this.sheetFormMessages} />
+                    <DisplayServerMessages messages={this.state.sheetFormMessages} />
                     <ActionButton
                         name="create job"
                         value="create job"
@@ -312,7 +264,7 @@ class JobCreationPrep extends React.Component {
                         loading={this.state.job_creation_status != "none"}
                         onAction={this.createJob}
                     />
-                    <DisplayServerMessages messages={this.jobCreationMessages} />
+                    <DisplayServerMessages messages={this.state.jobCreationMessages} />
 
                 </div>
             </div>   

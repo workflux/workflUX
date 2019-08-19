@@ -11,9 +11,9 @@ from datetime import datetime, timedelta
 from time import sleep
 from random import random
 from re import sub
-from signal import CTRL_BREAK_EVENT
 
 if platform_system() == 'Windows':
+    from signal import CTRL_BREAK_EVENT
     from pexpect.popen_spawn import PopenSpawn as spawn
 else:
     from pexpect import spawn
