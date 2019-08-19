@@ -181,23 +181,23 @@ def get_run_details():
     req_data = request.get_json()
     job_id = req_data["job_id"]
     run_id = req_data["run_id"]
-    # try:
-    log_content = read_run_log(job_id, run_id)
-    yaml_content = read_run_yaml(job_id, run_id)
-    data = {
-        "log": log_content,
-        "yaml": yaml_content
-    }
-    # except SystemExit as e:
-    #     messages.append( { 
-    #         "type":"error", 
-    #         "text": str(e) 
-    #     } )
-    # except:
-    #     messages.append( { 
-    #         "type":"error", 
-    #         "text":"An unkown error occured." 
-    #     } )
+    try:
+        log_content = read_run_log(job_id, run_id)
+        yaml_content = read_run_yaml(job_id, run_id)
+        data = {
+            "log": log_content,
+            "yaml": yaml_content
+        }
+    except SystemExit as e:
+        messages.append( { 
+            "type":"error", 
+            "text": str(e) 
+        } )
+    except:
+        messages.append( { 
+            "type":"error", 
+            "text":"An unkown error occured." 
+        } )
     return jsonify({
         "data":data,
         "messages":messages
@@ -212,33 +212,33 @@ def terminate_runs():
     job_id = req_data["job_id"]
     run_ids = req_data["run_ids"]
     mode = req_data["mode"] # one of terminate, reset, delete
-    # try:
-    succeeded, could_not_be_terminated, could_not_be_cleaned = terminate(job_id, run_ids, mode)
-    if len(succeeded) > 0:
-        messages.append({
-            "type":"success",
-            "text":"Successfully terminated/reset/deleted runs: " + ", ".join(succeeded)
-        })
-    if len(could_not_be_terminated) > 0:
-        messages.append({
-            "type":"warning",
-            "text":"Following runs could not be terminated: " + ", ".join(could_not_be_terminated)
-        })
-    if len(could_not_be_cleaned) > 0:
-        messages.append({
-            "type":"warning",
-            "text":"Following runs could not be cleaned: " + ", ".join(could_not_be_cleaned)
-        })
-    # except SystemExit as e:
-    #     messages.append( { 
-    #         "type":"error", 
-    #         "text": str(e) 
-    #     } )
-    # except:
-    #     messages.append( { 
-    #         "type":"error", 
-    #         "text":"An unkown error occured." 
-    #     } )
+    try:
+        succeeded, could_not_be_terminated, could_not_be_cleaned = terminate(job_id, run_ids, mode)
+        if len(succeeded) > 0:
+            messages.append({
+                "type":"success",
+                "text":"Successfully terminated/reset/deleted runs: " + ", ".join(succeeded)
+            })
+        if len(could_not_be_terminated) > 0:
+            messages.append({
+                "type":"warning",
+                "text":"Following runs could not be terminated: " + ", ".join(could_not_be_terminated)
+            })
+        if len(could_not_be_cleaned) > 0:
+            messages.append({
+                "type":"warning",
+                "text":"Following runs could not be cleaned: " + ", ".join(could_not_be_cleaned)
+            })
+    except SystemExit as e:
+        messages.append( { 
+            "type":"error", 
+            "text": str(e) 
+        } )
+    except:
+        messages.append( { 
+            "type":"error", 
+            "text":"An unkown error occured." 
+        } )
     return jsonify({
         "data":data,
         "messages":messages
