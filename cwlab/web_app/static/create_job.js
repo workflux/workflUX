@@ -325,9 +325,8 @@ class JobCreationPrep extends React.Component {
                     <hr/>
                     <h3>Provide Parameter Values:</h3>
                     <p>
-                        Parameter values can be covieniently provided by filling in an HTML form. 
-                        Alternatively, you can use a spreadsheet (Excel or OpenOffice). 
-                        This is mainly for very large datasets (over 50 runs) or
+                        To provide parameter values, the convenient HTML form can be used (recommended for most use cases). 
+                        Alternatively, a spreadsheet can be used (Excel or OpenOffice) which is mainly for very large datasets (over 50 runs) or
                         when you would like to make use of the advanced parameter validation and manipulation options.
                     </p>
                     <p>
