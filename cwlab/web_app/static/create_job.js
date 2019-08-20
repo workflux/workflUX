@@ -129,7 +129,7 @@ class JobCreationPrep extends React.Component {
         )
         this.state = {
             run_mode: false, 
-            run_names: ["job1", "job2", "job3"],
+            run_names: ["run1", "run2", "run3"],
             param_modes: paramModes,
             job_name: "new_job",
             display: "prep" // one of prep, form_ssheet, from_html
@@ -274,7 +274,7 @@ class JobCreationPrep extends React.Component {
                         Please enter unique, comma-seperated IDs.
                         No whitespaces allowed (if inserted will be automatically converted to "_"). 
                         Hint: you may copy&paste cells from an excel file.
-                        <textArea className="w3-input w3-border"
+                        <textarea className="w3-input w3-border"
                             rows="2"
                             name="create_multi_run_job" 
                             value={this.state.run_names.join(", ").trim()}
