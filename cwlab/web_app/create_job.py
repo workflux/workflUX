@@ -42,11 +42,11 @@ def get_job_templ_list():   # returns list of job templates
 @app.route('/get_job_templ_config_info/', methods=['POST'])
 def get_job_templ_config_info():    # returns all parmeter and its default mode (global/job specific) 
                                     # for a given xls config
-    cwl_target = request.get_json()["cwl_target"]
     messages = []
     param_config_info = []
     template_attributes = []
     try:
+        cwl_target = request.get_json()["cwl_target"]
         param_config_info = get_job_templ_info("config", cwl_target)
         template_attributes = get_job_templ_info("attributes", cwl_target)
     except SystemExit as e:
@@ -73,8 +73,8 @@ def generate_param_form_sheet():    # generate param form sheet with data sent
                                     # by the client
     messages = []
     data = {}
-    request_json = request.get_json()
     try:
+        request_json = request.get_json() 
         filename = str(request_json["job_id"]) + ".input." + str(request_json["sheet_format"])
         gen_form_sheet(
             output_file_path = os.path.join(
@@ -184,8 +184,8 @@ def create_job():    # generate param form sheet with data sent
                                     # by the client
     messages = []
     data = {}
-    request_json = request.get_json()
     try:
+        request_json = request.get_json()
         job_id = str(request_json["job_id"])
         sheet_form = job_id + ".input." + str(request_json["sheet_format"])
         sheet_form_path = os.path.join(app.config['TEMP_DIR'], sheet_form)

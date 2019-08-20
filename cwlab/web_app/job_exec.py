@@ -135,12 +135,12 @@ def get_run_status():
 def start_exec():    # returns all parmeter and its default mode (global/job specific) 
                                     # for a given xls config
     messages = []
-    data = request.get_json()
-    cwl_target = data["cwl_target"]
-    job_id = data["job_id"]
-    run_ids = data["run_ids"]
-    exec_profile_name = data["exec_profile"]
     try:
+        data = request.get_json()
+        cwl_target = data["cwl_target"]
+        job_id = data["job_id"]
+        run_ids = data["run_ids"]
+        exec_profile_name = data["exec_profile"]
         started_runs, already_running_runs = exec_runs(
             job_id,
             run_ids,
@@ -179,10 +179,10 @@ def start_exec():    # returns all parmeter and its default mode (global/job spe
 def get_run_details():    
     messages = []
     data = {}
-    req_data = request.get_json()
-    job_id = req_data["job_id"]
-    run_id = req_data["run_id"]
     try:
+        req_data = request.get_json()
+        job_id = req_data["job_id"]
+        run_id = req_data["run_id"]
         log_content = read_run_log(job_id, run_id)
         yaml_content = read_run_yaml(job_id, run_id)
         data = {
@@ -209,11 +209,11 @@ def get_run_details():
 def terminate_runs():    
     messages = []
     data = {}
-    req_data = request.get_json()
-    job_id = req_data["job_id"]
-    run_ids = req_data["run_ids"]
-    mode = req_data["mode"] # one of terminate, reset, delete
     try:
+        req_data = request.get_json()
+        job_id = req_data["job_id"]
+        run_ids = req_data["run_ids"]
+        mode = req_data["mode"] # one of terminate, reset, delete
         succeeded, could_not_be_terminated, could_not_be_cleaned = terminate_runs_by_id(job_id, run_ids, mode)
         if len(succeeded) > 0:
             messages.append({
