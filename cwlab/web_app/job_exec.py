@@ -250,38 +250,38 @@ def terminate_runs():
 def delete_job():    
     messages = []
     data = {}
-    # try:
-    req_data = request.get_json()
-    job_id = req_data["job_id"]
-    results = delete_job_by_id(job_id)
-    if results["status"] == "success":
-        pass
-    elif results["status"] == "failed run termination":
-        if len(results["could_not_be_terminated"]) > 0:
+    try:
+        req_data = request.get_json()
+        job_id = req_data["job_id"]
+        results = delete_job_by_id(job_id)
+        if results["status"] == "success":
+            pass
+        elif results["status"] == "failed run termination":
+            if len(results["could_not_be_terminated"]) > 0:
+                messages.append({
+                    "type":"error",
+                    "text":"Following runs could not be terminated: " + ", ".join(results["could_not_be_terminated"])
+                })
+            if len(results["could_not_be_cleaned"]) > 0:
+                messages.append({
+                    "type":"error",
+                    "text":"Following runs could not be cleaned: " + ", ".join(results["could_not_be_cleaned"])
+                })
+        else:
             messages.append({
                 "type":"error",
-                "text":"Following runs could not be terminated: " + ", ".join(results["could_not_be_terminated"])
+                "text":"Could not delete job dir for \"" + job_id + "\"."
             })
-        if len(results["could_not_be_cleaned"]) > 0:
-            messages.append({
-                "type":"error",
-                "text":"Following runs could not be cleaned: " + ", ".join(results["could_not_be_cleaned"])
-            })
-    else:
-        messages.append({
-            "type":"error",
-            "text":"Could not delete job dir for \"" + job_id + "\"."
-        })
-    # except SystemExit as e:
-    #     messages.append( { 
-    #         "type":"error", 
-    #         "text": str(e) 
-    #     } )
-    # except:
-    #     messages.append( { 
-    #         "type":"error", 
-    #         "text":"An unkown error occured." 
-    #     } )
+    except SystemExit as e:
+        messages.append( { 
+            "type":"error", 
+            "text": str(e) 
+        } )
+    except:
+        messages.append( { 
+            "type":"error", 
+            "text":"An unkown error occured." 
+        } )
     return jsonify({
         "data":data,
         "messages":messages
