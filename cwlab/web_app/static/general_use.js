@@ -410,7 +410,8 @@ class AjaxComponent extends React.Component {
         this.state = {
             loading: true,
             serverMessages: [],
-            data: []
+            data: [],
+            success: false
         };  
                                     
         this.request = this.request.bind(this);
@@ -427,7 +428,14 @@ class AjaxComponent extends React.Component {
             route: this.props.requestRoute,
             onSuccess: (data, messages) => {
                 return({
-                    data: data
+                    data: data,
+                    success: true
+                })
+            },
+            onError: (messages) => {
+                return({
+                    data: [],
+                    success: false
                 })
             }
         })
@@ -448,7 +456,9 @@ class AjaxComponent extends React.Component {
             return (
                 <div>
                     <DisplayServerMessages messages={this.state.serverMessages} />
-                    {this.props.buildContentOnSuccess(this.state.data, this.state.serverMessages, this.request)}
+                    {this.state.success &&
+                        this.props.buildContentOnSuccess(this.state.data, this.state.serverMessages, this.request)
+                    }
                 </div>
             )
         }
