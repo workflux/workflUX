@@ -131,7 +131,8 @@ class JobCreationPrep extends React.Component {
             run_mode: false, 
             run_names: ["job1", "job2", "job3"],
             param_modes: paramModes,
-            job_name: "new_job"
+            job_name: "new_job",
+            display: "prep" // one of prep, form_ssheet, from_html
         }
 
         // construct job_id:
@@ -151,6 +152,7 @@ class JobCreationPrep extends React.Component {
         this.changeParamMode = this.changeParamMode.bind(this);
         this.changeRunMode = this.changeRunMode.bind(this);
         this.changeRunNames = this.changeRunNames.bind(this);
+        this.toggleParamForm = this.toggleParamForm.bind(this);
         // this.createJob = this.createJob.bind(this)
         this.ajaxRequest = ajaxRequest.bind(this)
     }
@@ -192,6 +194,10 @@ class JobCreationPrep extends React.Component {
     //         route: routeCreateJob
     //     })
     // }
+
+    toggleParamForm(value){
+        this.setState({display: value})
+    }
 
     render() {
         const paramTable = (
@@ -279,28 +285,80 @@ class JobCreationPrep extends React.Component {
                 }
             </div>
         )
-
-        return(
-            <div>
-                <h3>Input parameters:</h3>
-                {paramTable}
-                <hr/>
-                <h3>Job ID:</h3>
-                {jobIdForm}
-                <hr/>
-                <h3>Number of runs:</h3>
-                {runNumberForm}
-                <hr/>
-                <h3>Generate Parameter Form:</h3>
-                <JobParamFormSpreadsheet
-                    cwlTarget={this.props.cwlTarget}
-                    param_modes={this.state.param_modes}
-                    run_mode={this.state.run_mode}
-                    run_names={this.state.run_names}
-                    jobId={this.jobIdNum + "_" + this.state.job_name}
-                />
-            </div>
-        )
+        
+        if (this.state.display == "prep"){
+            return(
+                <div>
+                    <h3>Input parameters:</h3>
+                    {paramTable}
+                    <hr/>
+                    <h3>Job ID:</h3>
+                    {jobIdForm}
+                    <hr/>
+                    <h3>Number of runs:</h3>
+                    {runNumberForm}
+                    <hr/>
+                    <h3>Provide Parameter Values:</h3>
+                    <p>
+                        Parameter values can be covieniently provided by filling in an HTML form. 
+                        Alternatively, you can use a spreadsheet (Excel or OpenOffice). 
+                        This is mainly for very large datasets (over 50 runs) or
+                        when you would like to make use of the advanced parameter validation and manipulation options.
+                    </p>
+                    <p>
+                        <span className="w3-text-green">Provide parameter using:</span>&nbsp;
+                        <ActionButton
+                            name="form_html"
+                            value="form_html"
+                            label={<span><i className="fas fa-list-alt"></i>&nbsp;HTML form</span>}
+                            onAction={this.toggleParamForm}
+                        />&nbsp; or &nbsp;
+                        <ActionButton
+                            name="form_ssheet"
+                            value="form_ssheet"
+                            label={<span><i className="fas fa-file-excel"></i>&nbsp;Spreadsheet</span>}
+                            onAction={this.toggleParamForm}
+                        />
+                    </p>
+                </div>
+            )
+        }
+        else {
+            return(
+                <div>
+                    <ActionButton
+                        name="prep"
+                        value="prep"
+                        label={<span><i className="fas fa-caret-left"></i>&nbsp;back to job overview</span>}
+                        onAction={this.toggleParamForm}
+                    />
+                    {this.state.display == "form_ssheet" ? (
+                            <div>
+                                <h3>Generate Parameter Form:</h3>
+                                <JobParamFormSpreadsheet
+                                    cwlTarget={this.props.cwlTarget}
+                                    param_modes={this.state.param_modes}
+                                    run_mode={this.state.run_mode}
+                                    run_names={this.state.run_names}
+                                    jobId={this.jobIdNum + "_" + this.state.job_name}
+                                />
+                            </div>
+                        ) : (
+                            <div>
+                                <h3>Parameter Form:</h3>
+                                <JobParamFormSpreadsheet
+                                    cwlTarget={this.props.cwlTarget}
+                                    param_modes={this.state.param_modes}
+                                    run_mode={this.state.run_mode}
+                                    run_names={this.state.run_names}
+                                    jobId={this.jobIdNum + "_" + this.state.job_name}
+                                />
+                            </div>
+                        )
+                    }
+                </div>
+            )
+        }
     }
 }
 
