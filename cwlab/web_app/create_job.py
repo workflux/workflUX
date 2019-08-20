@@ -59,6 +59,7 @@ def get_job_templ_config_info():    # returns all parmeter and its default mode 
             "type":"error", 
             "text":"An uknown error occured reading the job template config." 
         } )
+    print(messages)
     return jsonify({
         "data":{
             "params":param_config_info,
@@ -241,6 +242,41 @@ def create_job():    # generate param form sheet with data sent
         messages.append( { 
             "type":"error", 
             "text":"An uknown error occured." 
+        } )
+    return jsonify({
+        "data":data,
+        "messages":messages
+    })
+
+
+@app.route('/get_param_values/', methods=['GET','POST'])
+def get_param_values():    
+    messages = []
+    data = {}
+    try:
+        request_json = request.get_json() 
+        param_values, configs = gen_form_sheet(
+            output_file_path = None,
+            template_config_file_path = get_path("job_templ", cwl_target=request_json["cwl_target"]),
+            has_multiple_runs= request_json["run_mode"],
+            run_names=request_json["run_names"],
+            param_is_run_specific=request_json["param_modes"],
+            show_please_fill=True,
+            config_attributes={"CWL": request_json["cwl_target"]}
+        )
+        data = {
+            "param_values": param_values,
+            "configs": configs
+        }
+    except SystemExit as e:
+        messages.append( { 
+            "type":"error", 
+            "text": str(e) 
+        } )
+    except:
+        messages.append( { 
+            "type":"error", 
+            "text":"An unkown error occured." 
         } )
     return jsonify({
         "data":data,

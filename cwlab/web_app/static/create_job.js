@@ -1,3 +1,4 @@
+
 class CreateJobButton extends React.Component {
     constructor(props){
         super(props);
@@ -27,6 +28,8 @@ class CreateJobButton extends React.Component {
         })
     }
 
+
+
     render(){
         return(
             <div>
@@ -45,6 +48,204 @@ class CreateJobButton extends React.Component {
     }
 }
 
+class ParamField extends React.Component{
+    constructor(props){
+        super(props);
+        // props.type
+        // props.nullAllowed
+        // props.onChange
+        // props.paramValue
+        // props.name
+        // props.index for array params
+
+        this.key = this.props.index ? (
+            this.props.name + "%" + this.props.index.toString()
+        ) :(
+            this.props.name
+        )
+
+        this.disabled = (this.props.paramValue === "null")
+
+        this.inputTypes = {
+            "int":"input_number",
+            "long":"input_number",
+            "string":"input_text",
+            "file":"input_text"
+        }
+        
+
+    }
+
+    handleChange(event){
+        const paramValue = event.currentTarget.value
+        this.props.onChange(this.props.key, )
+    }
+
+    toggleEnabled(event){
+        const paramValue = this.disabled ? (
+            ""
+        ) : (
+            "null"
+        )
+        this.props.onChange(this.props.key, )
+    }
+
+    render(){
+        const inputType = this.inputTypes.hasOwnPropterty(this.props.type) ? (
+            this.inputTypes[this.props.types]
+        ) : (
+            "input_text"
+        )
+        
+        let input_field
+        switch(inputType){
+            case "input_number":
+                input_field = (
+                    <input
+                        type="number"
+                        name={"input_" + this.key}
+                        value={this.paramValue}
+                        onChange={this.handleChange}
+                        required={true}
+                        disabled={this.disabled}
+                    />
+                )
+            case "input_text":
+                input_field = (
+                    <input
+                        type="text"
+                        name={"input_" + this.key}
+                        value={this.paramValue}
+                        onChange={this.handleChange}
+                        required={true}
+                        disabled={this.disabled}
+                    />
+                )
+        }
+
+        return(
+            <span style={ {witeSpace: "nowrap"} }>
+                <input
+                    type="checkbox"
+                    name={"enable_" + this.key}
+                    value={"enable_" + this.key}
+                    checked={!this.disabled}
+                />
+                {input_field}
+            </span>
+
+        )
+    }
+}
+
+
+class JobParamFormHTML extends React.Component {
+    constructor(props){
+        super(props);
+        // props.cwlTarget
+        // props.param_modes
+        // props.run_mode
+        // props.run_names
+        // props.jobId
+
+        this.state = {
+            action_status: "none",
+            form_passed_validation: false,
+            serverMessages: [],
+            paramConfigs: {},
+            paramValues: {},
+            paramsByMode: {}
+        }
+
+        this.getParamValues = this.getParamValues.bind(this);
+        this.ajaxRequest = ajaxRequest.bind(this)
+    }
+
+    componentDidMount(){
+        // setup timer to automatically update
+        this.getParamValues()
+    }
+
+    getParamValues(){
+            this.ajaxRequest({
+                statusVar: "action_status",
+                statusValueDuringRequest: "loading",
+                messageVar: "serverMessages",
+                sendData: {
+                    cwl_target: this.props.cwlTarget,
+                    param_modes: this.props.param_modes,
+                    run_mode: this.props.run_mode, 
+                    run_names: this.props.run_names.filter((r) => r != "")
+                },
+                route: routeGetParamValues,
+                onSuccess: (data, messages) => {
+                    const paramNames = Object.keys(data.configs).filter((p) => data.configs[p].type != "helper")
+                    let paramsByMode = {
+                        global_single: [],
+                        global_array: [],
+                        run_single: [],
+                        run_array: []
+                    }
+                    paramNames.map((p) =>{
+                        let run_or_global = this.props.run_mode ? (
+                                this.props.param_mode[p] ? ("run") : ("global")
+                            ) : (
+                                "global"
+                            )
+                        let single_or_array = data.configs[p].is_array ? ("array") : ("single")
+                        let mode = run_or_global + "_" + single_or_array
+                        paramsByMode[mode].push(p)
+                    })
+
+                    return({
+                        paramConfigs: data.configs,
+                        paramValues: data.param_values,
+                        paramsByMode: paramsByMode
+                    })
+                }
+            })
+
+    }
+
+    render() {
+        const globalSingValueForm = {
+            
+        }
+
+
+        return(
+            <div className="w3-container">
+                <DisplayServerMessages messages={this.state.serverMessages} />
+                <h4>Configs:</h4>
+                <p>
+                    {JSON.stringify(this.state.paramConfigs)}
+                </p>
+                <h4>Param Values:</h4>
+                <p>
+                    {JSON.stringify(this.state.paramValues)}
+                </p>
+                <h4>Param by Mode:</h4>
+                <p>
+                    {JSON.stringify(this.state.paramsByMode)}
+                </p>
+                <h3>Global Parameters</h3>
+                <span className="w3-text-green">Single Values:</span>
+                {/* {globalSingValueForm} */}
+                <span className="w3-text-green">Lists/arrays:</span>
+                <h3>Run-Specific Parameters</h3>
+                <span className="w3-text-green">Single Values:</span>
+                <span className="w3-text-green">Lists/arrays:</span>
+
+                <CreateJobButton
+                    jobId={this.props.jobId}
+                    sheet_format="xlsx"
+                    disabled={!this.state.form_passed_validation}
+                />
+            </div>
+        )
+    }
+}
+
 
 class JobParamFormSpreadsheet extends React.Component {
     constructor(props){
@@ -58,7 +259,6 @@ class JobParamFormSpreadsheet extends React.Component {
         this.state = {
             sheet_format: "xlsx",
             file_transfer_status: "none",
-            job_creation_status: "none",
             form_passed_validation: false,
             sheetFormMessages: [],
         }
@@ -101,51 +301,49 @@ class JobParamFormSpreadsheet extends React.Component {
     render() {
         return(
             <div className="w3-container">
-                <div className="w3-container">
-                    <span className="w3-text-green">As spreadsheet form:</span>
-                    <ol>
-                        <li>
-                            export/download:
-                            <select className="w3-button w3-white w3-border" 
-                                name="sheet_format"
-                                onChange={this.changeSheetFormat}
-                                value={this.state.sheet_format}
-                                >
-                                <option value="xlsx">excel format (xlsx)</option>
-                                <option value="xls">excel format (xls)</option>
-                                <option value="ods">open office format (ods)</option>
-                            </select> 
-                            <ActionButton
-                                name="export"
-                                value="export"
-                                label="export"
-                                onAction={this.genFormSheet}
-                                loading={this.state.file_transfer_status == "downloading"}
-                                disabled={this.state.file_transfer_status != "none"}
-                            />
-                        </li>
-                        <li>
-                            open in excel or open office and fill in the form
-                        </li>
-                        <li>
-                            <FileUploadComponent
-                                requestRoute={routeSendFilledParamFormSheet}
-                                instruction="import/upload"
-                                oneLine={true}
-                                disabled={this.state.file_transfer_status != "none"}
-                                meta_data={this.props.jobId}
-                                onUploadCompletion={this.handleFormSheetUpload}
-                            />
-                        </li>
-                    </ol>
-                    <DisplayServerMessages messages={this.state.sheetFormMessages} />
-                    <CreateJobButton
-                        jobId={this.props.jobId}
-                        sheet_format={this.state.sheet_format}
-                        disabled={!this.state.form_passed_validation}
-                    />
-                </div>
-            </div> 
+                <span className="w3-text-green">As spreadsheet form:</span>
+                <ol>
+                    <li>
+                        export/download:
+                        <select className="w3-button w3-white w3-border" 
+                            name="sheet_format"
+                            onChange={this.changeSheetFormat}
+                            value={this.state.sheet_format}
+                            >
+                            <option value="xlsx">excel format (xlsx)</option>
+                            <option value="xls">excel format (xls)</option>
+                            <option value="ods">open office format (ods)</option>
+                        </select> 
+                        <ActionButton
+                            name="export"
+                            value="export"
+                            label="export"
+                            onAction={this.genFormSheet}
+                            loading={this.state.file_transfer_status == "downloading"}
+                            disabled={this.state.file_transfer_status != "none"}
+                        />
+                    </li>
+                    <li>
+                        open in excel or open office and fill in the form
+                    </li>
+                    <li>
+                        <FileUploadComponent
+                            requestRoute={routeSendFilledParamFormSheet}
+                            instruction="import/upload"
+                            oneLine={true}
+                            disabled={this.state.file_transfer_status != "none"}
+                            meta_data={this.props.jobId}
+                            onUploadCompletion={this.handleFormSheetUpload}
+                        />
+                    </li>
+                </ol>
+                <DisplayServerMessages messages={this.state.sheetFormMessages} />
+                <CreateJobButton
+                    jobId={this.props.jobId}
+                    sheet_format={this.state.sheet_format}
+                    disabled={!this.state.form_passed_validation}
+                />
+            </div>
         )
     }
 }
@@ -162,7 +360,6 @@ class JobCreationPrep extends React.Component {
         // Inputs:
         // props.configData
         // props.cwlTarget
-
         let paramModes={} // container for param mode (is_run_specific true/false)
         this.props.configData.params.map((p) =>
             paramModes[p.param_name] = p.is_run_specific
@@ -358,7 +555,7 @@ class JobCreationPrep extends React.Component {
                     />
                     {this.state.display == "form_ssheet" ? (
                             <div>
-                                <h3>Generate Parameter Form:</h3>
+                                <h2>Generate Parameter Form:</h2>
                                 <JobParamFormSpreadsheet
                                     cwlTarget={this.props.cwlTarget}
                                     param_modes={this.state.param_modes}
@@ -369,8 +566,8 @@ class JobCreationPrep extends React.Component {
                             </div>
                         ) : (
                             <div>
-                                <h3>Parameter Form:</h3>
-                                <JobParamFormSpreadsheet
+                                <h2>Parameter Form:</h2>
+                                <JobParamFormHTML
                                     cwlTarget={this.props.cwlTarget}
                                     param_modes={this.state.param_modes}
                                     run_mode={this.state.run_mode}

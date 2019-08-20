@@ -38,9 +38,13 @@ def get_param_config_info(file_path):
     return param_config_info
 
 
+def get_param_config(file_path):
+    _, configs = sheet_file(file_path, verbose_level=0)
+    return configs
+
 def gen_form_sheet(
-    output_file_path,
     template_config_file_path, # basic information on params and their defaults
+    output_file_path=None, # if None return configs and param_values
     has_multiple_runs=False,  # can be single or multiple
     run_names=[],   # if run_mode is multiple, run names are provided here
     param_is_run_specific={},  # only relevant id run_mode is multiple,
@@ -77,6 +81,8 @@ def gen_form_sheet(
     # fill in config defaults
     configs = fill_in_config_defaults(configs)
 
+    if output_file_path is None:
+        return param_values, configs
     # write to file
     write_xls(param_values, configs, output_file_path, config_attributes)
 
