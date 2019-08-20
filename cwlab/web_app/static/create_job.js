@@ -1,3 +1,51 @@
+class CreateJobButton extends React.Component {
+    constructor(props){
+        super(props);
+        // props.jobId
+        // props.sheet_format
+        // props.disabled
+        
+        this.state = {
+            job_creation_status: "none",
+            jobCreationMessages: []
+        }
+
+        this.createJob = this.createJob.bind(this)
+        this.ajaxRequest = ajaxRequest.bind(this)
+    }
+
+    createJob() {
+        this.ajaxRequest({
+            statusVar: "job_creation_status",
+            statusValueDuringRequest: "in_progress",
+            messageVar: "jobCreationMessages",
+            sendData: {
+                job_id: this.props.jobId,
+                sheet_format: this.props.sheet_format //#! problematic: if format selector is changed after sheet was already submitted
+            },
+            route: routeCreateJob
+        })
+    }
+
+    render(){
+        return(
+            <div>
+                <ActionButton
+                        name="create job"
+                        value="create job"
+                        label="create job"
+                        disabled={this.props.disabled}
+                        loading={this.state.job_creation_status != "none"}
+                        onAction={this.createJob}
+                />
+                <DisplayServerMessages messages={this.state.jobCreationMessages} />
+            </div>
+
+        )
+    }
+}
+
+
 class JobParamFormSpreadsheet extends React.Component {
     constructor(props){
         super(props);
@@ -13,7 +61,6 @@ class JobParamFormSpreadsheet extends React.Component {
             job_creation_status: "none",
             form_passed_validation: false,
             sheetFormMessages: [],
-            jobCreationMessages: []
         }
 
         this.changeSheetFormat = this.changeSheetFormat.bind(this);
@@ -86,24 +133,17 @@ class JobParamFormSpreadsheet extends React.Component {
                                 instruction="import/upload"
                                 oneLine={true}
                                 disabled={this.state.file_transfer_status != "none"}
-                                meta_data={this.jobIdNum + "_" + this.state.job_name}
+                                meta_data={this.props.jobId}
                                 onUploadCompletion={this.handleFormSheetUpload}
                             />
                         </li>
                     </ol>
                     <DisplayServerMessages messages={this.state.sheetFormMessages} />
-                    <ActionButton
-                        name="create job"
-                        value="create job"
-                        label="create job"
-                        disabled={
-                            ! this.state.form_passed_validation
-                        }
-                        loading={this.state.job_creation_status != "none"}
-                        onAction={this.createJob}
+                    <CreateJobButton
+                        jobId={this.props.jobId}
+                        sheet_format={this.state.sheet_format}
+                        disabled={!this.state.form_passed_validation}
                     />
-                    <DisplayServerMessages messages={this.state.jobCreationMessages} />
-
                 </div>
             </div> 
         )
@@ -153,8 +193,6 @@ class JobCreationPrep extends React.Component {
         this.changeRunMode = this.changeRunMode.bind(this);
         this.changeRunNames = this.changeRunNames.bind(this);
         this.toggleParamForm = this.toggleParamForm.bind(this);
-        // this.createJob = this.createJob.bind(this)
-        this.ajaxRequest = ajaxRequest.bind(this)
     }
 
     changeJobName(event){
@@ -181,19 +219,6 @@ class JobCreationPrep extends React.Component {
         runNames = runNames.map((n) => n.trim().replace(" ", "_"))
         this.setState({"run_names": runNames})
     }
-
-    // createJob() {
-    //     this.ajaxRequest({
-    //         statusVar: "job_creation_status",
-    //         statusValueDuringRequest: "in_progress",
-    //         messageVar: "jobCreationMessages",
-    //         sendData: {
-    //             job_id: (this.jobIdNum + "_" + this.state.job_name),
-    //             sheet_format: this.state.sheet_format //#! problematic: if format selector is changed after sheet was already submitted
-    //         },
-    //         route: routeCreateJob
-    //     })
-    // }
 
     toggleParamForm(value){
         this.setState({display: value})
