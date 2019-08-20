@@ -149,7 +149,7 @@ def get_job_templates():
 
     
 def get_job_templ_info(which, cwl_target=None, job_templ_filepath=None):
-    if cwl_target:
+    if job_templ_filepath is None:
         job_templ_filepath = get_path("job_templ", cwl_target=cwl_target)
     if which =="config":
         info = get_param_config_info_from_xls(job_templ_filepath)
