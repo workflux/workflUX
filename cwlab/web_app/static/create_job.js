@@ -139,7 +139,7 @@ class ParamField extends React.Component{
             case "input_number":
                 input_field = (
                     <input
-                        className="w3-input w3-border w3-padding-small"
+                        className="param-input"
                         type="number"
                         name={"input_" + this.key}
                         value={this.props.paramValue}
@@ -152,7 +152,7 @@ class ParamField extends React.Component{
             case "input_text":
                 input_field = (
                     <input
-                        className="w3-input w3-border w3-padding-small"
+                        className="param-input"
                         type="text"
                         name={"input_" + this.key}
                         value={this.props.paramValue}
@@ -199,6 +199,8 @@ class JobParamFormHTML extends React.Component {
             paramValues: {},
             paramsByMode: {}
         }
+
+        this.columnWidth = "250px"
 
         this.getParamValues = this.getParamValues.bind(this);
         this.changeParamValue = this.changeParamValue.bind(this);
@@ -323,12 +325,71 @@ class JobParamFormHTML extends React.Component {
                 </div>
             )
 
+            const globalArrayForm = (
+                <div style={ {overflow:"auto"} }>
+                    <h3>Gobally-defined List Parameters:</h3>
+                    <table className="w3-hoverable" style={ {borderSpacing: "8px 0px"} }>
+                        <tr>
+                            {this.state.paramsByMode["global_array"].map( (p) => (
+                                    <td 
+                                        key={p} 
+                                        className="w3-hover-dark-grey w3-cell-top"
+                                        style={ 
+                                            Object.assign(
+                                                {padding: "8px", width: this.columnWidth},
+                                                this.state.paramValues[p][0] == "null" ? (
+                                                    {backgroundColor: "hsl(0, 0%, 20%)"}
+                                                ) : (
+                                                    {backgroundColor: "hsl(0, 0%, 10%)"}
+                                                )
+                                            )
+                                        }
+                                    >
+                                        <table style={ {width: this.columnWidth} }>
+                                            <tr>
+                                                <td>#</td>
+                                                <td>
+                                                    <ParamName
+                                                        name={p}
+                                                        nullAllowed={this.state.paramConfigs[p].null_allowed}
+                                                        isNull={this.state.paramValues[p][0] == "null"}
+                                                        toggleNull={this.toggleNull}
+                                                    />
+                                                </td>
+                                            </tr>
+                                            {[...Array(this.state.paramValues[p].length).keys()].map( (item) => (
+                                                <tr>
+                                                    <td>
+                                                        {item}
+                                                    </td>
+                                                    <td>
+                                                        <ParamField
+                                                            name={p}
+                                                            type={this.state.paramConfigs[p].type}
+                                                            paramValue={this.state.paramValues[p][item]}
+                                                            onChange={this.changeParamValue}
+                                                            isNull={this.state.paramValues[p][0] == "null"}
+                                                            item={item}
+                                                        />
+                                                    </td>
+                                                </tr>
+                                            ))}
+                                        </table>
+                                    </td>
+                                ))
+                            }
+                        </tr>
+                    </table>
+                </div>
+            )
+
     
     
             return(
                 <div className="w3-container">
                     <DisplayServerMessages messages={this.state.serverMessages} />
                     {globalSingleValueForm}
+                    {globalArrayForm}
     
                     <CreateJobButton
                         jobId={this.props.jobId}
