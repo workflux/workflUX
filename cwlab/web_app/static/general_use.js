@@ -311,7 +311,7 @@ class SideBarPanel extends React.Component {
                 </div>
                 <div 
                     className="w3-col s10 m8 s8 w3-container"  
-                    style={ {marginLeft:"200px"} }
+                    style={ {marginLeft:"200px", width: "calc(100% - 200px)"} }
                 >
                     {this.props.itemContent}
                 </div>
