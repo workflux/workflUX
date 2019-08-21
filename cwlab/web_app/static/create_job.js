@@ -29,7 +29,6 @@ class CreateJobButton extends React.Component {
     }
 
 
-
     render(){
         return(
             <div>
@@ -48,15 +47,51 @@ class CreateJobButton extends React.Component {
     }
 }
 
+class ParamName extends React.Component{
+    constructor(props){
+        super(props);
+        // props.name
+        // props.nullAllowed
+        // props.isNull
+        // props.toggleNull
+        this.handleToggleNull = this.handleToggleNull.bind(this);
+    }
+
+    handleToggleNull(event){
+        this.props.toggleNull(this.props.name, !event.target.checked)
+    }
+
+    render(){
+        return(
+            <span style={ {witeSpace: "nowrap"} }>
+                {this.props.nullAllowed &&
+                    <span>
+                        <input
+                            className="w3-check w3-green w3-text-green"
+                            type="checkbox"
+                            name={"toggle_null_" + this.props.name}
+                            value={"toggle_null_" + this.props.name}
+                            checked={!this.props.isNull}
+                            onChange={this.handleToggleNull}
+                        /> &nbsp;
+                    </span>
+                }
+                <span className="w3-text-green">{this.props.name}:</span>
+            </span>
+        )
+    }
+}
+
 class ParamField extends React.Component{
     constructor(props){
         super(props);
         // props.type
-        // props.nullAllowed
+        // props.nullItemAllowed
         // props.onChange
         // props.paramValue
         // props.name
         // props.index for array params
+        // props.isNull
 
         this.key = this.props.index ? (
             this.props.name + "%" + this.props.index.toString()
@@ -64,21 +99,20 @@ class ParamField extends React.Component{
             this.props.name
         )
 
-        this.disabled = (this.props.paramValue === "null")
-
         this.inputTypes = {
-            "int":"input_number",
-            "long":"input_number",
+            // "int":"input_number",
+            // "long":"input_number",
             "string":"input_text",
-            "file":"input_text"
+            "File":"input_text"
         }
         
-
+        this.handleChange = this.handleChange.bind(this);
+        this.toggleEnabled = this.toggleEnabled.bind(this);
     }
 
     handleChange(event){
         const paramValue = event.currentTarget.value
-        this.props.onChange(this.props.key, )
+        this.props.onChange(this.props.name, this.props.index ? (this.props.index) : (0), paramValue)
     }
 
     toggleEnabled(event){
@@ -91,8 +125,11 @@ class ParamField extends React.Component{
     }
 
     render(){
-        const inputType = this.inputTypes.hasOwnPropterty(this.props.type) ? (
-            this.inputTypes[this.props.types]
+        const isItemNull = this.props.paramValue == "itemNull"
+        const disableInput = isItemNull || this.props.isNull
+
+        const inputType = this.inputTypes.hasOwnProperty(this.props.type) ? (
+            this.inputTypes[this.props.type]
         ) : (
             "input_text"
         )
@@ -102,42 +139,48 @@ class ParamField extends React.Component{
             case "input_number":
                 input_field = (
                     <input
+                        className="w3-input w3-border w3-padding-small"
                         type="number"
                         name={"input_" + this.key}
-                        value={this.paramValue}
+                        value={this.props.paramValue}
                         onChange={this.handleChange}
                         required={true}
-                        disabled={this.disabled}
+                        disabled={disableInput}
                     />
                 )
+                break;
             case "input_text":
                 input_field = (
                     <input
+                        className="w3-input w3-border w3-padding-small"
                         type="text"
                         name={"input_" + this.key}
-                        value={this.paramValue}
+                        value={this.props.paramValue}
                         onChange={this.handleChange}
                         required={true}
-                        disabled={this.disabled}
+                        disabled={disableInput}
                     />
                 )
+                break;
         }
 
         return(
             <span style={ {witeSpace: "nowrap"} }>
-                <input
-                    type="checkbox"
-                    name={"enable_" + this.key}
-                    value={"enable_" + this.key}
-                    checked={!this.disabled}
-                />
+                {this.props.nullItemAllowed &&
+                    <input
+                        className="w3-check w3-green"
+                        type="checkbox"
+                        name={"is_null_item_" + this.key}
+                        value={"is_null_item_" + this.key}
+                        checked={!isItemNull}
+                        // onChange={this.toggleEnabled}
+                    />
+                }
                 {input_field}
             </span>
-
         )
     }
 }
-
 
 class JobParamFormHTML extends React.Component {
     constructor(props){
@@ -149,7 +192,7 @@ class JobParamFormHTML extends React.Component {
         // props.jobId
 
         this.state = {
-            action_status: "none",
+            actionStatus: "loading",
             form_passed_validation: false,
             serverMessages: [],
             paramConfigs: {},
@@ -158,6 +201,8 @@ class JobParamFormHTML extends React.Component {
         }
 
         this.getParamValues = this.getParamValues.bind(this);
+        this.changeParamValue = this.changeParamValue.bind(this);
+        this.toggleNull = this.toggleNull.bind(this);
         this.ajaxRequest = ajaxRequest.bind(this)
     }
 
@@ -168,7 +213,7 @@ class JobParamFormHTML extends React.Component {
 
     getParamValues(){
             this.ajaxRequest({
-                statusVar: "action_status",
+                statusVar: "actionStatus",
                 statusValueDuringRequest: "loading",
                 messageVar: "serverMessages",
                 sendData: {
@@ -207,42 +252,106 @@ class JobParamFormHTML extends React.Component {
 
     }
 
+    changeParamValue(name, index, newValue){
+        let paramValues = this.state.paramValues
+        paramValues[name][index] = newValue
+        this.setState({paramValues: paramValues})
+    }
+
+    toggleNull(name, setNull){
+        let paramValues = this.state.paramValues
+        if (setNull){
+            paramValues[name] = ["null"]
+        } else {
+            paramValues[name] = this.state.paramConfigs[name].default_value
+        }
+        this.setState({paramValues: paramValues})
+    }
+
     render() {
-        const globalSingValueForm = {
-            
+        if (this.state.actionStatus == "loading"){
+            return(
+                <LoadingIndicator
+                    size="large"
+                    message="Loading parameters."
+                />
+            )
+        } else {
+            const globalSingleValueForm = (
+                <div>
+                    <h3>Gobally-defined (non-list) Parameters:</h3>
+                    <table className="w3-hoverable" style={ {borderSpacing: "0px 8px"} }>
+                        <colgroup>
+                            <col width="auto"/>
+                            <col width="100%"/>
+                        </colgroup>
+                        <tbody>
+                            {this.state.paramsByMode["global_single"].map( (p) => (
+                                    <tr 
+                                        key={p} 
+                                        className="w3-hover-dark-grey"
+                                        style={ 
+                                            this.state.paramValues[p][0] == "null" ? (
+                                                    {backgroundColor: "hsl(0, 0%, 20%)"}
+                                                ) : (
+                                                    {backgroundColor: "hsl(0, 0%, 10%)"}
+                                                )
+                                        }
+                                    >
+                                        <td style={ {padding: "8px"} }>
+                                            <ParamName
+                                                name={p}
+                                                nullAllowed={this.state.paramConfigs[p].null_allowed}
+                                                isNull={this.state.paramValues[p][0] == "null"}
+                                                toggleNull={this.toggleNull}
+                                            />
+                                        </td>
+                                        <td style={ {padding: "8px"} }>
+                                            <ParamField
+                                                name={p}
+                                                type={this.state.paramConfigs[p].type}
+                                                paramValue={this.state.paramValues[p][0]}
+                                                onChange={this.changeParamValue}
+                                                isNull={this.state.paramValues[p][0] == "null"}
+                                            />
+                                        </td>
+                                    </tr>
+                                ))
+                            }
+                        </tbody>
+                    </table>
+                </div>
+            )
+
+    
+    
+            return(
+                <div className="w3-container">
+                    <DisplayServerMessages messages={this.state.serverMessages} />
+                    {globalSingleValueForm}
+    
+                    <CreateJobButton
+                        jobId={this.props.jobId}
+                        sheet_format="xlsx"
+                        disabled={!this.state.form_passed_validation}
+                    />
+
+                    <h4>Configs:</h4>
+                    <p>
+                        {JSON.stringify(this.state.paramConfigs)}
+                    </p>
+                    <h4>Param Values:</h4>
+                    <p>
+                        {JSON.stringify(this.state.paramValues)}
+                    </p>
+                    <h4>Param by Mode:</h4>
+                    <p>
+                        {JSON.stringify(this.state.paramsByMode)}
+                    </p>
+                </div>
+            )
         }
 
-
-        return(
-            <div className="w3-container">
-                <DisplayServerMessages messages={this.state.serverMessages} />
-                <h4>Configs:</h4>
-                <p>
-                    {JSON.stringify(this.state.paramConfigs)}
-                </p>
-                <h4>Param Values:</h4>
-                <p>
-                    {JSON.stringify(this.state.paramValues)}
-                </p>
-                <h4>Param by Mode:</h4>
-                <p>
-                    {JSON.stringify(this.state.paramsByMode)}
-                </p>
-                <h3>Global Parameters</h3>
-                <span className="w3-text-green">Single Values:</span>
-                {/* {globalSingValueForm} */}
-                <span className="w3-text-green">Lists/arrays:</span>
-                <h3>Run-Specific Parameters</h3>
-                <span className="w3-text-green">Single Values:</span>
-                <span className="w3-text-green">Lists/arrays:</span>
-
-                <CreateJobButton
-                    jobId={this.props.jobId}
-                    sheet_format="xlsx"
-                    disabled={!this.state.form_passed_validation}
-                />
-            </div>
-        )
     }
 }
 
@@ -651,7 +760,7 @@ class JobTemplList extends React.Component {
     }
 }
 
-class CeateJobRoot extends React.Component {
+class CreateJobRoot extends React.Component {
     constructor(props) {
         super(props);
         this.buildContentOnSuccess = this.buildContentOnSuccess.bind(this);

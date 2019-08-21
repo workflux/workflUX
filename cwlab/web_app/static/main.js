@@ -31,7 +31,7 @@ const modules = {   // each entry corresponds to one wep app module,
     create_job:  {
         text: "Create New Job",
         icon: "fas  fa-plus",
-        content: (<CeateJobRoot />)
+        content: (<CreateJobRoot />)
     },
     jobs: {
         text:  "Job Execution & Results",
