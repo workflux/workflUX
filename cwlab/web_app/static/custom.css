@@ -91,6 +91,19 @@
     background-color: #575757 !important
 }
 
+.param-input {
+  padding: 2px 4px;
+  width: 100%;
+  background-color: hsl(0, 0%, 90%);
+  box-sizing: border-box;
+  border: 2px solid black;
+}
+
+.param-input:disabled {
+  color: hsl(0, 0%, 25%);
+  background-color: hsl(0, 0%, 50%);
+}
+
 /* toggle switch */
  /* The switch - the box around the slider */
  .switch {
