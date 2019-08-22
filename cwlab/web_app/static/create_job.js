@@ -86,7 +86,7 @@ class ParamField extends React.Component{
     constructor(props){
         super(props);
         // props.type
-        // props.nullItemAllowed
+        // props.itemNullAllowed
         // props.onChange
         // props.paramValue
         // props.name
@@ -125,8 +125,8 @@ class ParamField extends React.Component{
     }
 
     render(){
-        const isItemNull = this.props.paramValue == "itemNull"
-        const disableInput = isItemNull || this.props.isNull
+        const isItemNull = (this.props.paramValue == "itemNull" && this.props.itemNullAllowed)
+        const disableInput = isItemNull || this.props.isNull 
 
         const inputType = this.inputTypes.hasOwnProperty(this.props.type) ? (
             this.inputTypes[this.props.type]
@@ -166,7 +166,7 @@ class ParamField extends React.Component{
 
         return(
             <span style={ {witeSpace: "nowrap"} }>
-                {this.props.nullItemAllowed &&
+                {this.props.itemNullAllowed &&
                     <input
                         className="w3-check w3-green"
                         type="checkbox"
@@ -178,6 +178,82 @@ class ParamField extends React.Component{
                 }
                 {input_field}
             </span>
+        )
+    }
+}
+
+class ParamForm extends React.Component{
+    constructor(props){
+        super(props);
+        // props.paramValues
+        // props.paramsConfigs
+        // props.changeParamValue
+        // props.toggleNull
+
+        this.columnWidth = "250px"
+
+        this.checkIfNull = this.checkIfNull.bind(this);
+        this.fieldBackgroundColorClass = this.fieldBackgroundColorClass.bind(this);
+    }
+
+    checkIfNull(return_res){
+        let isNull = {}
+        Object.keys(this.props.paramValues).map( (p) => {
+            isNull[p] = this.props.paramValues[p] == "null" && this.props.paramConfigs[p].null_allowed
+        })
+        return isNull
+    }
+
+    fieldBackgroundColorClass(isNull){
+        return(
+            "w3-hover-dark-grey " + (isNull ? ("param-field-isnull") : ("param-field-notnull"))
+        )
+    }
+}
+
+
+class ParamFormGlobalSingle extends ParamForm{
+    render(){
+        const isNull = this.checkIfNull()
+
+        return(
+            <div>
+                <h3>Gobally-defined (non-list) Parameters:</h3>
+                <table className="w3-hoverable" style={ {borderSpacing: "0px 8px"} }>
+                    <colgroup>
+                        <col width="auto"/>
+                        <col width="100%"/>
+                    </colgroup>
+                    <tbody>
+                        {Object.keys(this.props.paramValues).map( (p) => (
+                                <tr 
+                                    key={p} 
+                                    className={this.fieldBackgroundColorClass(isNull[p])}
+                                >
+                                    <td style={ {padding: "8px"} }>
+                                        <ParamName
+                                            name={p}
+                                            nullAllowed={this.props.paramConfigs[p].null_allowed}
+                                            isNull={isNull[p]}
+                                            toggleNull={this.props.toggleNull}
+                                        />
+                                    </td>
+                                    <td style={ {padding: "8px"} }>
+                                        <ParamField
+                                            name={p}
+                                            type={this.props.paramConfigs[p].type}
+                                            paramValue={this.props.paramValues[p][0]}
+                                            onChange={this.props.changeParamValue}
+                                            isNull={isNull[p]}
+                                        />
+                                    </td>
+                                </tr>
+                            ))
+                        }
+                    </tbody>
+                </table>
+            </div>
+
         )
     }
 }
@@ -196,11 +272,8 @@ class JobParamFormHTML extends React.Component {
             form_passed_validation: false,
             serverMessages: [],
             paramConfigs: {},
-            paramValues: {},
-            paramsByMode: {}
+            paramValuesByMode: {}
         }
-
-        this.columnWidth = "250px"
 
         this.getParamValues = this.getParamValues.bind(this);
         this.changeParamValue = this.changeParamValue.bind(this);
@@ -227,11 +300,11 @@ class JobParamFormHTML extends React.Component {
                 route: routeGetParamValues,
                 onSuccess: (data, messages) => {
                     const paramNames = Object.keys(data.configs).filter((p) => data.configs[p].type != "helper")
-                    let paramsByMode = {
-                        global_single: [],
-                        global_array: [],
-                        run_single: [],
-                        run_array: []
+                    let paramValuesByMode = {
+                        global_single: {},
+                        global_array: {},
+                        run_single: {},
+                        run_array: {}
                     }
                     paramNames.map((p) =>{
                         let run_or_global = this.props.run_mode ? (
@@ -241,33 +314,32 @@ class JobParamFormHTML extends React.Component {
                             )
                         let single_or_array = data.configs[p].is_array ? ("array") : ("single")
                         let mode = run_or_global + "_" + single_or_array
-                        paramsByMode[mode].push(p)
+                        paramValuesByMode[mode][p] = data.param_values[p]
                     })
 
                     return({
                         paramConfigs: data.configs,
-                        paramValues: data.param_values,
-                        paramsByMode: paramsByMode
+                        paramValuesByMode: paramValuesByMode
                     })
                 }
             })
 
     }
 
-    changeParamValue(name, index, newValue){
-        let paramValues = this.state.paramValues
-        paramValues[name][index] = newValue
-        this.setState({paramValues: paramValues})
+    changeParamValue(mode, name, index, newValue){
+        let paramValuesByMode = this.state.paramValuesByMode
+        paramValuesByMode[mode][name][index] = newValue
+        this.setState({paramValuesByMode: paramValuesByMode})
     }
 
-    toggleNull(name, setNull){
-        let paramValues = this.state.paramValues
+    toggleNull(mode, name, setNull){
+        let paramValuesByMode = this.state.paramValuesByMode
         if (setNull){
-            paramValues[name] = ["null"]
+            paramValuesByMode[mode][name] = ["null"]
         } else {
-            paramValues[name] = this.state.paramConfigs[name].default_value
+            paramValuesByMode[mode][name] = this.state.paramConfigs[name].default_value
         }
-        this.setState({paramValues: paramValues})
+        this.setState({paramValuesByMode: paramValuesByMode})
     }
 
     render() {
@@ -279,117 +351,149 @@ class JobParamFormHTML extends React.Component {
                 />
             )
         } else {
-            const globalSingleValueForm = (
-                <div>
-                    <h3>Gobally-defined (non-list) Parameters:</h3>
-                    <table className="w3-hoverable" style={ {borderSpacing: "0px 8px"} }>
-                        <colgroup>
-                            <col width="auto"/>
-                            <col width="100%"/>
-                        </colgroup>
-                        <tbody>
-                            {this.state.paramsByMode["global_single"].map( (p) => (
-                                    <tr 
-                                        key={p} 
-                                        className="w3-hover-dark-grey"
-                                        style={ 
-                                            this.state.paramValues[p][0] == "null" ? (
-                                                    {backgroundColor: "hsl(0, 0%, 20%)"}
-                                                ) : (
-                                                    {backgroundColor: "hsl(0, 0%, 10%)"}
-                                                )
-                                        }
-                                    >
-                                        <td style={ {padding: "8px"} }>
-                                            <ParamName
-                                                name={p}
-                                                nullAllowed={this.state.paramConfigs[p].null_allowed}
-                                                isNull={this.state.paramValues[p][0] == "null"}
-                                                toggleNull={this.toggleNull}
-                                            />
-                                        </td>
-                                        <td style={ {padding: "8px"} }>
-                                            <ParamField
-                                                name={p}
-                                                type={this.state.paramConfigs[p].type}
-                                                paramValue={this.state.paramValues[p][0]}
-                                                onChange={this.changeParamValue}
-                                                isNull={this.state.paramValues[p][0] == "null"}
-                                            />
-                                        </td>
-                                    </tr>
-                                ))
-                            }
-                        </tbody>
-                    </table>
-                </div>
-            )
+            // const globalSingleValueForm = (
+            //     <div>
+            //         <h3>Gobally-defined (non-list) Parameters:</h3>
+            //         <table className="w3-hoverable" style={ {borderSpacing: "0px 8px"} }>
+            //             <colgroup>
+            //                 <col width="auto"/>
+            //                 <col width="100%"/>
+            //             </colgroup>
+            //             <tbody>
+            //                 {this.state.paramsByMode["global_single"].map( (p) => (
+            //                         <tr 
+            //                             key={p} 
+            //                             className="w3-hover-dark-grey"
+            //                             style={ 
+            //                                 this.state.paramValues[p][0] == "null" ? (
+            //                                         {backgroundColor: "hsl(0, 0%, 20%)"}
+            //                                     ) : (
+            //                                         {backgroundColor: "hsl(0, 0%, 10%)"}
+            //                                     )
+            //                             }
+            //                         >
+            //                             <td style={ {padding: "8px"} }>
+            //                                 <ParamName
+            //                                     name={p}
+            //                                     nullAllowed={this.state.paramConfigs[p].null_allowed}
+            //                                     isNull={this.state.paramValues[p][0] == "null"}
+            //                                     toggleNull={this.toggleNull}
+            //                                 />
+            //                             </td>
+            //                             <td style={ {padding: "8px"} }>
+            //                                 <ParamField
+            //                                     name={p}
+            //                                     type={this.state.paramConfigs[p].type}
+            //                                     paramValue={this.state.paramValues[p][0]}
+            //                                     onChange={this.changeParamValue}
+            //                                     isNull={this.state.paramValues[p][0] == "null"}
+            //                                 />
+            //                             </td>
+            //                         </tr>
+            //                     ))
+            //                 }
+            //             </tbody>
+            //         </table>
+            //     </div>
+            // )
 
-            const globalArrayForm = (
-                <div style={ {overflow:"auto"} }>
-                    <h3>Gobally-defined List Parameters:</h3>
-                    <table className="w3-hoverable" style={ {borderSpacing: "8px 0px"} }>
-                        <tr>
-                            {this.state.paramsByMode["global_array"].map( (p) => (
-                                    <td 
-                                        key={p} 
-                                        className="w3-hover-dark-grey w3-cell-top"
-                                        style={ 
-                                            Object.assign(
-                                                {padding: "8px", width: this.columnWidth},
-                                                this.state.paramValues[p][0] == "null" ? (
-                                                    {backgroundColor: "hsl(0, 0%, 20%)"}
-                                                ) : (
-                                                    {backgroundColor: "hsl(0, 0%, 10%)"}
-                                                )
-                                            )
-                                        }
-                                    >
-                                        <table style={ {width: this.columnWidth} }>
-                                            <tr>
-                                                <td>#</td>
-                                                <td>
-                                                    <ParamName
-                                                        name={p}
-                                                        nullAllowed={this.state.paramConfigs[p].null_allowed}
-                                                        isNull={this.state.paramValues[p][0] == "null"}
-                                                        toggleNull={this.toggleNull}
-                                                    />
-                                                </td>
-                                            </tr>
-                                            {[...Array(this.state.paramValues[p].length).keys()].map( (item) => (
-                                                <tr>
-                                                    <td>
-                                                        {item}
-                                                    </td>
-                                                    <td>
-                                                        <ParamField
-                                                            name={p}
-                                                            type={this.state.paramConfigs[p].type}
-                                                            paramValue={this.state.paramValues[p][item]}
-                                                            onChange={this.changeParamValue}
-                                                            isNull={this.state.paramValues[p][0] == "null"}
-                                                            item={item}
-                                                        />
-                                                    </td>
-                                                </tr>
-                                            ))}
-                                        </table>
-                                    </td>
-                                ))
-                            }
-                        </tr>
-                    </table>
-                </div>
-            )
+            // const globalArrayForm = (
+            //     <div style={ {overflow:"auto"} }>
+            //         <h3>Gobally-defined List Parameters:</h3>
+            //         <table className="w3-hoverable" style={ {borderSpacing: "8px 0px"} }>
+            //             <tr>
+            //                 {this.state.paramsByMode["global_array"].map( (p) => (
+            //                         <td 
+            //                             key={p} 
+            //                             className="w3-hover-dark-grey w3-cell-top"
+            //                             style={ 
+            //                                 Object.assign(
+            //                                     {padding: "8px", width: this.columnWidth},
+            //                                     this.state.paramValues[p][0] == "null" ? (
+            //                                         {backgroundColor: "hsl(0, 0%, 20%)"}
+            //                                     ) : (
+            //                                         {backgroundColor: "hsl(0, 0%, 10%)"}
+            //                                     )
+            //                                 )
+            //                             }
+            //                         >
+            //                             <table style={ {width: this.columnWidth} }>
+            //                                 <tr>
+            //                                     <td>#</td>
+            //                                     <td>
+            //                                         <ParamName
+            //                                             name={p}
+            //                                             nullAllowed={this.state.paramConfigs[p].null_allowed}
+            //                                             isNull={this.state.paramValues[p][0] == "null"}
+            //                                             toggleNull={this.toggleNull}
+            //                                         />
+            //                                     </td>
+            //                                 </tr>
+            //                                 {[...Array(this.state.paramValues[p].length).keys()].map( (item) => (
+            //                                     <tr>
+            //                                         <td>
+            //                                             {item}
+            //                                         </td>
+            //                                         <td>
+            //                                             <ParamField
+            //                                                 name={p}
+            //                                                 type={this.state.paramConfigs[p].type}
+            //                                                 paramValue={this.state.paramValues[p][item]}
+            //                                                 onChange={this.changeParamValue}
+            //                                                 isNull={this.state.paramValues[p][0] == "null"}
+            //                                                 item={item}
+            //                                             />
+            //                                         </td>
+            //                                     </tr>
+            //                                 ))}
+            //                             </table>
+            //                         </td>
+            //                     ))
+            //                 }
+            //             </tr>
+            //         </table>
+            //     </div>
+            // )
 
     
     
+            // return(
+            //     <div className="w3-container">
+            //         <DisplayServerMessages messages={this.state.serverMessages} />
+            //         {globalSingleValueForm}
+            //         {globalArrayForm}
+    
+            //         <CreateJobButton
+            //             jobId={this.props.jobId}
+            //             sheet_format="xlsx"
+            //             disabled={!this.state.form_passed_validation}
+            //         />
+
+            //         <h4>Configs:</h4>
+            //         <p>
+            //             {JSON.stringify(this.state.paramConfigs)}
+            //         </p>
+            //         <h4>Param Values:</h4>
+            //         <p>
+            //             {JSON.stringify(this.state.paramValues)}
+            //         </p>
+            //         <h4>Param by Mode:</h4>
+            //         <p>
+            //             {JSON.stringify(this.state.paramsByMode)}
+            //         </p>
+            //     </div>
+            // )
+
+            
             return(
                 <div className="w3-container">
                     <DisplayServerMessages messages={this.state.serverMessages} />
-                    {globalSingleValueForm}
-                    {globalArrayForm}
+                    <ParamFormGlobalSingle
+                        paramValues={this.state.paramValuesByMode["global_single"]}
+                        paramConfigs={this.state.paramConfigs}
+                        changeParamValue={(name, index, newValue) => this.changeParamValue("global_single", name, index, newValue)}
+                        toggleNull={(name, isNull) => this.toggleNull("global_single", name, isNull)}
+                    />
     
                     <CreateJobButton
                         jobId={this.props.jobId}
@@ -401,13 +505,9 @@ class JobParamFormHTML extends React.Component {
                     <p>
                         {JSON.stringify(this.state.paramConfigs)}
                     </p>
-                    <h4>Param Values:</h4>
+                    <h4>Param Values By Mode:</h4>
                     <p>
-                        {JSON.stringify(this.state.paramValues)}
-                    </p>
-                    <h4>Param by Mode:</h4>
-                    <p>
-                        {JSON.stringify(this.state.paramsByMode)}
+                        {JSON.stringify(this.state.paramValuesByMode)}
                     </p>
                 </div>
             )

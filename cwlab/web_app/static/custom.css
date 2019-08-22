@@ -91,6 +91,15 @@
     background-color: #575757 !important
 }
 
+/* Param Forms */
+.param-field-isnull {
+  background-color: hsl(0, 0%, 20%);
+}
+
+.param-field-notnull {
+  background-color: hsl(0, 0%, 10%);
+}
+
 .param-input {
   padding: 2px 4px;
   width: 100%;
