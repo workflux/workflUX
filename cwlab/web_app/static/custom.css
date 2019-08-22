@@ -100,9 +100,19 @@
   background-color: hsl(0, 0%, 10%);
 }
 
+.inline-block {
+  display: inline-block;
+}
+
+.param-null-checkbox {
+  display: inline-block;
+  width: 10px
+}
+
 .param-input {
+  display: inline-block;
   padding: 2px 4px;
-  width: 100%;
+  width: calc(100% - 16px);
   background-color: hsl(0, 0%, 90%);
   box-sizing: border-box;
   border: 2px solid black;

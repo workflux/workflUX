@@ -63,11 +63,11 @@ class ParamName extends React.Component{
 
     render(){
         return(
-            <span style={ {witeSpace: "nowrap"} }>
+            <span>
                 {this.props.nullAllowed &&
                     <span>
                         <input
-                            className="w3-check w3-green w3-text-green"
+                            className="w3-check w3-green w3-text-green inline-block"
                             type="checkbox"
                             name={"toggle_null_" + this.props.name}
                             value={"toggle_null_" + this.props.name}
@@ -76,7 +76,7 @@ class ParamName extends React.Component{
                         /> &nbsp;
                     </span>
                 }
-                <span className="w3-text-green">{this.props.name}:</span>
+                <span className="w3-text-green inline-block">{this.props.name}:</span>
             </span>
         )
     }
@@ -107,7 +107,7 @@ class ParamField extends React.Component{
         }
         
         this.handleChange = this.handleChange.bind(this);
-        this.toggleEnabled = this.toggleEnabled.bind(this);
+        this.toggleItemNull = this.toggleItemNull.bind(this);
     }
 
     handleChange(event){
@@ -115,13 +115,13 @@ class ParamField extends React.Component{
         this.props.onChange(this.props.name, this.props.index ? (this.props.index) : (0), paramValue)
     }
 
-    toggleEnabled(event){
-        const paramValue = this.disabled ? (
+    toggleItemNull(event){
+        const paramValue = this.props.paramValue == "itemNull" ? (
             ""
         ) : (
-            "null"
+            "itemNull"
         )
-        this.props.onChange(this.props.key, )
+        this.props.onChange(this.props.name, this.props.index ? (this.props.index) : (0), paramValue)
     }
 
     render(){
@@ -165,15 +165,15 @@ class ParamField extends React.Component{
         }
 
         return(
-            <span style={ {witeSpace: "nowrap"} }>
+            <span>
                 {this.props.itemNullAllowed &&
                     <input
-                        className="w3-check w3-green"
+                        className="w3-check w3-green param-null-checkbox"
                         type="checkbox"
                         name={"is_null_item_" + this.key}
                         value={"is_null_item_" + this.key}
                         checked={!isItemNull}
-                        // onChange={this.toggleEnabled}
+                        onChange={this.toggleItemNull}
                     />
                 }
                 {input_field}
@@ -254,6 +254,62 @@ class ParamFormGlobalSingle extends ParamForm{
                 </table>
             </div>
 
+        )
+    }
+}
+
+class ParamFormGlobalList extends ParamForm{
+    render(){
+        const isNull = this.checkIfNull()
+
+        return(
+                <div style={ {overflow:"auto"} }>
+                    <h3>Gobally-defined List Parameters:</h3>
+                    <table className="w3-hoverable" style={ {borderSpacing: "8px 0px"} }>
+                        <tr>
+                            {Object.keys(this.props.paramValues).map( (p) => (
+                                    <td 
+                                        key={p} 
+                                        className={this.fieldBackgroundColorClass(isNull[p]) + " w3-cell-top"}
+                                        style={ {padding: "8px", width: this.columnWidth} }
+                                    >
+                                        <table style={ {width: this.columnWidth} }>
+                                            <tr>
+                                                <td>#</td>
+                                                <td>
+                                                    <ParamName
+                                                        name={p}
+                                                        nullAllowed={this.props.paramConfigs[p].null_allowed}
+                                                        isNull={isNull[p]}
+                                                        toggleNull={this.props.toggleNull}
+                                                    />
+                                                </td>
+                                            </tr>
+                                            {[...Array(this.props.paramValues[p].length).keys()].map( (index) => (
+                                                <tr>
+                                                    <td>
+                                                        {index}
+                                                    </td>
+                                                    <td>
+                                                        <ParamField
+                                                            name={p}
+                                                            type={this.props.paramConfigs[p].type}
+                                                            paramValue={this.props.paramValues[p][index]}
+                                                            onChange={this.props.changeParamValue}
+                                                            isNull={isNull[p]}
+                                                            itemNullAllowed={this.props.paramConfigs[p].null_items_allowed}
+                                                            index={index}
+                                                        />
+                                                    </td>
+                                                </tr>
+                                            ))}
+                                        </table>
+                                    </td>
+                                ))
+                            }
+                        </tr>
+                    </table>
+                </div>
         )
     }
 }
@@ -493,6 +549,12 @@ class JobParamFormHTML extends React.Component {
                         paramConfigs={this.state.paramConfigs}
                         changeParamValue={(name, index, newValue) => this.changeParamValue("global_single", name, index, newValue)}
                         toggleNull={(name, isNull) => this.toggleNull("global_single", name, isNull)}
+                    />
+                    <ParamFormGlobalList
+                        paramValues={this.state.paramValuesByMode["global_array"]}
+                        paramConfigs={this.state.paramConfigs}
+                        changeParamValue={(name, index, newValue) => this.changeParamValue("global_array", name, index, newValue)}
+                        toggleNull={(name, isNull) => this.toggleNull("global_array", name, isNull)}
                     />
     
                     <CreateJobButton
