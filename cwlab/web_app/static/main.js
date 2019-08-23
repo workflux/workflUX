@@ -59,15 +59,16 @@ class TopBar extends React.Component { // controlled by Root Component
     render() {
         return (
             <div 
-                className="w3-card w3-bar w3-metro-darken"
-                style={ {position: "fixed", top: "0", height: "39px", zIndex: "999"} }
+                className="w3-card w3-metro-darken"
+                style={ {width:"100%"} }
 
             >
                 {
                     Object.keys(modules).map( (key) => (
                             <a
                                 className={this.props.whichFocus == key ?
-                                    "w3-bar-item w3-button w3-theme-d3" : "w3-bar-item w3-button"}
+                                    "w3-button w3-theme-d3" : "w3-button"}
+                                style={ {display: "inline-block"} }
                                 key={key} 
                                 onClick={this.handleClick.bind(this, key)}>
                                 {modules[key].icon != "" &&
@@ -86,7 +87,7 @@ class TopBar extends React.Component { // controlled by Root Component
 class MainContent extends React.Component {
     render() {
         return (
-            <div style={ {paddingTop: "39px"} }>
+            <div>
                 {this.props.children}
             </div>
         );
