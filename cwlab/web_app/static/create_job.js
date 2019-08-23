@@ -275,7 +275,7 @@ class ParamFormGlobalList extends ParamForm{
 
         return(
                 <div style={ {overflow:"auto"} }>
-                    <h3>Run-specific (Non-list) Parameters:</h3>
+                    <h3>Gobally-defined List Parameters:</h3>
                     <table style={ {borderSpacing: "8px 0px"} }><tbody>
                         <tr>
                             {Object.keys(this.props.paramValues).map( (p) => (
