@@ -409,67 +409,6 @@ class ParamFormRunSingle extends ParamForm{
     }
 }
 
-
-// class ParamFormRunSingle extends ParamForm{
-//     render(){
-//         const isNull = this.checkIfNull()
-
-//         return(
-//                 <div style={ {overflow:"auto"} }>
-//                     <h3>Run-specific (Non-list) Parameters:</h3>
-//                     <table className="param-form-run-single" style={ {borderSpacing: "8px 0px"} }>
-//                         <tr>
-//                             <td 
-//                                 className="param-field-notnull"
-//                                 style={ {padding: "8px"} }
-//                             >
-//                                 Run Ids
-//                             </td>
-//                             {Object.keys(this.props.paramValues).map( (p) => (
-//                                 <td 
-//                                     key={p} 
-//                                     className="param-col-hover param-field-notnull"
-//                                     style={ {padding: "8px", minWidth: this.columnWidth} }
-//                                 >
-//                                     <ParamName
-//                                         name={p}
-//                                         nullAllowed={this.props.paramConfigs[p].null_allowed}
-//                                         isNull={isNull[p]}
-//                                         toggleNull={this.props.toggleNull}
-//                                     />
-//                                 </td>
-//                             ))}
-//                         </tr>
-//                         {[...Array(this.props.runIds.length).keys()].map( (index) => (
-//                             <tr>
-//                                 <td className="param-field-notnull">
-//                                     {this.props.runIds[index]}
-//                                 </td>
-//                                 {Object.keys(this.props.paramValues).map( (p) => (
-//                                     <td 
-//                                         key={p} 
-//                                         className="param-col-hover param-field-notnull"
-//                                         style={ {padding: "8px", minWidth: this.columnWidth} }
-//                                     >
-//                                         <ParamField
-//                                             name={p}
-//                                             type={this.props.paramConfigs[p].type}
-//                                             paramValue={this.props.paramValues[p][index]}
-//                                             onChange={this.props.changeParamValue}
-//                                             isNull={isNull[p]}
-//                                             itemNullAllowed={this.props.paramConfigs[p].null_items_allowed}
-//                                             index={index}
-//                                         />
-//                                     </td>
-//                                 ))}
-//                             </tr>
-//                         ))}
-//                     </table>
-//                 </div>
-//         )
-//     }
-// }
-
 class JobParamFormHTML extends React.Component {
     constructor(props){
         super(props);
