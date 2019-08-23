@@ -104,6 +104,40 @@ class IneditableValueField extends React.Component {
     }
 }
 
+class Checkbox extends React.Component{
+    constructor(props){
+        super(props);
+        // props.name
+        // props.value
+        // props.onChange function executed on change
+        //  takes two arguments: (1) value, (2) whether set or not
+        // props.checked
+        // props.disabled
+        // props.size
+        this.handleChange = this.handleChange.bind(this)
+    }
+
+    handleChange(event){
+        const value=event.currentTarget.value
+        const is_set=event.target.checked
+        this.props.onChange(value, is_set)
+    }
+
+    render(){
+        return(
+            <input
+                className="w3-check"
+                style={ {height: this.props.size ? (this.props.size) : ("20px")} }
+                type="checkbox"
+                name={this.props.name}
+                value={this.props.name}
+                checked={!this.props.isNull}
+                onChange={this.handleToggleNull}
+            />
+        )
+    }
+}
+
 class BooleanSlider extends React.Component {
     constructor(props) {
         super(props);
