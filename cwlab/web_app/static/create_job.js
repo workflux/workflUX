@@ -193,11 +193,9 @@ class ParamForm extends React.Component{
         // props.runIds
         // props.changeParamValue
         // props.toggleNull
-
-        if (this.props.rundIds){
-            this.state = {
-                runIdFocussed: this.props.rundIds[0]
-            }
+        
+        this.state = {
+            whichRunIdFocus: null
         }
 
         this.columnWidth = "250px"
@@ -206,6 +204,7 @@ class ParamForm extends React.Component{
 
         this.checkIfNull = this.checkIfNull.bind(this);
         this.fieldBackgroundColorClass = this.fieldBackgroundColorClass.bind(this);
+        this.changeRunIdFocus = this.changeRunIdFocus.bind(this);
     }
 
     checkIfNull(return_res){
@@ -220,6 +219,10 @@ class ParamForm extends React.Component{
         return(
             isNull ? ("param-field-isnull") : ("param-field-notnull")
         )
+    }
+
+    changeRunIdFocus(newFocus){
+        this.setState({whichRunIdFocus: newFocus})
     }
 }
 
@@ -417,12 +420,22 @@ class ParamFormRunSingle extends ParamForm{
 
 class ParamFormRunList extends ParamForm{
     render(){
+        const whichRunIdFocus = this.state.whichRunIdFocus ? (
+                this.state.whichRunIdFocus
+            ) : (
+                this.props.runIds[0]
+            )
         return(
                 <div style={ {overflow:"auto"} }>
                     <h3>Run-specific (Non-list) Parameters:</h3>
-                    <div className="">
+                    <TabPanel
+                        tabs={this.props.runIds}
+                        whichFocus={whichRunIdFocus}
+                        changeFocus={this.changeRunIdFocus}
+                    >
+                        Test
+                    </TabPanel>
 
-                    </div>
                     {/* <table style={ {borderSpacing: "8px 0px"} }><tbody>
                         <tr>
                             {Object.keys(this.props.paramValues).map( (p) => (
@@ -611,7 +624,8 @@ class JobParamFormHTML extends React.Component {
                     message="Loading parameters."
                 />
             )
-        } else {            
+        } else {   
+            console.log(this.props.run_names)         
             return(
                 <div className="w3-container">
                     <DisplayServerMessages messages={this.state.serverMessages} />
@@ -638,6 +652,15 @@ class JobParamFormHTML extends React.Component {
                             paramConfigs={this.state.paramConfigs}
                             runIds={this.props.run_names}
                             changeParamValue={(name, index, newValue) => this.changeParamValue("run_single", name, index, newValue)}
+                            toggleNull={this.toggleNull}
+                        />
+                    }
+                    {this.state.modeExists["run_array"] && 
+                        <ParamFormRunList
+                            paramValues={this.state.paramValuesByMode["run_array"]}
+                            paramConfigs={this.state.paramConfigs}
+                            runIds={this.props.run_names}
+                            changeParamValue={(name, index, newValue) => this.changeParamValue("run_array", name, index, newValue)}
                             toggleNull={this.toggleNull}
                         />
                     }

@@ -104,6 +104,51 @@ class IneditableValueField extends React.Component {
     }
 }
 
+class TabPanel extends React.Component { // controlled by Root Component
+    constructor(props){
+        super(props);
+        // props.tabs
+        // props.changeFocus
+        // props.whichFocus
+        // props.children
+        this.handleClick = this.handleClick.bind(this);
+    }
+
+    handleClick(tab) {
+        this.props.changeFocus(tab)
+    }
+    
+    render() {
+        return (
+            <div>
+                <div 
+                    className="w3-card w3-metro-darken"
+                    style={ {width:"100%"} }
+                >
+                    {
+                        this.props.tabs.map( (tab) => (
+                                <a
+                                    className={this.props.whichFocus == tab ?
+                                        "w3-button w3-theme-d4" : "w3-button"}
+                                    style={ {display: "inline-block"} }
+                                    key={tab} 
+                                    onClick={this.handleClick.bind(this, tab)}>
+                                    {tab}
+                                </a>
+                            )
+                        )
+                    }
+                </div>
+                <div 
+                    className="w3-container w3-theme-d4"
+                >
+                    {this.props.children}
+                </div>
+            </div>
+        );
+    }
+}
+
 class Checkbox extends React.Component{
     constructor(props){
         super(props);
