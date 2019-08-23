@@ -190,9 +190,15 @@ class ParamForm extends React.Component{
         // props.paramValues
         // props.paramsConfigs
         // props.paramsHelperValues only for run array
-        // props.runIds only for run single
+        // props.runIds
         // props.changeParamValue
         // props.toggleNull
+
+        if (this.props.rundIds){
+            this.state = {
+                runIdFocussed: this.props.rundIds[0]
+            }
+        }
 
         this.columnWidth = "250px"
         this.rowHeight = "25px"
@@ -409,6 +415,70 @@ class ParamFormRunSingle extends ParamForm{
     }
 }
 
+class ParamFormRunList extends ParamForm{
+    render(){
+        return(
+                <div style={ {overflow:"auto"} }>
+                    <h3>Run-specific (Non-list) Parameters:</h3>
+                    <div className="">
+
+                    </div>
+                    {/* <table style={ {borderSpacing: "8px 0px"} }><tbody>
+                        <tr>
+                            {Object.keys(this.props.paramValues).map( (p) => (
+                                <td 
+                                    key={p} 
+                                    className={this.fieldBackgroundColorClass(false) + " w3-cell-top"}
+                                    style={ {padding: "8px", minWidth: this.columnWidth} }
+                                >
+                                    <table><tbody>
+                                        <tr>
+                                            <td>Run ID</td>
+                                            <td style={ {minWidth: this.columnWidth} }>
+                                                <ParamName
+                                                    name={p}
+                                                />
+                                            </td>
+                                        </tr>
+                                        {[...Array(this.props.runIds.length).keys()].map( (index) => (
+                                            <tr key={index}>
+                                                <td>
+                                                    {this.props.runIds[index]}
+                                                </td>
+                                                <td style={ {minWidth: this.columnWidth} }>
+                                                    {this.props.paramConfigs[p].null_allowed &&
+                                                        <ParamNullCheckbox
+                                                            name={p}
+                                                            isNull={this.props.paramValues[p][index]=="null"}
+                                                            refersTo="item"
+                                                            nullValue="null"
+                                                            indexOrRunId={index}
+                                                            mode="run_single"
+                                                            toggleNull={this.props.toggleNull}
+                                                            size="10px"
+                                                        />
+                                                    }
+                                                    <ParamField
+                                                        name={p}
+                                                        type={this.props.paramConfigs[p].type}
+                                                        paramValue={this.props.paramValues[p][index]}
+                                                        onChange={this.props.changeParamValue}
+                                                        isNull={this.props.paramValues[p][index]=="null"}
+                                                        itemNullAllowed={this.props.paramConfigs[p].null_items_allowed}
+                                                        index={index}
+                                                    />
+                                                </td>
+                                            </tr>
+                                        ))}
+                                    </tbody></table>
+                                </td>
+                            ))}
+                        </tr>
+                    </tbody></table> */}
+                </div>
+        )
+    }
+}
 class JobParamFormHTML extends React.Component {
     constructor(props){
         super(props);
