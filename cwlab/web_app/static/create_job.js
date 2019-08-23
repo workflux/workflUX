@@ -402,7 +402,7 @@ class ParamFormRunSingle extends ParamForm{
                                                         paramValue={this.props.paramValues[p][index]}
                                                         onChange={this.props.changeParamValue}
                                                         isNull={this.props.paramValues[p][index]=="null"}
-                                                        itemNullAllowed={this.props.paramConfigs[p].null_items_allowed}
+                                                        itemNullAllowed={this.props.paramConfigs[p].null_allowed}
                                                         index={index}
                                                     />
                                                 </td>
@@ -425,69 +425,85 @@ class ParamFormRunList extends ParamForm{
             ) : (
                 this.props.runIds[0]
             )
+
+        let indexByRunId = {}
+        Object.keys(this.props.paramValues).forEach( (p) => {
+            indexByRunId[p] = []
+            let runIdHelper = this.props.paramHelperValues[this.props.paramConfigs[p].split_into_runs_by[0]]
+            this.props.paramValues[p].forEach( (value, index) => {
+                if(runIdHelper[index] == whichRunIdFocus){
+                    indexByRunId[p].push(index)
+                }
+            })
+        })
+
         return(
                 <div style={ {overflow:"auto"} }>
                     <h3>Run-specific (Non-list) Parameters:</h3>
                     <TabPanel
+                        title="Run IDs:"
                         tabs={this.props.runIds}
                         whichFocus={whichRunIdFocus}
                         changeFocus={this.changeRunIdFocus}
                     >
-                        Test
-                    </TabPanel>
-
-                    {/* <table style={ {borderSpacing: "8px 0px"} }><tbody>
-                        <tr>
-                            {Object.keys(this.props.paramValues).map( (p) => (
-                                <td 
-                                    key={p} 
-                                    className={this.fieldBackgroundColorClass(false) + " w3-cell-top"}
-                                    style={ {padding: "8px", minWidth: this.columnWidth} }
-                                >
-                                    <table><tbody>
-                                        <tr>
-                                            <td>Run ID</td>
-                                            <td style={ {minWidth: this.columnWidth} }>
-                                                <ParamName
-                                                    name={p}
-                                                />
-                                            </td>
-                                        </tr>
-                                        {[...Array(this.props.runIds.length).keys()].map( (index) => (
-                                            <tr key={index}>
-                                                <td>
-                                                    {this.props.runIds[index]}
-                                                </td>
+                        <table style={ {borderSpacing: "8px 0px"} }><tbody>
+                            <tr>
+                                {Object.keys(this.props.paramValues).map( (p) => (
+                                    <td 
+                                        key={p} 
+                                        className={this.fieldBackgroundColorClass(false) + " w3-cell-top"}
+                                        style={ {padding: "8px", minWidth: this.columnWidth} }
+                                    >
+                                        <table><tbody>
+                                            <tr>
+                                                <td>#</td>
                                                 <td style={ {minWidth: this.columnWidth} }>
-                                                    {this.props.paramConfigs[p].null_allowed &&
-                                                        <ParamNullCheckbox
-                                                            name={p}
-                                                            isNull={this.props.paramValues[p][index]=="null"}
-                                                            refersTo="item"
-                                                            nullValue="null"
-                                                            indexOrRunId={index}
-                                                            mode="run_single"
-                                                            toggleNull={this.props.toggleNull}
-                                                            size="10px"
-                                                        />
-                                                    }
-                                                    <ParamField
+                                                    <ParamName
                                                         name={p}
-                                                        type={this.props.paramConfigs[p].type}
-                                                        paramValue={this.props.paramValues[p][index]}
-                                                        onChange={this.props.changeParamValue}
-                                                        isNull={this.props.paramValues[p][index]=="null"}
-                                                        itemNullAllowed={this.props.paramConfigs[p].null_items_allowed}
-                                                        index={index}
                                                     />
                                                 </td>
                                             </tr>
-                                        ))}
-                                    </tbody></table>
-                                </td>
-                            ))}
-                        </tr>
-                    </tbody></table> */}
+                                            {[...Array(indexByRunId[p].length).keys()].map( (index) => (
+                                                <tr key={index}>
+                                                    <td>
+                                                        {index}
+                                                    </td>
+                                                    <td style={ {minWidth: this.columnWidth} }>
+                                                        {this.props.paramConfigs[p].null_items_allowed &&
+                                                            <ParamNullCheckbox
+                                                                name={p}
+                                                                isNull={this.props.paramValues[p][
+                                                                    indexByRunId[p][index]
+                                                                ]=="itemNull"}
+                                                                refersTo="item"
+                                                                nullValue="itemNull"
+                                                                indexOrRunId={indexByRunId[p][index]}
+                                                                mode="run_array"
+                                                                toggleNull={this.props.toggleNull}
+                                                                size="10px"
+                                                            />
+                                                        }
+                                                        <ParamField
+                                                            name={p}
+                                                            type={this.props.paramConfigs[p].type}
+                                                            paramValue={this.props.paramValues[p][
+                                                                indexByRunId[p][index]
+                                                            ]}
+                                                            onChange={this.props.changeParamValue}
+                                                            isNull={this.props.paramValues[p][
+                                                                indexByRunId[p][index]
+                                                            ]=="itemNull"}
+                                                            itemNullAllowed={this.props.paramConfigs[p].null_items_allowed}
+                                                        />
+                                                    </td>
+                                                </tr>
+                                            ))}
+                                        </tbody></table>
+                                    </td>
+                                ))}
+                            </tr>
+                        </tbody></table>
+                    </TabPanel>
                 </div>
         )
     }
@@ -624,8 +640,7 @@ class JobParamFormHTML extends React.Component {
                     message="Loading parameters."
                 />
             )
-        } else {   
-            console.log(this.props.run_names)         
+        } else {          
             return(
                 <div className="w3-container">
                     <DisplayServerMessages messages={this.state.serverMessages} />
@@ -659,6 +674,7 @@ class JobParamFormHTML extends React.Component {
                         <ParamFormRunList
                             paramValues={this.state.paramValuesByMode["run_array"]}
                             paramConfigs={this.state.paramConfigs}
+                            paramHelperValues={this.state.paramHelperValues}
                             runIds={this.props.run_names}
                             changeParamValue={(name, index, newValue) => this.changeParamValue("run_array", name, index, newValue)}
                             toggleNull={this.toggleNull}

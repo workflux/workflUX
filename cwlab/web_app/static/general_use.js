@@ -107,6 +107,7 @@ class IneditableValueField extends React.Component {
 class TabPanel extends React.Component { // controlled by Root Component
     constructor(props){
         super(props);
+        //props.title
         // props.tabs
         // props.changeFocus
         // props.whichFocus
@@ -125,6 +126,12 @@ class TabPanel extends React.Component { // controlled by Root Component
                     className="w3-card w3-metro-darken"
                     style={ {width:"100%"} }
                 >
+                    <div 
+                        clasName="w3-padding-small"
+                        style={ {display: "inline-block"} }
+                    >
+                        {this.props.title}
+                    </div>
                     {
                         this.props.tabs.map( (tab) => (
                                 <a
@@ -140,7 +147,7 @@ class TabPanel extends React.Component { // controlled by Root Component
                     }
                 </div>
                 <div 
-                    className="w3-container w3-theme-d4"
+                    className="w3-container w3-padding w3-theme-d4"
                 >
                     {this.props.children}
                 </div>
