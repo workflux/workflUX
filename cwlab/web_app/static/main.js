@@ -60,8 +60,7 @@ class TopBar extends React.Component { // controlled by Root Component
         return (
             <div 
                 className="w3-card w3-metro-darken"
-                style={ {width:"100%"} }
-
+                style={ this.props.fixed ? ({position: "fixed", top: "0", width:"100%"}):({width:"100%"})}
             >
                 {
                     Object.keys(modules).map( (key) => (
@@ -109,6 +108,7 @@ class Root extends React.Component {
         return (
             <div className="w3-theme-d3 w3-medium">
                 <TopBar handleModuleChange={this.changeModule} whichFocus={this.state.module} />
+                <TopBar handleModuleChange={this.changeModule} whichFocus={this.state.module} fixed={true}/>
                 <MainContent> {modules[this.state.module].content} </MainContent>
             </div>
         );
