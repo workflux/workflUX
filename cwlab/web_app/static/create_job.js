@@ -577,6 +577,14 @@ class ParamFormRunList extends ParamForm{
                                                 </tr>
                                             ))}
                                         </tbody></table>
+                                        <ParamAddOrRemove
+                                            name={p}
+                                            mode="run_array"
+                                            runId={whichRunIdFocus}
+                                            handleAddOrRemove={this.props.addOrRemoveItem}
+                                            disabled={isNull[p]}
+                                            disabledRemove={indexByRunId[p].length <= 1}
+                                        />
                                     </td>
                                 ))}
                             </tr>
@@ -736,16 +744,19 @@ class JobParamFormHTML extends React.Component {
         let paramValuesByMode = this.state.paramValuesByMode
         if (runId){
             let paramHelperValues = this.state.paramHelperValues
+            const runIdParamName = this.state.paramConfigs[name].split_into_runs_by[0]
             const dissectParamValues = this.dissectParamValuesByRunId(mode, name, runId)
+            let newParamValues
+            let newParamHelperValues
             if(add){
-                const newParamValues = dissectParamValues.match.values
+                newParamValues = dissectParamValues.match.values
                     .concat([this.state.paramConfigs[name].default_value[0]])
-                const newParamHelperValues = dissectParamValues.match.indexes
+                newParamHelperValues = dissectParamValues.match.indexes
                     .concat([runId])
             } 
             else {
-                const newParamValues = dissectParamValues.match.values.slice(0,-1)
-                const newParamHelperValues = dissectParamValues.match.indexes.slice(0,-1)
+                newParamValues = dissectParamValues.match.values.slice(0,-1)
+                newParamHelperValues = dissectParamValues.match.indexes.slice(0,-1)
             }
             paramValuesByMode[mode][name] = dissectParamValues.before.values
                 .concat(newParamValues).concat(dissectParamValues.after.values)
@@ -815,6 +826,7 @@ class JobParamFormHTML extends React.Component {
                             runIds={this.props.run_names}
                             changeParamValue={(name, index, newValue) => this.changeParamValue("run_array", name, index, newValue)}
                             toggleNull={this.toggleNull}
+                            addOrRemoveItem={this.addOrRemoveItem}
                         />
                     }
     
