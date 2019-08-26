@@ -184,6 +184,51 @@ class ParamNullCheckbox extends React.Component{
     }
 }
 
+class ParamAddOrRemove extends React.Component{
+    constructor(props){
+        super(props);
+        // props.mode
+        // props.name
+        // props.runId only for run array form
+        // props.handleAddOrRemove
+        this.handleAddOrRemove = this.handleAddOrRemove.bind(this);
+    }
+
+    handleAddOrRemove(event){
+        this.props.handleAddOrRemove(
+            event.currentTarget.value == "add", 
+            this.props.mode, 
+            this.props.name,
+            this.props.runId ? (this.props.runId) : (null)
+        )
+    }
+
+    render(){
+        return(
+            <div className="w3-container w3-cell-row">
+                <button 
+                    className="w3-button w3-cell w3-right-align"
+                    name={"add_" + this.props.name}
+                    value="add"
+                    onChange={this.handleAddOrRemove}
+                >
+                    add item &nbsp;
+                    <i className="fas fa-plus"/>
+                </button>
+                <button 
+                    className="w3-button w3-cell w3-left-align"
+                    name={"remove_" + this.props.name}
+                    value="remove"
+                    onChange={this.handleAddOrRemove}
+                >
+                    <i className="fas fa-minus"/>
+                    &nbsp; remove item
+                </button>
+            </div>
+        )
+    }
+}
+
 class ParamForm extends React.Component{
     constructor(props){
         super(props);
