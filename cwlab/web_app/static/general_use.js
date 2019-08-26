@@ -127,7 +127,7 @@ class TabPanel extends React.Component { // controlled by Root Component
                     style={ {width:"100%"} }
                 >
                     <div 
-                        clasName="w3-padding-small"
+                        className="w3-padding-small"
                         style={ {display: "inline-block"} }
                     >
                         {this.props.title}
