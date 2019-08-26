@@ -610,6 +610,44 @@ class JobParamFormHTML extends React.Component {
         this.setState({paramValuesByMode: paramValuesByMode})
     }
 
+    dissectParamValuesByRunId(mode, name, runID){
+        const runIdParamName = this.state.paramConfigs[name].split_into_runs_by[0]
+        const runIdIndexes = this.state.paramHelperValues[runIdParamName]
+        let dissectedParamValues = {
+            before: {
+                indexes: [],
+                values: []
+            },
+            match: {
+                indexes: [],
+                values: []
+            },
+            after: {
+                indexes: [],
+                values: []
+            },
+        }
+        const paramValues = this.state.paramValuesByMode[mode][name]
+        let before=true
+        for (let r=0; r < runIdIndexes.length; r++){
+            if(runIdIndexes[r] == runID){
+                before=false
+                dissectedParamValues.match.indexes.push(runIdIndexes[r])
+                dissectedParamValues.match.values.push(paramValues[r])
+            }
+            else if(before){
+                dissectedParamValues.before.indexes.push(runIdIndexes[r])
+                dissectedParamValues.before.values.push(paramValues[r])
+            }
+            else {
+                dissectedParamValues.after.indexes.push(runIdIndexes[r])
+                dissectedParamValues.after.values.push(paramValues[r])
+            }
+        }
+
+        return(dissectedParamValues)
+    }
+
     toggleNull(mode, name, setNull, nullValue, refersTo, indexOrRunId){
         let paramValuesByMode = this.state.paramValuesByMode
         let paramHelperValues = this.state.paramHelperValues
@@ -620,31 +658,38 @@ class JobParamFormHTML extends React.Component {
             paramValuesByMode[mode][name][indexOrRunId] = setNull ? (nullValue) : (this.state.paramConfigs[name].default_value[0])
         } 
         else if (refersTo == "runId"){
+            const dissectParamValues = this.dissectParamValuesByRunId(mode, name, indexOrRunId)
             const runIdParamName = this.state.paramConfigs[name].split_into_runs_by[0]
-            const runIdIndexes = this.state.paramHelperValues[runIdParamName]
-            let runIdIndexesBefore = []
-            let runIDIndexesAfter = []
-            const paramValues = this.state.paramValuesByMode[mode][name]
-            let paramValuesBefore = []
-            let paramValuesAfter = []
-            let before=true
-            for (let r=0; r < runIdIndexes.length; r++){
-                if(runIdIndexes[r] == indexOrRunId){
-                    before=false
-                }
-                else if(before){
-                    runIdIndexesBefore.push(runIdIndexes[r])
-                    paramValuesBefore.push(paramValues[r])
-                }
-                else {
-                    runIDIndexesAfter.push(runIdIndexes[r])
-                    paramValuesAfter.push(paramValues[r])
-                }
-            }
             let newParamValues = setNull ? ([nullValue]) : (this.state.paramConfigs[name].default_value)
-            paramValuesByMode[mode][name] = paramValuesBefore.concat(newParamValues).concat(paramValuesAfter)
-            paramHelperValues[runIdParamName] = runIdIndexesBefore.concat([indexOrRunId]).concat(runIDIndexesAfter)
+            paramValuesByMode[mode][name] = dissectParamValues.before.values
+                .concat(newParamValues).concat(dissectParamValues.after.values)
+            paramHelperValues[runIdParamName] = dissectParamValues.before.indexes.
+                concat([indexOrRunId]).concat(dissectParamValues.after.indexes)
         }
+
+        this.setState({
+            paramValuesByMode: paramValuesByMode,
+            paramHelperValues: paramHelperValues
+        })
+    }
+
+    addOrRemoveItem(add, mode, name, runId){
+        let paramValuesByMode = this.state.paramValuesByMode
+        let paramHelperValues = this.state.paramHelperValues
+        const dissectParamValues = this.dissectParamValuesByRunId(mode, name, runId)
+        if(add){
+            const newParamValues = dissectParamValues.match.values
+                .concat([this.state.paramConfigs[name].default_value[0]])
+            const newParamHelperValues = dissectParamValues.match.indexes
+                .concat([runId])
+        } else {
+            const newParamValues = dissectParamValues.match.values.slice(0,-1)
+            const newParamHelperValues = dissectParamValues.match.indexes.slice(0,-1)
+        }
+        paramValuesByMode[mode][name] = dissectParamValues.before.values
+            .concat(newParamValues).concat(dissectParamValues.after.values)
+        paramHelperValues[runIdParamName] = dissectParamValues.before.indexes.
+            concat(newParamHelperValues).concat(dissectParamValues.after.indexes)
 
         this.setState({
             paramValuesByMode: paramValuesByMode,
