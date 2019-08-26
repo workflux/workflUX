@@ -191,6 +191,8 @@ class ParamAddOrRemove extends React.Component{
         // props.name
         // props.runId only for run array form
         // props.handleAddOrRemove
+        // props.disabled
+        // props.disabledRemove
         this.handleAddOrRemove = this.handleAddOrRemove.bind(this);
     }
 
@@ -205,24 +207,28 @@ class ParamAddOrRemove extends React.Component{
 
     render(){
         return(
-            <div className="w3-container w3-cell-row">
+            <div>
                 <button 
-                    className="w3-button w3-cell w3-right-align"
+                    className="w3-button"
+                    style={ {width: "50%"} }
                     name={"add_" + this.props.name}
                     value="add"
-                    onChange={this.handleAddOrRemove}
+                    onClick={this.handleAddOrRemove}
+                    disabled={this.props.disabled}
                 >
-                    add item &nbsp;
-                    <i className="fas fa-plus"/>
+                    <i className="fas fa-plus"/> &nbsp;
+                    add
                 </button>
                 <button 
-                    className="w3-button w3-cell w3-left-align"
+                    className="w3-button"
+                    style={ {width: "50%"} }
                     name={"remove_" + this.props.name}
                     value="remove"
-                    onChange={this.handleAddOrRemove}
+                    onClick={this.handleAddOrRemove}
+                    disabled={this.props.disabled || this.props.disabledRemove}
                 >
                     <i className="fas fa-minus"/>
-                    &nbsp; remove item
+                    &nbsp;remove
                 </button>
             </div>
         )
@@ -396,6 +402,13 @@ class ParamFormGlobalList extends ParamForm{
                                                 </tr>
                                             ))}
                                         </tbody></table>
+                                        <ParamAddOrRemove
+                                            name={p}
+                                            mode="global_array"
+                                            handleAddOrRemove={this.props.addOrRemoveItem}
+                                            disabled={isNull[p]}
+                                            disabledRemove={this.props.paramValues[p].length <= 1}
+                                        />
                                     </td>
                                 ))
                             }
@@ -595,7 +608,8 @@ class JobParamFormHTML extends React.Component {
         this.getParamValues = this.getParamValues.bind(this);
         this.changeParamValue = this.changeParamValue.bind(this);
         this.toggleNull = this.toggleNull.bind(this);
-        this.ajaxRequest = ajaxRequest.bind(this)
+        this.ajaxRequest = ajaxRequest.bind(this);
+        this.addOrRemoveItem = this.addOrRemoveItem.bind(this);
     }
 
     componentDidMount(){
@@ -781,6 +795,7 @@ class JobParamFormHTML extends React.Component {
                             paramConfigs={this.state.paramConfigs}
                             changeParamValue={(name, index, newValue) => this.changeParamValue("global_array", name, index, newValue)}
                             toggleNull={this.toggleNull}
+                            addOrRemoveItem={this.addOrRemoveItem}
                         />
                     }
                     {this.state.modeExists["run_single"] && 
