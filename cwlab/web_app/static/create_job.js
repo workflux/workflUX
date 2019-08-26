@@ -207,10 +207,15 @@ class ParamForm extends React.Component{
         this.changeRunIdFocus = this.changeRunIdFocus.bind(this);
     }
 
-    checkIfNull(return_res){
+    checkIfNull(indexByRunId){
         let isNull = {}
         Object.keys(this.props.paramValues).map( (p) => {
-            isNull[p] = this.props.paramValues[p] == "null" && this.props.paramConfigs[p].null_allowed
+            let paramValues = indexByRunId ? (
+                this.props.paramValues[p].filter( (v, i) => indexByRunId[p].indexOf(i) != -1)
+                ) : (
+                this.props.paramValues[p]
+            )
+            isNull[p] = paramValues == "null" && this.props.paramConfigs[p].null_allowed
         })
         return isNull
     }
@@ -437,6 +442,8 @@ class ParamFormRunList extends ParamForm{
             })
         })
 
+        const isNull = this.checkIfNull(indexByRunId)
+
         return(
                 <div style={ {overflow:"auto"} }>
                     <h3>Run-specific (Non-list) Parameters:</h3>
@@ -451,7 +458,7 @@ class ParamFormRunList extends ParamForm{
                                 {Object.keys(this.props.paramValues).map( (p) => (
                                     <td 
                                         key={p} 
-                                        className={this.fieldBackgroundColorClass(false) + " w3-cell-top"}
+                                        className={this.fieldBackgroundColorClass(isNull[p]) + " w3-cell-top"}
                                         style={ {padding: "8px", minWidth: this.columnWidth} }
                                     >
                                         <table><tbody>
@@ -461,6 +468,20 @@ class ParamFormRunList extends ParamForm{
                                                     <ParamName
                                                         name={p}
                                                     />
+                                                    {this.props.paramConfigs[p].null_allowed &&
+                                                        <span className="w3-right">
+                                                            <ParamNullCheckbox
+                                                                name={p}
+                                                                isNull={isNull[p]}
+                                                                nullValue="null"
+                                                                refersTo="runId"
+                                                                mode="run_array"
+                                                                indexOrRunId={whichRunIdFocus}
+                                                                toggleNull={this.props.toggleNull}
+                                                                size="20px"
+                                                            />
+                                                        </span>
+                                                    }
                                                 </td>
                                             </tr>
                                             {[...Array(indexByRunId[p].length).keys()].map( (index) => (
@@ -481,6 +502,7 @@ class ParamFormRunList extends ParamForm{
                                                                 mode="run_array"
                                                                 toggleNull={this.props.toggleNull}
                                                                 size="10px"
+                                                                disabled={isNull[p]}
                                                             />
                                                         }
                                                         <ParamField
@@ -490,9 +512,7 @@ class ParamFormRunList extends ParamForm{
                                                                 indexByRunId[p][index]
                                                             ]}
                                                             onChange={this.props.changeParamValue}
-                                                            isNull={this.props.paramValues[p][
-                                                                indexByRunId[p][index]
-                                                            ]=="itemNull"}
+                                                            isNull={isNull[p]}
                                                             itemNullAllowed={this.props.paramConfigs[p].null_items_allowed}
                                                         />
                                                     </td>
@@ -621,7 +641,7 @@ class JobParamFormHTML extends React.Component {
                     paramValuesAfter.push(paramValues[r])
                 }
             }
-            newParamValues = setNull ? ([nullValue]) : (this.state.paramConfigs[name].default_value)
+            let newParamValues = setNull ? ([nullValue]) : (this.state.paramConfigs[name].default_value)
             paramValuesByMode[mode][name] = paramValuesBefore.concat(newParamValues).concat(paramValuesAfter)
             paramHelperValues[runIdParamName] = runIdIndexesBefore.concat([indexOrRunId]).concat(runIDIndexesAfter)
         }
