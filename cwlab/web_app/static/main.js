@@ -60,7 +60,11 @@ class TopBar extends React.Component { // controlled by Root Component
         return (
             <div 
                 className="w3-card w3-metro-darken"
-                style={ this.props.fixed ? ({position: "fixed", top: "0", width:"100%"}):({width:"100%"})}
+                style={ this.props.fixed ? (
+                        {position: "fixed", top: "0", width:"100%", zIndex:"1000"}
+                    ):(
+                        {width:"100%"}
+                )}
             >
                 {
                     Object.keys(modules).map( (key) => (
