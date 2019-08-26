@@ -675,26 +675,38 @@ class JobParamFormHTML extends React.Component {
 
     addOrRemoveItem(add, mode, name, runId){
         let paramValuesByMode = this.state.paramValuesByMode
-        let paramHelperValues = this.state.paramHelperValues
-        const dissectParamValues = this.dissectParamValuesByRunId(mode, name, runId)
-        if(add){
-            const newParamValues = dissectParamValues.match.values
-                .concat([this.state.paramConfigs[name].default_value[0]])
-            const newParamHelperValues = dissectParamValues.match.indexes
-                .concat([runId])
-        } else {
-            const newParamValues = dissectParamValues.match.values.slice(0,-1)
-            const newParamHelperValues = dissectParamValues.match.indexes.slice(0,-1)
+        if (runId){
+            let paramHelperValues = this.state.paramHelperValues
+            const dissectParamValues = this.dissectParamValuesByRunId(mode, name, runId)
+            if(add){
+                const newParamValues = dissectParamValues.match.values
+                    .concat([this.state.paramConfigs[name].default_value[0]])
+                const newParamHelperValues = dissectParamValues.match.indexes
+                    .concat([runId])
+            } 
+            else {
+                const newParamValues = dissectParamValues.match.values.slice(0,-1)
+                const newParamHelperValues = dissectParamValues.match.indexes.slice(0,-1)
+            }
+            paramValuesByMode[mode][name] = dissectParamValues.before.values
+                .concat(newParamValues).concat(dissectParamValues.after.values)
+            paramHelperValues[runIdParamName] = dissectParamValues.before.indexes.
+                concat(newParamHelperValues).concat(dissectParamValues.after.indexes)
+            this.setState({
+                paramValuesByMode: paramValuesByMode,
+                paramHelperValues: paramHelperValues
+            })
         }
-        paramValuesByMode[mode][name] = dissectParamValues.before.values
-            .concat(newParamValues).concat(dissectParamValues.after.values)
-        paramHelperValues[runIdParamName] = dissectParamValues.before.indexes.
-            concat(newParamHelperValues).concat(dissectParamValues.after.indexes)
-
-        this.setState({
-            paramValuesByMode: paramValuesByMode,
-            paramHelperValues: paramHelperValues
-        })
+        else {
+            paramValuesByMode[mode][name] = add ? (
+                paramValuesByMode[mode][name].concat([this.state.paramConfigs[name].default_value[0]])
+            ) : (
+                paramValuesByMode[mode][name].slice(0,-1)
+            )
+            this.setState({
+                paramValuesByMode: paramValuesByMode
+            })
+        }
     }
 
     render() {
