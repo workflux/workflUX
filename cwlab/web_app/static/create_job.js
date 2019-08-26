@@ -334,7 +334,7 @@ class ParamFormGlobalSingle extends ParamForm{
     }
 }
 
-class ParamFormGlobalList extends ParamForm{
+class ParamFormGlobalArray extends ParamForm{
     render(){
         const isNull = this.checkIfNull()
 
@@ -481,7 +481,7 @@ class ParamFormRunSingle extends ParamForm{
     }
 }
 
-class ParamFormRunList extends ParamForm{
+class ParamFormRunArray extends ParamForm{
     render(){
         const whichRunIdFocus = this.state.whichRunIdFocus ? (
                 this.state.whichRunIdFocus
@@ -801,7 +801,7 @@ class JobParamFormHTML extends React.Component {
                         />
                     }
                     {this.state.modeExists["global_array"] && 
-                        <ParamFormGlobalList
+                        <ParamFormGlobalArray
                             paramValues={this.state.paramValuesByMode["global_array"]}
                             paramConfigs={this.state.paramConfigs}
                             changeParamValue={(name, index, newValue) => this.changeParamValue("global_array", name, index, newValue)}
@@ -819,7 +819,7 @@ class JobParamFormHTML extends React.Component {
                         />
                     }
                     {this.state.modeExists["run_array"] && 
-                        <ParamFormRunList
+                        <ParamFormRunArray
                             paramValues={this.state.paramValuesByMode["run_array"]}
                             paramConfigs={this.state.paramConfigs}
                             paramHelperValues={this.state.paramHelperValues}
