@@ -85,40 +85,37 @@ class PathValAndSearch extends React.Component{
         const info_and_advanced_options = {
             "val_search": (
                 <span>
-                    <p>
-                        With this option, you may:
-                        <ul>
-                            <li>
-                                specify absolute paths for a file or directory parameter (paths are validated)
-                            </li>
-                            <li>
-                                or provide a character string that uniquely identifies 
-                                the file/directory name in the following search directory 
-                                (globbing pattern are allowed)
-                            </li>
-                        </ul>
-                    </p>
-                    <p>
-                        <span className="w3-text-green">Search directory: </span>
-                        <input
-                            className="w3-input"
-                            type="text"
-                            name={"select_input_dir"}
-                            value={this.props.searchDir}
-                            onChange={this.handleChangeSearchDir}
-                            required={true}
-                        />
-                        <br/>
-                        <span className="w3-text-green">Include sub-directories for searching: </span>
-                        no &nbsp;
-                        <BooleanSlider
-                            name="include_subdirs_for_searching"
-                            value="include_subdirs_for_searching"
-                            onChange={this.props.changeIncludeSubDirsForSearching}
-                            checked={this.props.includeSubbDirsForSearching}
-                        />
-                        &nbsp; yes
-                    </p>
+                    <br/>
+                    With this option, you may:
+                    <ul>
+                        <li>
+                            specify absolute paths for a file or directory parameter (paths are validated)
+                        </li>
+                        <li>
+                            or provide a character string that uniquely identifies 
+                            the file/directory name in the following search directory 
+                            (globbing pattern are allowed)
+                        </li>
+                    </ul>
+                    <span className="w3-text-green">Search directory: </span>
+                    <input
+                        className="w3-input"
+                        type="text"
+                        name={"select_input_dir"}
+                        value={this.props.searchDir}
+                        onChange={this.handleChangeSearchDir}
+                        required={true}
+                    />
+                    <br/>
+                    <span className="w3-text-green">Include sub-directories for searching: </span>
+                    no &nbsp;
+                    <BooleanSlider
+                        name="include_subdirs_for_searching"
+                        value="include_subdirs_for_searching"
+                        onChange={this.props.changeIncludeSubDirsForSearching}
+                        checked={this.props.includeSubbDirsForSearching}
+                    />
+                    &nbsp; yes
                 </span>
 
             ),
