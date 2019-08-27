@@ -564,6 +564,7 @@ class FileUploadComponent extends React.Component {
         // props.meta_data meta data send together with the file
         // props.onUploadCompletion function to exectute on completion, 
         //  takes one argument: true (on success)/ false (on error)
+        //props.buttonLabel
 
         this.state = {
             status: "wait_for_upload", // can be "wait_for_upload"/"uploading"/"done"
@@ -656,7 +657,7 @@ class FileUploadComponent extends React.Component {
             <ActionButton 
                 name="import"
                 value="import"
-                label="import" 
+                label={this.props.buttonLabel ? (this.props.buttonLabel) : ("import")}
                 loading={status == "uploading"} 
                 onAction={this.upload}
                 disabled={this.props.disabled ? true : false}
