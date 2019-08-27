@@ -445,7 +445,7 @@ class Message extends React.Component {
             warning: "w3-orange",
             info: "w3-blue",
             success: "w3-green",
-            hint: "w3-yellow"
+            hint: "w3-khaki"
         };
         return ( <div className={"w3-panel " + color[this.props.type]}> {this.props.children} </div> );
     }
