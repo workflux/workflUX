@@ -12,6 +12,7 @@ from cwlab.xls2cwl_job.web_interface import gen_form_sheet
 from cwlab.xls2cwl_job import only_validate_xls, transcode as make_yaml_runs
 from time import sleep
 from shutil import move
+from json import loads as json_loads
 
 
 
@@ -144,10 +145,26 @@ def send_filled_param_form_sheet():
         import_fileext = os.path.splitext(import_file.filename)[1].strip(".").lower()
         
         # save the file to the CWL directory:
-        job_id = str(request.form.get("meta")).strip("\"") # ignore non ascii characters
+        metadata = json_loads(request.form.get("meta"))
+        print(metadata)
+        job_id = metadata["job_id"]
         import_filename = job_id + ".input." + import_fileext
         import_filepath = os.path.join(app.config['TEMP_DIR'], import_filename)
         import_file.save(import_filepath)
+
+        validate_paths = metadata["validate_paths"]
+        search_paths = metadata["search_paths"]
+        search_dir = os.path.abspath(metadata["search_dir"])
+        include_subdirs_for_searching = metadata["include_subdirs_for_searching"] 
+
+        if search_paths:
+            # test if search dir exists:
+            if not os.path.isdir(search_dir):
+                sys.exit(
+                    "The specified search dir \"" + 
+                    search_dir + 
+                    "\" does not exist or is not a directory."
+                )
     except SystemExit as e:
         messages.append( { "type":"error", "text": str(e) } )
     except:
@@ -161,7 +178,10 @@ def send_filled_param_form_sheet():
         # validate the uploaded form sheet:
             validation_result = only_validate_xls(
                 sheet_file=import_filepath,
-                validate_paths=True, search_paths=True, search_subdirs=True, input_dir=app.config["INPUT_DIR"]
+                validate_paths=validate_paths, 
+                search_paths=search_paths, 
+                search_subdirs=include_subdirs_for_searching, 
+                input_dir=search_dir
             )
             if validation_result != "VALID":
                 os.remove(import_filepath)
