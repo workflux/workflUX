@@ -94,7 +94,7 @@ class PathValAndSearch extends React.Component{
                         <li>
                             or provide a character string that uniquely identifies 
                             the file/directory name in the following search directory 
-                            (globbing pattern are allowed)
+                            (globbing patterns are allowed)
                         </li>
                     </ul>
                     <span className="w3-text-green">Search directory: </span>
@@ -136,8 +136,9 @@ class PathValAndSearch extends React.Component{
         return(
             <div>
                 <h3>Path Validation and Searching:</h3>
-                Please select how the paths of file or directory parameters should be treated.
-                <br/>
+                <p>
+                    Please select how paths of file or directory parameters should be treated.
+                </p>
                 <span className="w3-text-green">Options: </span>
                 <select className="w3-button w3-white w3-border" 
                     name="path_validation_and_search"
