@@ -47,6 +47,118 @@ class CreateJobButton extends React.Component {
     }
 }
 
+class PathValAndSearch extends React.Component{
+    constructor(props){
+        super(props);
+        // props.validatePaths
+        // props.searchPaths
+        // props.searchDir
+        // props.changeSearchDir
+        // props.includeSubbDirsForSearching
+        // props.changeIncludeSubDirsForSearching
+        // props.changePathValAndSearch
+        this.handleChangeSearchDir = this.handleChangeSearchDir.bind(this);
+        this.handleChangeValAndSearch = this.handleChangeValAndSearch.bind(this);
+    }
+
+    handleChangeValAndSearch(event){
+        const searchPaths = event.currentTarget.value == "val_search"
+        const validatePaths = event.currentTarget.value == "val_search" || event.currentTarget.value == "val"
+        this.props.changePathValAndSearch(searchPaths, validatePaths)
+    }
+
+    handleChangeSearchDir(event){
+        this.props.changeSearchDir(event.currentTarget.value)
+    }
+
+    render(){
+        const validate_or_search = this.props.validatePaths ? (
+            this.props.searchPaths ? (
+                "val_search"
+            ) : (
+                "val"
+            )
+        ) : (
+            "no"
+        )
+
+        const info_and_advanced_options = {
+            "val_search": (
+                <span>
+                    <p>
+                        With this option, you may:
+                        <ul>
+                            <li>
+                                specify absolute paths for a file or directory parameter (paths are validated)
+                            </li>
+                            <li>
+                                or provide a character string that uniquely identifies 
+                                the file/directory name in the following search directory 
+                                (globbing pattern are allowed)
+                            </li>
+                        </ul>
+                    </p>
+                    <p>
+                        <span className="w3-text-green">Search directory: </span>
+                        <input
+                            className="w3-input"
+                            type="text"
+                            name={"select_input_dir"}
+                            value={this.props.searchDir}
+                            onChange={this.handleChangeSearchDir}
+                            required={true}
+                        />
+                        <br/>
+                        <span className="w3-text-green">Include sub-directories for searching: </span>
+                        no &nbsp;
+                        <BooleanSlider
+                            name="include_subdirs_for_searching"
+                            value="include_subdirs_for_searching"
+                            onChange={this.props.changeIncludeSubDirsForSearching}
+                            checked={this.props.includeSubbDirsForSearching}
+                        />
+                        &nbsp; yes
+                    </p>
+                </span>
+
+            ),
+            "val": (
+                <p>
+                    With this option, you have to specify absolute paths for file or directory parameters.
+                    The paths will be validated.
+                </p>
+            ),
+            "no": (
+                <p>
+                    With this option, you have to specify absolute paths for file or directory parameters.
+                    The paths will not be validated.
+                </p>
+            )
+
+        }
+        return(
+            <div>
+                <h3>Path Validation and Searching:</h3>
+                Please select how the paths of file or directory parameters should be treated.
+                <br/>
+                <span className="w3-text-green">Options: </span>
+                <select className="w3-button w3-white w3-border" 
+                    name="path_validation_and_search"
+                    onChange={this.handleChangeValAndSearch}
+                    value={validate_or_search}
+                    >
+                    <option value="val_search">validate and search</option>
+                    <option value="val">only validate</option>
+                    <option value="no">do not validate or search</option>
+                </select>
+                <div className="w3-container">
+                    {info_and_advanced_options[validate_or_search]}
+                </div>
+            </div>
+        )
+    }
+}
+
 class ParamName extends React.Component{
     constructor(props){
         super(props);
@@ -870,16 +982,38 @@ class JobParamFormSpreadsheet extends React.Component {
             file_transfer_status: "none",
             form_passed_validation: false,
             sheetFormMessages: [],
+            validatePaths: true,
+            searchPaths: true,
+            searchDir: this.props.defaultSearchDir,
+            includeSubbDirsForSearching: true
         }
 
         this.changeSheetFormat = this.changeSheetFormat.bind(this);
         this.genFormSheet = this.genFormSheet.bind(this);
         this.handleFormSheetUpload = this.handleFormSheetUpload.bind(this)
+        this.changeSearchDir = this.changeSearchDir.bind(this)
+        this.changeIncludeSubDirsForSearching = this.changeIncludeSubDirsForSearching.bind(this)
+        this.changePathValAndSearch = this.changePathValAndSearch.bind(this)
         this.ajaxRequest = ajaxRequest.bind(this)
     }
 
     changeSheetFormat(event){
         this.setState({"sheet_format": event.currentTarget.value})
+    }
+
+    changeSearchDir(newSearchDir){
+        this.setState({searchDir:newSearchDir})
+    }
+
+    changeIncludeSubDirsForSearching(include){
+        this.setState({includeSubbDirsForSearching:include})
+    }
+
+    changePathValAndSearch(searchPaths, validatePaths){
+        this.setState({
+            searchPaths: searchPaths,
+            validatePaths: validatePaths
+        })
     }
 
     genFormSheet(){
@@ -910,7 +1044,17 @@ class JobParamFormSpreadsheet extends React.Component {
     render() {
         return(
             <div className="w3-container">
-                <span className="w3-text-green">As spreadsheet form:</span>
+                <PathValAndSearch
+                    validatePaths={this.state.validatePaths}
+                    searchPaths={this.state.searchPaths}
+                    changePathValAndSearch={this.changePathValAndSearch}
+                    searchDir={this.state.searchDir}
+                    changeSearchDir={this.changeSearchDir}
+                    includeSubbDirsForSearching={this.state.includeSubbDirsForSearching}
+                    changeIncludeSubDirsForSearching={this.changeIncludeSubDirsForSearching}
+                />
+                <hr/>
+                <h3>Provide Parameters Using a Spreadsheet:</h3>
                 <ol>
                     <li>
                         export/download:
@@ -939,9 +1083,18 @@ class JobParamFormSpreadsheet extends React.Component {
                         <FileUploadComponent
                             requestRoute={routeSendFilledParamFormSheet}
                             instruction="import/upload"
+                            buttonLabel="import & validate"
                             oneLine={true}
                             disabled={this.state.file_transfer_status != "none"}
-                            meta_data={this.props.jobId}
+                            meta_data={ 
+                                {
+                                    job_id: this.props.jobId,
+                                    validate_paths: this.state.validatePaths,
+                                    search_paths: this.state.searchPaths,
+                                    search_dir: this.state.searchDir,
+                                    include_subdirs_for_searching: this.state.includeSubbDirsForSearching
+                                }
+                            }
                             onUploadCompletion={this.handleFormSheetUpload}
                         />
                     </li>
@@ -1171,6 +1324,7 @@ class JobCreationPrep extends React.Component {
                                     run_mode={this.state.run_mode}
                                     run_names={this.state.run_names}
                                     jobId={this.jobIdNum + "_" + this.state.job_name}
+                                    defaultSearchDir={this.props.configData.default_search_dir}
                                 />
                             </div>
                         ) : (
@@ -1182,6 +1336,7 @@ class JobCreationPrep extends React.Component {
                                     run_mode={this.state.run_mode}
                                     run_names={this.state.run_names}
                                     jobId={this.jobIdNum + "_" + this.state.job_name}
+                                    defaultSearchDir={this.props.configData.default_search_dir}
                                 />
                             </div>
                         )
