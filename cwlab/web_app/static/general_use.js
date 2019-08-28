@@ -206,7 +206,7 @@ class BooleanSlider extends React.Component {
     handleChange(event){
         const value=event.currentTarget.value
         const is_set=event.target.checked
-        if (this.props.doNotUpdate){
+        if (this.props.doNotSendValue){
             this.props.onChange(is_set)
         }
         else {
