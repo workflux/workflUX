@@ -710,7 +710,7 @@ class AjaxButton extends React.Component {
         super(props);
         // Inputs:
         // props.name
-        // props.requestRoute the route to send the post request to
+        // props.route the route to send the post request to
         // props.instruction short instructive statement
         // props.oneLine if true, everything will be in one line
         // props.diabled if true, upload button disabled
@@ -736,7 +736,7 @@ class AjaxButton extends React.Component {
             statusValueDuringRequest: "loading",
             messageVar: "serverMessages",
             sendData: this.props.sendData,
-            route: this.props.requestRoute,
+            route: this.props.route,
             onSuccess: this.props.onSuccess,
             onError: this.props.onError,
         })        

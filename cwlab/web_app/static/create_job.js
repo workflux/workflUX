@@ -936,6 +936,10 @@ class JobParamFormHTML extends React.Component {
                         />
                     }
     
+                    <h3>Validate Selection and Create Job</h3>
+                    <AjaxButton
+                        name="validate"
+                        
                     <CreateJobButton
                         jobId={this.props.jobId}
                         sheet_format="xlsx"
