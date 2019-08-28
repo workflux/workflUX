@@ -203,6 +203,60 @@ def send_filled_param_form_sheet():
     return jsonify({"data":data,"messages":messages})
 
 
+
+@app.route('/send_filled_param_values/', methods=['POST'])
+def send_filled_param_values():
+    messages = []
+    data = []
+    try:
+        request_json = request.get_json() +
+        param_values = request_json["param_values"]
+        param_configs = request_json["param_configs"]
+
+        job_id = request_json["job_id"]
+        import_filename = job_id + ".input." + import_fileext
+        import_filepath = os.path.join(app.config['TEMP_DIR'], import_filename)
+        import_file.save(import_filepath)
+
+        validate_paths = request_json["validate_paths"]
+        search_paths = request_json["search_paths"]
+        search_dir = os.path.abspath(request_json["search_dir"])
+        include_subdirs_for_searching = request_json["include_subdirs_for_searching"] 
+
+        if search_paths:
+            # test if search dir exists:
+            if not os.path.isdir(search_dir):
+                sys.exit(
+                    "The specified search dir \"" + 
+                    search_dir + 
+                    "\" does not exist or is not a directory."
+                )
+
+        generate_xls_from_param_values = only_validate_xls(
+            param_values=param_values,
+            configs=param_configs,
+            output_file=import_filepath,
+            validate_paths=validate_paths, 
+            search_paths=search_paths, 
+            search_subdirs=include_subdirs_for_searching, 
+            input_dir=search_dir
+        )
+    except SystemExit as e:
+        messages.append( { "type":"error", "text": "The provided form failed validation: " + str(e) } )
+    except:
+        messages.append( { 
+            "type":"error", 
+            "text":"An uknown error occured while validating the form sheet." 
+        } )
+
+    if len(messages) == 0:
+        messages.append( { 
+            "type":"success", 
+            "text": "The filled form was successfully imported and validated."
+        } )
+    
+    return jsonify({"data":data,"messages":messages})
+
 @app.route('/create_job/', methods=['POST'])
 def create_job():    # generate param form sheet with data sent
                                     # by the client

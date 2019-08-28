@@ -86,3 +86,9 @@ def gen_form_sheet(
     # write to file
     write_xls(param_values, configs, output_file_path, config_attributes)
 
+def generate_xls_from_param_values(param_values, configs, output_file="",
+    validate_paths=True, search_paths=True, search_subdirs=True, input_dir=""):
+    type_matched_params_by_run_id, params_by_run_id, configs = validate_manipulate_split_type_match( 
+        param_values, configs, validate_paths, search_paths, search_subdirs, input_dir
+    )
+    write_xls.write_xls(param_values, configs, output_file)
