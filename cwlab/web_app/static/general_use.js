@@ -104,6 +104,92 @@ class IneditableValueField extends React.Component {
     }
 }
 
+class TabPanel extends React.Component { // controlled by Root Component
+    constructor(props){
+        super(props);
+        //props.title
+        // props.tabs
+        // props.changeFocus
+        // props.whichFocus
+        // props.children
+        this.handleClick = this.handleClick.bind(this);
+    }
+
+    handleClick(tab) {
+        this.props.changeFocus(tab)
+    }
+    
+    render() {
+        return (
+            <div>
+                <div 
+                    className="w3-card w3-metro-darken"
+                    style={ {width:"100%"} }
+                >
+                    <div 
+                        className="w3-padding-small"
+                        style={ {display: "inline-block"} }
+                    >
+                        {this.props.title}
+                    </div>
+                    {
+                        this.props.tabs.map( (tab) => (
+                                <a
+                                    className={this.props.whichFocus == tab ?
+                                        "w3-button w3-theme-d4" : "w3-button"}
+                                    style={ {display: "inline-block"} }
+                                    key={tab} 
+                                    onClick={this.handleClick.bind(this, tab)}>
+                                    {tab}
+                                </a>
+                            )
+                        )
+                    }
+                </div>
+                <div 
+                    className="w3-container w3-padding w3-theme-d4"
+                >
+                    {this.props.children}
+                </div>
+            </div>
+        );
+    }
+}
+
+class Checkbox extends React.Component{
+    constructor(props){
+        super(props);
+        // props.name
+        // props.value
+        // props.onChange function executed on change
+        //  takes two arguments: (1) value, (2) whether set or not
+        // props.checked
+        // props.disabled
+        // props.size
+        this.handleChange = this.handleChange.bind(this)
+    }
+
+    handleChange(event){
+        const value=event.currentTarget.value
+        const is_set=event.target.checked
+        this.props.onChange(value, is_set)
+    }
+
+    render(){
+        return(
+            <input
+                className="w3-check"
+                style={ {height: this.props.size ? (this.props.size) : ("20px")} }
+                type="checkbox"
+                name={this.props.name}
+                value={this.props.name}
+                checked={!this.props.isNull}
+                onChange={this.handleToggleNull}
+            />
+        )
+    }
+}
+
 class BooleanSlider extends React.Component {
     constructor(props) {
         super(props);
@@ -113,13 +199,19 @@ class BooleanSlider extends React.Component {
         //  takes two arguments: (1) value, (2) whether set or not
         // props.checked
         // props.disabled
+        // props.doNotSendValue
         this.handleChange = this.handleChange.bind(this)
     }
     
     handleChange(event){
         const value=event.currentTarget.value
         const is_set=event.target.checked
-        this.props.onChange(value, is_set)
+        if (this.props.doNotSendValue){
+            this.props.onChange(is_set)
+        }
+        else {
+            this.props.onChange(value, is_set)
+        }
     }
 
     render() {
@@ -311,7 +403,7 @@ class SideBarPanel extends React.Component {
                 </div>
                 <div 
                     className="w3-col s10 m8 s8 w3-container"  
-                    style={ {marginLeft:"200px"} }
+                    style={ {marginLeft:"200px", width: "calc(100% - 200px)"} }
                 >
                     {this.props.itemContent}
                 </div>
@@ -359,7 +451,7 @@ class Message extends React.Component {
             warning: "w3-orange",
             info: "w3-blue",
             success: "w3-green",
-            hint: "w3-yellow"
+            hint: "w3-khaki"
         };
         return ( <div className={"w3-panel " + color[this.props.type]}> {this.props.children} </div> );
     }
@@ -410,7 +502,8 @@ class AjaxComponent extends React.Component {
         this.state = {
             loading: true,
             serverMessages: [],
-            data: []
+            data: [],
+            success: false
         };  
                                     
         this.request = this.request.bind(this);
@@ -427,7 +520,14 @@ class AjaxComponent extends React.Component {
             route: this.props.requestRoute,
             onSuccess: (data, messages) => {
                 return({
-                    data: data
+                    data: data,
+                    success: true
+                })
+            },
+            onError: (messages) => {
+                return({
+                    data: [],
+                    success: false
                 })
             }
         })
@@ -448,7 +548,9 @@ class AjaxComponent extends React.Component {
             return (
                 <div>
                     <DisplayServerMessages messages={this.state.serverMessages} />
-                    {this.props.buildContentOnSuccess(this.state.data, this.state.serverMessages, this.request)}
+                    {this.state.success &&
+                        this.props.buildContentOnSuccess(this.state.data, this.state.serverMessages, this.request)
+                    }
                 </div>
             )
         }
@@ -468,6 +570,7 @@ class FileUploadComponent extends React.Component {
         // props.meta_data meta data send together with the file
         // props.onUploadCompletion function to exectute on completion, 
         //  takes one argument: true (on success)/ false (on error)
+        //props.buttonLabel
 
         this.state = {
             status: "wait_for_upload", // can be "wait_for_upload"/"uploading"/"done"
@@ -560,7 +663,7 @@ class FileUploadComponent extends React.Component {
             <ActionButton 
                 name="import"
                 value="import"
-                label="import" 
+                label={this.props.buttonLabel ? (this.props.buttonLabel) : ("import")}
                 loading={status == "uploading"} 
                 onAction={this.upload}
                 disabled={this.props.disabled ? true : false}
@@ -596,5 +699,63 @@ class FileUploadComponent extends React.Component {
 
         }
 
+    }
+}
+
+
+
+class AjaxButton extends React.Component {
+    // diplays content based on server information
+    constructor(props) {
+        super(props);
+        // Inputs:
+        // props.name
+        // props.route the route to send the post request to
+        // props.instruction short instructive statement
+        // props.oneLine if true, everything will be in one line
+        // props.diabled if true, upload button disabled
+        // props.sendData
+        // props.onSuccess 
+        // props.onError 
+        // props.label
+        // props.disabled
+        // props.colorClass
+
+        this.state = {
+            status: "none",
+            serverMessages: []
+        };  
+                                    
+        this.handleOnClick = this.handleOnClick.bind(this);
+        this.ajaxRequest = ajaxRequest.bind(this);
+    }
+
+    handleOnClick(value){
+        this.ajaxRequest({
+            statusVar: "status",
+            statusValueDuringRequest: "loading",
+            messageVar: "serverMessages",
+            sendData: this.props.sendData,
+            route: this.props.route,
+            onSuccess: this.props.onSuccess,
+            onError: this.props.onError,
+        })        
+    }
+
+    render() {
+        return(
+            <div>
+                <ActionButton
+                    name={this.props.name}
+                    value={this.props.name}
+                    colorClass={this.props.colorClass}
+                    label={this.props.label}
+                    loading={this.state.status == "loading"}
+                    disabled={this.props.disabled || this.state.status == "loading"}
+                    onAction={this.handleOnClick}
+                />
+                <DisplayServerMessages messages={this.state.serverMessages} />
+            </div>
+        )
     }
 }

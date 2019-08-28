@@ -7,6 +7,7 @@ from .read_xls import read_and_remove_sheet_attributes, sheet_file
 from .fill_in_defaults import fill_in_config_defaults, fill_in_param_defaults
 from itertools import chain, repeat
 from .write_xls import write_xls
+from .__init__ import validate_manipulate_split_type_match
 
 def read_template_attributes(sheet_file):
     try:
@@ -38,9 +39,13 @@ def get_param_config_info(file_path):
     return param_config_info
 
 
+def get_param_config(file_path):
+    _, configs = sheet_file(file_path, verbose_level=0)
+    return configs
+
 def gen_form_sheet(
-    output_file_path,
     template_config_file_path, # basic information on params and their defaults
+    output_file_path=None, # if None return configs and param_values
     has_multiple_runs=False,  # can be single or multiple
     run_names=[],   # if run_mode is multiple, run names are provided here
     param_is_run_specific={},  # only relevant id run_mode is multiple,
@@ -77,6 +82,14 @@ def gen_form_sheet(
     # fill in config defaults
     configs = fill_in_config_defaults(configs)
 
+    if output_file_path is None:
+        return param_values, configs
     # write to file
     write_xls(param_values, configs, output_file_path, config_attributes)
 
+def generate_xls_from_param_values(param_values, configs, output_file="",
+    validate_paths=True, search_paths=True, search_subdirs=True, input_dir="", config_attributes={}):
+    type_matched_params_by_run_id, params_by_run_id, configs = validate_manipulate_split_type_match( 
+        param_values, configs, validate_paths, search_paths, search_subdirs, input_dir
+    )
+    write_xls(param_values, configs, output_file, config_attributes)

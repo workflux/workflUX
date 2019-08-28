@@ -91,6 +91,37 @@
     background-color: #575757 !important
 }
 
+/* Param Forms */
+.param-field-isnull{
+  background-color: hsl(0, 0%, 20%);
+}
+
+.param-field-notnull {
+  background-color: hsl(0, 0%, 10%);
+}
+.param-field-notnull:hover, .param-field-isnull:hover {
+  background-color: hsl(0, 0%, 30%);
+}
+
+.inline-block {
+  display: inline-block;
+}
+
+.param-input {
+  display: inline-block;
+  padding: 2px 4px;
+  width: calc(100% - 16px);
+  background-color: hsl(0, 0%, 90%);
+  box-sizing: border-box;
+  border: 2px solid black;
+}
+
+.param-input:disabled {
+  color: hsl(0, 0%, 25%);
+  background-color: hsl(0, 0%, 50%);
+}
+
+
 /* toggle switch */
  /* The switch - the box around the slider */
  .switch {
