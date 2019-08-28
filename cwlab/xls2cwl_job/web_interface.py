@@ -7,6 +7,7 @@ from .read_xls import read_and_remove_sheet_attributes, sheet_file
 from .fill_in_defaults import fill_in_config_defaults, fill_in_param_defaults
 from itertools import chain, repeat
 from .write_xls import write_xls
+from .__init__ import validate_manipulate_split_type_match
 
 def read_template_attributes(sheet_file):
     try:
@@ -91,4 +92,4 @@ def generate_xls_from_param_values(param_values, configs, output_file="",
     type_matched_params_by_run_id, params_by_run_id, configs = validate_manipulate_split_type_match( 
         param_values, configs, validate_paths, search_paths, search_subdirs, input_dir
     )
-    write_xls.write_xls(param_values, configs, output_file)
+    write_xls(param_values, configs, output_file)

@@ -16,7 +16,7 @@ class CreateJobButton extends React.Component {
                 sendData={
                     {
                         job_id: this.props.jobId,
-                        sheet_format: this.props.sheet_format ? (this.props.sheetFormMessages) : (null)
+                        sheet_format: this.props.sheet_format
                     }
                 }
                 route={routeCreateJob}
@@ -703,6 +703,7 @@ class JobParamFormHTML extends React.Component {
             actionStatus: "loading",
             form_passed_validation: false,
             serverMessages: [],
+            validationMessages: [],
             modeExists: {},
             paramConfigs: {},
             paramValuesByMode: {},
@@ -714,6 +715,7 @@ class JobParamFormHTML extends React.Component {
         this.toggleNull = this.toggleNull.bind(this);
         this.ajaxRequest = ajaxRequest.bind(this);
         this.addOrRemoveItem = this.addOrRemoveItem.bind(this);
+        this.validateParamValues = this.validateParamValues.bind(this);
     }
 
     componentDidMount(){
@@ -767,6 +769,35 @@ class JobParamFormHTML extends React.Component {
 
     }
 
+    validateParamValues(){
+        let paramValues = {}
+        Object.keys(this.state.paramValuesByMode).forEach((mode) => {
+            Object.assign(paramValues, this.state.paramValuesByMode[mode])
+        })
+        Object.assign(paramValues, this.state.paramHelperValues)
+        
+        this.ajaxRequest({
+            statusVar: "status",
+            statusValueDuringRequest: "validating",
+            messageVar: "validationMessages",
+            sendData: {
+                param_values: paramValues,
+                param_configs: this.state.paramConfigs,
+                job_id: this.props.jobId,
+                validate_paths: this.props.validatePaths,
+                search_paths: this.props.searchPaths,
+                search_dir: this.props.searchDir,
+                include_subdirs_for_searching: this.props.includeSubbDirsForSearching
+            },
+            route: routeSendFilledParamValues,
+            onSuccess: (data, messages) => {
+                return({form_passed_validation: true})
+            },
+            onError: (messages) => {
+                return({form_passed_validation: false})
+            },
+        })     
+    }
     changeParamValue(mode, name, index, newValue){
         let paramValuesByMode = this.state.paramValuesByMode
         paramValuesByMode[mode][name][index] = newValue
@@ -937,9 +968,17 @@ class JobParamFormHTML extends React.Component {
                     }
     
                     <h3>Validate Selection and Create Job</h3>
-                    <AjaxButton
+
+                    <ActionButton
                         name="validate"
-                        
+                        value="validate"
+                        onAction={this.validateParamValues}
+                        label="validate"
+                        loading={this.state.actionStatus == "validating"}
+                        disabled={this.state.actionStatus != "none"}
+                    />
+                    <DisplayServerMessages messages={this.state.validationMessages} />
+
                     <CreateJobButton
                         jobId={this.props.jobId}
                         sheet_format="xlsx"

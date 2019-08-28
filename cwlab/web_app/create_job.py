@@ -8,7 +8,7 @@ from cwlab.general_use import fetch_files_in_dir, is_allowed_file, allowed_exten
     get_job_templ_info, get_path, get_job_name_from_job_id
 import requests
 from re import match
-from cwlab.xls2cwl_job.web_interface import gen_form_sheet
+from cwlab.xls2cwl_job.web_interface import gen_form_sheet, generate_xls_from_param_values
 from cwlab.xls2cwl_job import only_validate_xls, transcode as make_yaml_runs
 from time import sleep
 from shutil import move
@@ -214,9 +214,8 @@ def send_filled_param_values():
         param_configs = request_json["param_configs"]
 
         job_id = request_json["job_id"]
-        import_filename = job_id + ".input." + import_fileext
+        import_filename = job_id + ".input.xlsx"
         import_filepath = os.path.join(app.config['TEMP_DIR'], import_filename)
-        import_file.save(import_filepath)
 
         validate_paths = request_json["validate_paths"]
         search_paths = request_json["search_paths"]
@@ -232,7 +231,7 @@ def send_filled_param_values():
                     "\" does not exist or is not a directory."
                 )
 
-        generate_xls_from_param_values = only_validate_xls(
+        generate_xls_from_param_values(
             param_values=param_values,
             configs=param_configs,
             output_file=import_filepath,
@@ -262,64 +261,64 @@ def create_job():    # generate param form sheet with data sent
                                     # by the client
     messages = []
     data = {}
-    try:
-        request_json = request.get_json()
-        job_id = str(request_json["job_id"])
-        sheet_form = job_id + ".input." + str(request_json["sheet_format"])
-        sheet_form_path = os.path.join(app.config['TEMP_DIR'], sheet_form)
+    # try:
+    request_json = request.get_json()
+    job_id = str(request_json["job_id"])
+    sheet_form = job_id + ".input." + str(request_json["sheet_format"])
+    sheet_form_path = os.path.join(app.config['TEMP_DIR'], sheet_form)
 
-        if not os.path.isfile(sheet_form_path):
-            sys.exit("Could not find the filled parameter sheet \"" + sheet_form + "\".")
-        
-        if not is_allowed_file(sheet_form, type="spreadsheet"):
-            sys.exit( "The filled parameter sheet \"" + sheet_form + "\" has the wrong file type. " +
-                "Only files with following extensions are allowed: " + 
-                ", ".join(allowed_extensions_by_type["spreadsheet"]))
+    if not os.path.isfile(sheet_form_path):
+        sys.exit("Could not find the filled parameter sheet \"" + sheet_form + "\".")
+    
+    if not is_allowed_file(sheet_form, type="spreadsheet"):
+        sys.exit( "The filled parameter sheet \"" + sheet_form + "\" has the wrong file type. " +
+            "Only files with following extensions are allowed: " + 
+            ", ".join(allowed_extensions_by_type["spreadsheet"]))
 
-        # prepare job directory
-        job_dir = os.path.join(app.config["EXEC_DIR"], job_id)
-        os.mkdir(job_dir)
-        runs_yaml_dir = get_path("runs_yaml_dir", job_id)
-        os.mkdir(runs_yaml_dir)
-        runs_out_dir = get_path("runs_out_dir", job_id)
-        os.mkdir(runs_out_dir)
-        runs_log_dir = get_path("runs_log_dir", job_id)
-        os.mkdir(runs_log_dir)
+    # prepare job directory
+    job_dir = os.path.join(app.config["EXEC_DIR"], job_id)
+    os.mkdir(job_dir)
+    runs_yaml_dir = get_path("runs_yaml_dir", job_id)
+    os.mkdir(runs_yaml_dir)
+    runs_out_dir = get_path("runs_out_dir", job_id)
+    os.mkdir(runs_out_dir)
+    runs_log_dir = get_path("runs_log_dir", job_id)
+    os.mkdir(runs_log_dir)
 
-        # Move form sheet to job dir:
-        sheet_form_dest_path = get_path("job_param_sheet", job_id=job_id, param_sheet_format=str(request_json["sheet_format"]))
-        move(sheet_form_path, sheet_form_dest_path)
-        
-        # create yaml runs:
-        make_yaml_runs(
-            sheet_file=sheet_form_dest_path,
-            output_basename="",
-            default_run_id=get_job_name_from_job_id(job_id),
-            always_include_run_in_output_name=True,
-            output_suffix=".yaml",
-            output_dir=runs_yaml_dir,
-            validate_paths=True, search_paths=True, search_subdirs=True, input_dir=app.config["INPUT_DIR"]
-        )
+    # Move form sheet to job dir:
+    sheet_form_dest_path = get_path("job_param_sheet", job_id=job_id, param_sheet_format=str(request_json["sheet_format"]))
+    move(sheet_form_path, sheet_form_dest_path)
+    
+    # create yaml runs:
+    make_yaml_runs(
+        sheet_file=sheet_form_dest_path,
+        output_basename="",
+        default_run_id=get_job_name_from_job_id(job_id),
+        always_include_run_in_output_name=True,
+        output_suffix=".yaml",
+        output_dir=runs_yaml_dir,
+        validate_paths=True, search_paths=True, search_subdirs=True, input_dir=app.config["INPUT_DIR"]
+    )
 
-        messages.append( { 
-            "type":"success", 
-            "text":"Successfully created job \"" + job_id + "\"." 
-        } )
-    except FileExistsError as e:
-        messages.append( { 
-            "type":"error", 
-            "text": "Job already exists."
-        } )
-    except SystemExit as e:
-        messages.append( { 
-            "type":"error", 
-            "text": str(e) 
-        } )
-    except:
-        messages.append( { 
-            "type":"error", 
-            "text":"An uknown error occured." 
-        } )
+    messages.append( { 
+        "type":"success", 
+        "text":"Successfully created job \"" + job_id + "\"." 
+    } )
+    # except FileExistsError as e:
+    #     messages.append( { 
+    #         "type":"error", 
+    #         "text": "Job already exists."
+    #     } )
+    # except SystemExit as e:
+    #     messages.append( { 
+    #         "type":"error", 
+    #         "text": str(e) 
+    #     } )
+    # except:
+    #     messages.append( { 
+    #         "type":"error", 
+    #         "text":"An uknown error occured." 
+    #     } )
     return jsonify({
         "data":data,
         "messages":messages
