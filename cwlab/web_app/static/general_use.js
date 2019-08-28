@@ -752,6 +752,7 @@ class AjaxButton extends React.Component {
                     label={this.props.label}
                     loading={this.state.status == "loading"}
                     disabled={this.props.disabled || this.state.status == "loading"}
+                    onAction={this.handleOnClick}
                 />
                 <DisplayServerMessages messages={this.state.serverMessages} />
             </div>
