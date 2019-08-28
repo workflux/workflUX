@@ -723,7 +723,6 @@ class AjaxButton extends React.Component {
 
         this.state = {
             status: "none",
-            error: false,
             serverMessages: []
         };  
                                     

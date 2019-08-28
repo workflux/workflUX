@@ -5,44 +5,22 @@ class CreateJobButton extends React.Component {
         // props.jobId
         // props.sheet_format
         // props.disabled
-        
-        this.state = {
-            job_creation_status: "none",
-            jobCreationMessages: []
-        }
-
-        this.createJob = this.createJob.bind(this)
-        this.ajaxRequest = ajaxRequest.bind(this)
     }
-
-    createJob() {
-        this.ajaxRequest({
-            statusVar: "job_creation_status",
-            statusValueDuringRequest: "in_progress",
-            messageVar: "jobCreationMessages",
-            sendData: {
-                job_id: this.props.jobId,
-                sheet_format: this.props.sheet_format //#! problematic: if format selector is changed after sheet was already submitted
-            },
-            route: routeCreateJob
-        })
-    }
-
 
     render(){
         return(
-            <div>
-                <ActionButton
-                        name="create job"
-                        value="create job"
-                        label="create job"
-                        disabled={this.props.disabled}
-                        loading={this.state.job_creation_status != "none"}
-                        onAction={this.createJob}
-                />
-                <DisplayServerMessages messages={this.state.jobCreationMessages} />
-            </div>
-
+            <AjaxButton
+                name="create job"
+                label="create job"
+                disabled={this.props.disabled}
+                sendData={
+                    {
+                        job_id: this.props.jobId,
+                        sheet_format: this.props.sheet_format ? (this.props.sheetFormMessages) : (null)
+                    }
+                }
+                route={routeCreateJob}
+            />
         )
     }
 }
