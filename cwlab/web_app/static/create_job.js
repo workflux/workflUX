@@ -114,6 +114,7 @@ class PathValAndSearch extends React.Component{
                         value="include_subdirs_for_searching"
                         onChange={this.props.changeIncludeSubDirsForSearching}
                         checked={this.props.includeSubbDirsForSearching}
+                        doNotSendValue={true}
                     />
                     &nbsp; yes
                 </span>
