@@ -401,7 +401,7 @@ class ParamFormGlobalSingle extends ParamForm{
 
         return(
             <div style={ {overflow:"auto"} }>
-                <h3>Gobally-defined (Non-list) Parameters:</h3>
+                <h4>Gobally-defined (Non-list) Parameters:</h4>
                 <table style={ {borderSpacing: "0px 8px"} }><tbody>
                     {Object.keys(this.props.paramValues).map( (p) => (
                             <tr 
@@ -451,7 +451,7 @@ class ParamFormGlobalArray extends ParamForm{
 
         return(
                 <div style={ {overflow:"auto"} }>
-                    <h3>Gobally-defined List Parameters:</h3>
+                    <h4>Gobally-defined List Parameters:</h4>
                     <table style={ {borderSpacing: "8px 0px"} }><tbody>
                         <tr>
                             {Object.keys(this.props.paramValues).map( (p) => (
@@ -534,7 +534,7 @@ class ParamFormRunSingle extends ParamForm{
     render(){
         return(
                 <div style={ {overflow:"auto"} }>
-                    <h3>Run-specific (Non-list) Parameters:</h3>
+                    <h4>Run-specific (Non-list) Parameters:</h4>
                     <table style={ {borderSpacing: "8px 0px"} }><tbody>
                         <tr>
                             {Object.keys(this.props.paramValues).map( (p) => (
@@ -615,7 +615,7 @@ class ParamFormRunArray extends ParamForm{
 
         return(
                 <div style={ {overflow:"auto"} }>
-                    <h3>Run-specific (Non-list) Parameters:</h3>
+                    <h4>Run-specific (Non-list) Parameters:</h4>
                     <TabPanel
                         title="Run IDs:"
                         tabs={this.props.runIds}
@@ -713,6 +713,13 @@ class JobParamFormHTML extends React.Component {
         // props.run_mode
         // props.run_names
         // props.jobId
+        // props.changeSearchDir
+        // props.changeIncludeSubDirsForSearching
+        // props.changePathValAndSearch
+        // props.validatePaths
+        // props.searchPaths
+        // props.searchDir
+        // props.includeSubbDirsForSearching
 
         this.state = {
             actionStatus: "loading",
@@ -900,9 +907,19 @@ class JobParamFormHTML extends React.Component {
             )
         } else {          
             return(
-                <div className="w3-container">
+                <div>
                     <DisplayServerMessages messages={this.state.serverMessages} />
-
+                    <PathValAndSearch
+                        validatePaths={this.props.validatePaths}
+                        searchPaths={this.props.searchPaths}
+                        changePathValAndSearch={this.props.changePathValAndSearch}
+                        searchDir={this.props.searchDir}
+                        changeSearchDir={this.props.changeSearchDir}
+                        includeSubbDirsForSearching={this.props.includeSubbDirsForSearching}
+                        changeIncludeSubDirsForSearching={this.props.changeIncludeSubDirsForSearching}
+                    />
+                    <hr/>
+                    <h3>Provide Parameters:</h3>
                     {this.state.modeExists["global_single"] && 
                         <ParamFormGlobalSingle
                             paramValues={this.state.paramValuesByMode["global_single"]}
@@ -1027,7 +1044,7 @@ class JobParamFormSpreadsheet extends React.Component {
 
     render() {
         return(
-            <div className="w3-container">
+            <div>
                 <PathValAndSearch
                     validatePaths={this.props.validatePaths}
                     searchPaths={this.props.searchPaths}
@@ -1323,7 +1340,6 @@ class JobCreationPrep extends React.Component {
                     />
                     {this.state.display == "form_ssheet" ? (
                             <div>
-                                <h2>Generate Parameter Form:</h2>
                                 <JobParamFormSpreadsheet
                                     cwlTarget={this.props.cwlTarget}
                                     param_modes={this.state.param_modes}
@@ -1341,14 +1357,19 @@ class JobCreationPrep extends React.Component {
                             </div>
                         ) : (
                             <div>
-                                <h2>Parameter Form:</h2>
                                 <JobParamFormHTML
                                     cwlTarget={this.props.cwlTarget}
                                     param_modes={this.state.param_modes}
                                     run_mode={this.state.run_mode}
                                     run_names={this.state.run_names}
                                     jobId={this.jobIdNum + "_" + this.state.job_name}
-                                    defaultSearchDir={this.props.configData.default_search_dir}
+                                    changeSearchDir={this.changeSearchDir}
+                                    changeIncludeSubDirsForSearching={this.changeIncludeSubDirsForSearching}
+                                    changePathValAndSearch={this.changePathValAndSearch}
+                                    validatePaths={this.state.validatePaths}
+                                    searchPaths={this.state.searchPaths}
+                                    searchDir={this.state.searchDir}
+                                    includeSubbDirsForSearching={this.state.includeSubbDirsForSearching}
                                 />
                             </div>
                         )
