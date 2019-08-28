@@ -212,6 +212,7 @@ def send_filled_param_values():
         request_json = request.get_json()
         param_values = request_json["param_values"]
         param_configs = request_json["param_configs"]
+        cwl_target = request_json["cwl_target"]
 
         job_id = request_json["job_id"]
         import_filename = job_id + ".input.xlsx"
@@ -238,7 +239,8 @@ def send_filled_param_values():
             validate_paths=validate_paths, 
             search_paths=search_paths, 
             search_subdirs=include_subdirs_for_searching, 
-            input_dir=search_dir
+            input_dir=search_dir,
+            config_attributes={"CWL": cwl_target}
         )
     except SystemExit as e:
         messages.append( { "type":"error", "text": "The provided form failed validation: " + str(e) } )

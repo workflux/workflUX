@@ -783,6 +783,7 @@ class JobParamFormHTML extends React.Component {
             sendData: {
                 param_values: paramValues,
                 param_configs: this.state.paramConfigs,
+                cwl_target: this.props.cwlTarget,
                 job_id: this.props.jobId,
                 validate_paths: this.props.validatePaths,
                 search_paths: this.props.searchPaths,
