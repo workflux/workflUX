@@ -199,13 +199,19 @@ class BooleanSlider extends React.Component {
         //  takes two arguments: (1) value, (2) whether set or not
         // props.checked
         // props.disabled
+        // props.doNotSendValue
         this.handleChange = this.handleChange.bind(this)
     }
     
     handleChange(event){
         const value=event.currentTarget.value
         const is_set=event.target.checked
-        this.props.onChange(value, is_set)
+        if (this.props.doNotUpdate){
+            this.props.onChange(is_set)
+        }
+        else {
+            this.props.onChange(value, is_set)
+        }
     }
 
     render() {
