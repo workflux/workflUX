@@ -974,44 +974,29 @@ class JobParamFormSpreadsheet extends React.Component {
         // props.run_mode
         // props.run_names
         // props.jobId
+        // props.changeSearchDir
+        // props.changeIncludeSubDirsForSearching
+        // props.changePathValAndSearch
+        // props.validatePaths
+        // props.searchPaths
+        // props.searchDir
+        // props.includeSubbDirsForSearching
 
         this.state = {
             sheet_format: "xlsx",
             file_transfer_status: "none",
             form_passed_validation: false,
-            sheetFormMessages: [],
-            validatePaths: true,
-            searchPaths: true,
-            searchDir: this.props.defaultSearchDir,
-            includeSubbDirsForSearching: true
+            sheetFormMessages: []
         }
 
         this.changeSheetFormat = this.changeSheetFormat.bind(this);
         this.genFormSheet = this.genFormSheet.bind(this);
         this.handleFormSheetUpload = this.handleFormSheetUpload.bind(this)
-        this.changeSearchDir = this.changeSearchDir.bind(this)
-        this.changeIncludeSubDirsForSearching = this.changeIncludeSubDirsForSearching.bind(this)
-        this.changePathValAndSearch = this.changePathValAndSearch.bind(this)
         this.ajaxRequest = ajaxRequest.bind(this)
     }
 
     changeSheetFormat(event){
         this.setState({"sheet_format": event.currentTarget.value})
-    }
-
-    changeSearchDir(newSearchDir){
-        this.setState({searchDir:newSearchDir})
-    }
-
-    changeIncludeSubDirsForSearching(include){
-        this.setState({includeSubbDirsForSearching:include})
-    }
-
-    changePathValAndSearch(searchPaths, validatePaths){
-        this.setState({
-            searchPaths: searchPaths,
-            validatePaths: validatePaths
-        })
     }
 
     genFormSheet(){
@@ -1043,13 +1028,13 @@ class JobParamFormSpreadsheet extends React.Component {
         return(
             <div className="w3-container">
                 <PathValAndSearch
-                    validatePaths={this.state.validatePaths}
-                    searchPaths={this.state.searchPaths}
-                    changePathValAndSearch={this.changePathValAndSearch}
-                    searchDir={this.state.searchDir}
-                    changeSearchDir={this.changeSearchDir}
-                    includeSubbDirsForSearching={this.state.includeSubbDirsForSearching}
-                    changeIncludeSubDirsForSearching={this.changeIncludeSubDirsForSearching}
+                    validatePaths={this.props.validatePaths}
+                    searchPaths={this.props.searchPaths}
+                    changePathValAndSearch={this.props.changePathValAndSearch}
+                    searchDir={this.props.searchDir}
+                    changeSearchDir={this.props.changeSearchDir}
+                    includeSubbDirsForSearching={this.props.includeSubbDirsForSearching}
+                    changeIncludeSubDirsForSearching={this.props.changeIncludeSubDirsForSearching}
                 />
                 <hr/>
                 <h3>Provide Parameters Using a Spreadsheet:</h3>
@@ -1087,10 +1072,10 @@ class JobParamFormSpreadsheet extends React.Component {
                             meta_data={ 
                                 {
                                     job_id: this.props.jobId,
-                                    validate_paths: this.state.validatePaths,
-                                    search_paths: this.state.searchPaths,
-                                    search_dir: this.state.searchDir,
-                                    include_subdirs_for_searching: this.state.includeSubbDirsForSearching
+                                    validate_paths: this.props.validatePaths,
+                                    search_paths: this.props.searchPaths,
+                                    search_dir: this.props.searchDir,
+                                    include_subdirs_for_searching: this.props.includeSubbDirsForSearching
                                 }
                             }
                             onUploadCompletion={this.handleFormSheetUpload}
@@ -1129,7 +1114,11 @@ class JobCreationPrep extends React.Component {
             run_names: ["run1", "run2", "run3"],
             param_modes: paramModes,
             job_name: "new_job",
-            display: "prep" // one of prep, form_ssheet, from_html
+            display: "prep", // one of prep, form_ssheet, from_html
+            validatePaths: true,
+            searchPaths: true,
+            searchDir: this.props.configData.default_search_dir,
+            includeSubbDirsForSearching: true
         }
 
         // construct job_id:
@@ -1150,6 +1139,9 @@ class JobCreationPrep extends React.Component {
         this.changeRunMode = this.changeRunMode.bind(this);
         this.changeRunNames = this.changeRunNames.bind(this);
         this.toggleParamForm = this.toggleParamForm.bind(this);
+        this.changeSearchDir = this.changeSearchDir.bind(this)
+        this.changeIncludeSubDirsForSearching = this.changeIncludeSubDirsForSearching.bind(this)
+        this.changePathValAndSearch = this.changePathValAndSearch.bind(this)
     }
 
     changeJobName(event){
@@ -1179,6 +1171,21 @@ class JobCreationPrep extends React.Component {
 
     toggleParamForm(value){
         this.setState({display: value})
+    }
+
+    changeSearchDir(newSearchDir){
+        this.setState({searchDir:newSearchDir})
+    }
+
+    changeIncludeSubDirsForSearching(include){
+        this.setState({includeSubbDirsForSearching:include})
+    }
+
+    changePathValAndSearch(searchPaths, validatePaths){
+        this.setState({
+            searchPaths: searchPaths,
+            validatePaths: validatePaths
+        })
     }
 
     render() {
@@ -1322,7 +1329,13 @@ class JobCreationPrep extends React.Component {
                                     run_mode={this.state.run_mode}
                                     run_names={this.state.run_names}
                                     jobId={this.jobIdNum + "_" + this.state.job_name}
-                                    defaultSearchDir={this.props.configData.default_search_dir}
+                                    changeSearchDir={this.changeSearchDir}
+                                    changeIncludeSubDirsForSearching={this.changeIncludeSubDirsForSearching}
+                                    changePathValAndSearch={this.changePathValAndSearch}
+                                    validatePaths={this.state.validatePaths}
+                                    searchPaths={this.state.searchPaths}
+                                    searchDir={this.state.searchDir}
+                                    includeSubbDirsForSearching={this.state.includeSubbDirsForSearching}
                                 />
                             </div>
                         ) : (
