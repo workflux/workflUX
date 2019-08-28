@@ -209,7 +209,7 @@ def send_filled_param_values():
     messages = []
     data = []
     try:
-        request_json = request.get_json() +
+        request_json = request.get_json()
         param_values = request_json["param_values"]
         param_configs = request_json["param_configs"]
 
