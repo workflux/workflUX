@@ -701,3 +701,61 @@ class FileUploadComponent extends React.Component {
 
     }
 }
+
+
+
+class AjaxButton extends React.Component {
+    // diplays content based on server information
+    constructor(props) {
+        super(props);
+        // Inputs:
+        // props.name
+        // props.requestRoute the route to send the post request to
+        // props.instruction short instructive statement
+        // props.oneLine if true, everything will be in one line
+        // props.diabled if true, upload button disabled
+        // props.sendData
+        // props.onSuccess 
+        // props.onError 
+        // props.label
+        // props.disabled
+        // props.colorClass
+
+        this.state = {
+            status: "none",
+            error: false,
+            serverMessages: []
+        };  
+                                    
+        this.handleOnClick = this.handleOnClick.bind(this);
+        this.ajaxRequest = ajaxRequest.bind(this);
+    }
+
+    handleOnClick(value){
+        this.ajaxRequest({
+            statusVar: "status",
+            statusValueDuringRequest: "loading",
+            messageVar: "serverMessages",
+            sendData: this.props.sendData,
+            route: this.props.requestRoute,
+            onSuccess: this.props.onSuccess,
+            onError: this.props.onError,
+        })        
+    }
+
+    render() {
+        return(
+            <div>
+                <ActionButton
+                    name={this.props.name}
+                    value={this.props.name}
+                    colorClass={this.props.colorClass}
+                    label={this.props.label}
+                    loading={this.state.status == "loading"}
+                    disabled={this.props.disabled || this.state.status == "loading"}
+                />
+                <DisplayServerMessages messages={this.state.serverMessages} />
+            </div>
+        )
+    }
+}
