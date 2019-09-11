@@ -276,6 +276,20 @@ def create_job():    # generate param form sheet with data sent
             sys.exit( "The filled parameter sheet \"" + sheet_form + "\" has the wrong file type. " +
                 "Only files with following extensions are allowed: " + 
                 ", ".join(allowed_extensions_by_type["spreadsheet"]))
+        
+        validate_paths = request_json["validate_paths"]
+        search_paths = request_json["search_paths"]
+        search_dir = os.path.abspath(request_json["search_dir"])
+        include_subdirs_for_searching = request_json["include_subdirs_for_searching"] 
+
+        if search_paths:
+            # test if search dir exists:
+            if not os.path.isdir(search_dir):
+                sys.exit(
+                    "The specified search dir \"" + 
+                    search_dir + 
+                    "\" does not exist or is not a directory."
+                )
 
         # prepare job directory
         job_dir = os.path.join(app.config["EXEC_DIR"], job_id)
@@ -299,7 +313,10 @@ def create_job():    # generate param form sheet with data sent
             always_include_run_in_output_name=True,
             output_suffix=".yaml",
             output_dir=runs_yaml_dir,
-            validate_paths=True, search_paths=True, search_subdirs=True, input_dir=app.config["INPUT_DIR"]
+            validate_paths=validate_paths, 
+            search_paths=search_paths, 
+            search_subdirs=include_subdirs_for_searching, 
+            input_dir=search_dir
         )
 
         messages.append( { 

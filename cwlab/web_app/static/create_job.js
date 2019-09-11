@@ -3,8 +3,12 @@ class CreateJobButton extends React.Component {
     constructor(props){
         super(props);
         // props.jobId
-        // props.sheet_format
+        // props.sheetFormat
         // props.disabled
+        // props.validatePaths
+        // props.searchPaths
+        // props.searchDir
+        // props.includeSubbDirsForSearching
     }
 
     render(){
@@ -16,7 +20,11 @@ class CreateJobButton extends React.Component {
                 sendData={
                     {
                         job_id: this.props.jobId,
-                        sheet_format: this.props.sheet_format
+                        sheet_format: this.props.sheetFormat,
+                        validate_paths: this.props.validatePaths,
+                        search_paths: this.props.searchPaths,
+                        search_dir: this.props.searchDir,
+                        include_subdirs_for_searching: this.props.includeSubbDirsForSearching
                     }
                 }
                 route={routeCreateJob}
@@ -982,7 +990,11 @@ class JobParamFormHTML extends React.Component {
 
                     <CreateJobButton
                         jobId={this.props.jobId}
-                        sheet_format="xlsx"
+                        sheetFormat="xlsx"
+                        validatePaths={this.props.validatePaths}
+                        searchPaths={this.props.searchPaths}
+                        searchDir={this.props.searchDir}
+                        includeSubbDirsForSearching={this.props.includeSubbDirsForSearching}
                         disabled={!this.state.form_passed_validation}
                     />
 
@@ -1023,7 +1035,7 @@ class JobParamFormSpreadsheet extends React.Component {
         // props.includeSubbDirsForSearching
 
         this.state = {
-            sheet_format: "xlsx",
+            sheetFormat: "xlsx",
             file_transfer_status: "none",
             form_passed_validation: false,
             sheetFormMessages: []
@@ -1036,7 +1048,7 @@ class JobParamFormSpreadsheet extends React.Component {
     }
 
     changeSheetFormat(event){
-        this.setState({"sheet_format": event.currentTarget.value})
+        this.setState({"sheetFormat": event.currentTarget.value})
     }
 
     genFormSheet(){
@@ -1050,7 +1062,7 @@ class JobParamFormSpreadsheet extends React.Component {
                 run_mode: this.props.run_mode, 
                 run_names: this.props.run_names.filter((r) => r != ""),
                 job_id: this.props.jobId,
-                sheet_format: this.state.sheet_format
+                sheetFormat: this.state.sheetFormat
             },
             route: routeGenParamFormSheet,
             onSuccess: (data, messages) => {
@@ -1084,7 +1096,7 @@ class JobParamFormSpreadsheet extends React.Component {
                         <select className="w3-button w3-white w3-border" 
                             name="sheet_format"
                             onChange={this.changeSheetFormat}
-                            value={this.state.sheet_format}
+                            value={this.state.sheetFormat}
                             >
                             <option value="xlsx">excel format (xlsx)</option>
                             <option value="xls">excel format (xls)</option>
@@ -1125,7 +1137,11 @@ class JobParamFormSpreadsheet extends React.Component {
                 <DisplayServerMessages messages={this.state.sheetFormMessages} />
                 <CreateJobButton
                     jobId={this.props.jobId}
-                    sheet_format={this.state.sheet_format}
+                    sheetFormat={this.state.sheetFormat}
+                    validatePaths={this.props.validatePaths}
+                    searchPaths={this.props.searchPaths}
+                    searchDir={this.props.searchDir}
+                    includeSubbDirsForSearching={this.props.includeSubbDirsForSearching}
                     disabled={!this.state.form_passed_validation}
                 />
             </div>
