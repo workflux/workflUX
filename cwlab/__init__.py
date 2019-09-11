@@ -39,12 +39,16 @@ def up(config_file=None):
     if not os.path.isdir(app.config['DB_DIR']):
         os.makedirs(app.config['DB_DIR'])
 
+    if app.config["ENABLE_USER_LOGIN"]:
+        from flask_login import LoginManager
+        login = LoginManager(app)
+        login.login_view = 'login'
+        from .user.db import User
+
     from .exec.db import Exec
     db.init_app(app)
     db.create_all()
     db.session.commit()
-    login = LoginManager(app)
-    login.login_view = 'login'
     app.run(host=app.config["WEB_SERVER_HOST"], port=app.config["WEB_SERVER_PORT"])
 
 
