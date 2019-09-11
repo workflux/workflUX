@@ -99,9 +99,6 @@ def exec_runs(job_id, run_ids, exec_profile_name, cwl):
     # even if the parent process is terminated / fails,
     # the child process will continue
     started_runs = []
-    log_dir = get_path("backgr_logs_dir", job_id=job_id)
-    if not os.path.isdir(log_dir) and app.config["DEBUG"]:
-        os.makedirs(log_dir)
     for run_id in run_ids:
         create_background_process(
             [
@@ -111,7 +108,7 @@ def exec_runs(job_id, run_ids, exec_profile_name, cwl):
                 str(exec_db_entry[run_id].id),
                 str(app.config["DEBUG"])
             ],
-            get_path("backgr_log", job_id=job_id, run_id=run_id)
+            get_path("debug_run_log", job_id=job_id, run_id=run_id)
         )
         started_runs.append(run_id)
     return started_runs, already_running_runs
