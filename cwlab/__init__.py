@@ -25,6 +25,7 @@ def up(config_file=None):
     # server up
     global app
     global db
+    global login
     app.config.from_object(Config(config_file))
 
     # set up the working environment:
