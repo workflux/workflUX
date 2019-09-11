@@ -29,7 +29,7 @@ const modules = {   // each entry corresponds to one wep app module,
         content: (<ImportCWLRoot />)
     },
     create_job:  {
-        text: "Create New Job",
+        text: "Create Job",
         icon: "fas  fa-plus",
         content: (<CreateJobRoot />)
     },
