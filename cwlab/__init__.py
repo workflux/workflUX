@@ -43,6 +43,8 @@ def up(config_file=None):
     db.init_app(app)
     db.create_all()
     db.session.commit()
+    login = LoginManager(app)
+    login.login_view = 'login'
     app.run(host=app.config["WEB_SERVER_HOST"], port=app.config["WEB_SERVER_PORT"])
 
 
