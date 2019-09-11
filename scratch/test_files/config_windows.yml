@@ -6,11 +6,11 @@ WEB_SERVER_HOST: localhost
 ## (2) choose the port:
 WEB_SERVER_PORT: 5000 # The default is 5000, if this port is blocked choose a different one
 
-TEMP_DIR: 'C:\Users\kerst\OneDrive\home\CWLab\scratch\temp'
-CWL_DIR: 'C:\Users\kerst\OneDrive\home\CWLab\scratch\CWL'
-EXEC_DIR: 'C:\Users\kerst\OneDrive\home\CWLab\scratch\exec'
-INPUT_DIR: 'C:\Users\kerst\OneDrive\home\CWLab\scratch\test_files\test_data'
-DB_DIR: 'C:\Users\kerst\OneDrive\home\CWLab\scratch\database'
+TEMP_DIR: 'C:\Users\kerst\OneDrive\home_dell\CWLab\scratch\temp'
+CWL_DIR: 'C:\Users\kerst\OneDrive\home_dell\CWLab\scratch\CWL'
+EXEC_DIR: 'C:\Users\kerst\OneDrive\home_dell\CWLab\scratch\exec'
+INPUT_DIR: 'C:\Users\kerst\OneDrive\home_dell\CWLab\scratch\test_files\test_data'
+DB_DIR: 'C:\Users\kerst\OneDrive\home_dell\CWLab\scratch\database'
 
 DEBUG: True
 
@@ -27,6 +27,8 @@ EXEC_PROFILES:
 
     exec: |
       . "${PYTHON_PATH}" -m cwltool --default-container ubuntu:16.04 --outdir "${OUTPUT_DIR}" "${CWL}" "${RUN_YAML}" 2>&1 | %{ "$_" } | Out-File -Encoding "UTF8" "${LOG_FILE}"
+      "PID:" >> "${LOG_FILE}"
+      $pid >> "${LOG_FILE}"
 
     eval: |
       $LAST_LINES = (Get-Content -Tail 2 "${LOG_FILE}")
