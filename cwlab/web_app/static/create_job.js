@@ -1062,7 +1062,7 @@ class JobParamFormSpreadsheet extends React.Component {
                 run_mode: this.props.run_mode, 
                 run_names: this.props.run_names.filter((r) => r != ""),
                 job_id: this.props.jobId,
-                sheetFormat: this.state.sheetFormat
+                sheet_format: this.state.sheetFormat
             },
             route: routeGenParamFormSheet,
             onSuccess: (data, messages) => {
