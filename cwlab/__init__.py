@@ -25,6 +25,7 @@ def up(config_file=None):
     # server up
     global app
     global db
+    global login
     app.config.from_object(Config(config_file))
 
     # set up the working environment:
@@ -38,6 +39,12 @@ def up(config_file=None):
         os.makedirs(app.config['INPUT_DIR'])
     if not os.path.isdir(app.config['DB_DIR']):
         os.makedirs(app.config['DB_DIR'])
+
+    if app.config["ENABLE_USER_LOGIN"]:
+        from flask_login import LoginManager
+        login = LoginManager(app)
+        login.login_view = 'login'
+        from .user.db import User
 
     from .exec.db import Exec
     db.init_app(app)

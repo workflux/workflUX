@@ -117,10 +117,8 @@ def get_path(which, job_id=None, run_id=None, param_sheet_format=None, cwl_targe
         path = os.path.join(app.config['EXEC_DIR'], job_id, "runs_log")
     elif which == "run_log":
         path = os.path.join(app.config['EXEC_DIR'], job_id, "runs_log", run_id + ".log")
-    elif which == "backgr_logs_dir":
-        path = os.path.join(app.config['TEMP_DIR'], "backgr_logs")
-    elif which == "backgr_log":
-        path = os.path.join(app.config['TEMP_DIR'], "backgr_logs", job_id + "_" + run_id + ".log")
+    elif which == "debug_run_log":
+        path = os.path.join(app.config['EXEC_DIR'], job_id, "runs_log", run_id + ".debug.log")
     return path
 
 def get_run_ids(job_id):

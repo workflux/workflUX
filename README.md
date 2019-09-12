@@ -304,7 +304,7 @@ If you have any question or are experiencing problems with CWLab, please contact
 If you would like to contribute to the development and like to extend the functionality of CWLab to meet your requirements, you are more than welcome. We will do our best to support you and your contribution will be acknowledged.
 
 ## About Us:
-CWLab is developed with love in the Division of Cancer Epigenomics at the German Cancer Research Center (DKFZ) in the beautiful university city of Heidelberg. We are an interdisciplinary team with wet-lab scientists and bioinformaticians working closely together. Our DNA sequencing-drive methodologies produce challenging amounts of data. CWLab helps us by giving all members of our team the ability to perform common bioinformatic analyses autonomously without having to acquire programming skills. This allows our bioinformatic stuff to focus on method development and interpretation of computationally complex data interpretation and integration.
+CWLab is developed with love at the Division of Cancer Epigenomics of the German Cancer Research Center (DKFZ) in the beautiful university city of Heidelberg. We are an interdisciplinary team with wet-lab scientists and bioinformaticians working closely together. Our DNA sequencing-driven methodologies produce challenging amounts of data. CWLab helps us by giving all members of our team the ability to perform common bioinformatic analyses autonomously without having to acquire programming skills. This allows our bioinformatic stuff to focus on method development and interpretation of computationally complex data.
 
 If you like to know more about us, please visit our website https://www.dkfz.de/en/CanEpi/contact.html.
 
