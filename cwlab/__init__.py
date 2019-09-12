@@ -30,6 +30,14 @@ def setup_db():
     db.init_app(app)
     db.create_all()
     db.session.commit()
+    if app.config['ENABLE_USER_LOGIN']:
+        from .user.manage import get_users, interactively_add_user
+        admin_users = get_users(only_admins=True)
+        if len(admin_users) == 0:
+            interactively_add_user(
+                level="admin",
+                instruction="No admin user was defined yet. Please set the credentials for the first admin user."
+            )
 
 def setup_working_dirs():
     global app
@@ -50,7 +58,7 @@ def up(config_file=None, webapp=True):
 
     setup_working_dirs()
     setup_db()
-    
+
     if webapp:
         if app.config['ENABLE_USER_LOGIN']:
             global login
