@@ -2,6 +2,28 @@ from cwlab import db
 from cwlab.general_use import db_commit
 from .db import User, allowed_levels
 from getpass import getpass
+from time import sleep
+from random import random
+import sys
+
+def get_users(only_admins=False, return_usernames=False):
+    retry_delays = [1, 4]
+    for retry_delay in retry_delays:
+        try:
+            db_user_request = db.session.query(User)
+            if only_admins:
+                db_user_request = db_user_request.filter(User.level=="admin")
+            users = db_user_request.all()
+        except:
+            if retry_delay == retry_delays[-1]:
+                sys.exit("Could not connect to database.")
+            else:
+                sleep(retry_delay + retry_delay*random())
+    if return_usernames:
+        usernames = [user.username for user in users]
+        return usernames
+    else:
+        return users
 
 def add_user(username, email, level, password):
     user = User(username=username, email=email, level="admin")
