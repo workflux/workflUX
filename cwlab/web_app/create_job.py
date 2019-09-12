@@ -10,6 +10,7 @@ import requests
 from re import match
 from cwlab.xls2cwl_job.web_interface import gen_form_sheet, generate_xls_from_param_values
 from cwlab.xls2cwl_job import only_validate_xls, transcode as make_yaml_runs
+from cwlab.xls2cwl_job.read_xls import remove_non_printable_characters
 from time import sleep
 from shutil import move
 from json import loads as json_loads
@@ -154,7 +155,7 @@ def send_filled_param_form_sheet():
 
         validate_paths = metadata["validate_paths"]
         search_paths = metadata["search_paths"]
-        search_dir = os.path.abspath(metadata["search_dir"])
+        search_dir = os.path.abspath(remove_non_printable_characters(metadata["search_dir"]))
         include_subdirs_for_searching = metadata["include_subdirs_for_searching"] 
 
         if search_paths:
@@ -220,7 +221,7 @@ def send_filled_param_values():
 
         validate_paths = request_json["validate_paths"]
         search_paths = request_json["search_paths"]
-        search_dir = os.path.abspath(request_json["search_dir"])
+        search_dir = os.path.abspath(remove_non_printable_characters(request_json["search_dir"]))
         include_subdirs_for_searching = request_json["include_subdirs_for_searching"] 
 
         if search_paths:
@@ -279,7 +280,7 @@ def create_job():    # generate param form sheet with data sent
         
         validate_paths = request_json["validate_paths"]
         search_paths = request_json["search_paths"]
-        search_dir = os.path.abspath(request_json["search_dir"])
+        search_dir = os.path.abspath(remove_non_printable_characters(request_json["search_dir"]))
         include_subdirs_for_searching = request_json["include_subdirs_for_searching"] 
 
         if search_paths:
