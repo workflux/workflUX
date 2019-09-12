@@ -4,15 +4,16 @@ import sys
 import re
 import pyexcel as pe
 import pyexcel_xlsx, pyexcel_xls, pyexcel_ods, pyexcel_io
-from unidecode import unidecode
 
+def remove_non_printable_characters(string_to_clean):
+    return("".join(c for c in string_to_clean if c.isprintable()))
 
 def clean_string( string_to_clean ):
     # removes leading and tailing whitespaces
     # and converts unicode strings to ascii:
     print_pref = "[clean_string]:"
     if isinstance(string_to_clean, str):
-        str_cleaned = string_to_clean.encode('utf-8', 'ignore').decode().strip()
+        str_cleaned = remove_non_printable_characters(string_to_clean).strip()
     elif isinstance(string_to_clean, int):
         str_cleaned = str( string_to_clean )
     elif isinstance(string_to_clean, float):

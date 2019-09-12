@@ -1,14 +1,12 @@
 #!/usr/bin/env python
 import csv
 import sys
-from unidecode import unidecode
+from .read_xls import remove_non_printable_characters
 
 def cleanup_string( string_to_clean ):
     print_pref = "[cleanup_string] "
     if isinstance(string_to_clean, str):
-        str_cleaned = string_to_clean.rstrip()
-    elif isinstance(string_to_clean, unicode):
-        str_cleaned = unidecode( string_to_clean.rstrip() )
+        str_cleaned = remove_non_printable_characters(string_to_clean).rstrip()
     else:
         sys.exit( print_pref + "E: is not a string" )
     return str_cleaned

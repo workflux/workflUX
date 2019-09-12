@@ -35,7 +35,6 @@ setup(
                       'pyexcel-xlsx',
                       'PyYAML',
                       'pexpect',
-                      'unidecode',
                       'cwltool==1.0.20181201184214; platform_system=="Windows"',
                       'cwltool; platform_system!="Windows"',
                       'psutil'               

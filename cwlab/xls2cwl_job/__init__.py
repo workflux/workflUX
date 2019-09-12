@@ -4,7 +4,6 @@ import sys
 import os
 import pyexcel as pe
 import pyexcel_xlsx, pyexcel_xls, pyexcel_ods, pyexcel_io
-from unidecode import unidecode
 import re
 import yaml
 
