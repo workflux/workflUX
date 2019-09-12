@@ -6,6 +6,7 @@ from getpass import getpass
 def add_user(username, email, level, password):
     user = User(username=username, email=email, level="admin")
     user.set_password(password)
+    db.session.add(user)
     db_commit()
 
 def interactively_add_user(level="", instruction="Please set the credentials of the user to be added."):
