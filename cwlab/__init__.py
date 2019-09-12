@@ -21,35 +21,42 @@ db = SQLAlchemy(app)
 
 from .web_app import main, import_cwl, create_job, job_exec
 
-def up(config_file=None):
-    # server up
+def setup_db():
     global app
     global db
-    global login
-    app.config.from_object(Config(config_file))
-
-    # set up the working environment:
-    if not os.path.isdir(app.config['TEMP_DIR']):
-        os.makedirs(app.config['TEMP_DIR'])
-    if not os.path.isdir(app.config['CWL_DIR']):
-        os.makedirs(app.config['CWL_DIR'])
-    if not os.path.isdir(app.config['EXEC_DIR']):
-        os.makedirs(app.config['EXEC_DIR'])
-    if not os.path.isdir(app.config['INPUT_DIR']):
-        os.makedirs(app.config['INPUT_DIR'])
-    if not os.path.isdir(app.config['DB_DIR']):
-        os.makedirs(app.config['DB_DIR'])
-
     if app.config['ENABLE_USER_LOGIN']:
-        from flask_login import LoginManager
-        login = LoginManager(app)
-        login.login_view = 'login'
         from .user.db import User
-
     from .exec.db import Exec
     db.init_app(app)
     db.create_all()
     db.session.commit()
-    app.run(host=app.config["WEB_SERVER_HOST"], port=app.config["WEB_SERVER_PORT"])
+
+def setup_working_dirs():
+    global app
+    for param in [
+        'TEMP_DIR',
+        'CWL_DIR',
+        'EXEC_DIR',
+        'INPUT_DIR',
+        'DB_DIR'
+    ]:
+        if not os.path.isdir(app.config[param]):
+            os.makedirs(app.config[param])
+
+
+def up(config_file=None, webapp=True):
+    global app
+    app.config.from_object(Config(config_file))
+
+    setup_working_dirs()
+    setup_db()
+    
+    if webapp:
+        if app.config['ENABLE_USER_LOGIN']:
+            global login
+            from flask_login import LoginManager
+            login = LoginManager(app)
+            login.login_view = 'login'
+        app.run(host=app.config["WEB_SERVER_HOST"], port=app.config["WEB_SERVER_PORT"])
 
 
