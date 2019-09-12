@@ -40,7 +40,7 @@ def up(config_file=None):
     if not os.path.isdir(app.config['DB_DIR']):
         os.makedirs(app.config['DB_DIR'])
 
-    if app.config["ENABLE_USER_LOGIN"]:
+    if app.config['ENABLE_USER_LOGIN']:
         from flask_login import LoginManager
         login = LoginManager(app)
         login.login_view = 'login'

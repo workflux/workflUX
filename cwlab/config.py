@@ -98,7 +98,7 @@ class Config(object):
             1
         )
 
-        self.WEB_AUTO_REFRESH_INTERVAL = (
+        self.ENABLE_USER_LOGIN = (
             os.environ.get('CWLAB_ENABLE_USER_LOGIN') or
             self.CONFIG_FILE_content.get('ENABLE_USER_LOGIN') or  
             False
