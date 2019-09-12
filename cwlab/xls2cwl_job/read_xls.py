@@ -12,7 +12,7 @@ def clean_string( string_to_clean ):
     # and converts unicode strings to ascii:
     print_pref = "[clean_string]:"
     if isinstance(string_to_clean, str):
-        str_cleaned = string_to_clean.strip()
+        str_cleaned = string_to_clean.encode('utf-8', 'ignore').decode().strip()
     elif isinstance(string_to_clean, int):
         str_cleaned = str( string_to_clean )
     elif isinstance(string_to_clean, float):
