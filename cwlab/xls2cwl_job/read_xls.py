@@ -20,13 +20,7 @@ def clean_string( string_to_clean ):
     elif isinstance(string_to_clean, bool):
         str_cleaned = str( string_to_clean )
     else:
-        if sys.version_info.major == 2:
-            if isinstance(string_to_clean, unicode):
-                str_cleaned = unidecode( string_to_clean.strip() )
-            else:
-                sys.exit( print_pref + "E: is not a string or number" )
-        else:
-            sys.exit( print_pref + "E: is not a string or number" )
+        sys.exit( print_pref + "E: is not a string or number" )
     return str_cleaned
 
 def quote_clean_string( string_to_clean ):
