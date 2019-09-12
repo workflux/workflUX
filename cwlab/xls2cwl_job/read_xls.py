@@ -5,7 +5,8 @@ import re
 import pyexcel as pe
 import pyexcel_xlsx, pyexcel_xls, pyexcel_ods, pyexcel_io
 
-def remove_non_printable_characters(string_to_clean):
+def remove_non_printable_characters(string_to_clean, codec="utf-8"):
+    string_to_clean_encoded = string_to_clean.encode(codec, "ignore")
     return("".join(c for c in string_to_clean if c.isprintable()))
 
 def clean_string( string_to_clean ):
