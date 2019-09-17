@@ -14,7 +14,7 @@ DB_DIR: 'C:\Users\kerst\OneDrive\home_dell\CWLab\scratch\database'
 
 DEBUG: True
 
-ENABLE_USER_LOGIN: True
+ENABLE_USERS: True
 
 EXEC_PROFILES:
   cwltool_windows:
