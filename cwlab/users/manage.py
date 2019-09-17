@@ -83,6 +83,10 @@ def add_user(username, email, level, password, status="enabled"):
     db.session.add(user)
     db_commit()
 
+def delete_user(id):
+    user = load_user(id)
+    db.session.delete(user)
+    db_commit()
 
 def check_user_credentials(username, password, return_user_if_valid):
     user = get_user_by_username(username)
@@ -137,6 +141,18 @@ def check_all_format_conformance(username, email, password, rep_password):
         message = "valid"
     return message
 
+def change_password(id, old_password, new_password, new_rep_password):
+    user = load_user(id)
+    if not user.check_password(old_password):
+        sys.exit("Old password is not valid.")
+    elif new_password != new_rep_password:
+        sys.exit("New passwords do not match.")
+    elif not check_format_conformance("password", new_password):
+        sys.exit(format_errors["password"])
+    else:
+        user.set_password(new_password)
+        db_commit()
+
 
 def interactively_add_user(level="", instruction="Please set the credentials of the user to be added."):
     success = False
@@ -181,3 +197,4 @@ def interactively_add_user(level="", instruction="Please set the credentials of 
                 success = True
             except Exception as e:
                 print("An error occured: " + str(e))
+            

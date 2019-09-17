@@ -99,7 +99,6 @@ def get_run_list():
             "type":"error", 
             "text":"An unkown error occured reading the execution directory." 
         } )
-    print(data)
     return jsonify({
             "data": data,
             "messages": messages

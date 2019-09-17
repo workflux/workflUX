@@ -171,8 +171,8 @@ class Checkbox extends React.Component{
 
     handleChange(event){
         const value=event.currentTarget.value
-        const is_set=event.target.checked
-        this.props.onChange(value, is_set)
+        const isSet=event.target.checked
+        this.props.onChange(value, isSet)
     }
 
     render(){
@@ -183,8 +183,8 @@ class Checkbox extends React.Component{
                 type="checkbox"
                 name={this.props.name}
                 value={this.props.name}
-                checked={!this.props.isNull}
-                onChange={this.handleToggleNull}
+                checked={this.props.checked}
+                onChange={this.handleChange}
             />
         )
     }
@@ -205,12 +205,12 @@ class BooleanSlider extends React.Component {
     
     handleChange(event){
         const value=event.currentTarget.value
-        const is_set=event.target.checked
+        const isSet=event.target.checked
         if (this.props.doNotSendValue){
-            this.props.onChange(is_set)
+            this.props.onChange(isSet)
         }
         else {
-            this.props.onChange(value, is_set)
+            this.props.onChange(value, isSet)
         }
     }
 
@@ -402,7 +402,7 @@ class SideBarPanel extends React.Component {
                     }
                 </div>
                 <div 
-                    className="w3-col s10 m8 s8 w3-container"  
+                    className="w3-col s10 m8 s8 w3-panel"  
                     style={ {marginLeft:"200px", width: "calc(100% - 200px)"} }
                 >
                     {this.props.itemContent}
@@ -701,8 +701,6 @@ class FileUploadComponent extends React.Component {
 
     }
 }
-
-
 
 class AjaxButton extends React.Component {
     // diplays content based on server information

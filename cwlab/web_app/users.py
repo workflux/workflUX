@@ -84,3 +84,110 @@ def register():
         }
     )
 
+@app.route('/get_general_user_info/', methods=['POST'])
+def get_general_user_info():
+    messages = []
+    data={}
+    try:
+        data = get_user_info(current_user.get_id())
+    except SystemExit as e:
+        messages.append( { 
+            "type":"error", 
+            "text": str(e) 
+        } )
+    except:
+        messages.append( { 
+            "type":"error", 
+            "text":"An unkown error occured." 
+        } )
+    return jsonify({
+            "data": data,
+            "messages": messages
+        }
+    )
+
+@app.route('/change_password/', methods=['POST'])
+def change_password():
+    messages = []
+    data={"success": False}
+    try:
+        data_req = request.get_json()
+        old_password = data_req["old_password"]
+        new_password = data_req["new_password"]
+        new_rep_password = data_req["new_rep_password"]
+        change_password_(current_user.get_id(), old_password, new_password, new_rep_password)
+        data={"success": True}
+        messages.append( { 
+            "type":"success", 
+            "text": "Successfully changed password. You will be logged out."
+        } )
+    except SystemExit as e:
+        messages.append( { 
+            "type":"error", 
+            "text": str(e) 
+        } )
+    except:
+        messages.append( { 
+            "type":"error", 
+            "text":"An unkown error occured." 
+        } )
+    return jsonify({
+            "data": data,
+            "messages": messages
+        }
+    )
+
+@app.route('/delete_account/', methods=['POST'])
+def delete_account():
+    messages = []
+    data={"success": False}
+    try:
+        data_req = request.get_json()
+        username = data_req["username"]
+        current_user_id = current_user.get_id()
+        if username != load_user(current_user_id).username:
+            sys.exit("The entered username does not match your account.")
+        delete_user(current_user_id)
+        data={"success": True}
+        messages.append( { 
+            "type":"success", 
+            "text": "Successfully deleted your account. You will be logged out."
+        } )
+    except SystemExit as e:
+        messages.append( { 
+            "type":"error", 
+            "text": str(e) 
+        } )
+    except:
+        messages.append( { 
+            "type":"error", 
+            "text":"An unkown error occured." 
+        } )
+    return jsonify({
+            "data": data,
+            "messages": messages
+        }
+    )
+
+@app.route('/logout/', methods=['POST'])
+def logout():
+    messages = []
+    data={"success": False}
+    try:
+        logout_user()
+        data["success"] = True
+    except SystemExit as e:
+        messages.append( { 
+            "type":"error", 
+            "text": str(e) 
+        } )
+    except:
+        messages.append( { 
+            "type":"error", 
+            "text":"An unkown error occured." 
+        } )
+    return jsonify({
+            "data": data,
+            "messages": messages
+        }
+    )

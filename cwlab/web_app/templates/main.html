@@ -17,6 +17,7 @@
         <script src="/static/import_cwl.js" type="text/babel"></script>
         <script src="/static/create_job.js" type="text/babel"></script>
         <script src="/static/job_exec.js" type="text/babel"></script>
+        <script src="/static/users.js" type="text/babel"></script>
         <script src="/static/main.js" type="text/babel"></script>
 
         <script > 
@@ -38,6 +39,17 @@
             const routeDeleteJob = "{{ url_for('delete_job') }}"
             const routeLogin = "{{ url_for('login') }}"
             const routeRegister = "{{ url_for('register') }}"
+            const routeGetGeneralUserInfo = "{{ url_for('get_general_user_info') }}"
+            const routeChangePassword = "{{ url_for('change_password') }}"
+            const routeDeleteAccount = "{{ url_for('delete_account') }}"
+            const routeLogout = "{{ url_for('logout') }}"
+            const autoRefreshInterval = parseInt(parseFloat("{{ config.WEB_AUTO_REFRESH_INTERVAL }}")*1000)
+            const readMaxCharsFromFile = parseInt("{{ config.READ_MAX_CHARS_FROM_FILE }}")
+            const loginEnabled = "{{ config.ENABLE_USERS }}" === "True"
+            const loggedIn = "{{ logged_in }}" === "True"
+            const username = "{{ username }}"
+            const loginInstruction = "{{ config.LOGIN_INSTRUCTION }}"
+            const registrationInstruction = "{{ config.REGISTRATION_INSTRUCTION }}"
 
 
             // other global params:
