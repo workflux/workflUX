@@ -155,96 +155,6 @@ class RunDetails extends React.Component {
     }
 }
 
-class RunListElement extends React.Component {
-    // Inputs:
-    // props.runId
-    // props.checked
-    // props.status
-    // props.duration
-    // props.execProfile
-    // props.retryCount
-    // props.onSelectionChange function to handle change
-    //  takes 2 arguments: runId, is_checked
-    // props.showRunDetails
-    constructor(props){
-        super(props)
-        this.handleSelectionChange = this.handleSelectionChange.bind(this)
-        this.getStatusColor = this.getStatusColor.bind(this)
-        this.handleShowDetails = this.handleShowDetails.bind(this)
-    }
-
-    getStatusColor(status){
-        const statusColorClass = {
-            "Loading": "w3-grey",
-            "not started yet": "w3-grey",
-            "queued": "w3-grey",
-            "preparing for execution": "w3-amber",
-            "executing": "w3-amber",
-            "evaluating results": "w3-amber",
-            "finishing": "w3-amber",
-            "finished": "w3-green",
-        }
-        if (Object.keys(statusColorClass).includes(status)){
-            return(statusColorClass[status])
-        } else{
-            return("w3-red")
-        }
-    }
-    
-    handleSelectionChange(event){
-        this.props.onSelectionChange(this.props.runId, event.target.checked)
-    }
-
-    handleShowDetails(){
-        this.props.showRunDetails(this.props.runId)
-    }
-
-    render(){
-        let duration = ""
-        if ( this.props.duration == "-" ){
-            duration = "-"
-        }
-        else{
-            if (this.props.duration[0] > 0){
-                duration += this.props.duration[0].toString() + "d "
-            }
-            if (this.props.duration[1] > 0){
-                duration += this.props.duration[1].toString() + "h "
-            }
-            duration += this.props.duration[2].toString() + "m "
-        }
-
-        return (
-            <tr>
-                <td>
-                    <input 
-                        type="checkbox" 
-                        name="runs"
-                        value={this.props.runId}
-                        checked={this.props.checked}
-                        onChange={this.handleSelectionChange}
-                    />
-                </td>
-                <td>{this.props.runId}</td>
-                <td className={this.getStatusColor(this.props.status)}>
-                    {this.props.status}
-                    {
-                        this.props.retryCount > 0 && 
-                            "(retry: " + this.props.retryCount.toString() + "\")"
-                    }
-                </td>
-                <td>
-                    {duration}
-                </td>
-                <td>{this.props.execProfile}</td>
-                <td>
-                    <a onClick={this.handleShowDetails}><i className="fas fa-eye w3-button w3-text-green"></i></a>
-                </td>
-            </tr>
-        )
-    }
-}
-
 class RunList extends React.Component {
     constructor(props){
         super(props)
@@ -271,8 +181,7 @@ class RunList extends React.Component {
         this.state = {
             actionStatus: "none", 
             serverMessages: [],
-            runInfo: runInfo,
-            mirroredJobId: this.props.jobId
+            runInfo: runInfo
         }
         this.columnNames = 
         {
@@ -328,21 +237,6 @@ class RunList extends React.Component {
         }
     }
 
-    static getDerivedStateFromProps(nextProps, prevState) {
-        if(nextProps.jobId !== prevState.mirroredJobId){
-            let runInfo = {}
-            nextProps.runIds.map( (r) => runInfo[r] = {
-                    status: "Loading", 
-                    duration: "-", 
-                        exec_profile: "-", 
-                        retry_count: 0
-                }
-            )
-            return({runInfo: runInfo, mirroredJobId: nextProps.jobId, actionStatus: "none"})
-        }
-        return(null)
-    }
-
     getStatusColor(status){
         const statusColorClass = {
             "Loading": "w3-grey",
@@ -361,10 +255,6 @@ class RunList extends React.Component {
         }
     }
 
-    handleSelectionChange(newSelection){
-        this.props.changeRunSelection(newSelection)
-    }
-    
     render(){
         let runInfo = {}
         this.props.runIds.map( (r) => (
@@ -379,7 +269,9 @@ class RunList extends React.Component {
             {
                 runId: r,
                 status: (
-                    <div className={this.getStatusColor(runInfo[r].status)} >
+                    <div
+                        className={this.getStatusColor(runInfo[r].status)} 
+                    >
                         {runInfo[r].status}
                         {
                             runInfo[r].retry_count > 0 && 
@@ -406,10 +298,10 @@ class RunList extends React.Component {
                     columnKeys={Object.keys(this.columnNames)}
                     columnNames={this.columnNames}
                     selectionEnabled={true}
-                    handleSelectionChange={this.handleSelectionChange}
+                    handleSelectionChange={this.props.changeRunSelection}
                     selection={this.props.runSelection}
                     rowData={rowData}
-                    selectionKey="rowId"
+                    selectionKey="runId"
                 />
             </div>
         )
@@ -429,7 +321,7 @@ class JobContent extends React.Component {
     // props.triggerJobListReload
     constructor(props){
         super(props)
-        this.state = {
+        this.initState = {
             runIds: [],
             runSelection: {},
             actionStatus: "loading",
@@ -441,10 +333,10 @@ class JobContent extends React.Component {
             actionRunDangerMessages: [],
             actionGlobalDangerMessages: []
         }
+        this.state = this.initState
         this.actionMessages = []
 
         this.changeRunSelection = this.changeRunSelection.bind(this)
-        this.toggelRunSelectionAll = this.toggelRunSelectionAll.bind(this)
         this.execRuns = this.execRuns.bind(this)
         this.changeExecProfile = this.changeExecProfile.bind(this)
         this.toggleDangerZoneLock = this.toggleDangerZoneLock.bind(this)
@@ -455,8 +347,14 @@ class JobContent extends React.Component {
     }
 
     componentDidMount(){
-        // setup timer to automatically update
         this.getRunList()
+    }
+
+    componentDidUpdate(prevProps){
+        if (prevProps.jobId != this.props.jobId){
+            this.setState(this.initState)
+            this.getRunList()
+        }
     }
 
     toggleDangerZoneLock(value, unlocked){
@@ -470,18 +368,6 @@ class JobContent extends React.Component {
                 globalDangerZoneUnlocked: unlocked
             })
         }
-    }
-    
-    toggelRunSelectionAll(){
-        // if all runs are selected, deselect all:
-        const select = !Object.values(this.state.runSelection).every(Boolean) 
-        let update = {}
-        this.state.runIds.map((r) =>
-            (update[r] = select)
-        )
-        this.setState({
-            runSelection: update
-        })
     }
 
     changeRunSelection(newSelection){
@@ -842,15 +728,8 @@ class JobList extends React.Component {
                 </IneditableValueField>
             </p>
         ))
-        let itemContent = (
-            <div>
-                <DisplayServerMessages messages={this.props.initMessages}/> 
-                <p>
-                    <i className="fas fa-arrow-left"></i>
-                    Select a job.
-                </p>
-            </div>
-        );
+
+        let itemContent
         if(this.state.whichFocus && this.state.whichFocus != "") {
             let jobInfo={}
             this.props.jobInfo.map((job) =>
@@ -865,6 +744,17 @@ class JobList extends React.Component {
                 showRunList={this.showRunList}
                 triggerJobListReload={this.props.triggerReload}
             />
+        }
+        else {
+            itemContent = (
+                <div>
+                    <DisplayServerMessages messages={this.props.initMessages}/> 
+                    <p>
+                        <i className="fas fa-arrow-left"></i>
+                        Select a job.
+                    </p>
+                </div>
+            );
         }
 
         return (

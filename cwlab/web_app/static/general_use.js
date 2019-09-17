@@ -337,7 +337,7 @@ class Table extends React.Component {
         // props.selectionKey
 
         this.handleSelectionChange = this.handleSelectionChange.bind(this)
-
+        this.toggelRunSelectionAll = this.toggelRunSelectionAll.bind(this)
     }
 
     handleSelectionChange(event){
@@ -345,6 +345,17 @@ class Table extends React.Component {
         newSelection[event.target.value] = event.target.checked
         this.props.handleSelectionChange(newSelection)
     }
+
+    toggelRunSelectionAll(){
+        // if all runs are selected, deselect all:
+        const select = !Object.values(this.props.selection).every(Boolean) 
+        let newSelection = {}
+        Object.keys(this.props.selection).map((r) =>
+            (newSelection[r] = select)
+        )
+        this.props.handleSelectionChange(newSelection)
+    }
+
 
     render(){
         return(
@@ -362,7 +373,7 @@ class Table extends React.Component {
                                         name="select all"
                                         value="select all"
                                         label="all"
-                                        onAction={this.props.toggelRunSelectionAll}
+                                        onAction={this.toggelRunSelectionAll}
                                         colorClass="w3-black w3-text-green"
                                         smallPadding={true}
                                     />
@@ -375,23 +386,23 @@ class Table extends React.Component {
                     </thead>
                     <tbody>
                         {this.props.rowData.map( (r) => (
-                            <tr key={r}>
+                            <tr key={r[this.props.selectionKey]}>
                                 {this.props.selectionEnabled && (
                                     <td>
                                         <input 
                                             type="checkbox" 
                                             name="select"
                                             value={r[this.props.selectionKey]}
-                                            checked={this.props.selection[this.props.selectionKey]}
+                                            checked={this.props.selection[r[this.props.selectionKey]]}
                                             onChange={this.handleSelectionChange}
                                         />
                                     </td>
                                 )}
                                 {this.props.columnKeys.map( (c) => (
                                     r[c] == "" ? (
-                                        <td key={c}>"-"</td>
+                                        <td key={r[this.props.selectionKey] + c}>"-"</td>
                                     ) : (
-                                        <td key={c}>{r[c]}</td>
+                                        <td key={r[this.props.selectionKey] + c}>{r[c]}</td>
                                     )
                                 ))}
                             </tr>
