@@ -169,11 +169,11 @@ class RunListElement extends React.Component {
     constructor(props){
         super(props)
         this.handleSelectionChange = this.handleSelectionChange.bind(this)
-        this.get_status_color = this.get_status_color.bind(this)
+        this.getStatusColor = this.getStatusColor.bind(this)
         this.handleShowDetails = this.handleShowDetails.bind(this)
     }
 
-    get_status_color(status){
+    getStatusColor(status){
         const statusColorClass = {
             "Loading": "w3-grey",
             "not started yet": "w3-grey",
@@ -226,7 +226,7 @@ class RunListElement extends React.Component {
                     />
                 </td>
                 <td>{this.props.runId}</td>
-                <td className={this.get_status_color(this.props.status)}>
+                <td className={this.getStatusColor(this.props.status)}>
                     {this.props.status}
                     {
                         this.props.retryCount > 0 && 
@@ -274,6 +274,14 @@ class RunList extends React.Component {
             runInfo: runInfo,
             mirroredJobId: this.props.jobId
         }
+        this.columnNames = 
+        {
+            runId: "Run ID",
+            status: "Status",
+            duration: "duration",
+            execProfile: "Exec. Profile",
+            details: "Details"
+        }
         this.getRunInfo = this.getRunInfo.bind(this)
         this.ajaxRequest = ajaxRequest.bind(this)
     }
@@ -314,6 +322,12 @@ class RunList extends React.Component {
         clearInterval(this.timerId);
     }
 
+    componentDidUpdate(){
+        if(this.state.runInfo === {}){
+            this.getRunInfo()
+        }
+    }
+
     static getDerivedStateFromProps(nextProps, prevState) {
         if(nextProps.jobId !== prevState.mirroredJobId){
             let runInfo = {}
@@ -329,10 +343,26 @@ class RunList extends React.Component {
         return(null)
     }
 
-    componentDidUpdate(){
-        if(this.state.runInfo === {}){
-            this.getRunInfo()
+    getStatusColor(status){
+        const statusColorClass = {
+            "Loading": "w3-grey",
+            "not started yet": "w3-grey",
+            "queued": "w3-grey",
+            "preparing for execution": "w3-amber",
+            "executing": "w3-amber",
+            "evaluating results": "w3-amber",
+            "finishing": "w3-amber",
+            "finished": "w3-green",
         }
+        if (Object.keys(statusColorClass).includes(status)){
+            return(statusColorClass[status])
+        } else{
+            return("w3-red")
+        }
+    }
+
+    handleSelectionChange(newSelection){
+        this.props.changeRunSelection(newSelection)
     }
     
     render(){
@@ -345,51 +375,42 @@ class RunList extends React.Component {
             )
         ))
 
+        const rowData = this.props.runIds.map( (r) => (
+            {
+                runId: r,
+                status: (
+                    <div className={this.getStatusColor(runInfo[r].status)} >
+                        {runInfo[r].status}
+                        {
+                            runInfo[r].retry_count > 0 && 
+                                "(retry: " + runInfo[r].retry_count.toString() + "\")"
+                        }
+                    </div>
+                ),
+                duration: runInfo[r].duration,
+                execProfile: runInfo[r].exec_profile,
+                details: (
+                    <a
+                        onClick={(event) => this.props.showRunDetails(r)}
+                    >
+                        <i className="fas fa-eye w3-button w3-text-green" />
+                    </a>
+                )
+            }
+        ))
+
         return(
             <div>
                 <DisplayServerMessages messages={this.state.serverMessages} />
-                <div style={ {maxHeight:"50vh", overflowY: "auto"} }>
-                    <table className="w3-table w3-bordered w3-border">
-                        <thead className="w3-text-green">
-                            <tr>
-                                <th>
-                                    <i 
-                                        className="fas fa-arrow-down" 
-                                        style={ {paddingRight:"10px"} }
-                                    />
-                                    <ActionButton 
-                                        name="select all"
-                                        value="select all"
-                                        label="all"
-                                        onAction={this.props.toggelRunSelectionAll}
-                                        colorClass="w3-black w3-text-green"
-                                        smallPadding={true}
-                                    />
-                                </th>
-                                <th>Run Id</th>
-                                <th>Status</th>
-                                <th>Duration</th>
-                                <th>Exec Profile</th>
-                                <th>Details</th>
-                            </tr>
-                        </thead>
-                        <tbody>
-                            {this.props.runIds.map( (r) => (
-                                <RunListElement 
-                                    key={r}
-                                    runId={r}
-                                    status={runInfo[r].status}
-                                    duration={runInfo[r].duration}
-                                    execProfile={runInfo[r].exec_profile}
-                                    retryCount={runInfo[r].retry_count}
-                                    checked={this.props.runSelection[r]}
-                                    onSelectionChange={this.props.changeRunSelection}
-                                    showRunDetails={this.props.showRunDetails}
-                                />
-                            ))}
-                        </tbody>
-                    </table>
-                </div>
+                <Table
+                    columnKeys={Object.keys(this.columnNames)}
+                    columnNames={this.columnNames}
+                    selectionEnabled={true}
+                    handleSelectionChange={this.handleSelectionChange}
+                    selection={this.props.runSelection}
+                    rowData={rowData}
+                    selectionKey="rowId"
+                />
             </div>
         )
     }
@@ -410,7 +431,7 @@ class JobContent extends React.Component {
         super(props)
         this.state = {
             runIds: [],
-            runSelection: [],
+            runSelection: {},
             actionStatus: "loading",
             execProfile: this.props.execProfiles[0],
             runDangerZoneUnlocked: false,
@@ -463,11 +484,9 @@ class JobContent extends React.Component {
         })
     }
 
-    changeRunSelection(runId, is_checked){
-        let update = {}
-        update[runId] = is_checked
+    changeRunSelection(newSelection){
         this.setState({
-            runSelection: Object.assign(this.state.runSelection, update)
+            runSelection: newSelection
         })
     }
 

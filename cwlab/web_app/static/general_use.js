@@ -325,6 +325,84 @@ class CollapsibleListItem extends React.Component {
     }
 }
 
+class Table extends React.Component {
+    constructor(props){
+        super(props);
+        // props.columnKeys
+        // props.columnNames
+        // props.selectionEnabled
+        // props.handleSelectionChange
+        // props.selection
+        // props.rowData
+        // props.selectionKey
+
+        this.handleSelectionChange = this.handleSelectionChange.bind(this)
+
+    }
+
+    handleSelectionChange(event){
+        let newSelection = this.props.selection
+        newSelection[event.target.value] = event.target.checked
+        this.props.handleSelectionChange(newSelection)
+    }
+
+    render(){
+        return(
+            <div style={ {maxHeight:"50vh", overflowY: "auto"} }>
+                <table className="w3-table w3-bordered w3-border">
+                    <thead className="w3-text-green">
+                        <tr>
+                            {this.props.selectionEnabled && (
+                                <th>
+                                    <i 
+                                        className="fas fa-arrow-down" 
+                                        style={ {paddingRight:"10px"} }
+                                    />
+                                    <ActionButton 
+                                        name="select all"
+                                        value="select all"
+                                        label="all"
+                                        onAction={this.props.toggelRunSelectionAll}
+                                        colorClass="w3-black w3-text-green"
+                                        smallPadding={true}
+                                    />
+                                </th>
+                            )}
+                            {this.props.columnKeys.map( (c) => (
+                                <th key={c}>{this.props.columnNames[c]}</th>
+                            ))}
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {this.props.rowData.map( (r) => (
+                            <tr key={r}>
+                                {this.props.selectionEnabled && (
+                                    <td>
+                                        <input 
+                                            type="checkbox" 
+                                            name="select"
+                                            value={r[this.props.selectionKey]}
+                                            checked={this.props.selection[this.props.selectionKey]}
+                                            onChange={this.handleSelectionChange}
+                                        />
+                                    </td>
+                                )}
+                                {this.props.columnKeys.map( (c) => (
+                                    r[c] == "" ? (
+                                        <td key={c}>"-"</td>
+                                    ) : (
+                                        <td key={c}>{r[c]}</td>
+                                    )
+                                ))}
+                            </tr>
+                        ))}
+                    </tbody>
+                </table>
+            </div>
+        )
+    }
+}
+
 class CollapsibleList extends React.Component {
     render () {
         // Inputs:
