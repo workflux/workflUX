@@ -98,9 +98,9 @@ class Config(object):
             1
         )
 
-        self.ENABLE_USER_LOGIN = (
-            os.environ.get('CWLAB_ENABLE_USER_LOGIN') or
-            self.CONFIG_FILE_content.get('ENABLE_USER_LOGIN') or  
+        self.ENABLE_USERS = (
+            os.environ.get('CWLAB_ENABLE_USERS') or
+            self.CONFIG_FILE_content.get('ENABLE_USERS') or  
             False
         )
 
@@ -140,6 +140,21 @@ class Config(object):
             "5000"
         )
 
+        # custumatize messages:
+        self.LOGIN_INSTRUCTION = (
+            os.environ.get('CWLAB_LOGIN_INSTRUCTION') or
+            self.CONFIG_FILE_content.get('LOGIN_INSTRUCTION') or  
+            ""
+        )
+        self.REGISTRATION_INSTRUCTION = (
+            os.environ.get('CWLAB_REGISTRATION_INSTRUCTION') or
+            self.CONFIG_FILE_content.get('REGISTRATION_INSTRUCTION') or  
+            "Please fill in the following fields. " +
+            "Your registration request will need approval by the administrator to acitivate your account."
+        )
+
         # not accessible by user:
         self.SEND_FILE_MAX_AGE_DEFAULT = 0 # disables caching
+
+
         

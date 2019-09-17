@@ -7,6 +7,7 @@ import os
 from flask import Flask
 from .config import Config
 from flask_sqlalchemy import SQLAlchemy
+from flask_login import LoginManager
 
 basedir = os.path.abspath(os.path.dirname(__file__))
 
@@ -18,20 +19,21 @@ app = Flask(
 
 app.config.from_object(Config())
 db = SQLAlchemy(app)
+login = LoginManager(app)
 
-from .web_app import main, import_cwl, create_job, job_exec
+from .web_app import main, import_cwl, create_job, job_exec, users
 
 def setup_db():
     global app
     global db
-    if app.config['ENABLE_USER_LOGIN']:
-        from .user.db import User
+    if app.config['ENABLE_USERS']:
+        from .users.db import User
     from .exec.db import Exec
     db.init_app(app)
     db.create_all()
     db.session.commit()
-    if app.config['ENABLE_USER_LOGIN']:
-        from .user.manage import get_users, interactively_add_user
+    if app.config['ENABLE_USERS']:
+        from .users.manage import get_users, interactively_add_user
         admin_users = get_users(only_admins=True)
         if len(admin_users) == 0:
             interactively_add_user(
@@ -60,10 +62,8 @@ def up(config_file=None, webapp=True):
     setup_db()
 
     if webapp:
-        if app.config['ENABLE_USER_LOGIN']:
+        if app.config['ENABLE_USERS']:
             global login
-            from flask_login import LoginManager
-            login = LoginManager(app)
             login.login_view = 'login'
         app.run(host=app.config["WEB_SERVER_HOST"], port=app.config["WEB_SERVER_PORT"])
 
