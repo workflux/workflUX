@@ -26,24 +26,34 @@ const modules = {   // each entry corresponds to one wep app module,
     import_cwl:  {
         text: "Import CWL Workflow/Tool",
         icon: "fas fa-file-import",
-        content: (<ImportCWLRoot />)
+        content: (<ImportCWLRoot />),
+        disabled: loginEnabled && ! loggedIn
     },
     create_job:  {
         text: "Create Job",
         icon: "fas  fa-plus",
-        content: (<CreateJobRoot />)
+        content: (<CreateJobRoot />),
+        disabled: loginEnabled && ! loggedIn
     },
     jobs: {
         text:  "Job Execution & Results",
         icon: "fas fa-rocket",
-        content: (<JobExecRoot />)
-    }
+        content: (<JobExecRoot />),
+        disabled: loginEnabled && ! loggedIn
+    },
     // ,
     // help: {
     //     text: "Help",
     //     icon: "fas fa-info-circle",
     //     content: "Under construction"
     // }
+    users: {
+        text:  loggedIn ? username : "login / register",
+        icon: "fas fa-user",
+        content: (<UserRoot />),
+        align: "right",
+        disabled: ! loginEnabled
+    }
 };
 
 class TopBar extends React.Component { // controlled by Root Component
@@ -68,17 +78,33 @@ class TopBar extends React.Component { // controlled by Root Component
             >
                 {
                     Object.keys(modules).map( (key) => (
-                            <a
-                                className={this.props.whichFocus == key ?
-                                    "w3-button w3-theme-d3" : "w3-button"}
-                                style={ {display: "inline-block"} }
-                                key={key} 
-                                onClick={this.handleClick.bind(this, key)}>
-                                {modules[key].icon != "" &&
-                                    <i className={modules[key].icon} style={ {paddingLeft: "10px", paddingRight: "10px"} }></i>
-                                }
-                                {modules[key].text}
-                            </a>
+                            modules[key].hasOwnProperty("disabled") && modules[key].disabled ?
+                                (
+                                    <span key={key}></span>
+                                ) : (
+                                    <a
+                                        key={key}
+                                        className={
+                                            "w3-button" + 
+                                            (
+                                                this.props.whichFocus == key ?
+                                                    " w3-theme-d3" : ""
+                                            ) +
+                                            (
+                                                modules[key].hasOwnProperty("align") && modules[key].align == "right" ?
+                                                    " w3-right" : ""
+                                            )
+                                            
+                                        }
+                                        style={ {display: "inline-block"} }
+                                        key={key} 
+                                        onClick={this.handleClick.bind(this, key)}>
+                                        {modules[key].icon != "" &&
+                                            <i className={modules[key].icon} style={ {paddingLeft: "10px", paddingRight: "10px"} }></i>
+                                        }
+                                        {modules[key].text}
+                                    </a>
+                                )
                         )
                     )
                 }
