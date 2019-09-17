@@ -386,24 +386,25 @@ class Table extends React.Component {
                     </thead>
                     <tbody>
                         {this.props.rowData.map( (r) => (
-                            <tr key={r[this.props.selectionKey]}>
+                            <tr key={r[this.props.selectionKey].value}>
                                 {this.props.selectionEnabled && (
                                     <td>
                                         <input 
                                             type="checkbox" 
                                             name="select"
-                                            value={r[this.props.selectionKey]}
-                                            checked={this.props.selection[r[this.props.selectionKey]]}
+                                            value={r[this.props.selectionKey].value}
+                                            checked={this.props.selection[r[this.props.selectionKey].value]}
                                             onChange={this.handleSelectionChange}
                                         />
                                     </td>
                                 )}
                                 {this.props.columnKeys.map( (c) => (
-                                    r[c] == "" ? (
-                                        <td key={r[this.props.selectionKey] + c}>"-"</td>
-                                    ) : (
-                                        <td key={r[this.props.selectionKey] + c}>{r[c]}</td>
-                                    )
+                                    <td 
+                                        key={r[this.props.selectionKey].value + c}
+                                        className={r[c].hasOwnProperty("className") ? (r[c].className) : ("")}
+                                    >
+                                        {r[c].value == "" ? ("_") : (r[c].value)} 
+                                    </td>
                                 ))}
                             </tr>
                         ))}

@@ -191,7 +191,17 @@ class RunList extends React.Component {
             execProfile: "Exec. Profile",
             details: "Details"
         }
+        this.columnNames = 
+        {
+            runId: "Run ID",
+            status: "Status",
+            duration: "duration",
+            execProfile: "Exec. Profile",
+            details: "Details"
+        }
         this.getRunInfo = this.getRunInfo.bind(this)
+        this.getDurationString = this.getDurationString.bind(this)
+        this.getStatusColor = this.getStatusColor.bind(this)
         this.ajaxRequest = ajaxRequest.bind(this)
     }
 
@@ -237,6 +247,10 @@ class RunList extends React.Component {
         }
     }
 
+    handleSelectionChange(newSelection){
+        this.props.changeRunSelection(newSelection)
+    }
+
     getStatusColor(status){
         const statusColorClass = {
             "Loading": "w3-grey",
@@ -255,6 +269,23 @@ class RunList extends React.Component {
         }
     }
 
+    getDurationString(duration){
+        let durationString = ""
+        if ( duration == "-" ){
+            durationString = "-"
+        }
+        else{
+            if (duration[0] > 0){
+                durationString += duration[0].toString() + "d "
+            }
+            if (duration[1] > 0){
+                duradurationStringtion += duration[1].toString() + "h "
+            }
+            durationString += duration[2].toString() + "m "
+        }
+        return(durationString)
+    }
+
     render(){
         let runInfo = {}
         this.props.runIds.map( (r) => (
@@ -267,27 +298,30 @@ class RunList extends React.Component {
 
         const rowData = this.props.runIds.map( (r) => (
             {
-                runId: r,
-                status: (
-                    <div
-                        className={this.getStatusColor(runInfo[r].status)} 
-                    >
-                        {runInfo[r].status}
-                        {
-                            runInfo[r].retry_count > 0 && 
-                                "(retry: " + runInfo[r].retry_count.toString() + "\")"
-                        }
-                    </div>
-                ),
-                duration: runInfo[r].duration,
-                execProfile: runInfo[r].exec_profile,
-                details: (
-                    <a
-                        onClick={(event) => this.props.showRunDetails(r)}
-                    >
-                        <i className="fas fa-eye w3-button w3-text-green" />
-                    </a>
-                )
+                runId: {value: r},
+                status: {
+                    value: (
+                        <span>
+                            {runInfo[r].status}
+                            {
+                                runInfo[r].retry_count > 0 && 
+                                    "(retry: " + runInfo[r].retry_count.toString() + "\")"
+                            }
+                        </span>
+                    ),
+                    className: this.getStatusColor(runInfo[r].status)
+                },
+                duration: {value: this.getDurationString(runInfo[r].duration)},
+                execProfile: {value: runInfo[r].exec_profile},
+                details: {
+                    value: (
+                        <a
+                            onClick={(event) => this.props.showRunDetails(r)}
+                        >
+                            <i className="fas fa-eye w3-button w3-text-green" />
+                        </a>
+                    )
+                }    
             }
         ))
 
