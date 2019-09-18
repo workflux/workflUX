@@ -6,6 +6,7 @@ from time import sleep
 from random import random
 import sys
 from re import match
+from datetime import datetime
 
 # if app.config["ENABLE_USERS"] and not login is None:
 #     user_loader = login.user_loader
@@ -78,7 +79,14 @@ def get_user_info(id):
 def add_user(username, email, level, password, status="enabled"):
     if check_if_username_exists(username):
         sys.exit("Username already exists.")
-    user = User(username=username, email=email, level=level, status=status)
+    user = User(
+        username=username, 
+        email=email,
+        level=level, 
+        status=status,
+        date_register = datetime.now(),
+        date_last_login = None
+    )
     user.set_password(password)
     db.session.add(user)
     db_commit()
@@ -96,6 +104,8 @@ def check_user_credentials(username, password, return_user_if_valid):
         valid = user.check_password(password)
     if return_user_if_valid:
         if valid:
+            user.date_last_login = datetime.now()
+            db_commit()
             return user
         else:
             return None

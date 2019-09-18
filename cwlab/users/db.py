@@ -11,6 +11,8 @@ class User(UserMixin, db.Model):
     level = db.Column(db.String(64), index=True)
     status = db.Column(db.String(64), index=True)
     password_hash = db.Column(db.String(128))
+    date_register = db.Column(db.DateTime())
+    date_last_login = db.Column(db.DateTime())
 
     def __repr__(self):
         return '<User {}>'.format({self.id, self.username, self.email})
