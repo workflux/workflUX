@@ -5,7 +5,7 @@ from getpass import getpass
 from time import sleep
 from random import random
 import sys
-from re import match, Match
+from re import match
 
 # if app.config["ENABLE_USERS"] and not login is None:
 #     user_loader = login.user_loader
@@ -124,7 +124,7 @@ def check_format_conformance(which, string):
     elif which == "email":
         valid = (
             string.encode("utf-8", "ignore").decode("utf-8") == string and
-            isinstance(match(".+@.+\..+", string), Match)
+            bool(match(".+@.+\..+", string))
         )
     return valid
 
