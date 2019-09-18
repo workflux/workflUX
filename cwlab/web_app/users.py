@@ -5,7 +5,8 @@ from flask_login import current_user, login_user, logout_user
 from werkzeug.urls import url_parse
 from cwlab import app 
 from cwlab.users.manage import check_user_credentials, check_all_format_conformance, \
-    add_user, get_user_info, change_password as change_password_, load_user, delete_user
+    add_user, get_user_info, change_password as change_password_, load_user, delete_user, \
+    get_all_users_info as get_all_users_info_
 
 @app.route('/login/', methods=['POST'])
 def login():
@@ -90,6 +91,31 @@ def get_general_user_info():
     data={}
     try:
         data = get_user_info(current_user.get_id())
+    except SystemExit as e:
+        messages.append( { 
+            "type":"error", 
+            "text": str(e) 
+        } )
+    except:
+        messages.append( { 
+            "type":"error", 
+            "text":"An unkown error occured." 
+        } )
+    return jsonify({
+            "data": data,
+            "messages": messages
+        }
+    )
+
+@app.route('/get_all_users_info/', methods=['POST'])
+def get_all_users_info():
+    messages = []
+    data=[]
+    try:
+        if load_user(current_user.get_id()).level == "admin":
+            data = get_all_users_info_()
+        else:
+            sys.exit("You have to be admin to get this data.")
     except SystemExit as e:
         messages.append( { 
             "type":"error", 

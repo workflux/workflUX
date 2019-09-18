@@ -193,16 +193,7 @@ class RunList extends React.Component {
             serverMessages: [],
             runInfo: runInfo
         }
-        this.columnNames = 
-        {
-            runId: "Run ID",
-            status: "Status",
-            duration: "duration",
-            execProfile: "Exec. Profile",
-            details: "Details"
-        }
-        this.columnNames = 
-        {
+        this.columnNames = {
             runId: "Run ID",
             status: "Status",
             duration: "duration",
@@ -257,10 +248,6 @@ class RunList extends React.Component {
         if(this.state.runInfo === {}){
             this.getRunInfo()
         }
-    }
-
-    handleSelectionChange(newSelection){
-        this.props.changeRunSelection(newSelection)
     }
 
     getStatusColor(status){

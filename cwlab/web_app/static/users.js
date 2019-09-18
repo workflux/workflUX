@@ -43,6 +43,121 @@ class GeneralInfo extends React.Component {
     }
 }
 
+class AdminDashboard extends React.Component {
+    constructor(props){
+        super(props);
+
+        this.state = {
+            actionStatus: "updating",
+            serverMessages: [],
+            userInfo: [],
+            userSelection: [],
+            userFilter: "all"
+        }
+
+        this.columnNames = {
+            username: "Username",
+            email: "Email",
+            status: "Status",
+            level: "Level",
+            date_register: "Registr. Date",
+            date_last_login: "Last Login",
+        }
+
+        this.ajaxRequest = ajaxRequest.bind(this)
+        this.handleSelectionChange = this.handleSelectionChange.bind(this)
+        this.getUserInfo = this.getUserInfo.bind(this)
+    }
+
+    handleSelectionChange(newSelection){
+        this.props.setState({userSelection: newSelection})
+    }
+
+    
+    componentDidMount(){
+        this.getUserInfo()
+    }
+
+    getUserInfo(){
+        this.ajaxRequest({
+            route: routeGetAllUsersInfo,
+            onSuccess: (data, messages) => {
+                return({userInfo: data})
+            }
+        })
+    }
+
+
+    render() {
+        return (
+            <div>
+                <h3>Administrator Dashboard</h3>
+                <p>
+                    Your are logged in as administrator. 
+                    Therefore, you may manage accounts of other users.
+                </p>
+                Commen tasks are:
+                <ul style={ {listStyleType: "circle"} }>
+                    <li>Approving the accounts of newly registered users.</li>
+                    <li>Deactivating or deleting accounts of users that should no longer have access.</li>
+                    <li>Granting privileged admin rights to trusted users.</li>
+                </ul>
+                
+                {/* <p>
+                    <span className="w3-text-green">Select which users to show:</span>&nbsp;
+                    <select className="w3-button w3-white w3-border" 
+                        name="user_filter"
+                        onChange={this.handleUserFilterChange}
+                        value={this.state.userFilter}
+                    >
+                        <option value="all">all</option>
+                        <option value="only_inactive">only inactive users</option>
+                        <option value="no">only active users</option>
+                        <option value="no">only admins</option>
+                    </select>
+                </p> */}
+                
+                {this.state.actionStatus == "updating" ? (
+                        <LoadingIndicator
+                            size="large"
+                            message="Loading user info. Please wait."
+                        />
+                    ) : (
+                        <Table 
+                            columnKeys={Object.keys(this.columnNames)}
+                            columnNames={this.columnNames}
+                            selectionEnabled={true}
+                            handleSelectionChange={this.props.changeRunSelection}
+                            selection={this.state.userSelection}
+                            rowData={this.state.userInfo}
+                            selectionKey="username"
+                        />
+                    )
+                }
+                
+                <DisplayServerMessages messages={this.state.serverMessages} />
+
+                <Message type="hint">
+                    <div>
+                        <h4>Hints:</h4>
+                        <p>
+                            <b>Status:</b>&nbsp;
+                            Only users with an "active" Status can log in. 
+                            Users with the status "awaiting approval" have newly registered.
+                            Users with the status "deactivate" have been deactivated by an administrator.
+                        </p>
+                        <p>
+                            <b>Level:</b>&nbsp;
+                            The level can be "user" or "admin" which have privileges like accessing the admin dashboard.
+                        </p>
+                    </div>
+                </Message>
+                
+            </div>
+        );
+    }
+}
+
 class ChangePassword extends React.Component {
     constructor(props){
         super(props);
@@ -227,15 +342,31 @@ class UserAccount extends React.Component {
     constructor(props) {
         super(props);
         
-        this.itemValues = ["general_info", "change_password", "delete_account", "logout"]
-        this.itemNames = [
-            <span><i className="fas fa-user"/>&nbsp;General Info</span>,
-            <span><i className="fas fa-lock"/>&nbsp;Change Password</span>,
-            <span><i className="fas fa-trash-alt"/>&nbsp;Delete Account</span>,
-            <span><i className="fas fa-sign-out-alt"/>&nbsp;Logout</span>
-        ]
+        this.itemValues = userLevel == "admin" ? (
+                ["general_info", "admin_dashboard", "change_password", "delete_account", "logout"]
+            ):(
+                ["general_info", "change_password", "delete_account", "logout"]
+            )
+        this.itemNames = userLevel == "admin" ? (
+                [
+                    <span><i className="fas fa-user"/>&nbsp;General Info</span>,
+                    <span><i className="fas fa-lock"/>&nbsp;Admin Dashboard</span>,
+                    <span><i className="fas fa-lock"/>&nbsp;Change Password</span>,
+                    <span><i className="fas fa-trash-alt"/>&nbsp;Delete Account</span>,
+                    <span><i className="fas fa-sign-out-alt"/>&nbsp;Logout</span>
+                ]
+            ) : (
+                [
+                    <span><i className="fas fa-user"/>&nbsp;General Info</span>,
+                    <span><i className="fas fa-lock"/>&nbsp;Change Password</span>,
+                    <span><i className="fas fa-trash-alt"/>&nbsp;Delete Account</span>,
+                    <span><i className="fas fa-sign-out-alt"/>&nbsp;Logout</span>
+                ]
+            )
+            
         this.itemContents = {
             general_info: <GeneralInfo />,
+            admin_dashboard: <AdminDashboard />,
             change_password: <ChangePassword />,
             delete_account: <DeleteAccount />,
             logout: <Logout />,

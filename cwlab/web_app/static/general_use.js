@@ -385,29 +385,36 @@ class Table extends React.Component {
                         </tr>
                     </thead>
                     <tbody>
-                        {this.props.rowData.map( (r) => (
-                            <tr key={r[this.props.selectionKey].value}>
-                                {this.props.selectionEnabled && (
-                                    <td>
-                                        <input 
-                                            type="checkbox" 
-                                            name="select"
-                                            value={r[this.props.selectionKey].value}
-                                            checked={this.props.selection[r[this.props.selectionKey].value]}
-                                            onChange={this.handleSelectionChange}
-                                        />
-                                    </td>
-                                )}
-                                {this.props.columnKeys.map( (c) => (
-                                    <td 
-                                        key={r[this.props.selectionKey].value + c}
-                                        className={r[c].hasOwnProperty("className") ? (r[c].className) : ("")}
-                                    >
-                                        {r[c].value == "" ? ("_") : (r[c].value)} 
-                                    </td>
-                                ))}
-                            </tr>
-                        ))}
+                        {this.props.rowData.map( (r) => {
+                            let key = r[this.props.selectionKey].hasOwnProperty("value") ? r[this.props.selectionKey].value : r[this.props.selectionKey];
+                            return(
+                                <tr key={key}>
+                                    {this.props.selectionEnabled && (
+                                        <td>
+                                            <input 
+                                                type="checkbox" 
+                                                name="select"
+                                                value={key}
+                                                checked={this.props.selection[key]}
+                                                onChange={this.handleSelectionChange}
+                                            />
+                                        </td>
+                                    )}
+                                    {this.props.columnKeys.map( (c) => {
+                                        let value = r[c].hasOwnProperty("value") ? r[c].value : r[c];
+                                        let className = r[c].hasOwnProperty("className") ? r[c].className : "";
+                                        return(
+                                            <td 
+                                                key={key + c}
+                                                className={className}
+                                            >
+                                                {value} 
+                                            </td>
+                                        )
+                                    })}
+                                </tr>
+                            )
+                        })}
                     </tbody>
                 </table>
             </div>
