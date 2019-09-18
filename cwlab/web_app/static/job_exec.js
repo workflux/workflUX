@@ -176,6 +176,7 @@ class RunList extends React.Component {
                 exec_profile: "-", 
                 retry_count: 0
         }
+        this.mounted = false;
         let runInfo = {}
         this.props.runIds.map( (r) => runInfo[r] = this.initRunInfo)
         this.state = {
@@ -216,17 +217,18 @@ class RunList extends React.Component {
             },
             route: routeGetRunStatus,
             onSuccess: (data, messages) => {
-                return({runInfo: data})
+                return({runInfo: data, doNotUpdate: !this.mounted})
             },
             onError: (messages) => {
                 let runInfo = {}
                 this.props.runIds.map( (r) => runInfo[r] = this.errorRunInfo)
-                return({runInfo: runInfo})
+                return({runInfo: runInfo, doNotUpdate: !this.mounted})
             }
         })
     }
 
     componentDidMount(){
+        this.mounted = true
         this.getRunInfo()
         // setup timer to automatically update
         this.timerId = setInterval(
@@ -239,6 +241,7 @@ class RunList extends React.Component {
 
     componentWillUnmount() {
         clearInterval(this.timerId);
+        this.mounted = false
     }
 
     componentDidUpdate(){
