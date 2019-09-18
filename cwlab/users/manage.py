@@ -163,6 +163,28 @@ def change_password(id, old_password, new_password, new_rep_password):
         user.set_password(new_password)
         db_commit()
 
+def get_all_users_info():
+    retry_delays = [1, 4]
+    for retry_delay in retry_delays:
+        try:
+            users = db.session.query(User).all()
+        except:
+            if retry_delay == retry_delays[-1]:
+                sys.exit("Could not connect to database.")
+            else:
+                sleep(retry_delay + retry_delay*random())
+    info = []
+    for user in users:
+        info.append({
+            "username": user.username,
+            "email": user.email,
+            "level": user.level,
+            "status": user.status,
+            "date_register": user.date_register,
+            "date_last_login": user.date_last_login
+        })
+    return info
+
 
 def interactively_add_user(level="", instruction="Please set the credentials of the user to be added."):
     success = False
