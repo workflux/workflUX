@@ -10,13 +10,21 @@ from cwlab.users.manage import load_user
 @app.route('/home/', methods=['GET','POST'])
 @app.route('/main/', methods=['GET','POST'])
 def main():
-    current_user_id = current_user.get_id()
-    username = None if current_user_id is None else load_user(current_user_id, return_username_only=True)
+    if app.config["ENABLE_USERS"] and current_user.is_authenticated:
+        logged_in = True
+        user = load_user(current_user.get_id())
+        username = user.username
+        user_level = user.level
+    else:
+        logged_in = False
+        username = None
+        user_level = None
     return render_template(
         'main.html', 
         login_enabled = app.config["ENABLE_USERS"],
-        logged_in = app.config["ENABLE_USERS"] and current_user.is_authenticated,
+        logged_in = logged_in,
         username = username,
+        user_level = user_level,
         auto_refresh_interval = app.config["WEB_AUTO_REFRESH_INTERVAL"],
         read_max_chars_from_file = app.config["READ_MAX_CHARS_FROM_FILE"]
     )
