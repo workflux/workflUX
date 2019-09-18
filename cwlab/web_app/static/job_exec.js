@@ -279,7 +279,7 @@ class RunList extends React.Component {
                 durationString += duration[0].toString() + "d "
             }
             if (duration[1] > 0){
-                duradurationStringtion += duration[1].toString() + "h "
+                durationString += duration[1].toString() + "h "
             }
             durationString += duration[2].toString() + "m "
         }
