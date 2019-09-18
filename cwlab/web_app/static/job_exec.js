@@ -75,6 +75,7 @@ class RunDetails extends React.Component {
             serverMessages: [],
             autoRefresh: true
         }
+        this.mounted = false
         this.getRunDetails = this.getRunDetails.bind(this);
         this.toggleAutoRefresh = this.toggleAutoRefresh.bind(this);
         this.handleBackButton = this.handleBackButton.bind(this);
@@ -82,6 +83,7 @@ class RunDetails extends React.Component {
     }
 
     componentDidMount(){
+        this.mounted = true
         // setup timer to automatically update
         this.getRunDetails()
         this.timerId = setInterval(
@@ -96,6 +98,7 @@ class RunDetails extends React.Component {
 
     componentWillUnmount() {
         clearInterval(this.timerId);
+        this.mounted = false
     }
   
     
@@ -112,7 +115,13 @@ class RunDetails extends React.Component {
             onSuccess: (data, messages) => {
                 return({
                     logContent: data.log,
-                    yamlContent: data.yaml
+                    yamlContent: data.yaml,
+                    doNotUpdate: !this.mounted
+                })
+            },
+            onError: (messages) => {
+                return({
+                    doNotUpdate: !this.mounted
                 })
             }
         })
