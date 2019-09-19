@@ -76,7 +76,7 @@ def get_user_info(id):
         "level": user.level
     }
 
-def add_user(username, email, level, password, status="enabled"):
+def add_user(username, email, level, password, status="active"):
     if check_if_username_exists(username):
         sys.exit("Username already exists.")
     user = User(
