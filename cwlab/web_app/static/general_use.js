@@ -342,17 +342,26 @@ class Table extends React.Component {
 
     handleSelectionChange(event){
         let newSelection = this.props.selection
-        newSelection[event.target.value] = event.target.checked
+        if (this.props.selection.includes(event.target.value)){
+            delete newSelection[newSelection.indexOf(event.target.value)]
+        }
+        else {
+            newSelection.push(event.target.value)
+        }
         this.props.handleSelectionChange(newSelection)
     }
 
     toggelRunSelectionAll(){
         // if all runs are selected, deselect all:
-        const select = !Object.values(this.props.selection).every(Boolean) 
-        let newSelection = {}
-        Object.keys(this.props.selection).map((r) =>
-            (newSelection[r] = select)
-        )
+        let newSelection
+        if (this.props.selection.length == 0 ){
+            newSelection = this.props.rowData.map((r) => (r[this.props.selectionKey].hasOwnProperty("value") ? 
+                r[this.props.selectionKey].value : r[this.props.selectionKey]
+            ))
+        }
+        else {
+            newSelection = []
+        }
         this.props.handleSelectionChange(newSelection)
     }
 
@@ -395,14 +404,26 @@ class Table extends React.Component {
                                                 type="checkbox" 
                                                 name="select"
                                                 value={key}
-                                                checked={this.props.selection[key]}
+                                                checked={this.props.selection.includes(key)}
                                                 onChange={this.handleSelectionChange}
                                             />
                                         </td>
                                     )}
                                     {this.props.columnKeys.map( (c) => {
-                                        let value = r[c].hasOwnProperty("value") ? r[c].value : r[c];
-                                        let className = r[c].hasOwnProperty("className") ? r[c].className : "";
+                                        let value
+                                        let className
+                                        if (r[c]){
+                                            value = r[c].hasOwnProperty("value") ? (
+                                                        r[c].value ? r[c].value : "-"
+                                                    ) :(
+                                                        r[c]
+                                                    )
+                                            className =  r[c].hasOwnProperty("className") ? r[c].className : "";
+                                        }
+                                        else {
+                                            value = "-"
+                                            className = ""
+                                        }
                                         return(
                                             <td 
                                                 key={key + c}

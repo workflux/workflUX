@@ -356,7 +356,7 @@ class JobContent extends React.Component {
         super(props)
         this.initState = {
             runIds: [],
-            runSelection: {},
+            runSelection: [],
             actionStatus: "loading",
             execProfile: this.props.execProfiles[0],
             runDangerZoneUnlocked: false,
@@ -423,24 +423,15 @@ class JobContent extends React.Component {
             },
             route: routeGetRunList,
             onSuccess: (data, messages) => {
-                let runSelection = {}
-                data.run_ids.map((r) =>
-                    (runSelection[r] = false)
-                )
                 return({
                     runIds: data.run_ids, 
-                    runSelection: runSelection
+                    runSelection: []
                 }) 
             }
         })
     }
 
     execRuns(){
-        const runSelection = this.state.runSelection
-        let selectedRuns = []
-        this.state.runIds.map((run) =>
-            runSelection[run] && (selectedRuns.push(run))
-        )
         this.ajaxRequest({
             statusVar: "actionStatus",
             statusValueDuringRequest: "starting",
@@ -448,7 +439,7 @@ class JobContent extends React.Component {
             sendData: {
                 cwl_target: this.props.cwlTarget,
                 job_id: this.props.jobId,
-                run_ids: selectedRuns,
+                run_ids: this.state.runSelection,
                 exec_profile: this.state.execProfile
             },
             route: routeStartExec
@@ -456,18 +447,13 @@ class JobContent extends React.Component {
     }
 
     terminateRuns(mode="terminate"){
-        const runSelection = this.state.runSelection
-        let selectedRuns = []
-        this.state.runIds.map((run) =>
-            runSelection[run] && (selectedRuns.push(run))
-        )
         this.ajaxRequest({
             statusVar: "actionStatus",
             statusValueDuringRequest: "terminating",
             messageVar: "actionRunDangerMessages",
             sendData: {
                 job_id: this.props.jobId,
-                run_ids: selectedRuns,
+                run_ids: this.state.runSelection,
                 mode: mode
             },
             route: routeTerminateRuns,
@@ -508,7 +494,7 @@ class JobContent extends React.Component {
             )
         }
         else if (this.props.whichRunDetails == null){
-            const is_run_selected= Object.values(this.state.runSelection).includes(true)
+            const is_run_selected= this.state.runSelection.length > 0
             const disable_run_actions = (! is_run_selected) || (this.state.actionStatus != "none")
             const disable_danger_run_actions = disable_run_actions || (! this.state.runDangerZoneUnlocked)
             return(
