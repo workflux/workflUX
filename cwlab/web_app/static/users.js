@@ -48,11 +48,15 @@ class AdminDashboard extends React.Component {
         super(props);
 
         this.state = {
-            actionStatus: "updating",
+            actionStatus: "",
             serverMessages: [],
+            actionMessages: [],
             userInfo: [],
             userSelection: [],
-            userFilter: "all"
+            userFilter: "all",
+            unlockDelete: false,
+            selectStatus: "active",
+            selectLevel: "user"
         }
 
         this.columnNames = {
@@ -66,14 +70,51 @@ class AdminDashboard extends React.Component {
 
         this.ajaxRequest = ajaxRequest.bind(this)
         this.handleSelectionChange = this.handleSelectionChange.bind(this)
+        this.modifyOrDeleteUser = this.modifyOrDeleteUser.bind(this)
+        this.changeUserFilter = this.changeUserFilter.bind(this)
+        this.toggleUnlockDelete = this.toggleUnlockDelete.bind(this)
+        this.changeSelect = this.changeSelect.bind(this)
         this.getUserInfo = this.getUserInfo.bind(this)
     }
 
     handleSelectionChange(newSelection){
-        this.props.setState({userSelection: newSelection})
+        this.setState({userSelection: newSelection})
     }
 
+    changeSelect(event){
+        this.setState({[event.target.name]: event.target.value})
+    }
     
+    changeUserFilter(event){
+        this.setState({
+            userSelection: [],
+            userFilter: event.target.value
+        })
+    }
+
+    modifyOrDeleteUser(action){
+        this.ajaxRequest({
+            route: routeModifyOrDeleteUsers,
+            statusVar: "actionStatus",
+            statusValueDuringRequest: action,
+            messageVar: "actionMessages",
+            sendData: {
+                action: action,
+                user_selection: this.state.userSelection,
+                value: action == "set_status" ? this.state.selectStatus : this.state.selectLevel
+            },
+            onSuccess: (data, messages) => {
+                this.getUserInfo()
+                return({userSelection: [], unlockDelete: false})
+            }
+        })
+    }
+
+    toggleUnlockDelete(value, isSet){
+
+        this.setState({unlockDelete: isSet})
+    }
+
     componentDidMount(){
         this.getUserInfo()
     }
@@ -81,6 +122,7 @@ class AdminDashboard extends React.Component {
     getUserInfo(){
         this.ajaxRequest({
             route: routeGetAllUsersInfo,
+            statusValueDuringRequest: "loading",
             onSuccess: (data, messages) => {
                 return({userInfo: data})
             }
@@ -89,6 +131,24 @@ class AdminDashboard extends React.Component {
 
 
     render() {
+        const disableActionButtons = this.state.userSelection.length == 0 || this.state.actionStatus != "none"
+        const disabledDelete = disableActionButtons || !this.state.unlockDelete
+        let rowData
+        if (this.state.userFilter == "all"){
+            rowData = this.state.userInfo
+        }
+        else if (this.state.userFilter == "only_inactive"){
+            rowData = this.state.userInfo.filter( (r) => r.status != "active")
+        }
+        else if (this.state.userFilter == "only_active"){
+            rowData = this.state.userInfo.filter( (r) => r.status == "active")
+        }
+        else if (this.state.userFilter == "only_admins"){
+            rowData = this.state.userInfo.filter( (r) => r.level == "admin")
+        }
+        else if (this.state.userFilter == "only_users"){
+            rowData = this.state.userInfo.filter( (r) => r.level == "user")
+        }
         return (
             <div>
                 <h3>Administrator Dashboard</h3>
@@ -103,20 +163,22 @@ class AdminDashboard extends React.Component {
                     <li>Granting privileged admin rights to trusted users.</li>
                 </ul>
                 
-                {/* <p>
+                
+                <h3>List of Users:</h3>
+                <p>
                     <span className="w3-text-green">Select which users to show:</span>&nbsp;
                     <select className="w3-button w3-white w3-border" 
-                        name="user_filter"
-                        onChange={this.handleUserFilterChange}
+                        name="userFilter"
+                        onChange={this.changeUserFilter}
                         value={this.state.userFilter}
                     >
                         <option value="all">all</option>
                         <option value="only_inactive">only inactive users</option>
-                        <option value="no">only active users</option>
-                        <option value="no">only admins</option>
+                        <option value="only_active">only active users</option>
+                        <option value="only_admins">only admins</option>
+                        <option value="only_users">only users</option>
                     </select>
-                </p> */}
-                
+                </p>
                 {this.state.actionStatus == "updating" ? (
                         <LoadingIndicator
                             size="large"
@@ -127,9 +189,9 @@ class AdminDashboard extends React.Component {
                             columnKeys={Object.keys(this.columnNames)}
                             columnNames={this.columnNames}
                             selectionEnabled={true}
-                            handleSelectionChange={this.props.changeRunSelection}
+                            handleSelectionChange={this.handleSelectionChange}
                             selection={this.state.userSelection}
-                            rowData={this.state.userInfo}
+                            rowData={rowData}
                             selectionKey="username"
                         />
                     )
@@ -142,9 +204,9 @@ class AdminDashboard extends React.Component {
                         <h4>Hints:</h4>
                         <p>
                             <b>Status:</b>&nbsp;
-                            Only users with an "active" Status can log in. 
+                            Only users with an "active" status can log in. 
                             Users with the status "awaiting approval" have newly registered.
-                            Users with the status "deactivate" have been deactivated by an administrator.
+                            Users with the status "inactive" have been deactivated by an administrator.
                         </p>
                         <p>
                             <b>Level:</b>&nbsp;
@@ -152,6 +214,93 @@ class AdminDashboard extends React.Component {
                         </p>
                     </div>
                 </Message>
+
+                <h3>Actions on Selected Users:</h3>
+                {this.state.userSelection.length == 0 &&
+                    <Message type="hint">
+                        Please select one or multiple users in the above list to enable following actions.
+                    </Message>
+                }
+                <div style={ {width: "100%"} }>
+                    <div
+                        className="w3-padding-small"
+                        style={ {display: "inline-block"} }
+                    >
+                        <span className="w3-text-green">Set status to:</span><br/>
+                        <select className="w3-button w3-white w3-border" 
+                            name="selectStatus"
+                            onChange={this.changeSelect}
+                            disabled={disableActionButtons}
+                            value={this.state.selectStatus}
+                        >
+                            <option value="active">active</option>
+                            <option value="inactive">inactive</option>
+                        </select>
+                        <ActionButton
+                            name="set_status"
+                            value="set_status"
+                            label="set"
+                            disabled={disableActionButtons}
+                            loading={this.state.actionMessages == "set_status"}
+                            onAction={this.modifyOrDeleteUser}
+                        />
+                    </div>
+                    <div
+                        className="w3-padding-small"
+                        style={ {display: "inline-block"} }
+                    >
+                        <span className="w3-text-green">Set level to:</span><br/>
+                        <select className="w3-button w3-white w3-border" 
+                            name="selectLevel"
+                            disabled={disableActionButtons}
+                            onChange={this.changeSelect}
+                            value={this.state.selectLevel}
+                        >
+                            <option value="user">user</option>
+                            <option value="admin">admin</option>
+                        </select>
+                        <ActionButton
+                            name="set_level"
+                            value="set_level"
+                            label="set"
+                            disabled={disableActionButtons}
+                            loading={this.state.actionMessages == "set_level"}
+                            onAction={this.modifyOrDeleteUser}
+                        />
+                    </div>
+                    <div
+                        className="w3-padding-small"
+                        style={ 
+                            {
+                                display: "inline-block", 
+                            }
+                        }
+                    >   
+                        <span className="w3-text-red">Delete users:</span><br/>
+                        <div 
+                            className="w3-container"
+                            style={ {backgroundColor: disabledDelete ? "hsl(0, 20%, 50%)" : "hsl(0, 40%, 50%)"}}
+                        >
+                            <BooleanSlider
+                                name="unlock_delete"
+                                value="unlock_delete"
+                                onChange={this.toggleUnlockDelete}
+                                disabled={disableActionButtons}
+                                checked={this.state.unlockDelete}
+                            /> &nbsp; unlock&nbsp;
+                            <ActionButton
+                                name="delete"
+                                value="delete"
+                                label="delete"
+                                disabled={disabledDelete}
+                                loading={this.state.actionMessages == "delete"}
+                                onAction={this.modifyOrDeleteUser}
+                            />
+                        </div>
+                    </div>
+                </div>                
+                
+                <DisplayServerMessages messages={this.state.actionMessages} />
                 
             </div>
         );
@@ -350,7 +499,7 @@ class UserAccount extends React.Component {
         this.itemNames = userLevel == "admin" ? (
                 [
                     <span><i className="fas fa-user"/>&nbsp;General Info</span>,
-                    <span><i className="fas fa-lock"/>&nbsp;Admin Dashboard</span>,
+                    <span><i className="fas fa-users"/>&nbsp;Admin Dashboard</span>,
                     <span><i className="fas fa-lock"/>&nbsp;Change Password</span>,
                     <span><i className="fas fa-trash-alt"/>&nbsp;Delete Account</span>,
                     <span><i className="fas fa-sign-out-alt"/>&nbsp;Logout</span>

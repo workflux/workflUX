@@ -185,6 +185,26 @@ def get_all_users_info():
         })
     return info
 
+def change_user_status_or_level(id, new_status=None, new_level=None):
+    user = load_user(id)
+    if not new_status is None:
+        user.status = new_status
+    if not new_level is None:
+        user.level = new_level
+    db_commit()
+
+def change_password(id, old_password, new_password, new_rep_password):
+    user = load_user(id)
+    if not user.check_password(old_password):
+        sys.exit("Old password is not valid.")
+    elif new_password != new_rep_password:
+        sys.exit("New passwords do not match.")
+    elif not check_format_conformance("password", new_password):
+        sys.exit(format_errors["password"])
+    else:
+        user.set_password(new_password)
+        db_commit()
+
 
 def interactively_add_user(level="", instruction="Please set the credentials of the user to be added."):
     success = False

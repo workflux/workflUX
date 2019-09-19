@@ -44,6 +44,7 @@
             const routeChangePassword = "{{ url_for('change_password') }}"
             const routeDeleteAccount = "{{ url_for('delete_account') }}"
             const routeLogout = "{{ url_for('logout') }}"
+            const routeModifyOrDeleteUsers = "{{ url_for('modify_or_delete_users') }}"
             const autoRefreshInterval = parseInt(parseFloat("{{ config.WEB_AUTO_REFRESH_INTERVAL }}")*1000)
             const readMaxCharsFromFile = parseInt("{{ config.READ_MAX_CHARS_FROM_FILE }}")
             const loginEnabled = "{{ config.ENABLE_USERS }}" === "True"

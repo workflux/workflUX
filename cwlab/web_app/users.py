@@ -6,7 +6,7 @@ from werkzeug.urls import url_parse
 from cwlab import app 
 from cwlab.users.manage import check_user_credentials, check_all_format_conformance, \
     add_user, get_user_info, change_password as change_password_, load_user, delete_user, \
-    get_all_users_info as get_all_users_info_
+    get_all_users_info as get_all_users_info_, change_user_status_or_level, get_user_by_username
 
 @app.route('/login/', methods=['POST'])
 def login():
@@ -116,6 +116,52 @@ def get_all_users_info():
             data = get_all_users_info_()
         else:
             sys.exit("You have to be admin to get this data.")
+    except SystemExit as e:
+        messages.append( { 
+            "type":"error", 
+            "text": str(e) 
+        } )
+    except:
+        messages.append( { 
+            "type":"error", 
+            "text":"An unkown error occured." 
+        } )
+    return jsonify({
+            "data": data,
+            "messages": messages
+        }
+    )
+
+@app.route('/modify_or_delete_users/', methods=['POST'])
+def modify_or_delete_users():
+    messages = []
+    data=[]
+    try:
+        data_req = request.get_json()
+        action = data_req["action"]
+        user_selection = data_req["user_selection"]
+        value = data_req["value"]
+        if action == "delete":
+            for user in user_selection:
+                delete_user(get_user_by_username(user).id)
+            messages.append( { 
+                "type":"success", 
+                "text":"Successfully deleted users: \"" + ", ".join(user_selection) + "\""
+            } )
+        if action == "set_status":
+            for user in user_selection:
+                change_user_status_or_level(get_user_by_username(user).id, new_status=value)
+            messages.append( { 
+                "type":"success", 
+                "text":"Successfully set status on users: \"" + ", ".join(user_selection) + "\""
+            } )
+        if action == "set_level":
+            for user in user_selection:
+                change_user_status_or_level(get_user_by_username(user).id, new_level=value)
+            messages.append( { 
+                "type":"success", 
+                "text":"Successfully set level on users: \"" + ", ".join(user_selection) + "\""
+            } )
     except SystemExit as e:
         messages.append( { 
             "type":"error", 
