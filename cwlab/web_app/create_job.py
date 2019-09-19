@@ -14,6 +14,7 @@ from cwlab.xls2cwl_job.read_xls import remove_non_printable_characters
 from time import sleep
 from shutil import move
 from json import loads as json_loads
+from cwlab.users.manage import login_required
 
 
 
@@ -23,6 +24,7 @@ def get_job_templ_list():   # returns list of job templates
     messages = []
     templates = []
     try:
+        login_required()
         templates = get_job_templates()
     except SystemExit as e:
         messages.append( { 
@@ -49,6 +51,7 @@ def get_job_templ_config_info():    # returns all parmeter and its default mode 
     template_attributes = []
     default_search_dir = ""
     try:
+        login_required()
         cwl_target = request.get_json()["cwl_target"]
         param_config_info = get_job_templ_info("config", cwl_target)
         template_attributes = get_job_templ_info("attributes", cwl_target)
@@ -80,6 +83,7 @@ def generate_param_form_sheet():    # generate param form sheet with data sent
     messages = []
     data = {}
     try:
+        login_required()
         request_json = request.get_json() 
         filename = str(request_json["job_id"]) + ".input." + str(request_json["sheet_format"])
         gen_form_sheet(
@@ -132,6 +136,7 @@ def send_filled_param_form_sheet():
     messages = []
     data = []
     try:
+        login_required()
         if 'file' not in request.files:
             sys.exit( 'No file received.')
 
@@ -210,6 +215,7 @@ def send_filled_param_values():
     messages = []
     data = []
     try:
+        login_required()
         request_json = request.get_json()
         param_values = request_json["param_values"]
         param_configs = request_json["param_configs"]
@@ -265,6 +271,7 @@ def create_job():    # generate param form sheet with data sent
     messages = []
     data = {}
     try:
+        login_required()
         request_json = request.get_json()
         job_id = str(request_json["job_id"])
         sheet_form = job_id + ".input." + str(request_json["sheet_format"])
@@ -350,6 +357,7 @@ def get_param_values():
     messages = []
     data = {}
     try:
+        login_required()
         request_json = request.get_json() 
         param_values, configs = gen_form_sheet(
             output_file_path = None,

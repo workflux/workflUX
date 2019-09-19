@@ -6,6 +6,7 @@ from werkzeug.utils import secure_filename
 from cwlab import app
 from cwlab.general_use import is_allowed_file, allowed_extensions_by_type, get_path
 from cwlab.xls2cwl_job import generate_xls_from_cwl as generate_job_template_from_cwl
+from cwlab.users.manage import login_required
 
 
 @app.route('/import_cwl/', methods=['POST'])
@@ -13,6 +14,7 @@ def import_cwl():
     messages = []
     data = []
     try:
+        login_required()
         if 'file' not in request.files:
             sys.exit( 'No file received.')
 

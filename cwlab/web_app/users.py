@@ -7,6 +7,7 @@ from cwlab import app
 from cwlab.users.manage import check_user_credentials, check_all_format_conformance, \
     add_user, get_user_info, change_password as change_password_, load_user, delete_user, \
     get_all_users_info as get_all_users_info_, change_user_status_or_level, get_user_by_username
+from cwlab.users.manage import login_required
 
 @app.route('/login/', methods=['POST'])
 def login():
@@ -90,6 +91,7 @@ def get_general_user_info():
     messages = []
     data={}
     try:
+        login_required()
         data = get_user_info(current_user.get_id())
     except SystemExit as e:
         messages.append( { 
@@ -112,10 +114,8 @@ def get_all_users_info():
     messages = []
     data=[]
     try:
-        if load_user(current_user.get_id()).level == "admin":
-            data = get_all_users_info_()
-        else:
-            sys.exit("You have to be admin to get this data.")
+        login_required(admin=True)
+        data = get_all_users_info_()
     except SystemExit as e:
         messages.append( { 
             "type":"error", 
@@ -137,6 +137,7 @@ def modify_or_delete_users():
     messages = []
     data=[]
     try:
+        login_required(admin=True)
         data_req = request.get_json()
         action = data_req["action"]
         user_selection = data_req["user_selection"]
@@ -183,6 +184,7 @@ def change_password():
     messages = []
     data={"success": False}
     try:
+        login_required()
         data_req = request.get_json()
         old_password = data_req["old_password"]
         new_password = data_req["new_password"]
@@ -214,6 +216,7 @@ def delete_account():
     messages = []
     data={"success": False}
     try:
+        login_required()
         data_req = request.get_json()
         username = data_req["username"]
         current_user_id = current_user.get_id()
@@ -246,6 +249,7 @@ def logout():
     messages = []
     data={"success": False}
     try:
+        login_required()
         logout_user()
         data["success"] = True
     except SystemExit as e:

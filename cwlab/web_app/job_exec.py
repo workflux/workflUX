@@ -17,14 +17,15 @@ from cwlab.exec.db import Exec
 from time import sleep
 from random import random
 from shutil import move
+from cwlab.users.manage import login_required
 
 @app.route('/get_job_list/', methods=['GET','POST'])
 def get_job_list():
     messages = []
     jobs = []
     try:
+        login_required()
         job_ids = get_job_ids()
-
         # for each dir:
         #   - check if form sheet present
         #   - if yes:
@@ -79,12 +80,12 @@ def get_job_list():
         }
     )
 
-
 @app.route('/get_run_list/', methods=['GET','POST'])
 def get_run_list():
     messages = []
     data = {}
     try:
+        login_required()
         data_req = request.get_json()
         job_id = data_req["job_id"]
         run_ids = get_run_ids(job_id)
@@ -110,6 +111,7 @@ def get_run_status():
     messages = []
     data={}
     try:
+        login_required()
         data_req = request.get_json()
         data = get_run_info(data_req["job_id"], data_req["run_ids"])
     except SystemExit as e:
@@ -135,6 +137,7 @@ def start_exec():    # returns all parmeter and its default mode (global/job spe
                                     # for a given xls config
     messages = []
     try:
+        login_required()
         data = request.get_json()
         cwl_target = data["cwl_target"]
         job_id = data["job_id"]
@@ -179,6 +182,7 @@ def get_run_details():
     messages = []
     data = {}
     try:
+        login_required()
         req_data = request.get_json()
         job_id = req_data["job_id"]
         run_id = req_data["run_id"]
@@ -209,6 +213,7 @@ def terminate_runs():
     messages = []
     data = {}
     try:
+        login_required()
         req_data = request.get_json()
         job_id = req_data["job_id"]
         run_ids = req_data["run_ids"]
@@ -250,6 +255,7 @@ def delete_job():
     messages = []
     data = {}
     try:
+        login_required()
         req_data = request.get_json()
         job_id = req_data["job_id"]
         results = delete_job_by_id(job_id)

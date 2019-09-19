@@ -7,13 +7,8 @@ from random import random
 import sys
 from re import match
 from datetime import datetime
-
-# if app.config["ENABLE_USERS"] and not login is None:
-#     user_loader = login.user_loader
-# else:
-#     def empty_func(*args, **kargs):
-#         pass
-#     user_loader = empty_func
+from flask_login import login_required
+from flask_login import current_user
 
 @login.user_loader
 def load_user(id, return_username_only=False):
@@ -45,6 +40,13 @@ def get_user_by_username(username):
             else:
                 sleep(retry_delay + retry_delay*random())
     return user
+
+def login_required(admin=False):
+    if app.config["ENABLE_USERS"]:
+        if not current_user.is_authenticated:
+            sys.exit("Login required.")
+        if admin and load_user(current_user.get_id()).level != "admin":
+            sys.exit("Admin required.")
 
 def check_if_username_exists(username):
         return not get_user_by_username(username) is None
