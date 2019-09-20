@@ -7,7 +7,56 @@ from cwlab.xls2cwl_job.web_interface import read_template_attributes as read_tem
 from cwlab.xls2cwl_job.web_interface import get_param_config_info as get_param_config_info_from_xls
 from cwlab import db
 from random import random
+from pathlib import Path
 basedir = os.path.abspath(os.path.dirname(__file__))
+
+def browse_dir(path,
+    ignore_files=False,
+    file_exts=[],
+    show_only_hits=False
+    ):
+    file_exts = ["."+e for e in file_exts]
+    abs_path = os.path.abspath(path)
+    dir_content_ = list(Path(abs_path).iterdir())
+    dir_content = []
+    for item in dir_content_:
+        is_dir = item.is_dir()
+        if is_dir or not ignore_files:
+            abs_path = item.absolute()
+            name = os.path.basename(abs_path)
+            file_ext = None if is_dir else os.path.splitext(file_)[1]
+            hit = True if not is_dir and (len(file_exts) == 0 or file_ext in file_exts) else False
+            if not show_only_hits or hit:
+                dir_content.append({
+                    "name": name,
+                    "abs_path": abs_path,
+                    "file_ext": file_ext,
+                    "hit": hit
+                })
+    return(dir_content)
+
+    for root, dir_, files in os.walk(abs_path):
+        for file_ in files:
+            file_ext = os.path.splitext(file_)[1]
+            if file_ext not in file_exts:
+                continue
+            if search_string != "" and search_string not in file_:
+                continue
+            if search_string != "" and not match(regex_pattern, file_):
+                continue
+            if ignore_subdirs and os.path.abspath(root) != abs_dir_path:
+                continue
+            file_reldir = os.path.relpath(root, abs_dir_path)
+            file_relpath = os.path.join(file_reldir, file_) 
+            file_nameroot = os.path.splitext(file_)[0]
+            hits.append({
+                "file_name":file_, 
+                "file_nameroot":file_nameroot, 
+                "file_relpath":file_relpath, 
+                "file_reldir":file_reldir, 
+                "file_ext":file_ext
+            })
+    return hits
 
 def fetch_files_in_dir(dir_path, # searches for files in dir_path
     file_exts, # match files with extensions in this list
