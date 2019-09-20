@@ -67,11 +67,15 @@ class Config(object):
         )
         self.ALLOWED_INPUT_DIRS = (
             self.CONFIG_FILE_content.get('ALLOWED_INPUT_DIRS') or 
-            {"ROOT": "/"}
+            [{"ROOT": "/"}]
         )
         self.ALLOWED_UPLOAD_DIRS = (
             self.CONFIG_FILE_content.get('ALLOWED_UPLOAD_DIRS') or 
-            {"ROOT": "/"}
+            [{"ROOT": "/"}]
+        )
+        self.ALLOWED_DOWNLOAD_DIRS = (
+            self.CONFIG_FILE_content.get('ALLOWED_DOWNLOAD_DIRS') or 
+            [{"ROOT": "/"}]
         )
         
         self.DEBUG = (
