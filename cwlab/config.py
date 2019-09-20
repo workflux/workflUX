@@ -65,6 +65,14 @@ class Config(object):
             self.CONFIG_FILE_content.get('DB_DIR') or  
             os.path.join( cwlab_fallback_dir, "database")
         )
+        self.ALLOWED_INPUT_DIRS = (
+            self.CONFIG_FILE_content.get('ALLOWED_INPUT_DIRS') or 
+            {"ROOT": "/"}
+        )
+        self.ALLOWED_UPLOAD_DIRS = (
+            self.CONFIG_FILE_content.get('ALLOWED_UPLOAD_DIRS') or 
+            {"ROOT": "/"}
+        )
         
         self.DEBUG = (
             os.environ.get('CWLAB_DEBUG') == "True" or
