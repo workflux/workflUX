@@ -135,6 +135,15 @@ def get_path(which, job_id=None, run_id=None, param_sheet_format=None, cwl_targe
             if len(hits) == 0:
                 sys.exit("No spreadsheet found for job " + job_id)
             path = os.path.join(path, hits[0]["file_name"])
+    elif which == "job_param_sheet_temp":
+        if param_sheet_format:
+            path = os.path.join(app.config["EXEC_DIR"], job_id, "job_templ." + param_sheet_format)
+        else:
+            path = os.path.join(app.config["EXEC_DIR"], job_id)
+            hits = fetch_files_in_dir(path, allowed_extensions_by_type["spreadsheet"], "job_templ")
+            if len(hits) == 0:
+                sys.exit("No spreadsheet found for job " + job_id)
+            path = os.path.join(path, hits[0]["file_name"])
     elif which == "runs_yaml_dir":
         path = os.path.join(app.config["EXEC_DIR"], job_id, "runs_params")
     elif which == "run_yaml":
@@ -149,8 +158,8 @@ def get_path(which, job_id=None, run_id=None, param_sheet_format=None, cwl_targe
         path = os.path.join(app.config['EXEC_DIR'], job_id, "runs_log", run_id + ".log")
     elif which == "debug_run_log":
         path = os.path.join(app.config['EXEC_DIR'], job_id, "runs_log", run_id + ".debug.log")
-    elif which == "job_specific_input_dir":
-        path = os.path.join(app.config['EXEC_DIR'], job_id, "inputs")
+    elif which == "runs_input_dir":
+        path = os.path.join(app.config['EXEC_DIR'], job_id, "runs_inputs")
     return path
 
 def get_run_ids(job_id):
@@ -211,7 +220,7 @@ def get_allowed_base_dirs(job_id=None, run_id=None):
     if not job_id is None:
         job_specifc_dirs = {
             "upload": {
-                "JOB_INPUT_DIR": get_path("job_specific_input_dir", job_id=job_id)
+                "JOB_INPUT_DIR": get_path("runs_input_dir", job_id=job_id)
             },
             "download": {
                 "JOB_OUTPUT_DIR": get_path("runs_out_dir", job_id=job_id)

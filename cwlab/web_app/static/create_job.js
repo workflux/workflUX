@@ -1167,6 +1167,8 @@ class JobCreationPrep extends React.Component {
             paramModes[p.param_name] = p.is_run_specific
         )
         this.state = {
+            actionStatus: "none",
+            serverMessages: [],
             run_mode: false, 
             run_names: ["run1", "run2", "run3"],
             param_modes: paramModes,
@@ -1199,6 +1201,8 @@ class JobCreationPrep extends React.Component {
         this.changeSearchDir = this.changeSearchDir.bind(this)
         this.changeIncludeSubDirsForSearching = this.changeIncludeSubDirsForSearching.bind(this)
         this.changePathValAndSearch = this.changePathValAndSearch.bind(this)
+        this.prepareJobEnv = this.prepareJobEnv.bind(this)
+        this.ajaxRequest = ajaxRequest.bind(this)
     }
 
     changeJobName(event){
@@ -1242,6 +1246,21 @@ class JobCreationPrep extends React.Component {
         this.setState({
             searchPaths: searchPaths,
             validatePaths: validatePaths
+        })
+    }
+
+    prepareJobEnv(value){
+        this.ajaxRequest({
+            statusVar: "actionStatus",
+            statusValueDuringRequest: value,
+            messageVar: "serverMessages",
+            sendData: {
+                job_id: this.jobIdNum + "_" + this.state.job_name
+            },
+            route: routePrepareJobEnv,
+            onSuccess: (data, messages) => {
+                return({display: value})
+            }
         })
     }
 
@@ -1356,15 +1375,18 @@ class JobCreationPrep extends React.Component {
                             name="form_html"
                             value="form_html"
                             label={<span><i className="fas fa-list-alt"></i>&nbsp;HTML form</span>}
-                            onAction={this.toggleParamForm}
+                            loading={this.actionStatus == "form_html"}
+                            onAction={this.prepareJobEnv}
                         />&nbsp; or &nbsp;
                         <ActionButton
                             name="form_ssheet"
                             value="form_ssheet"
+                            loading={this.actionStatus == "form_ssheet"}
                             label={<span><i className="fas fa-file-excel"></i>&nbsp;Spreadsheet</span>}
-                            onAction={this.toggleParamForm}
+                            onAction={this.prepareJobEnv}
                         />
                     </p>
+                    <DisplayServerMessages messages={this.state.serverMessages} />
                 </div>
             )
         }

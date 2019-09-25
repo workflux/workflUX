@@ -34,7 +34,7 @@ def get_job_templ_list():   # returns list of job templates
     except:
         messages.append( { 
             "type":"error", 
-            "text":"An uknown error occured reading job templates for the imported CWL documents." 
+            "text":"An uknown error occured." 
         } )
     return jsonify({
             "data": templates,
@@ -64,7 +64,7 @@ def get_job_templ_config_info():    # returns all parmeter and its default mode 
     except:
         messages.append( { 
             "type":"error", 
-            "text":"An uknown error occured reading the job template config." 
+            "text":"An uknown error occured." 
         } )
     print(messages)
     return jsonify({
@@ -85,20 +85,30 @@ def generate_param_form_sheet():    # generate param form sheet with data sent
     try:
         login_required()
         request_json = request.get_json() 
-        filename = str(request_json["job_id"]) + ".input." + str(request_json["sheet_format"])
+        sheet_format = request_json["sheet_format"]
+        job_id = request_json["job_id"]
+        cwl_target = request_json["cwl_target"]
+        param_modes = request_json["param_modes"]
+        run_names = request_json["run_names"]
+        run_mode = request_json["run_mode"]
+        try:
+            param_form_sheet = get_path("job_param_sheet_temp", job_id=job_id)
+            os.remove(param_form_sheet)
+        except:
+            pass
+
+        output_file_path = get_path("job_param_sheet_temp", job_id=job_id, param_sheet_format=sheet_format)
+        print(output_file_path)
         gen_form_sheet(
-            output_file_path = os.path.join(
-                app.config["TEMP_DIR"],
-                filename
-            ),
-            template_config_file_path = get_path("job_templ", cwl_target=request_json["cwl_target"]),
-            has_multiple_runs= request_json["run_mode"],
-            run_names=request_json["run_names"],
-            param_is_run_specific=request_json["param_modes"],
+            output_file_path = output_file_path,
+            template_config_file_path = get_path("job_templ", cwl_target=cwl_target),
+            has_multiple_runs=run_mode,
+            run_names=run_names,
+            param_is_run_specific=param_modes,
             show_please_fill=True,
-            config_attributes={"CWL": request_json["cwl_target"]}
+            config_attributes={"CWL": cwl_target}
         )
-        data["get_form_sheet_href"] = url_for("get_param_form_sheet", form_sheet_filename=filename)
+        data["get_form_sheet_href"] = url_for("get_param_form_sheet", job_id=job_id)
     except SystemExit as e:
         messages.append( { 
             "type":"error", 
@@ -107,7 +117,7 @@ def generate_param_form_sheet():    # generate param form sheet with data sent
     except:
         messages.append( { 
             "type":"error", 
-            "text":"An uknown error occured reading the job template config." 
+            "text":"An uknown error occured." 
         } )
     return jsonify({
         "data":data,
@@ -115,24 +125,19 @@ def generate_param_form_sheet():    # generate param form sheet with data sent
     })
 
 
-@app.route('/get_param_form_sheet/<form_sheet_filename>', methods=['GET','POST'])
-def get_param_form_sheet(form_sheet_filename):
+@app.route('/get_param_form_sheet/<job_id>', methods=['GET','POST'])
+def get_param_form_sheet(job_id):
     messages = []
     data = {}
     try:
         login_required()
-    if(
-        match(r'.*\.input\.(' + "|".join(allowed_extensions_by_type["spreadsheet"]) + r')$', 
-        form_sheet_filename)
-    ):
+        sheet_path = get_path("job_param_sheet_temp", job_id=job_id)
         return send_from_directory(
-            os.path.abspath(app.config["TEMP_DIR"]),
-            form_sheet_filename,
-            attachment_filename=form_sheet_filename, 
+            os.path.dirname(sheet_path),
+            os.path.basename(sheet_path),
+            attachment_filename=job_id + ".input_params" + os.path.splitext(sheet_path)[1],
             as_attachment=True
         )
-    else:
-            sys.exit("Invalid request.")
     except SystemExit as e:
         messages.append( { 
             "type":"error", 
@@ -141,7 +146,7 @@ def get_param_form_sheet(form_sheet_filename):
     except:
         messages.append( { 
             "type":"error", 
-            "text":"An uknown error occured reading the job template config." 
+            "text":"An uknown error occured." 
         } )
     return jsonify({
         "data":data,
@@ -172,8 +177,7 @@ def send_filled_param_form_sheet():
         metadata = json_loads(request.form.get("meta"))
         print(metadata)
         job_id = metadata["job_id"]
-        import_filename = job_id + ".input." + import_fileext
-        import_filepath = os.path.join(app.config['TEMP_DIR'], import_filename)
+        import_filepath = get_path("job_param_sheet_temp", job_id=job_id, param_sheet_format=import_fileext)
         import_file.save(import_filepath)
 
         validate_paths = metadata["validate_paths"]
@@ -194,7 +198,7 @@ def send_filled_param_form_sheet():
     except:
         messages.append( { 
             "type":"error", 
-            "text":"An uknown error occured while uploading." 
+            "text":"An uknown error occured." 
         } )
     
     if len(messages) == 0:
@@ -215,7 +219,7 @@ def send_filled_param_form_sheet():
         except:
             messages.append( { 
                 "type":"error", 
-                "text":"An uknown error occured while validating the form sheet." 
+                "text":"An uknown error occured." 
             } )
 
     if len(messages) == 0:
@@ -240,8 +244,7 @@ def send_filled_param_values():
         cwl_target = request_json["cwl_target"]
 
         job_id = request_json["job_id"]
-        import_filename = job_id + ".input.xlsx"
-        import_filepath = os.path.join(app.config['TEMP_DIR'], import_filename)
+        import_filepath = get_path("job_param_sheet_temp", job_id=job_id, param_sheet_format="xlsx")
 
         validate_paths = request_json["validate_paths"]
         search_paths = request_json["search_paths"]
@@ -272,7 +275,7 @@ def send_filled_param_values():
     except:
         messages.append( { 
             "type":"error", 
-            "text":"An uknown error occured while validating the form sheet." 
+            "text":"An uknown error occured." 
         } )
 
     if len(messages) == 0:
@@ -283,6 +286,48 @@ def send_filled_param_values():
     
     return jsonify({"data":data,"messages":messages})
 
+@app.route('/prepare_job_env/', methods=['POST'])
+def prepare_job_env():    # generate param form sheet with data sent
+                                    # by the client
+    messages = []
+    data = {}
+    try:
+        login_required()
+        request_json = request.get_json()
+        job_id = request_json["job_id"]
+
+        # prepare job directory
+        job_dir = get_path("job_dir", job_id)
+        if not os.path.exists(job_dir):
+            os.mkdir(job_dir)
+        runs_yaml_dir = get_path("runs_yaml_dir", job_id)
+        if not os.path.exists(runs_yaml_dir):
+            os.mkdir(runs_yaml_dir)
+        runs_out_dir = get_path("runs_out_dir", job_id)
+        if not os.path.exists(runs_out_dir):
+            os.mkdir(runs_out_dir)
+        runs_log_dir = get_path("runs_log_dir", job_id)
+        if not os.path.exists(runs_log_dir):
+            os.mkdir(runs_log_dir)
+        runs_input_dir = get_path("runs_input_dir", job_id)
+        if not os.path.exists(runs_input_dir):
+            os.mkdir(runs_input_dir)
+
+    except SystemExit as e:
+        messages.append( { 
+            "type":"error", 
+            "text": str(e) 
+        } )
+    except:
+        messages.append( { 
+            "type":"error", 
+            "text":"An uknown error occured." 
+        } )
+    return jsonify({
+        "data":data,
+        "messages":messages
+    })
+
 @app.route('/create_job/', methods=['POST'])
 def create_job():    # generate param form sheet with data sent
                                     # by the client
@@ -291,15 +336,15 @@ def create_job():    # generate param form sheet with data sent
     try:
         login_required()
         request_json = request.get_json()
-        job_id = str(request_json["job_id"])
-        sheet_form = job_id + ".input." + str(request_json["sheet_format"])
-        sheet_form_path = os.path.join(app.config['TEMP_DIR'], sheet_form)
+        job_id = request_json["job_id"]
+        sheet_format = request_json["sheet_format"]
+        sheet_form_temp = get_path("job_param_sheet_temp", job_id=job_id, param_sheet_format=sheet_format)
 
-        if not os.path.isfile(sheet_form_path):
-            sys.exit("Could not find the filled parameter sheet \"" + sheet_form + "\".")
+        if not os.path.isfile(sheet_form_temp):
+            sys.exit("Could not find the filled parameter sheet \"" + sheet_form_temp + "\".")
         
-        if not is_allowed_file(sheet_form, type="spreadsheet"):
-            sys.exit( "The filled parameter sheet \"" + sheet_form + "\" has the wrong file type. " +
+        if not is_allowed_file(sheet_form_temp, type="spreadsheet"):
+            sys.exit( "The filled parameter sheet \"" + sheet_form_temp + "\" has the wrong file type. " +
                 "Only files with following extensions are allowed: " + 
                 ", ".join(allowed_extensions_by_type["spreadsheet"]))
         
@@ -317,19 +362,14 @@ def create_job():    # generate param form sheet with data sent
                     "\" does not exist or is not a directory."
                 )
 
-        # prepare job directory
-        job_dir = os.path.join(app.config["EXEC_DIR"], job_id)
-        os.mkdir(job_dir)
-        runs_yaml_dir = get_path("runs_yaml_dir", job_id)
-        os.mkdir(runs_yaml_dir)
-        runs_out_dir = get_path("runs_out_dir", job_id)
-        os.mkdir(runs_out_dir)
-        runs_log_dir = get_path("runs_log_dir", job_id)
-        os.mkdir(runs_log_dir)
-
         # Move form sheet to job dir:
-        sheet_form_dest_path = get_path("job_param_sheet", job_id=job_id, param_sheet_format=str(request_json["sheet_format"]))
-        move(sheet_form_path, sheet_form_dest_path)
+        try:
+            sheet_form = get_path("job_param_sheet", job_id=job_id)
+            os.remove(sheet_form)
+        except:
+            pass
+        sheet_form_dest_path = get_path("job_param_sheet", job_id=job_id, param_sheet_format=sheet_format)
+        move(sheet_form_temp, sheet_form_dest_path)
         
         # create yaml runs:
         make_yaml_runs(
@@ -338,7 +378,7 @@ def create_job():    # generate param form sheet with data sent
             default_run_id=get_job_name_from_job_id(job_id),
             always_include_run_in_output_name=True,
             output_suffix=".yaml",
-            output_dir=runs_yaml_dir,
+            output_dir=get_path("runs_yaml_dir", job_id=job_id),
             validate_paths=validate_paths, 
             search_paths=search_paths, 
             search_subdirs=include_subdirs_for_searching, 
@@ -348,11 +388,6 @@ def create_job():    # generate param form sheet with data sent
         messages.append( { 
             "type":"success", 
             "text":"Successfully created job \"" + job_id + "\"." 
-        } )
-    except FileExistsError as e:
-        messages.append( { 
-            "type":"error", 
-            "text": "Job already exists."
         } )
     except SystemExit as e:
         messages.append( { 
