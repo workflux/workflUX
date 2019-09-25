@@ -117,6 +117,10 @@ def generate_param_form_sheet():    # generate param form sheet with data sent
 
 @app.route('/get_param_form_sheet/<form_sheet_filename>', methods=['GET','POST'])
 def get_param_form_sheet(form_sheet_filename):
+    messages = []
+    data = {}
+    try:
+        login_required()
     if(
         match(r'.*\.input\.(' + "|".join(allowed_extensions_by_type["spreadsheet"]) + r')$', 
         form_sheet_filename)
@@ -128,7 +132,21 @@ def get_param_form_sheet(form_sheet_filename):
             as_attachment=True
         )
     else:
-        return "invalide request"
+            sys.exit("Invalid request.")
+    except SystemExit as e:
+        messages.append( { 
+            "type":"error", 
+            "text": str(e) 
+        } )
+    except:
+        messages.append( { 
+            "type":"error", 
+            "text":"An uknown error occured reading the job template config." 
+        } )
+    return jsonify({
+        "data":data,
+        "messages":messages
+    })
 
 
 @app.route('/send_filled_param_form_sheet/', methods=['POST'])
