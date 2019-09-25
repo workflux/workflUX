@@ -251,7 +251,7 @@ class RunList extends React.Component {
     }
 
     getStatusColor(status){
-        const statusColorClass = {
+        const statusclassName = {
             "Loading": "w3-grey",
             "not started yet": "w3-grey",
             "queued": "w3-grey",
@@ -261,8 +261,8 @@ class RunList extends React.Component {
             "finishing": "w3-amber",
             "finished": "w3-green",
         }
-        if (Object.keys(statusColorClass).includes(status)){
-            return(statusColorClass[status])
+        if (Object.keys(statusclassName).includes(status)){
+            return(statusclassName[status])
         } else{
             return("w3-red")
         }
@@ -741,7 +741,7 @@ class JobList extends React.Component {
                     job.job_id.substring(13,job.job_id.length)
                 }<br/>
                 <IneditableValueField
-                    backColorClass="w3-theme"
+                    backclassName="w3-theme"
                 >
                     {job.cwl_target}
                 </IneditableValueField>

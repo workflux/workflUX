@@ -53,9 +53,10 @@ class PathValAndSearch extends React.Component{
         this.props.changePathValAndSearch(searchPaths, validatePaths)
     }
 
-    handleChangeSearchDir(event){
-        this.props.changeSearchDir(event.currentTarget.value)
+    handleChangeSearchDir(name, value){
+        this.props.changeSearchDir(value)
     }
+    
 
     render(){
         const validate_or_search = this.props.validatePaths ? (
@@ -84,13 +85,13 @@ class PathValAndSearch extends React.Component{
                         </li>
                     </ul>
                     <span className="w3-text-green">Search directory: </span>
-                    <input
-                        className="w3-input"
-                        type="text"
-                        name={"select_input_dir"}
+                    <BrowseDirTextField
+                        name="select_input_dir"
                         value={this.props.searchDir}
                         onChange={this.handleChangeSearchDir}
-                        required={true}
+                        ignoreFiles={false}
+                        fileExts={[]}
+                        showOnlyHits={false}
                     />
                     <br/>
                     <span className="w3-text-green">Include sub-directories for searching: </span>
@@ -351,7 +352,7 @@ class ParamForm extends React.Component{
         this.headerHeight = "35px"
 
         this.checkIfNull = this.checkIfNull.bind(this);
-        this.fieldBackgroundColorClass = this.fieldBackgroundColorClass.bind(this);
+        this.fieldBackgroundclassName = this.fieldBackgroundclassName.bind(this);
         this.changeRunIdFocus = this.changeRunIdFocus.bind(this);
     }
 
@@ -368,7 +369,7 @@ class ParamForm extends React.Component{
         return isNull
     }
 
-    fieldBackgroundColorClass(isNull){
+    fieldBackgroundclassName(isNull){
         return(
             isNull ? ("param-field-isnull") : ("param-field-notnull")
         )
@@ -392,7 +393,7 @@ class ParamFormGlobalSingle extends ParamForm{
                     {Object.keys(this.props.paramValues).map( (p) => (
                             <tr 
                                 key={p} 
-                                className={this.fieldBackgroundColorClass(isNull[p])} 
+                                className={this.fieldBackgroundclassName(isNull[p])} 
                                 style={ {height: this.headerHeight} }
                             >
                                 <td style={ {padding: "8px", width: "auto"} }>
@@ -443,7 +444,7 @@ class ParamFormGlobalArray extends ParamForm{
                             {Object.keys(this.props.paramValues).map( (p) => (
                                     <td 
                                         key={p} 
-                                        className={this.fieldBackgroundColorClass(isNull[p]) + " w3-cell-top"}
+                                        className={this.fieldBackgroundclassName(isNull[p]) + " w3-cell-top"}
                                         style={ {padding: "8px", minWidth: this.columnWidth} }
                                     >
                                         <table><tbody>
@@ -526,7 +527,7 @@ class ParamFormRunSingle extends ParamForm{
                             {Object.keys(this.props.paramValues).map( (p) => (
                                 <td 
                                     key={p} 
-                                    className={this.fieldBackgroundColorClass(false) + " w3-cell-top"}
+                                    className={this.fieldBackgroundclassName(false) + " w3-cell-top"}
                                     style={ {padding: "8px", minWidth: this.columnWidth} }
                                 >
                                     <table><tbody>
@@ -613,7 +614,7 @@ class ParamFormRunArray extends ParamForm{
                                 {Object.keys(this.props.paramValues).map( (p) => (
                                     <td 
                                         key={p} 
-                                        className={this.fieldBackgroundColorClass(isNull[p]) + " w3-cell-top"}
+                                        className={this.fieldBackgroundclassName(isNull[p]) + " w3-cell-top"}
                                         style={ {padding: "8px", minWidth: this.columnWidth} }
                                     >
                                         <table><tbody>
@@ -691,6 +692,7 @@ class ParamFormRunArray extends ParamForm{
         )
     }
 }
+
 class JobParamFormHTML extends React.Component {
     constructor(props){
         super(props);
@@ -774,7 +776,6 @@ class JobParamFormHTML extends React.Component {
                     })
                 }
             })
-
     }
 
     validateParamValues(){

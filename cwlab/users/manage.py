@@ -251,4 +251,3 @@ def interactively_add_user(level="", instruction="Please set the credentials of 
                 success = True
             except Exception as e:
                 print("An error occured: " + str(e))
-            

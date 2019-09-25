@@ -79,24 +79,24 @@ String.prototype.replaceAll = function(search, replacement) {
 
 class IneditableValueField extends React.Component {
     // Input:
-    // props.backColorClass e.g. w3-metro-darken w3-theme-dark
-    // props.textColorClass e.g. w3-text-green
+    // props.backclassName e.g. w3-metro-darken w3-theme-dark
+    // props.textclassName e.g. w3-text-green
     render() {
         const style = {
             fontFamily: "courier",
             padding: "2px"
         }
-        let backColorClass = "w3-metro-darken"
-        let textColorClass = ""
-        if (this.props.backColorClass){
-            backColorClass = this.props.backColorClass
+        let backclassName = "w3-metro-darken"
+        let textclassName = ""
+        if (this.props.backclassName){
+            backclassName = this.props.backclassName
         }
-        if (this.props.textColorClass){
-            textColorClass = this.props.textColorClass
+        if (this.props.textclassName){
+            textclassName = this.props.textclassName
         }
         return( 
             <span 
-                className={backColorClass + " " + textColorClass} 
+                className={backclassName + " " + textclassName} 
                 style={style}> 
                 {this.props.children} 
             </span> 
@@ -236,28 +236,44 @@ class ActionButton extends React.Component {
         super(props);
         // props.name
         // props.value
-        // props.colorClass set color class default is w3-black
+        // props.className set color class default is w3-black
         // props.onAction function to execute on click
         // props.label labeling
         // props.loading if true, button will be disabled and loading indicator is shown
         // props.disabled if true, disable without loading indicator
         // props.smallPadding true/false
+        // props.style
+        // props.forwardEvent
         this.handleAction = this.handleAction.bind(this)
     }
     
     handleAction(event){
-        this.props.onAction(event.currentTarget.value)
+        if (this.props.forwardEvent){
+            this.props.onAction({
+                target:{
+                    value: this.props.value,
+                    name: this.props.name
+                }
+            })
+        }
+        else{
+            this.props.onAction(this.props.value)
+        }
     }
 
     render() {
-        const style = {marginTop: "2px", marginBottom: "2px"}
+        const style = this.props.style ? (
+                this.props.style
+            ) : (
+                {marginTop: "2px", marginBottom: "2px", width: this.props.width}
+            )
         return( 
             <button style={style}
                 name={this.props.name}
                 value={this.props.value}
                 className={
                     "w3-button" +
-                    (this.props.colorClass ? (" " + this.props.colorClass) : " w3-black") +
+                    (this.props.className ? (" " + this.props.className) : " w3-black") +
                     (this.props.smallPadding ? (" w3-padding-small") : "")
                 }
                 onClick={this.handleAction}
@@ -383,7 +399,7 @@ class Table extends React.Component {
                                         value="select all"
                                         label="all"
                                         onAction={this.toggelRunSelectionAll}
-                                        colorClass="w3-black w3-text-green"
+                                        className="w3-black w3-text-green"
                                         smallPadding={true}
                                     />
                                 </th>
@@ -499,7 +515,7 @@ class SideBarPanel extends React.Component {
             <div className="w3-row">
                 <div 
                     className="w3-card w3-sidebar w3-bar-block w3-col l2 m4 s4 w3-metro-darken"
-                    style={ {width:"200px", overflowY: "auto"} }
+                    style={ {width:"280px", overflowY: "auto"} }
                 >
                     <div className="w3-bar-item w3-text-green">
                         {this.props.label}
@@ -521,7 +537,7 @@ class SideBarPanel extends React.Component {
                 </div>
                 <div 
                     className="w3-col s10 m8 s8 w3-panel"  
-                    style={ {marginLeft:"200px", width: "calc(100% - 200px)"} }
+                    style={ {marginLeft:"280px", width: "calc(100% - 280px)"} }
                 >
                     {this.props.itemContent}
                 </div>
@@ -675,6 +691,356 @@ class AjaxComponent extends React.Component {
     }
 }
 
+class BrowseDir extends React.Component {
+    constructor(props){
+        super(props);
+        // props.path
+        // props.ignoreFiles
+        // props.fileExts
+        // props.showOnlyHits
+        // props.selectDir
+        // props.additionalInputDirs
+        // props.additionalUploadDirs
+        // props.additionalDownloadDirs
+        // props.allowInput
+        // props.allowUpload
+        // props.allowDownload
+
+        this.allowedDirs = {
+            input: this.props.additionalInputDirs ? (
+                    Object.assign(this.props.additionalInputDirs, allowedInputDirs)
+                ) : (
+                    allowedInputDirs
+                ),
+            upload: this.props.additionalUploadDirs ? (
+                    Object.assign(this.props.additionalUploadDirs, allowedUploadDirs) 
+                ) : (
+                    allowedUploadDirs
+                ),
+            download: this.props.additionalDownloadDirs ? (
+                    Object.assign(this.props.additionalDownloadDirs, allowedDownloadDirs)
+                ) : (
+                    allowedDownloadDirs
+                )
+        }
+        
+        console.log(this.allowedDirs)
+
+        this.allowed = {
+            input: this.allowedInput && Object.keys(this.allowedDirs.input).length > 0 ? true : false,
+            upload: this.allowUpload && Object.keys(this.allowedDirs.upload).length > 0 ? true : false,
+            download: this.allowDownload && Object.keys(this.allowedDirs.download).length > 0 ? true : false
+        }
+
+        this.state = {
+            dirPath: this.props.path,
+            address: this.props.path,
+            actionStatus: "init",
+            serverMessages: [],
+            items: [],
+            selectedItem: this.props.path,
+            baseDir: {
+                input: this.allowed.input ? (
+                        Object.keys(this.allowedDirs.input)[0] 
+                    ) : (
+                        null
+                    ),
+                upload: this.allowed.upload ? (
+                        Object.keys(this.allowedDirs.upload)[0] 
+                    ) : (
+                        null
+                    ),
+                download: this.allowed.download ? (
+                        Object.keys(this.allowedDirs.download)[0] 
+                    ) : (
+                        null
+                    ),
+            },
+            currentFocus: this.allowed.input ? (
+                    "input"
+                ) : (
+                    this.allowed.upload ? (
+                            "upload"
+                        ) : (
+                            "download"
+                        )
+                )
+        };  
+
+        this.ajaxRequest = ajaxRequest.bind(this);
+        this.getItemsInDir = this.getItemsInDir.bind(this);
+        this.handleAction = this.handleAction.bind(this);
+        this.changeStateVar = this.changeStateVar.bind(this);
+        this.changeBaseDir = this.changeBaseDir.bind(this);
+    }
+
+    componentDidMount(){
+        this.getItemsInDir()
+    }
+
+    getItemsInDir(getParentDir, targetDir){
+        this.ajaxRequest({
+            statusVar: "actionStatus",
+            statusValueDuringRequest: "loading",
+            messageVar: "serverMessages",
+            sendData: {
+                path: targetDir ? targetDir : this.state.dirPath,
+                ignore_files: this.props.ignoreFiles,
+                file_exts: this.props.fileExts, 
+                show_only_hits: this.props.showOnlyHits,
+                get_parent_dir: getParentDir ? true : false
+            },
+            route: routeBrowseDir,
+            onSuccess: (data, messages) => {
+                return({
+                    items: data.items,
+                    dirPath: data.dir,
+                    address: data.dir
+                })
+            }
+        })
+    }
+
+    handleAction(event){
+        if (event.target.name == "up"){
+            this.getItemsInDir(true, this.state.dirPath)
+        }
+        else if (event.target.name == "refresh"){
+            this.getItemsInDir(false, this.state.dirPath)
+        }
+        else if (event.target.name == "open"){
+            this.getItemsInDir(false, event.target.value)
+        }
+        else if (event.target.name == "address"){
+            if (event.key == "Enter"){
+                this.getItemsInDir(false, event.target.value)
+            }
+        }
+    }
+
+    changeStateVar(event){
+        this.setState({
+            [event.target.name]: event.target.value
+        })
+    }
+
+    changeBaseDir(event){
+        let baseDir = this.state.baseDir
+        baseDir[this.state.currentFocus] = event.target.value
+        this.setState({
+            baseDir: baseDir
+        })
+    }
+
+    render(){
+        return(
+            <div>
+                <div
+                    style={ {
+                        position: "fixed",  
+                        zIndex: "10002",
+                        top: "0",
+                        left: "0",
+                        width: "100vw",
+                        height: "100vh"
+                    } }
+                >
+                    <div
+                        className="w3-card w3-metro-darken w3-display-middle"
+                        style={ {
+                            width: "80%"
+                        } }
+                    >
+                        <div>
+                            <div className="w3-bar">
+                                <ActionButton
+                                    name="up"
+                                    value="up"
+                                    className="w3-bar-item"
+                                    label={<span><i className="fas fa-arrow-up" />&nbsp;up</span>}
+                                    onAction={this.handleAction}
+                                    disabled={this.state.actionStatus != "none"}
+                                    forwardEvent={true}
+                                />
+                                <ActionButton
+                                    name="refresh"
+                                    value="refresh"
+                                    className="w3-bar-item"
+                                    label={<span><i className="fas fa-sync" />&nbsp;refresh</span>}
+                                    onAction={this.handleAction}
+                                    disabled={this.state.actionStatus != "none"}
+                                    forwardEvent={true}
+                                />
+                                <div className="w3-bar-item">
+                                    Change base directory:&nbsp;
+                                    <select
+                                        className="w3-button w3-white w3-border" 
+                                        name="inputBaseDir"
+                                        onChange={this.changeStateVar}
+                                        value={this.state.changeBaseDir}
+                                    >
+                                        {Object.keys(this.allowedDirs[this.state.currentFocus]).map((d) =>(
+                                            <option
+                                                key={d}
+                                                value={d}
+                                            >
+                                                {d}
+                                            </option>
+                                        ))}
+                                    </select>
+                                </div>
+                            </div>
+                            <span className="w3-text-green">
+                                Current Dir:
+                            </span>
+                            <input
+                                className="w3-input w3-bar-item"
+                                type="text"
+                                name="address"
+                                value={this.state.address}
+                                disabled={this.state.actionStatus != "none"}
+                                onChange={this.changeStateVar}
+                                onKeyPress={this.handleAction}
+                            />
+
+                            <DisplayServerMessages messages={this.state.serverMessages} />
+                        </div>
+                        <div 
+                            className="w3-panel w3-theme-d3"
+                            style={ {
+                                overflowY: "auto",
+                                height: "50vh"
+                            } }
+                        >
+                            {this.state.actionStatus == "none" ? (
+                                    this.state.items.length == 0 ? (
+                                            <span>No items found.</span>
+                                        ) : (
+                                            this.state.items.map((i) =>(
+                                                <button 
+                                                    key={i.abs_path}
+                                                    className={this.state.selectedItem == i.abs_path ? (
+                                                            "w3-button w3-block w3-left-align w3-green"
+                                                        ) : (
+                                                            "w3-button w3-block w3-left-align"
+                                                        )
+                                                    }
+                                                    name={i.is_dir ? "open" : "selectedItem"}
+                                                    value={i.abs_path}
+                                                    disabled={!i.is_dir && (!i.hit || this.props.selectDir)}
+                                                    onClick={i.is_dir ? (
+                                                            this.handleAction
+                                                        ) : (
+                                                            this.changeStateVar
+                                                        )
+                                                    }
+                                                >
+                                                        {i.is_dir ? (
+                                                                <i className="fas fa-folder" />
+                                                            ) : (
+                                                                <i className="fas fa-file" />
+                                                            )
+                                                        }&nbsp;
+                                                        {i.name}
+                                                </button>
+                                            ))
+                                        )
+                                ) : (
+                                    <LoadingIndicator
+                                        size="large"
+                                        message="Loading directory. Please wait."
+                                    />
+                                )
+                            }
+                        </div>
+                    </div>
+                </div>
+                <div
+                    className="w3-white"
+                    style={ {
+                        position: "fixed",  
+                        zIndex: "10000",
+                        top: "0",
+                        left: "0",
+                        width: "100vw",
+                        height: "100vh",
+                        opacity: "0.5"
+                    } }
+                />
+            </div>
+        )
+    }
+}
+
+class BrowseDirTextField extends React.Component {
+    constructor(props){
+        super(props);
+        // props.ignoreFiles
+        // props.fileExts
+        // props.showOnlyHits
+        // props.onChange
+        // props.name
+        // props.value
+        // props.disabled
+
+        this.state = {
+            actionStatus: "none",
+            serverMessages: []
+        };  
+
+        this.handleOnChange = this.handleOnChange.bind(this);
+        this.browse = this.browse.bind(this);
+    }
+
+    handleOnChange(event){
+        this.props.onChange(event.target.name, event.target.value)
+    }
+
+    browse(){
+        this.setState({
+            actionStatus: "browse"
+        })
+    }
+
+    render(){
+        return(
+            <span>
+                <input
+                    className="w3-input"
+                    style={ {width: "calc(100% - 28px)", display: "inline-block"} }
+                    type="text"
+                    name={this.props.name}
+                    value={this.props.value}
+                    onChange={this.handleOnChange}
+                    required={true}
+                    disabled={this.props.disabled}
+                />
+                <ActionButton
+                    name="browse"
+                    value="browse"
+                    style={ {
+                        width: "24px", 
+                        display: "inline-block", 
+                        paddingLeft: "2px",
+                        paddingRight: "2px"
+                    } }
+                    label={<i className="fas fa-folder-open" />}
+                    onAction={this.browse}
+                    disabled={this.props.disabled}
+                />
+                {this.state.actionStatus == "browse" && (
+                    <BrowseDir
+                        path={this.props.value}
+                        ignoreFiles={this.props.ignoreFiles}
+                        fileExts={this.props.fileExts}
+                        showOnlyHits={this.props.showOnlyHits}
+                    />
+                )}
+            </span>
+        )
+    }
+
+} 
 
 class FileUploadComponent extends React.Component {
     // diplays content based on server information
@@ -835,7 +1201,7 @@ class AjaxButton extends React.Component {
         // props.onError 
         // props.label
         // props.disabled
-        // props.colorClass
+        // props.className
 
         this.state = {
             status: "none",
@@ -864,7 +1230,7 @@ class AjaxButton extends React.Component {
                 <ActionButton
                     name={this.props.name}
                     value={this.props.name}
-                    colorClass={this.props.colorClass}
+                    className={this.props.className}
                     label={this.props.label}
                     loading={this.state.status == "loading"}
                     disabled={this.props.disabled || this.state.status == "loading"}

@@ -5,12 +5,13 @@ from flask_login import current_user
 from werkzeug.urls import url_parse
 from cwlab import app 
 from cwlab.users.manage import load_user
+from json import dumps
 
 @app.route('/', methods=['GET','POST'])
 @app.route('/home/', methods=['GET','POST'])
 @app.route('/main/', methods=['GET','POST'])
 def main():
-    if app.config["ENABLE_USERS"] and current_user.is_authenticated:
+    if app.config["ENABLE_USERS"] andcurrent_user.is_authenticated:
         logged_in = True
         user = load_user(current_user.get_id())
         username = user.username
@@ -19,6 +20,7 @@ def main():
         logged_in = False
         username = None
         user_level = None
+
     return render_template(
         'main.html', 
         login_enabled = app.config["ENABLE_USERS"],

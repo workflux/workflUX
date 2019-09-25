@@ -3,19 +3,60 @@ import os
 from flask import render_template, jsonify, redirect, flash, url_for, request
 from cwlab import app 
 from cwlab.users.manage import login_required
-from cwlab.general_use import browse_dir
+from cwlab.general_use import browse_dir as browse_dir_
 
-@app.route('/browse/', methods=['POST'])
-def login():
+@app.route('/get_base_dirs/', methods=['POST'])
+def browse_dir():
     messages = []
-    data=[]
+    data={}
     try:
         data_req = request.get_json()
         path = data_req["path"]
         ignore_files = data_req["ignore_files"]
         file_exts = data_req["file_exts"]
         show_only_hits = data_req["show_only_hits"]
-        data = browse_dir(path, ignore_files, file_exts, show_only_hits)
+        get_parent_dir = data_req["get_parent_dir"]
+        if not os.path.exists(path):
+            sys.exit("Path does not exist or you have no permission to enter it.")
+        path = os.path.abspath(path)
+        if get_parent_dir or not os.path.isdir(path):
+            path = os.path.dirname(path)
+        data["dir"] = path
+        data["items"] = browse_dir_(path, ignore_files, file_exts, show_only_hits)
+    except SystemExit as e:
+        messages.append( { 
+            "type":"error", 
+            "text": str(e) 
+        } )
+    except:
+        messages.append( { 
+            "type":"error", 
+            "text":"An unkown error occured." 
+        } )
+    return jsonify({
+            "data": data,
+            "messages": messages
+        }
+    )
+
+@app.route('/browse_dir/', methods=['POST'])
+def browse_dir():
+    messages = []
+    data={}
+    try:
+        data_req = request.get_json()
+        path = data_req["path"]
+        ignore_files = data_req["ignore_files"]
+        file_exts = data_req["file_exts"]
+        show_only_hits = data_req["show_only_hits"]
+        get_parent_dir = data_req["get_parent_dir"]
+        if not os.path.exists(path):
+            sys.exit("Path does not exist or you have no permission to enter it.")
+        path = os.path.abspath(path)
+        if get_parent_dir or not os.path.isdir(path):
+            path = os.path.dirname(path)
+        data["dir"] = path
+        data["items"] = browse_dir_(path, ignore_files, file_exts, show_only_hits)
     except SystemExit as e:
         messages.append( { 
             "type":"error", 
