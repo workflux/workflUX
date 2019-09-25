@@ -10,6 +10,7 @@ def get_base_dirs():
     messages = []
     data={}
     try:
+        login_required()
         data_req = request.get_json()
         job_id = data_req["job_id"] if "job_id" in data_req.keys() else None
         run_id = data_req["run_id"] if "run_id" in data_req.keys() else None
@@ -35,6 +36,7 @@ def browse_dir():
     messages = []
     data={}
     try:
+        login_required()
         data_req = request.get_json()
         path = data_req["path"]
         ignore_files = data_req["ignore_files"]
