@@ -38,7 +38,7 @@ def browse_dir():
     try:
         login_required()
         data_req = request.get_json()
-        path = data_req["path"]
+        path = remove_non_printable_characters(data_req["path"])
         ignore_files = data_req["ignore_files"]
         file_exts = data_req["file_exts"]
         show_only_hits = data_req["show_only_hits"]
