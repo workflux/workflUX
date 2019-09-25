@@ -36,10 +36,6 @@ def get_job_list():
             try:
                 job_param_sheet = get_path("job_param_sheet", job_id=job_id)
             except SystemExit as e:
-                messages.append( { 
-                    "type":"warning", 
-                    "text": str(e) + " Skipping."
-                } )
                 continue
                 
             job_param_sheet_attributes = get_job_templ_info("attributes", job_templ_filepath=job_param_sheet)
