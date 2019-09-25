@@ -5,6 +5,17 @@ from time import strftime, gmtime
 from platform import system
 basedir = os.path.abspath(os.path.dirname(__file__))
 
+def normalize_path(path):
+    if not os.path.exists(path):
+        sys.exit("Path \"" + path + "\" does not exist.")
+    return os.path.abspath(path)
+
+def normalize_path_dict(dict):
+    norm_dict = {}
+    for key in dict.keys():
+        norm_dict[key] = normalize_path(dict[key])
+    return norm_dict
+
 class Config(object):
     def __init__(self,CONFIG_FILE=None):
         if system() == "Windows":
@@ -40,43 +51,44 @@ class Config(object):
             strftime("%Y%m%d%H%M%S", gmtime())
         )
 
-        self.TEMP_DIR = (
+        self.TEMP_DIR = normalize_path(
             os.environ.get('CWLAB_TEMP_DIR') or
             self.CONFIG_FILE_content.get('TEMP_DIR') or  
             os.path.join( cwlab_fallback_dir, "temp")
         )
-        self.CWL_DIR = (
+        self.CWL_DIR = normalize_path(
             os.environ.get('CWLAB_CWL_DIR') or  
             self.CONFIG_FILE_content.get('CWL_DIR') or  
             os.path.join( cwlab_fallback_dir, "CWL")
         )
-        self.EXEC_DIR = (
+        self.EXEC_DIR = normalize_path(
             os.environ.get('CWLAB_EXEC_DIR') or 
             self.CONFIG_FILE_content.get('EXEC_DIR') or   
             os.path.join( cwlab_fallback_dir, "exec")
         )
-        self.INPUT_DIR = (
+        self.INPUT_DIR = normalize_path(
             os.environ.get('CWLAB_INPUT_DIR') or 
             self.CONFIG_FILE_content.get('INPUT_DIR') or   
             os.path.join( cwlab_fallback_dir, "input")
         )
-        self.DB_DIR = (
+        self.DB_DIR = normalize_path(
             os.environ.get('CWLAB_DB_DIR') or 
             self.CONFIG_FILE_content.get('DB_DIR') or  
             os.path.join( cwlab_fallback_dir, "database")
         )
-        self.ALLOWED_INPUT_DIRS = (
+        self.ALLOWED_INPUT_DIRS = normalize_path_dict(
             self.CONFIG_FILE_content.get('ALLOWED_INPUT_DIRS') or 
             {"ROOT": "/"}
         )
-        self.ALLOWED_UPLOAD_DIRS = (
+        self.ALLOWED_UPLOAD_DIRS = normalize_path_dict(
             self.CONFIG_FILE_content.get('ALLOWED_UPLOAD_DIRS') or 
             {"ROOT": "/"}
         )
-        self.ALLOWED_DOWNLOAD_DIRS = (
+        self.ALLOWED_DOWNLOAD_DIRS = normalize_path_dict(
             self.CONFIG_FILE_content.get('ALLOWED_DOWNLOAD_DIRS') or 
             {"ROOT": "/"}
         )
+
 
         self.UPLOAD_ALLOWED = (
             self.CONFIG_FILE_content.get('UPLOAD_ALLOWED') or
