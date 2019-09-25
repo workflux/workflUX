@@ -6,8 +6,6 @@ from platform import system
 basedir = os.path.abspath(os.path.dirname(__file__))
 
 def normalize_path(path):
-    if not os.path.exists(path):
-        sys.exit("Path \"" + path + "\" does not exist.")
     return os.path.abspath(path)
 
 def normalize_path_dict(dict):
