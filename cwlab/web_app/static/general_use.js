@@ -632,6 +632,7 @@ class AjaxComponent extends React.Component {
         //  function receives a single argument (data)
         // props.loaderSize size of loading indicator (large, small, tiny)
         // props.loaderMessage message displayed on loading indicator
+        // props.suppressMessages
 
         this.state = {
             loading: true,
@@ -681,7 +682,9 @@ class AjaxComponent extends React.Component {
         } else{
             return (
                 <div>
-                    <DisplayServerMessages messages={this.state.serverMessages} />
+                    {!this.props.suppressMessages &&
+                        <DisplayServerMessages messages={this.state.serverMessages} />
+                    }
                     {this.state.success &&
                         this.props.buildContentOnSuccess(this.state.data, this.state.serverMessages, this.request)
                     }
