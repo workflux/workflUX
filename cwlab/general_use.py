@@ -149,6 +149,8 @@ def get_path(which, job_id=None, run_id=None, param_sheet_format=None, cwl_targe
         path = os.path.join(app.config['EXEC_DIR'], job_id, "runs_log", run_id + ".log")
     elif which == "debug_run_log":
         path = os.path.join(app.config['EXEC_DIR'], job_id, "runs_log", run_id + ".debug.log")
+    elif which == "job_specific_input_dir":
+        path = os.path.join(app.config['EXEC_DIR'], job_id, "inputs")
     return path
 
 def get_run_ids(job_id):
@@ -204,5 +206,36 @@ def db_commit(retry_delays=[1,4]):
             else:
                 sleep(retry_delay + retry_delay*random())
     
-def get_allowed_base_dirs(job_id):
-    
+def get_allowed_base_dirs(job_id=None, run_id=None):
+    allowed_dirs = {}
+    if not job_id is None:
+        job_specifc_dirs = {
+            "upload": {
+                "JOB_INPUT_DIR": get_path("job_specific_input_dir", job_id=job_id)
+            },
+            "download": {
+                "JOB_OUTPUT_DIR": get_path("runs_out_dir", job_id=job_id)
+            }
+        }
+        if not run_id is None:
+            job_specifc_dirs["download"].update({
+                "RUN_OUTPUT_DIR": get_path("run_out_dir", job_id=job_id, run_id=run_id)
+            })
+    else:
+        job_specifc_dirs = {
+            "upload": {},
+            "download": {}
+        }
+    if app.config["UPLOAD_ALLOWED"]:
+        allowed_dirs["upload"] = job_specifc_dirs["upload"]
+        allowed_dirs["upload"].update(app.config["ALLOWED_UPLOAD_DIRS"])
+    else:
+        app.config["upload"] = {}
+    if app.config["DOWNLOAD_ALLOWED"]:
+        allowed_dirs["download"] = job_specifc_dirs["download"]
+        allowed_dirs["download"].update(app.config["ALLOWED_DOWNLOAD_DIRS"])
+    else:
+        app.config["download"] = {}
+    allowed_dirs["input"] = allowed_dirs["upload"]
+    allowed_dirs["input"].update(app.config["ALLOWED_INPUT_DIRS"])
+    return allowed_dirs
