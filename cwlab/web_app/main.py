@@ -11,7 +11,7 @@ from json import dumps
 @app.route('/home/', methods=['GET','POST'])
 @app.route('/main/', methods=['GET','POST'])
 def main():
-    if app.config["ENABLE_USERS"] andcurrent_user.is_authenticated:
+    if app.config["ENABLE_USERS"] and current_user.is_authenticated:
         logged_in = True
         user = load_user(current_user.get_id())
         username = user.username
