@@ -64,11 +64,6 @@ class Config(object):
             self.CONFIG_FILE_content.get('EXEC_DIR') or   
             os.path.join( cwlab_fallback_dir, "exec")
         )
-        self.INPUT_DIR = normalize_path(
-            os.environ.get('CWLAB_INPUT_DIR') or 
-            self.CONFIG_FILE_content.get('INPUT_DIR') or   
-            os.path.join( cwlab_fallback_dir, "input")
-        )
         self.DB_DIR = normalize_path(
             os.environ.get('CWLAB_DB_DIR') or 
             self.CONFIG_FILE_content.get('DB_DIR') or  

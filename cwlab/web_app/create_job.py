@@ -55,7 +55,6 @@ def get_job_templ_config_info():    # returns all parmeter and its default mode 
         cwl_target = request.get_json()["cwl_target"]
         param_config_info = get_job_templ_info("config", cwl_target)
         template_attributes = get_job_templ_info("attributes", cwl_target)
-        default_search_dir = app.config["INPUT_DIR"]
     except SystemExit as e:
         messages.append( { 
             "type":"error", 
@@ -71,7 +70,6 @@ def get_job_templ_config_info():    # returns all parmeter and its default mode 
         "data":{
             "params":param_config_info,
             "templ_attr": template_attributes,
-            "default_search_dir": default_search_dir
         },
         "messages":messages
     })

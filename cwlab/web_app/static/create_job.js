@@ -1183,8 +1183,8 @@ class JobCreationPrep extends React.Component {
             job_name: "new_job",
             display: "prep", // one of prep, form_ssheet, from_html
             validatePaths: true,
-            searchPaths: true,
-            searchDir: this.props.configData.default_search_dir,
+            searchPaths: false,
+            searchDir: "Please Fill",
             includeSubbDirsForSearching: true
         }
 
