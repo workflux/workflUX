@@ -36,6 +36,7 @@ class CreateJobButton extends React.Component {
 class PathValAndSearch extends React.Component{
     constructor(props){
         super(props);
+        // props.jobId
         // props.validatePaths
         // props.searchPaths
         // props.searchDir
@@ -92,6 +93,11 @@ class PathValAndSearch extends React.Component{
                         ignoreFiles={false}
                         fileExts={[]}
                         showOnlyHits={false}
+                        selectDir={false}
+                        allowInput={true}
+                        allowUpload={true}
+                        allowDownload={false}
+                        jobId={this.props.jobId}
                     />
                     <br/>
                     <span className="w3-text-green">Include sub-directories for searching: </span>
@@ -929,6 +935,7 @@ class JobParamFormHTML extends React.Component {
                 <div>
                     <DisplayServerMessages messages={this.state.serverMessages} />
                     <PathValAndSearch
+                        jobId={this.props.jobId}
                         validatePaths={this.props.validatePaths}
                         searchPaths={this.props.searchPaths}
                         changePathValAndSearch={this.props.changePathValAndSearch}
@@ -1081,6 +1088,7 @@ class JobParamFormSpreadsheet extends React.Component {
         return(
             <div>
                 <PathValAndSearch
+                    jobId={this.props.jobId}
                     validatePaths={this.props.validatePaths}
                     searchPaths={this.props.searchPaths}
                     changePathValAndSearch={this.props.changePathValAndSearch}

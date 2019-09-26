@@ -6,7 +6,7 @@ from platform import system
 basedir = os.path.abspath(os.path.dirname(__file__))
 
 def normalize_path(path):
-    return os.path.abspath(path)
+    return os.path.realpath(path)
 
 def normalize_path_dict(dict):
     norm_dict = {}
@@ -74,19 +74,18 @@ class Config(object):
             self.CONFIG_FILE_content.get('DB_DIR') or  
             os.path.join( cwlab_fallback_dir, "database")
         )
-        self.ALLOWED_INPUT_DIRS = normalize_path_dict(
-            self.CONFIG_FILE_content.get('ALLOWED_INPUT_DIRS') or 
+        self.INPUT_DIRS = normalize_path_dict(
+            self.CONFIG_FILE_content.get('INPUT_DIRS') or 
             {"ROOT": "/"}
         )
-        self.ALLOWED_UPLOAD_DIRS = normalize_path_dict(
-            self.CONFIG_FILE_content.get('ALLOWED_UPLOAD_DIRS') or 
+        self.INPUT_UPLOAD_DIRS = normalize_path_dict(
+            self.CONFIG_FILE_content.get('INPUT_UPLOAD_DIRS') or 
             {"ROOT": "/"}
         )
-        self.ALLOWED_DOWNLOAD_DIRS = normalize_path_dict(
-            self.CONFIG_FILE_content.get('ALLOWED_DOWNLOAD_DIRS') or 
+        self.INPUT_UPLOAD_DOWNLOAD_DIRS = normalize_path_dict(
+            self.CONFIG_FILE_content.get('INPUT_UPLOAD_DOWNLOAD_DIRS') or 
             {"ROOT": "/"}
         )
-
 
         self.UPLOAD_ALLOWED = (
             self.CONFIG_FILE_content.get('UPLOAD_ALLOWED') or

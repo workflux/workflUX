@@ -71,6 +71,30 @@ function ajaxRequest({
 
 }
 
+function getAllowedDirs({
+    statusVar="actionStatus",
+    statusValueDuringRequest="action",
+    statusValueAfterRequest="none",
+    messageVar="serverMessages",
+    jobId=null,
+    runId=null,
+    onSuccess= (data, messages) => {
+                return({})
+            },
+    onError= (messages) => {
+        return({})
+    } 
+}){
+    let sendData = {}
+    if (jobId){
+        sendData["job_id"] = jobId
+        if (runId){
+            sendData["run_id"] = runId
+        }
+    }
+
+}
+
 String.prototype.replaceAll = function(search, replacement) {
     // in contrast to replace() replaces not only the first occurence
     var target = this;
@@ -702,37 +726,22 @@ class BrowseDir extends React.Component {
         // props.fileExts
         // props.showOnlyHits
         // props.selectDir
-        // props.additionalInputDirs
-        // props.additionalUploadDirs
-        // props.additionalDownloadDirs
         // props.allowInput
         // props.allowUpload
         // props.allowDownload
+        // props.jobId
 
-        this.allowedDirs = {
-            input: this.props.additionalInputDirs ? (
-                    Object.assign(this.props.additionalInputDirs, allowedInputDirs)
-                ) : (
-                    allowedInputDirs
-                ),
-            upload: this.props.additionalUploadDirs ? (
-                    Object.assign(this.props.additionalUploadDirs, allowedUploadDirs) 
-                ) : (
-                    allowedUploadDirs
-                ),
-            download: this.props.additionalDownloadDirs ? (
-                    Object.assign(this.props.additionalDownloadDirs, allowedDownloadDirs)
-                ) : (
-                    allowedDownloadDirs
-                )
-        }
-        
-        console.log(this.allowedDirs)
-
-        this.allowed = {
-            input: this.allowedInput && Object.keys(this.allowedDirs.input).length > 0 ? true : false,
-            upload: this.allowUpload && Object.keys(this.allowedDirs.upload).length > 0 ? true : false,
-            download: this.allowDownload && Object.keys(this.allowedDirs.download).length > 0 ? true : false
+        this.baseDirInfo = {
+            input: "select only",
+            upload: (
+                (this.props.allowInput ? "select, " : "") + 
+                "upload"
+            ),
+            download: (
+                (this.props.allowInput ? "select, " : "") + 
+                (this.props.allowUpload ? "upload, " : "") + 
+                "download"
+            ),
         }
 
         this.state = {
@@ -742,32 +751,8 @@ class BrowseDir extends React.Component {
             serverMessages: [],
             items: [],
             selectedItem: this.props.path,
-            baseDir: {
-                input: this.allowed.input ? (
-                        Object.keys(this.allowedDirs.input)[0] 
-                    ) : (
-                        null
-                    ),
-                upload: this.allowed.upload ? (
-                        Object.keys(this.allowedDirs.upload)[0] 
-                    ) : (
-                        null
-                    ),
-                download: this.allowed.download ? (
-                        Object.keys(this.allowedDirs.download)[0] 
-                    ) : (
-                        null
-                    ),
-            },
-            currentFocus: this.allowed.input ? (
-                    "input"
-                ) : (
-                    this.allowed.upload ? (
-                            "upload"
-                        ) : (
-                            "download"
-                        )
-                )
+            baseDir: "error",
+            allowedDirs: {error: {path: "error", mode: "error"}},
         };  
 
         this.ajaxRequest = ajaxRequest.bind(this);
@@ -778,28 +763,43 @@ class BrowseDir extends React.Component {
     }
 
     componentDidMount(){
-        this.getItemsInDir()
+        this.getItemsInDir(false, this.props.path, true)
     }
 
-    getItemsInDir(getParentDir, targetDir){
+    getItemsInDir(getParentDir, targetDir, init){
         this.ajaxRequest({
             statusVar: "actionStatus",
-            statusValueDuringRequest: "loading",
+            statusValueDuringRequest: init ? "init" : "loading",
             messageVar: "serverMessages",
             sendData: {
                 path: targetDir ? targetDir : this.state.dirPath,
-                ignore_files: this.props.ignoreFiles,
-                file_exts: this.props.fileExts, 
-                show_only_hits: this.props.showOnlyHits,
-                get_parent_dir: getParentDir ? true : false
+                ignore_files: this.props.ignoreFiles ? this.props.ignoreFiles : false,
+                file_exts: this.props.fileExts ? this.props.fileExts : [], 
+                show_only_hits: this.props.showOnlyHits ? this.props.showOnlyHits : false,
+                get_parent_dir: getParentDir ? true : false,
+                allow_input: this.props.allowInput ? true : false,
+                allow_upload: this.props.allowUpload ? true : false,
+                allow_download: this.props.allowDownload ? true : false,
+                job_id: this.props.jobId ? this.props.jobId : null,
+                on_error_return_base_dir_items: init ? true : false
             },
             route: routeBrowseDir,
             onSuccess: (data, messages) => {
                 return({
                     items: data.items,
                     dirPath: data.dir,
-                    address: data.dir
+                    address: data.dir,
+                    baseDir: data.base_dir,
+                    allowedDirs: data.allowed_dirs
                 })
+            },
+            onError: (message) => {
+                if(this.state.address != this.state.dirPath){
+                    return({items:[]})
+                }
+                else{
+                    return({})
+                }
             }
         })
     }
@@ -828,11 +828,11 @@ class BrowseDir extends React.Component {
     }
 
     changeBaseDir(event){
-        let baseDir = this.state.baseDir
-        baseDir[this.state.currentFocus] = event.target.value
         this.setState({
-            baseDir: baseDir
+            baseDir: event.target.value,
+            address: this.state.allowedDirs[event.target.value]
         })
+        this.getItemsInDir(false, this.state.allowedDirs[event.target.value].path)
     }
 
     render(){
@@ -854,108 +854,116 @@ class BrowseDir extends React.Component {
                             width: "80%"
                         } }
                     >
-                        <div>
-                            <div className="w3-bar">
-                                <ActionButton
-                                    name="up"
-                                    value="up"
-                                    className="w3-bar-item"
-                                    label={<span><i className="fas fa-arrow-up" />&nbsp;up</span>}
-                                    onAction={this.handleAction}
-                                    disabled={this.state.actionStatus != "none"}
-                                    forwardEvent={true}
-                                />
-                                <ActionButton
-                                    name="refresh"
-                                    value="refresh"
-                                    className="w3-bar-item"
-                                    label={<span><i className="fas fa-sync" />&nbsp;refresh</span>}
-                                    onAction={this.handleAction}
-                                    disabled={this.state.actionStatus != "none"}
-                                    forwardEvent={true}
-                                />
-                                <div className="w3-bar-item">
-                                    Change base directory:&nbsp;
-                                    <select
-                                        className="w3-button w3-white w3-border" 
-                                        name="inputBaseDir"
-                                        onChange={this.changeStateVar}
-                                        value={this.state.changeBaseDir}
-                                    >
-                                        {Object.keys(this.allowedDirs[this.state.currentFocus]).map((d) =>(
-                                            <option
-                                                key={d}
-                                                value={d}
-                                            >
-                                                {d}
-                                            </option>
-                                        ))}
-                                    </select>
-                                </div>
-                            </div>
-                            <span className="w3-text-green">
-                                Current Dir:
-                            </span>
-                            <input
-                                className="w3-input w3-bar-item"
-                                type="text"
-                                name="address"
-                                value={this.state.address}
-                                disabled={this.state.actionStatus != "none"}
-                                onChange={this.changeStateVar}
-                                onKeyPress={this.handleAction}
-                            />
-
-                            <DisplayServerMessages messages={this.state.serverMessages} />
-                        </div>
-                        <div 
-                            className="w3-panel w3-theme-d3"
-                            style={ {
-                                overflowY: "auto",
-                                height: "50vh"
-                            } }
-                        >
-                            {this.state.actionStatus == "none" ? (
-                                    this.state.items.length == 0 ? (
-                                            <span>No items found.</span>
-                                        ) : (
-                                            this.state.items.map((i) =>(
-                                                <button 
-                                                    key={i.abs_path}
-                                                    className={this.state.selectedItem == i.abs_path ? (
-                                                            "w3-button w3-block w3-left-align w3-green"
-                                                        ) : (
-                                                            "w3-button w3-block w3-left-align"
-                                                        )
-                                                    }
-                                                    name={i.is_dir ? "open" : "selectedItem"}
-                                                    value={i.abs_path}
-                                                    disabled={!i.is_dir && (!i.hit || this.props.selectDir)}
-                                                    onClick={i.is_dir ? (
-                                                            this.handleAction
-                                                        ) : (
-                                                            this.changeStateVar
-                                                        )
-                                                    }
+                        {this.state.actionStatus == "init" ? (
+                                <LoadingIndicator size="large" message="Loading directory. Please wait." />
+                            ) : (
+                                <span>
+                                    <div>
+                                        <div className="w3-bar">
+                                            <ActionButton
+                                                name="up"
+                                                value="up"
+                                                className="w3-bar-item"
+                                                label={<span><i className="fas fa-arrow-up" />&nbsp;up</span>}
+                                                onAction={this.handleAction}
+                                                disabled={this.state.actionStatus != "none"}
+                                                forwardEvent={true}
+                                            />
+                                            <ActionButton
+                                                name="refresh"
+                                                value="refresh"
+                                                className="w3-bar-item"
+                                                label={<span><i className="fas fa-sync" />&nbsp;refresh</span>}
+                                                onAction={this.handleAction}
+                                                disabled={this.state.actionStatus != "none"}
+                                                forwardEvent={true}
+                                            />
+                                            <div className="w3-bar-item">
+                                                Change base directory:&nbsp;
+                                                <select
+                                                    className="w3-button w3-white w3-border w3-padding-small" 
+                                                    name="inputBaseDir"
+                                                    onChange={this.changeBaseDir}
+                                                    value={this.state.baseDir}
                                                 >
-                                                        {i.is_dir ? (
-                                                                <i className="fas fa-folder" />
-                                                            ) : (
-                                                                <i className="fas fa-file" />
-                                                            )
-                                                        }&nbsp;
-                                                        {i.name}
-                                                </button>
-                                            ))
-                                        )
-                                ) : (
-                                    <LoadingIndicator
-                                        size="large"
-                                        message="Loading directory. Please wait."
-                                    />
-                                )
-                            }
-                        </div>
+                                                    {Object.keys(this.state.allowedDirs).map((d) =>(
+                                                        <option
+                                                            key={d}
+                                                            value={d}
+                                                        >
+                                                            {d + " (" + this.baseDirInfo[this.state.allowedDirs[d].mode] + ")"}
+                                                        </option>
+                                                    ))}
+                                                </select>
+                                            </div>
+                                        </div>
+                                        <span className="w3-text-green">
+                                            Current Dir:
+                                        </span>
+                                        <input
+                                            className="w3-input w3-bar-item"
+                                            type="text"
+                                            name="address"
+                                            value={this.state.address}
+                                            disabled={this.state.actionStatus != "none"}
+                                            onChange={this.changeStateVar}
+                                            onKeyPress={this.handleAction}
+                                        />
+            
+                                        <DisplayServerMessages messages={this.state.serverMessages} />
+                                    </div>
+                                    <div 
+                                        className="w3-panel w3-theme-d3"
+                                        style={ {
+                                            overflowY: "auto",
+                                            height: "50vh"
+                                        } }
+                                    >
+                                        {this.state.actionStatus == "none" ? (
+                                                this.state.items.length == 0 ? (
+                                                        <span>No items found.</span>
+                                                    ) : (
+                                                        this.state.items.map((i) =>(
+                                                            <button 
+                                                                key={i.abs_path}
+                                                                className={this.state.selectedItem == i.abs_path ? (
+                                                                        "w3-button w3-block w3-left-align w3-green"
+                                                                    ) : (
+                                                                        "w3-button w3-block w3-left-align"
+                                                                    )
+                                                                }
+                                                                name={i.is_dir ? "open" : "selectedItem"}
+                                                                value={i.abs_path}
+                                                                disabled={!i.is_dir && (!i.hit || this.props.selectDir)}
+                                                                onClick={i.is_dir ? (
+                                                                        this.handleAction
+                                                                    ) : (
+                                                                        this.changeStateVar
+                                                                    )
+                                                                }
+                                                            >
+                                                                    {i.is_dir ? (
+                                                                            <i className="fas fa-folder" />
+                                                                        ) : (
+                                                                            <i className="fas fa-file" />
+                                                                        )
+                                                                    }&nbsp;
+                                                                    {i.name}
+                                                            </button>
+                                                        ))
+                                                    )
+                                            ) : (
+                                                <LoadingIndicator
+                                                    size="large"
+                                                    message="Loading directory. Please wait."
+                                                />
+                                            )
+                                        }
+                                    </div>
+                                </span>
+                            )
+                        }
+                        
                     </div>
                 </div>
                 <div
@@ -984,7 +992,12 @@ class BrowseDirTextField extends React.Component {
         // props.onChange
         // props.name
         // props.value
+        // props.selectDir
         // props.disabled
+        // props.allowInput
+        // props.allowUpload
+        // props.allowDownload
+        // props.jobId
 
         this.state = {
             actionStatus: "none",
@@ -1037,6 +1050,11 @@ class BrowseDirTextField extends React.Component {
                         ignoreFiles={this.props.ignoreFiles}
                         fileExts={this.props.fileExts}
                         showOnlyHits={this.props.showOnlyHits}
+                        selectDir={this.props.selectDir}
+                        allowInput={this.props.allowInput}
+                        allowUpload={this.props.allowUpload}
+                        allowDownload={this.props.allowDownload}
+                        jobId={this.props.jobId}
                     />
                 )}
             </span>

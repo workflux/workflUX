@@ -160,7 +160,7 @@ def get_path(which, job_id=None, run_id=None, param_sheet_format=None, cwl_targe
         path = os.path.join(app.config['EXEC_DIR'], job_id, "runs_log", run_id + ".debug.log")
     elif which == "runs_input_dir":
         path = os.path.join(app.config['EXEC_DIR'], job_id, "runs_inputs")
-    return path
+    return os.path.realpath(path)
 
 def get_run_ids(job_id):
     exec_dir = app.config["EXEC_DIR"]
@@ -215,36 +215,65 @@ def db_commit(retry_delays=[1,4]):
             else:
                 sleep(retry_delay + retry_delay*random())
     
-def get_allowed_base_dirs(job_id=None, run_id=None):
+def get_allowed_base_dirs(job_id=None, allow_input=True, allow_upload=True, allow_download=True):
     allowed_dirs = {}
-    if not job_id is None:
-        job_specifc_dirs = {
-            "upload": {
-                "JOB_INPUT_DIR": get_path("runs_input_dir", job_id=job_id)
-            },
-            "download": {
-                "JOB_OUTPUT_DIR": get_path("runs_out_dir", job_id=job_id)
+    if (app.config["DOWNLOAD_ALLOWED"] and allow_download) or (app.config["UPLOAD_ALLOWED"] and allow_upload) or allowed_input:
+        if (app.config["DOWNLOAD_ALLOWED"] and allow_download):
+            mode = "download"
+        elif (app.config["UPLOAD_ALLOWED"] and allow_upload):
+            mode = "upload"
+        else:
+            mode = "input"
+        if not job_id is None:
+            allowed_dirs["OUTPUT_DIR_CURRENT_JOB"] = {
+                "path": get_path("runs_out_dir", job_id=job_id),
+                "mode": mode
             }
+        for dir_ in app.config["INPUT_UPLOAD_DOWNLOAD_DIRS"].keys():
+            if dir_ not in allowed_dirs.keys():
+                allowed_dirs[dir_] = {
+                    "path": app.config["INPUT_UPLOAD_DOWNLOAD_DIRS"][dir_],
+                    "mode": mode
+                }
+    if (app.config["UPLOAD_ALLOWED"] and allow_upload) or allow_input:
+        mode = "upload" if app.config["UPLOAD_ALLOWED"] and allow_upload else "input"
+        if not job_id is None:
+            allowed_dirs["INPUT_DIR_CURRENT_JOB"] = {
+                "path": get_path("runs_input_dir", job_id=job_id),
+                "mode": mode
+            }
+        for dir_ in app.config["INPUT_UPLOAD_DIRS"].keys():
+            if dir_ not in allowed_dirs.keys():
+                allowed_dirs[dir_] = {
+                    "path": app.config["INPUT_UPLOAD_DIRS"][dir_],
+                    "mode": mode
+                }
+    if allow_input:
+        if not job_id is None:
+            allowed_dirs["EXEC_DIR_CURRENT_JOB"] = {
+                "path": get_path("job_dir", job_id=job_id),
+                "mode": mode
+            }
+        allowed_dirs["EXEC_DIR_ALL_JOBS"] = {
+            "path": app.config["EXEC_DIR"],
+            "mode": mode
         }
-        if not run_id is None:
-            job_specifc_dirs["download"].update({
-                "RUN_OUTPUT_DIR": get_path("run_out_dir", job_id=job_id, run_id=run_id)
-            })
-    else:
-        job_specifc_dirs = {
-            "upload": {},
-            "download": {}
-        }
-    if app.config["UPLOAD_ALLOWED"]:
-        allowed_dirs["upload"] = job_specifc_dirs["upload"]
-        allowed_dirs["upload"].update(app.config["ALLOWED_UPLOAD_DIRS"])
-    else:
-        app.config["upload"] = {}
-    if app.config["DOWNLOAD_ALLOWED"]:
-        allowed_dirs["download"] = job_specifc_dirs["download"]
-        allowed_dirs["download"].update(app.config["ALLOWED_DOWNLOAD_DIRS"])
-    else:
-        app.config["download"] = {}
-    allowed_dirs["input"] = allowed_dirs["upload"]
-    allowed_dirs["input"].update(app.config["ALLOWED_INPUT_DIRS"])
+        for dir_ in app.config["INPUT_DIRS"].keys():
+            if dir_ not in allowed_dirs.keys():
+                allowed_dirs[dir_] = {
+                    "path": app.config["INPUT_DIRS"][dir_],
+                    "mode": "input"
+                }
     return allowed_dirs
+
+
+def check_if_path_in_dirs(path, dir_dict):
+    hit = ""
+    hit_key = None
+    path = os.path.realpath(path)
+    for dir_ in dir_dict.keys():
+        dir_path = os.path.realpath(dir_dict[dir_]["path"])
+        if path.startswith(dir_path) and len(hit) < len(dir_path):
+            hit=dir_path
+            hit_key = dir_
+    return hit_key
