@@ -732,6 +732,7 @@ class BrowseDir extends React.Component {
         // props.allowDownload
         // props.jobId
         // props.defaultBaseDir
+        // props.showCancelButton
 
         this.baseDirInfo = {
             input: "select only",
@@ -755,9 +756,13 @@ class BrowseDir extends React.Component {
             actionStatus: "init",
             serverMessages: [],
             items: [],
-            selectedItem: this.props.path,
+            selectedItem: this.props.path && this.props.path != "Please fill" && this.props.path != "" ? (
+                    this.props.path
+                ) : (
+                    null
+                ),
             baseDir: "error",
-            allowedDirs: {error: {path: "error", mode: "error"}},
+            allowedDirs: {error: {path: "error", mode: "error"}}
         };  
 
         this.ajaxRequest = ajaxRequest.bind(this);
@@ -769,14 +774,12 @@ class BrowseDir extends React.Component {
 
     componentDidMount(){
         let path = ""
-
-        if (this.props.path && this.props.path != "Please fill" && this.props.path != ""){
-            path = this.props.path
+        if (this.state.selectedItem){
+            path = this.state.selectedItem
         }
         else if (this.props.prevPath){
             path = this.props.prevPath
         }
-        console.log(path)
         this.getItemsInDir(false, path, true)
     }
 
@@ -975,6 +978,49 @@ class BrowseDir extends React.Component {
                                             )
                                         }
                                     </div>
+                                    {!this.selectDir && (this.allowInput || this.allow_download) && (
+                                        <div className="w3-container">
+                                            <span className="w3-text-green">Selected file:</span>&nbsp;
+                                            <IneditableValueField>
+                                                {this.state.selectedItem ? this.state.selectedItem :"No file selected."}
+                                            </IneditableValueField>
+                                        </div>
+                                    )}
+                                    <div className="w3-bar">
+                                        {this.props.showCancelButton && (
+                                            <ActionButton
+                                                name="cancel"
+                                                value="cancel"
+                                                className="w3-bar-item w3-right"
+                                                label={<span><i className="fas fa-times" />&nbsp;cancel</span>}
+                                                onAction={this.handleAction}
+                                                forwardEvent={true}
+                                            />
+                                        )}
+                                        {this.allowInput && (
+                                            this.selectDir ? (
+                                                    <ActionButton
+                                                        name="select_dir"
+                                                        value="select_dir"
+                                                        className="w3-bar-item w3-right"
+                                                        label={<span><i className="fas fa-check" />&nbsp;choose current dir</span>}
+                                                        onAction={this.handleAction}
+                                                        disabled={this.state.actionStatus != "none"}
+                                                        forwardEvent={true}
+                                                    />
+                                                ) : (
+                                                    <ActionButton
+                                                        name="select_file"
+                                                        value="select_file"
+                                                        className="w3-bar-item w3-right"
+                                                        label={<span><i className="fas fa-check" />&nbsp;choose selected file</span>}
+                                                        disabled={!this.state.selectedItem || this.state.actionStatus != "none"}
+                                                        onAction={this.handleAction}
+                                                        forwardEvent={true}
+                                                    />
+                                                )
+                                        )}
+                                    </div>
                                 </span>
                             )
                         }
@@ -1014,6 +1060,7 @@ class BrowseDirTextField extends React.Component {
         // props.allowDownload
         // props.jobId
         // props.defaultBaseDir
+        // props.showCancelButton
 
         this.state = {
             actionStatus: "none",

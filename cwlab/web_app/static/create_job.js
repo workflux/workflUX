@@ -99,6 +99,7 @@ class PathValAndSearch extends React.Component{
                         allowDownload={false}
                         jobId={this.props.jobId}
                         defaultBaseDir="INPUT_DIR_CURRENT_JOB"
+                        showCancelButton={true}
                     />
                     <br/>
                     <span className="w3-text-green">Include sub-directories for searching: </span>
