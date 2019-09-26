@@ -77,10 +77,6 @@ class Config(object):
             self.CONFIG_FILE_content.get('INPUT_UPLOAD_DIRS') or 
             {"ROOT": "/"}
         )
-        self.INPUT_UPLOAD_DOWNLOAD_DIRS = normalize_path_dict(
-            self.CONFIG_FILE_content.get('INPUT_UPLOAD_DOWNLOAD_DIRS') or 
-            {"ROOT": "/"}
-        )
 
         self.UPLOAD_ALLOWED = (
             self.CONFIG_FILE_content.get('UPLOAD_ALLOWED') or
