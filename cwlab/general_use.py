@@ -215,15 +215,10 @@ def db_commit(retry_delays=[1,4]):
             else:
                 sleep(retry_delay + retry_delay*random())
     
-def get_allowed_base_dirs(job_id=None, allow_input=True, allow_upload=True, allow_download=True):
+def get_allowed_base_dirs(job_id=None, allow_input=True, allow_upload=True, allow_download=False):
     allowed_dirs = {}
-    if (app.config["DOWNLOAD_ALLOWED"] and allow_download) or (app.config["UPLOAD_ALLOWED"] and allow_upload) or allowed_input:
-        if (app.config["DOWNLOAD_ALLOWED"] and allow_download):
-            mode = "download"
-        elif (app.config["UPLOAD_ALLOWED"] and allow_upload):
-            mode = "upload"
-        else:
-            mode = "input"
+    if (app.config["DOWNLOAD_ALLOWED"] and allow_download) or (allow_input and not allow_download):
+        mode = "download" if (app.config["DOWNLOAD_ALLOWED"] and allow_download) else "input"
         if not job_id is None:
             allowed_dirs["OUTPUT_DIR_CURRENT_JOB"] = {
                 "path": get_path("runs_out_dir", job_id=job_id),
@@ -235,7 +230,7 @@ def get_allowed_base_dirs(job_id=None, allow_input=True, allow_upload=True, allo
                     "path": app.config["INPUT_UPLOAD_DOWNLOAD_DIRS"][dir_],
                     "mode": mode
                 }
-    if (app.config["UPLOAD_ALLOWED"] and allow_upload) or allow_input:
+    if (app.config["UPLOAD_ALLOWED"] and allow_upload) or (allow_input and not allow_download):
         mode = "upload" if app.config["UPLOAD_ALLOWED"] and allow_upload else "input"
         if not job_id is None:
             allowed_dirs["INPUT_DIR_CURRENT_JOB"] = {
@@ -248,15 +243,15 @@ def get_allowed_base_dirs(job_id=None, allow_input=True, allow_upload=True, allo
                     "path": app.config["INPUT_UPLOAD_DIRS"][dir_],
                     "mode": mode
                 }
-    if allow_input:
+    if not allow_download and allow_input:
         if not job_id is None:
             allowed_dirs["EXEC_DIR_CURRENT_JOB"] = {
                 "path": get_path("job_dir", job_id=job_id),
-                "mode": mode
+                "mode": "input"
             }
         allowed_dirs["EXEC_DIR_ALL_JOBS"] = {
             "path": app.config["EXEC_DIR"],
-            "mode": mode
+            "mode": "input"
         }
         for dir_ in app.config["INPUT_DIRS"].keys():
             if dir_ not in allowed_dirs.keys():
