@@ -740,11 +740,14 @@ class BrowseDir extends React.Component {
                 "upload"
             ),
             download: (
-                (this.props.allowInput ? "select, " : "") + 
-                (this.props.allowUpload ? "upload, " : "") + 
                 "download"
             ),
         }
+
+        this.allowInput = this.props.allowInput
+        this.allowUpload = this.props.allowUpload
+        this.allowDownload = this.props.allowInput ? false : this.props.allowDownload
+        this.selectDir = this.props.allowInput ? this.props.selectDir : false
 
         this.state = {
             dirPath: this.props.path,
@@ -788,9 +791,9 @@ class BrowseDir extends React.Component {
                 file_exts: this.props.fileExts ? this.props.fileExts : [], 
                 show_only_hits: this.props.showOnlyHits ? this.props.showOnlyHits : false,
                 get_parent_dir: getParentDir ? true : false,
-                allow_input: this.props.allowInput ? true : false,
-                allow_upload: this.props.allowUpload ? true : false,
-                allow_download: this.props.allowDownload ? true : false,
+                allow_input: this.allowInput ? true : false,
+                allow_upload: this.allowUpload ? true : false,
+                allow_download: this.allowDownload ? true : false,
                 job_id: this.props.jobId ? this.props.jobId : null,
                 on_error_return_base_dir_items: init ? true : false,
                 default_base_dir: this.props.defaultBaseDir ? this.props.defaultBaseDir : null
@@ -946,7 +949,7 @@ class BrowseDir extends React.Component {
                                                                 }
                                                                 name={i.is_dir ? "open" : "selectedItem"}
                                                                 value={i.abs_path}
-                                                                disabled={!i.is_dir && (!i.hit || this.props.selectDir)}
+                                                                disabled={!i.is_dir && (!i.hit || this.selectDir)}
                                                                 onClick={i.is_dir ? (
                                                                         this.handleAction
                                                                     ) : (
