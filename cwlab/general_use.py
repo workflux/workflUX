@@ -231,10 +231,10 @@ def get_allowed_base_dirs(job_id=None, allow_input=True, allow_upload=True, allo
                 "path": get_path("runs_input_dir", job_id=job_id),
                 "mode": mode
             }
-        for dir_ in app.config["INPUT_UPLOAD_DIRS"].keys():
+        for dir_ in app.config["ADD_INPUT_UPLOAD_DIRS"].keys():
             if dir_ not in allowed_dirs.keys():
                 allowed_dirs[dir_] = {
-                    "path": app.config["INPUT_UPLOAD_DIRS"][dir_],
+                    "path": app.config["ADD_INPUT_UPLOAD_DIRS"][dir_],
                     "mode": mode
                 }
     if not allow_download and allow_input:
@@ -247,10 +247,10 @@ def get_allowed_base_dirs(job_id=None, allow_input=True, allow_upload=True, allo
             "path": app.config["EXEC_DIR"],
             "mode": "input"
         }
-        for dir_ in app.config["INPUT_DIRS"].keys():
+        for dir_ in app.config["ADD_INPUT_DIRS"].keys():
             if dir_ not in allowed_dirs.keys():
                 allowed_dirs[dir_] = {
-                    "path": app.config["INPUT_DIRS"][dir_],
+                    "path": app.config["ADD_INPUT_DIRS"][dir_],
                     "mode": "input"
                 }
     return allowed_dirs

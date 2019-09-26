@@ -69,12 +69,12 @@ class Config(object):
             self.CONFIG_FILE_content.get('DB_DIR') or  
             os.path.join( cwlab_fallback_dir, "database")
         )
-        self.INPUT_DIRS = normalize_path_dict(
-            self.CONFIG_FILE_content.get('INPUT_DIRS') or 
+        self.ADD_INPUT_DIRS = normalize_path_dict(
+            self.CONFIG_FILE_content.get('ADD_INPUT_DIRS') or 
             {"ROOT": "/"}
         )
-        self.INPUT_UPLOAD_DIRS = normalize_path_dict(
-            self.CONFIG_FILE_content.get('INPUT_UPLOAD_DIRS') or 
+        self.ADD_INPUT_UPLOAD_DIRS = normalize_path_dict(
+            self.CONFIG_FILE_content.get('ADD_INPUT_UPLOAD_DIRS') or 
             {"ROOT": "/"}
         )
 
