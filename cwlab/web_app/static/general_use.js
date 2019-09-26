@@ -722,6 +722,7 @@ class BrowseDir extends React.Component {
     constructor(props){
         super(props);
         // props.path
+        // props.prevPath
         // props.ignoreFiles
         // props.fileExts
         // props.showOnlyHits
@@ -730,6 +731,7 @@ class BrowseDir extends React.Component {
         // props.allowUpload
         // props.allowDownload
         // props.jobId
+        // props.defaultBaseDir
 
         this.baseDirInfo = {
             input: "select only",
@@ -763,7 +765,16 @@ class BrowseDir extends React.Component {
     }
 
     componentDidMount(){
-        this.getItemsInDir(false, this.props.path, true)
+        let path = ""
+
+        if (this.props.path && this.props.path != "Please fill" && this.props.path != ""){
+            path = this.props.path
+        }
+        else if (this.props.prevPath){
+            path = this.props.prevPath
+        }
+        console.log(path)
+        this.getItemsInDir(false, path, true)
     }
 
     getItemsInDir(getParentDir, targetDir, init){
@@ -781,7 +792,8 @@ class BrowseDir extends React.Component {
                 allow_upload: this.props.allowUpload ? true : false,
                 allow_download: this.props.allowDownload ? true : false,
                 job_id: this.props.jobId ? this.props.jobId : null,
-                on_error_return_base_dir_items: init ? true : false
+                on_error_return_base_dir_items: init ? true : false,
+                default_base_dir: this.props.defaultBaseDir ? this.props.defaultBaseDir : null
             },
             route: routeBrowseDir,
             onSuccess: (data, messages) => {
@@ -998,6 +1010,7 @@ class BrowseDirTextField extends React.Component {
         // props.allowUpload
         // props.allowDownload
         // props.jobId
+        // props.defaultBaseDir
 
         this.state = {
             actionStatus: "none",
@@ -1055,6 +1068,7 @@ class BrowseDirTextField extends React.Component {
                         allowUpload={this.props.allowUpload}
                         allowDownload={this.props.allowDownload}
                         jobId={this.props.jobId}
+                        defaultBaseDir={this.props.defaultBaseDir}
                     />
                 )}
             </span>

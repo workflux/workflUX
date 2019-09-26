@@ -13,7 +13,7 @@ def browse_dir():
     try:
         login_required()
         data_req = request.get_json()
-        path = os.path.realpath(remove_non_printable_characters(data_req["path"]))
+        path = remove_non_printable_characters(data_req["path"])
         ignore_files = data_req["ignore_files"]
         file_exts = data_req["file_exts"]
         show_only_hits = data_req["show_only_hits"]
@@ -21,6 +21,7 @@ def browse_dir():
         allow_input = data_req["allow_input"]
         allow_upload = data_req["allow_upload"]
         allow_download = data_req["allow_download"]
+        default_base_dir = data_req["default_base_dir"] if "default_base_dir" in data_req.keys() else None
         job_id = data_req["job_id"] if "job_id" in data_req.keys() else None
         on_error_return_base_dir_items = data_req["on_error_return_base_dir_items"]
 
@@ -32,16 +33,25 @@ def browse_dir():
         )
 
         try:
+            if path == "":
+                sys.exit("Path does not exist or you have no permission to enter it.")
+            path = os.path.realpath(path)
+            print(path)
+            if not os.path.exists(path):
+                sys.exit("Path does not exist or you have no permission to enter it.")
             if get_parent_dir or not os.path.isdir(path):
                 path = os.path.dirname(path)
             data["base_dir"] = check_if_path_in_dirs(path, data["allowed_dirs"])
-            if data["base_dir"] is None or not os.path.exists(path):
+            if data["base_dir"] is None:
                 sys.exit("Path does not exist or you have no permission to enter it.")
             data["items"] = browse_dir_(path, ignore_files, file_exts, show_only_hits)
             data["dir"] = path
         except SystemExit as e:
             if on_error_return_base_dir_items:
-                data["base_dir"] = list(data["allowed_dirs"].keys())[0]
+                if (not default_base_dir is None) and default_base_dir in data["allowed_dirs"].keys():
+                    data["base_dir"] = default_base_dir
+                else:
+                    data["base_dir"] = list(data["allowed_dirs"].keys())[0]
                 path = data["allowed_dirs"][data["base_dir"]]["path"]
                 data["dir"] = path
                 data["items"] = browse_dir_(path, ignore_files, file_exts, show_only_hits)

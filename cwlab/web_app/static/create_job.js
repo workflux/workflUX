@@ -98,6 +98,7 @@ class PathValAndSearch extends React.Component{
                         allowUpload={true}
                         allowDownload={false}
                         jobId={this.props.jobId}
+                        defaultBaseDir="INPUT_DIR_CURRENT_JOB"
                     />
                     <br/>
                     <span className="w3-text-green">Include sub-directories for searching: </span>
@@ -1184,7 +1185,7 @@ class JobCreationPrep extends React.Component {
             display: "prep", // one of prep, form_ssheet, from_html
             validatePaths: true,
             searchPaths: false,
-            searchDir: "Please Fill",
+            searchDir: "Please fill",
             includeSubbDirsForSearching: true
         }
 
