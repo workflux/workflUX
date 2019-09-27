@@ -44,6 +44,8 @@ class PathValAndSearch extends React.Component{
         // props.includeSubbDirsForSearching
         // props.changeIncludeSubDirsForSearching
         // props.changePathValAndSearch
+        // props.prevPath
+        // props.changePrevPath
         this.handleChangeSearchDir = this.handleChangeSearchDir.bind(this);
         this.handleChangeValAndSearch = this.handleChangeValAndSearch.bind(this);
     }
@@ -93,13 +95,14 @@ class PathValAndSearch extends React.Component{
                         ignoreFiles={false}
                         fileExts={[]}
                         showOnlyHits={false}
-                        selectDir={false}
+                        selectDir={true}
                         allowInput={true}
-                        allowUpload={true}
+                        allowUpload={false}
                         allowDownload={false}
                         jobId={this.props.jobId}
                         defaultBaseDir="INPUT_DIR_CURRENT_JOB"
-                        showCancelButton={true}
+                        prevPath={this.props.prevPath}
+                        changePrevPath={this.props.changePrevPath}
                     />
                     <br/>
                     <span className="w3-text-green">Include sub-directories for searching: </span>
@@ -716,6 +719,8 @@ class JobParamFormHTML extends React.Component {
         // props.searchPaths
         // props.searchDir
         // props.includeSubbDirsForSearching
+        // props.prevPath
+        // props.changePrevPath
 
         this.state = {
             actionStatus: "loading",
@@ -945,6 +950,8 @@ class JobParamFormHTML extends React.Component {
                         changeSearchDir={this.props.changeSearchDir}
                         includeSubbDirsForSearching={this.props.includeSubbDirsForSearching}
                         changeIncludeSubDirsForSearching={this.props.changeIncludeSubDirsForSearching}
+                        prevPath={this.props.prevPath}
+                        changePrevPath={this.props.changePrevPath}
                     />
                     <hr/>
                     <h3>Provide Parameters:</h3>
@@ -1043,6 +1050,8 @@ class JobParamFormSpreadsheet extends React.Component {
         // props.searchPaths
         // props.searchDir
         // props.includeSubbDirsForSearching
+        // props.prevPath
+        // props.changePrevPath
 
         this.state = {
             sheetFormat: "xlsx",
@@ -1098,6 +1107,8 @@ class JobParamFormSpreadsheet extends React.Component {
                     changeSearchDir={this.props.changeSearchDir}
                     includeSubbDirsForSearching={this.props.includeSubbDirsForSearching}
                     changeIncludeSubDirsForSearching={this.props.changeIncludeSubDirsForSearching}
+                    prevPath={this.props.prevPath}
+                    changePrevPath={this.props.changePrevPath}
                 />
                 <hr/>
                 <h3>Provide Parameters Using a Spreadsheet:</h3>
@@ -1187,7 +1198,8 @@ class JobCreationPrep extends React.Component {
             validatePaths: true,
             searchPaths: false,
             searchDir: "Please fill",
-            includeSubbDirsForSearching: true
+            includeSubbDirsForSearching: true,
+            prevPath: null
         }
 
         // construct job_id:
@@ -1212,6 +1224,7 @@ class JobCreationPrep extends React.Component {
         this.changeIncludeSubDirsForSearching = this.changeIncludeSubDirsForSearching.bind(this)
         this.changePathValAndSearch = this.changePathValAndSearch.bind(this)
         this.prepareJobEnv = this.prepareJobEnv.bind(this)
+        this.changePrevPath = this.changePrevPath.bind(this)
         this.ajaxRequest = ajaxRequest.bind(this)
     }
 
@@ -1271,6 +1284,12 @@ class JobCreationPrep extends React.Component {
             onSuccess: (data, messages) => {
                 return({display: value})
             }
+        })
+    }
+
+    changePrevPath(value){
+        this.setState({
+            prevPath: value
         })
     }
 
@@ -1424,6 +1443,8 @@ class JobCreationPrep extends React.Component {
                                     searchPaths={this.state.searchPaths}
                                     searchDir={this.state.searchDir}
                                     includeSubbDirsForSearching={this.state.includeSubbDirsForSearching}
+                                    prevPath={this.state.prevPath}
+                                    changePrevPath={this.changePrevPath}
                                 />
                             </div>
                         ) : (
@@ -1441,6 +1462,8 @@ class JobCreationPrep extends React.Component {
                                     searchPaths={this.state.searchPaths}
                                     searchDir={this.state.searchDir}
                                     includeSubbDirsForSearching={this.state.includeSubbDirsForSearching}
+                                    prevPath={this.state.prevPath}
+                                    changePrevPath={this.changePrevPath}
                                 />
                             </div>
                         )

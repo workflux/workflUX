@@ -733,6 +733,7 @@ class BrowseDir extends React.Component {
         // props.jobId
         // props.defaultBaseDir
         // props.showCancelButton
+        // props.terminateBrowseDialog
 
         this.baseDirInfo = {
             input: "select only",
@@ -770,6 +771,7 @@ class BrowseDir extends React.Component {
         this.handleAction = this.handleAction.bind(this);
         this.changeStateVar = this.changeStateVar.bind(this);
         this.changeBaseDir = this.changeBaseDir.bind(this);
+        this.terminateBrowseDialog = this.terminateBrowseDialog.bind(this);
     }
 
     componentDidMount(){
@@ -851,6 +853,24 @@ class BrowseDir extends React.Component {
             address: this.state.allowedDirs[event.target.value]
         })
         this.getItemsInDir(false, this.state.allowedDirs[event.target.value].path)
+    }
+
+    terminateBrowseDialog(event){
+        let changes
+        let selectedItem
+        if (event.target.nam == "cancel"){
+            changes = false
+            selectedItem = null
+        }
+        else if (event.target.name == "select_file"){
+            changes = true
+            selectedItem = this.state.selectedItem
+        }
+        else if (event.target.name == "select_dir"){
+            changes = true
+            selectedItem = this.state.dirPath
+        }
+        this.props.terminateBrowseDialg(changes, selectedItem)
     }
 
     render(){
@@ -993,7 +1013,7 @@ class BrowseDir extends React.Component {
                                                 value="cancel"
                                                 className="w3-bar-item w3-right"
                                                 label={<span><i className="fas fa-times" />&nbsp;cancel</span>}
-                                                onAction={this.handleAction}
+                                                onAction={this.terminateBrowseDialog}
                                                 forwardEvent={true}
                                             />
                                         )}
@@ -1004,7 +1024,7 @@ class BrowseDir extends React.Component {
                                                         value="select_dir"
                                                         className="w3-bar-item w3-right"
                                                         label={<span><i className="fas fa-check" />&nbsp;choose current dir</span>}
-                                                        onAction={this.handleAction}
+                                                        onAction={this.terminateBrowseDialog}
                                                         disabled={this.state.actionStatus != "none"}
                                                         forwardEvent={true}
                                                     />
@@ -1015,7 +1035,7 @@ class BrowseDir extends React.Component {
                                                         className="w3-bar-item w3-right"
                                                         label={<span><i className="fas fa-check" />&nbsp;choose selected file</span>}
                                                         disabled={!this.state.selectedItem || this.state.actionStatus != "none"}
-                                                        onAction={this.handleAction}
+                                                        onAction={this.terminateBrowseDialog}
                                                         forwardEvent={true}
                                                     />
                                                 )
@@ -1060,7 +1080,9 @@ class BrowseDirTextField extends React.Component {
         // props.allowDownload
         // props.jobId
         // props.defaultBaseDir
-        // props.showCancelButton
+        // props.prevPath
+        // props.changePrevPath
+
 
         this.state = {
             actionStatus: "none",
@@ -1069,6 +1091,7 @@ class BrowseDirTextField extends React.Component {
 
         this.handleOnChange = this.handleOnChange.bind(this);
         this.browse = this.browse.bind(this);
+        this.terminateBrowseDialg = this.terminateBrowseDialg.bind(this);
     }
 
     handleOnChange(event){
@@ -1079,6 +1102,16 @@ class BrowseDirTextField extends React.Component {
         this.setState({
             actionStatus: "browse"
         })
+    }
+
+    terminateBrowseDialg(changes, selectedItem){
+        this.setState({
+            actionStatus: "none"
+        })
+        if(changes){
+            this.props.onChange(this.props.name, selectedItem)
+            this.props.changePrevPath(selectedItem)
+        }
     }
 
     render(){
@@ -1119,6 +1152,10 @@ class BrowseDirTextField extends React.Component {
                         allowDownload={this.props.allowDownload}
                         jobId={this.props.jobId}
                         defaultBaseDir={this.props.defaultBaseDir}
+                        prevPath={this.props.prevPath}
+                        changePrevPath={this.props.changePrevPath}
+                        showCancelButton={true}
+                        terminateBrowseDialg={this.terminateBrowseDialg}
                     />
                 )}
             </span>
