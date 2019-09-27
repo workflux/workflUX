@@ -2,7 +2,7 @@
 const inputStyle = {width: "100%", maxWidth: "400px", minWidth: "100px"}
 
 function changeInputField(event){
-    this.setState({[event.target.name]: event.target.value})
+    this.setState({[event.currentTarget.name]: event.currentTarget.value})
 }
 
 class GeneralInfo extends React.Component {
@@ -82,13 +82,13 @@ class AdminDashboard extends React.Component {
     }
 
     changeSelect(event){
-        this.setState({[event.target.name]: event.target.value})
+        this.setState({[event.currentTarget.name]: event.currentTarget.value})
     }
     
     changeUserFilter(event){
         this.setState({
             userSelection: [],
-            userFilter: event.target.value
+            userFilter: event.currentTarget.value
         })
     }
 

@@ -195,7 +195,7 @@ class Checkbox extends React.Component{
 
     handleChange(event){
         const value=event.currentTarget.value
-        const isSet=event.target.checked
+        const isSet=event.currentTarget.checked
         this.props.onChange(value, isSet)
     }
 
@@ -229,7 +229,7 @@ class BooleanSlider extends React.Component {
     
     handleChange(event){
         const value=event.currentTarget.value
-        const isSet=event.target.checked
+        const isSet=event.currentTarget.checked
         if (this.props.doNotSendValue){
             this.props.onChange(isSet)
         }
@@ -274,7 +274,7 @@ class ActionButton extends React.Component {
     handleAction(event){
         if (this.props.forwardEvent){
             this.props.onAction({
-                target:{
+                currentTarget:{
                     value: this.props.value,
                     name: this.props.name
                 }
@@ -382,11 +382,11 @@ class Table extends React.Component {
 
     handleSelectionChange(event){
         let newSelection = this.props.selection
-        if (this.props.selection.includes(event.target.value)){
-            delete newSelection[newSelection.indexOf(event.target.value)]
+        if (this.props.selection.includes(event.currentTarget.value)){
+            delete newSelection[newSelection.indexOf(event.currentTarget.value)]
         }
         else {
-            newSelection.push(event.target.value)
+            newSelection.push(event.currentTarget.value)
         }
         this.props.handleSelectionChange(newSelection)
     }
@@ -825,48 +825,48 @@ class BrowseDir extends React.Component {
     }
 
     handleAction(event){
-        if (event.target.name == "up"){
+        if (event.currentTarget.name == "up"){
             this.getItemsInDir(true, this.state.dirPath)
         }
-        else if (event.target.name == "refresh"){
+        else if (event.currentTarget.name == "refresh"){
             this.getItemsInDir(false, this.state.dirPath)
         }
-        else if (event.target.name == "open"){
-            this.getItemsInDir(false, event.target.value)
+        else if (event.currentTarget.name == "open"){
+            this.getItemsInDir(false, event.currentTarget.value)
         }
-        else if (event.target.name == "address"){
+        else if (event.currentTarget.name == "address"){
             if (event.key == "Enter"){
-                this.getItemsInDir(false, event.target.value)
+                this.getItemsInDir(false, event.currentTarget.value)
             }
         }
     }
 
     changeStateVar(event){
         this.setState({
-            [event.target.name]: event.target.value
+            [event.currentTarget.name]: event.currentTarget.value
         })
     }
 
     changeBaseDir(event){
         this.setState({
-            baseDir: event.target.value,
-            address: this.state.allowedDirs[event.target.value]
+            baseDir: event.currentTarget.value,
+            address: this.state.allowedDirs[event.currentTarget.value]
         })
-        this.getItemsInDir(false, this.state.allowedDirs[event.target.value].path)
+        this.getItemsInDir(false, this.state.allowedDirs[event.currentTarget.value].path)
     }
 
     terminateBrowseDialog(event){
         let changes
         let selectedItem
-        if (event.target.nam == "cancel"){
+        if (event.currentTarget.nam == "cancel"){
             changes = false
             selectedItem = null
         }
-        else if (event.target.name == "select_file"){
+        else if (event.currentTarget.name == "select_file"){
             changes = true
             selectedItem = this.state.selectedItem
         }
-        else if (event.target.name == "select_dir"){
+        else if (event.currentTarget.name == "select_dir"){
             changes = true
             selectedItem = this.state.dirPath
         }
@@ -1082,6 +1082,7 @@ class BrowseDirTextField extends React.Component {
         // props.defaultBaseDir
         // props.prevPath
         // props.changePrevPath
+        // props.smallSize
 
 
         this.state = {
@@ -1105,7 +1106,7 @@ class BrowseDirTextField extends React.Component {
         })
         if(changes){
             const event = {
-                target: {
+                currentTarget: {
                     name: this.props.name,
                     value: selectedItem
                 }
@@ -1119,7 +1120,7 @@ class BrowseDirTextField extends React.Component {
         return(
             <span>
                 <input
-                    className="w3-input"
+                    className={this.props.smallSize ? "param-input-browse" : "w3-input"}
                     style={ {width: "calc(100% - 28px)", display: "inline-block"} }
                     type="text"
                     name={this.props.name}
@@ -1131,12 +1132,18 @@ class BrowseDirTextField extends React.Component {
                 <ActionButton
                     name="browse"
                     value="browse"
-                    style={ {
-                        width: "24px", 
-                        display: "inline-block", 
-                        paddingLeft: "2px",
-                        paddingRight: "2px"
-                    } }
+                    style={ this.props.smallSize ? ({
+                            width: "14px", 
+                            display: "inline-block", 
+                            padding: "1px",
+                            fontSize: "80%"
+                        }) : ({
+                            width: "24px", 
+                            display: "inline-block", 
+                            paddingLeft: "2px",
+                            paddingRight: "2px"
+                        })
+                    }
                     label={<i className="fas fa-folder-open" />}
                     onAction={this.browse}
                     disabled={this.props.disabled}
@@ -1195,7 +1202,7 @@ class FileUploadComponent extends React.Component {
     }
 
     handleFileChange(event){
-        this.file = event.target.files[0]
+        this.file = event.currentTarget.files[0]
     }
 
     handleCompletion(isSuccess){

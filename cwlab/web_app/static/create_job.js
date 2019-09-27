@@ -57,7 +57,7 @@ class PathValAndSearch extends React.Component{
     }
 
     handleChangeSearchDir(event){
-        this.props.changeSearchDir(event.target.value)
+        this.props.changeSearchDir(event.currentTarget.value)
     }
     
 
@@ -181,6 +181,9 @@ class ParamField extends React.Component{
         // props.name
         // props.index for array params
         // props.isNull
+        // props.jobId
+        // props.prevPath
+        // props.changePrevPath
 
         this.key = this.props.index ? (
             this.props.name + "%" + this.props.index.toString()
@@ -192,7 +195,8 @@ class ParamField extends React.Component{
             // "int":"input_number",
             // "long":"input_number",
             "string":"input_text",
-            "File":"input_text"
+            "File":"input_file",
+            "Directory":"input_dir"
         }
         
         this.handleChange = this.handleChange.bind(this);
@@ -241,6 +245,48 @@ class ParamField extends React.Component{
                     />
                 )
                 break;
+            case "input_file":
+                return(
+                    <BrowseDirTextField
+                        name={"input_" + this.key}
+                        value={this.props.paramValue}
+                        onChange={this.handleChange}
+                        ignoreFiles={false}
+                        fileExts={[]}
+                        showOnlyHits={false}
+                        selectDir={false}
+                        allowInput={true}
+                        allowUpload={true}
+                        allowDownload={false}
+                        jobId={this.props.jobId}
+                        defaultBaseDir="INPUT_DIR_CURRENT_JOB"
+                        prevPath={this.props.prevPath}
+                        changePrevPath={this.props.changePrevPath}
+                        smallSize={true}
+                    />
+                )
+                break;
+                case "input_dir":
+                    return(
+                        <BrowseDirTextField
+                            name={"input_" + this.key}
+                            value={this.props.paramValue}
+                            onChange={this.handleChange}
+                            ignoreFiles={false}
+                            fileExts={[]}
+                            showOnlyHits={false}
+                            selectDir={true}
+                            allowInput={true}
+                            allowUpload={true}
+                            allowDownload={false}
+                            jobId={this.props.jobId}
+                            defaultBaseDir="INPUT_DIR_CURRENT_JOB"
+                            prevPath={this.props.prevPath}
+                            changePrevPath={this.props.changePrevPath}
+                            smallSize={true}
+                        />
+                    )
+                    break;
         }
     }
 }
@@ -265,7 +311,7 @@ class ParamNullCheckbox extends React.Component{
         this.props.toggleNull(
             this.props.mode,
             this.props.name, 
-            !event.target.checked,
+            !event.currentTarget.checked,
             this.props.nullValue,
             this.props.refersTo,
             typeof this.props.indexOrRunId === "undefined" ? (null) : (this.props.indexOrRunId)
@@ -353,6 +399,9 @@ class ParamForm extends React.Component{
         // props.runIds
         // props.changeParamValue
         // props.toggleNull
+        // props.jobId
+        // props.prevPath
+        // props.changePrevPath
         
         this.state = {
             whichRunIdFocus: null
@@ -431,6 +480,9 @@ class ParamFormGlobalSingle extends ParamForm{
                                         paramValue={this.props.paramValues[p][0]}
                                         onChange={this.props.changeParamValue}
                                         isNull={isNull[p]}
+                                        jobId={this.props.jobId}
+                                        prevPath={this.props.prevPath}
+                                        changePrevPath={this.props.changePrevPath}
                                     />
                                 </td>
                             </tr>
@@ -506,6 +558,9 @@ class ParamFormGlobalArray extends ParamForm{
                                                             isNull={isNull[p]}
                                                             itemNullAllowed={this.props.paramConfigs[p].null_items_allowed}
                                                             index={index}
+                                                            jobId={this.props.jobId}
+                                                            prevPath={this.props.prevPath}
+                                                            changePrevPath={this.props.changePrevPath}
                                                         />
                                                     </td>
                                                 </tr>
@@ -576,6 +631,9 @@ class ParamFormRunSingle extends ParamForm{
                                                         isNull={this.props.paramValues[p][index]=="null"}
                                                         itemNullAllowed={this.props.paramConfigs[p].null_allowed}
                                                         index={index}
+                                                        jobId={this.props.jobId}
+                                                        prevPath={this.props.prevPath}
+                                                        changePrevPath={this.props.changePrevPath}
                                                     />
                                                 </td>
                                             </tr>
@@ -681,6 +739,9 @@ class ParamFormRunArray extends ParamForm{
                                                             onChange={this.props.changeParamValue}
                                                             isNull={isNull[p]}
                                                             itemNullAllowed={this.props.paramConfigs[p].null_items_allowed}
+                                                            jobId={this.props.jobId}
+                                                            prevPath={this.props.prevPath}
+                                                            changePrevPath={this.props.changePrevPath}
                                                         />
                                                     </td>
                                                 </tr>
@@ -961,6 +1022,9 @@ class JobParamFormHTML extends React.Component {
                             paramConfigs={this.state.paramConfigs}
                             changeParamValue={(name, index, newValue) => this.changeParamValue("global_single", name, index, newValue)}
                             toggleNull={this.toggleNull}
+                            jobId={this.props.jobId}
+                            prevPath={this.props.prevPath}
+                            changePrevPath={this.props.changePrevPath}
                         />
                     }
                     {this.state.modeExists["global_array"] && 
@@ -970,6 +1034,9 @@ class JobParamFormHTML extends React.Component {
                             changeParamValue={(name, index, newValue) => this.changeParamValue("global_array", name, index, newValue)}
                             toggleNull={this.toggleNull}
                             addOrRemoveItem={this.addOrRemoveItem}
+                            jobId={this.props.jobId}
+                            prevPath={this.props.prevPath}
+                            changePrevPath={this.props.changePrevPath}
                         />
                     }
                     {this.state.modeExists["run_single"] && 
@@ -979,6 +1046,9 @@ class JobParamFormHTML extends React.Component {
                             runIds={this.props.run_names}
                             changeParamValue={(name, index, newValue) => this.changeParamValue("run_single", name, index, newValue)}
                             toggleNull={this.toggleNull}
+                            jobId={this.props.jobId}
+                            prevPath={this.props.prevPath}
+                            changePrevPath={this.props.changePrevPath}
                         />
                     }
                     {this.state.modeExists["run_array"] && 
@@ -990,6 +1060,9 @@ class JobParamFormHTML extends React.Component {
                             changeParamValue={(name, index, newValue) => this.changeParamValue("run_array", name, index, newValue)}
                             toggleNull={this.toggleNull}
                             addOrRemoveItem={this.addOrRemoveItem}
+                            jobId={this.props.jobId}
+                            prevPath={this.props.prevPath}
+                            changePrevPath={this.props.changePrevPath}
                         />
                     }
     
