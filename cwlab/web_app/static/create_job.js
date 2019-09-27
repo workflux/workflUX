@@ -251,6 +251,7 @@ class ParamField extends React.Component{
                         name={"input_" + this.key}
                         value={this.props.paramValue}
                         onChange={this.handleChange}
+                        disabled={disableInput}
                         ignoreFiles={false}
                         fileExts={[]}
                         showOnlyHits={false}
