@@ -1089,13 +1089,8 @@ class BrowseDirTextField extends React.Component {
             serverMessages: []
         };  
 
-        this.handleOnChange = this.handleOnChange.bind(this);
         this.browse = this.browse.bind(this);
         this.terminateBrowseDialg = this.terminateBrowseDialg.bind(this);
-    }
-
-    handleOnChange(event){
-        this.props.onChange(event.target.name, event.target.value)
     }
 
     browse(){
@@ -1109,7 +1104,13 @@ class BrowseDirTextField extends React.Component {
             actionStatus: "none"
         })
         if(changes){
-            this.props.onChange(this.props.name, selectedItem)
+            const event = {
+                target: {
+                    name: this.props.name,
+                    value: selectedItem
+                }
+            }
+            this.props.onChange(event)
             this.props.changePrevPath(selectedItem)
         }
     }
@@ -1123,7 +1124,7 @@ class BrowseDirTextField extends React.Component {
                     type="text"
                     name={this.props.name}
                     value={this.props.value}
-                    onChange={this.handleOnChange}
+                    onChange={this.props.onChange}
                     required={true}
                     disabled={this.props.disabled}
                 />

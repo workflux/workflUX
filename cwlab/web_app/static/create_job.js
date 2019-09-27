@@ -56,8 +56,8 @@ class PathValAndSearch extends React.Component{
         this.props.changePathValAndSearch(searchPaths, validatePaths)
     }
 
-    handleChangeSearchDir(name, value){
-        this.props.changeSearchDir(value)
+    handleChangeSearchDir(event){
+        this.props.changeSearchDir(event.target.value)
     }
     
 
