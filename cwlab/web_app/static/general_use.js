@@ -1200,13 +1200,10 @@ class FileUploadComponent extends React.Component {
 
         this.state = {
             status: "wait_for_upload", // can be "wait_for_upload"/"uploading"/"done"
-            error: false
+            error: false,
+            file: null, 
+            serverMessages: []
         };  
-
-        this.serverMessages = [];    // container for errors/warnings/infos 
-                                    //from server upon ajax request
-                                    
-        this.file = "" // container to store file object
         
         this.upload = this.upload.bind(this);
         this.handleFileChange = this.handleFileChange.bind(this);
@@ -1214,7 +1211,11 @@ class FileUploadComponent extends React.Component {
     }
 
     handleFileChange(event){
-        this.file = event.currentTarget.files[0]
+        this.setState({
+            file: event.currentTarget.files[0],
+            error: false,
+            serverMessages: []
+        })
     }
 
     handleCompletion(isSuccess){
@@ -1224,9 +1225,9 @@ class FileUploadComponent extends React.Component {
     }
 
     upload(value){ // ajax request to server
-        const fileToUpload = this.file
-        if (this.fileToUpload == ""){
-            this.serverMessages = [{type:"error", text:"No file selected."}]
+        const fileToUpload = this.state.file
+        if (this.state.fileToUpload == ""){
+            this.state.serverMessages = [{type:"error", text:"No file selected."}]
             this.setState({status: "wait_for_upload", error: true})
         }
         else{
@@ -1236,45 +1237,96 @@ class FileUploadComponent extends React.Component {
             if (this.props.meta_data){
                 formData.append("meta", JSON.stringify(this.props.meta_data))
             }
-            fetch(this.props.requestRoute, {
-                method: "POST",
-                body: formData,
-                cache: "no-cache"
-            }).then(res => res.json())
-            .then(
-                (result) => {
-                    this.serverMessages = result.messages;
-                    let errorOccured = false;
-                    for( let i=0;  i<this.serverMessages.length; i++){
-                        if(this.serverMessages[i].type == "error"){
-                            errorOccured = true;
-                            break;
+
+            let request = new XMLHttpRequest()
+            request.upload.addEventListener("progress", event => {
+                if (event.lengthComputable) {
+                    this.setState({
+                        serverMessages: [{
+                            type: "warning",
+                            text: (
+                                "Uploading file: " + 
+                                parseInt((event.loaded / event.total) * 100).toString() + "%"
+                            )
+                        }]
+                    })
+                }
+            })
+            
+            request.open("POST", this.props.requestRoute)
+
+            request.onreadystatechange = function() {
+                var status;
+                var data;
+                if (xhr.readyState == 4) {
+                    status = xhr.status;
+                    if (status == 200) {
+                        result = JSON.parse(xhr.responseText);
+                        this.state.serverMessages = result.messages;
+                        let errorOccured = false;
+                        for( let i=0;  i<this.state.serverMessages.length; i++){
+                            if(this.state.serverMessages[i].type == "error"){
+                                errorOccured = true;
+                                break;
+                            }
                         }
-                    }
-                    if (errorOccured){
-                        this.setState({status: "wait_for_upload", error: true})
-                        this.handleCompletion(false)
+                        if (errorOccured){
+                            this.setState({status: "wait_for_upload", error: true})
+                            this.handleCompletion(false)
+                        } 
+                        else {
+                            this.setState({status: "done", error: false});
+                            this.handleCompletion(true)
+                        }
                     } 
                     else {
-                        this.setState({status: "done", error: false});
-                        this.handleCompletion(true)
+                        // server could not be reached
+                        this.state.serverMessages = [{type: "error", text: serverNotReachableError}];
+                        this.handleCompletion(false)
+                        this.setState({status: "wait_for_upload", error: true});
                     }
-                },
-                (error) => {
-                    // server could not be reached
-                    this.serverMessages = [{type: "error", text: serverNotReachableError}];
-                    this.handleCompletion(false)
-                    this.setState({status: "wait_for_upload", error: true});
                 }
-            )
-        }
+            };
 
-        
+            request.send(formData)
+
+            // fetch(this.props.requestRoute, {
+            //     method: "POST",
+            //     body: formData,
+            //     cache: "no-cache"
+            // }).then(res => res.json())
+            // .then(
+            //     (result) => {
+            //         this.state.serverMessages = result.messages;
+            //         let errorOccured = false;
+            //         for( let i=0;  i<this.state.serverMessages.length; i++){
+            //             if(this.state.serverMessages[i].type == "error"){
+            //                 errorOccured = true;
+            //                 break;
+            //             }
+            //         }
+            //         if (errorOccured){
+            //             this.setState({status: "wait_for_upload", error: true})
+            //             this.handleCompletion(false)
+            //         } 
+            //         else {
+            //             this.setState({status: "done", error: false});
+            //             this.handleCompletion(true)
+            //         }
+            //     },
+            //     (error) => {
+            //         // server could not be reached
+            //         this.state.serverMessages = [{type: "error", text: serverNotReachableError}];
+            //         this.handleCompletion(false)
+            //         this.setState({status: "wait_for_upload", error: true});
+            //     }
+            // )
+        }
     }
 
     render() {
         status = this.state.status
-        const messages = <DisplayServerMessages messages={this.serverMessages} />
+        const messages = <DisplayServerMessages messages={this.state.serverMessages} />
         const instruction = this.props.instruction
         const upload_selector = (
             <input 
