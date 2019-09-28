@@ -164,7 +164,7 @@ class ParamName extends React.Component{
 
         const typeLabelStyle = {
             fontFamily: "courier"
-    }
+        }
 
         this.typeIcon = {
             File: <i className="fas fa-file" />,
@@ -208,18 +208,24 @@ class ParamField extends React.Component{
         )
 
         this.inputTypes = {
-            // "int":"input_number",
-            // "long":"input_number",
             "string":"input_text",
             "File":"input_file",
-            "Directory":"input_dir"
+            "Directory":"input_dir",
         }
         
         this.handleChange = this.handleChange.bind(this);
     }
 
     handleChange(event){
-        const paramValue = event.currentTarget.value
+        let paramValue = event.currentTarget.value
+        if (paramValue != "none" && paramValue != "noneItem"){
+            if (["int", "long"].includes(this.props.type)){
+                paramValue = paramValue.replace(/[^0-9\-]/g,"")
+            }
+            else if (["int", "long", "float", "double"].includes(this.props.type)){
+                paramValue = paramValue.replace(/[^0-9\-.]/g,"")
+            }
+        }
         this.props.onChange(this.props.name, this.props.index ? (this.props.index) : (0), paramValue)
     }
 
@@ -235,19 +241,6 @@ class ParamField extends React.Component{
         
         let input_field
         switch(inputType){
-            case "input_number":
-                return(
-                    <input
-                        className="param-input"
-                        type="number"
-                        name={"input_" + this.key}
-                        value={this.props.paramValue}
-                        onChange={this.handleChange}
-                        required={true}
-                        disabled={disableInput}
-                    />
-                )
-                break;
             case "input_text":
                 return(
                     <input
@@ -465,7 +458,7 @@ class ParamFormGlobalSingle extends ParamForm{
 
         return(
             <div style={ {overflow:"auto"} }>
-                <h4>Gobally-defined (Non-list) Parameters:</h4>
+                <h5>Single values:</h5>
                 <table style={ {borderSpacing: "0px 8px"} }><tbody>
                     {Object.keys(this.props.paramValues).map( (p) => (
                             <tr 
@@ -474,7 +467,7 @@ class ParamFormGlobalSingle extends ParamForm{
                                 style={ {height: this.headerHeight} }
                             >
                                 <td style={ {padding: "8px", width: "auto"} }>
-                                    <ParamName name={p} />
+                                    <ParamName name={p} type={this.props.paramConfigs[p].type}/>
                                 </td>
                                 <td style={ {padding: "8px", width: "auto"} }>
                                     {this.props.paramConfigs[p].null_allowed &&
@@ -518,7 +511,7 @@ class ParamFormGlobalArray extends ParamForm{
 
         return(
                 <div style={ {overflow:"auto"} }>
-                    <h4>Gobally-defined List Parameters:</h4>
+                    <h5>Lists:</h5>
                     <table style={ {borderSpacing: "8px 0px"} }><tbody>
                         <tr>
                             {Object.keys(this.props.paramValues).map( (p) => (
@@ -533,6 +526,7 @@ class ParamFormGlobalArray extends ParamForm{
                                                 <td style={ {minWidth: this.columnWidth} }>
                                                     <ParamName
                                                         name={p}
+                                                        type={this.props.paramConfigs[p].type}
                                                     />
                                                     {this.props.paramConfigs[p].null_allowed &&
                                                         <span className="w3-right">
@@ -604,7 +598,7 @@ class ParamFormRunSingle extends ParamForm{
     render(){
         return(
                 <div style={ {overflow:"auto"} }>
-                    <h4>Run-specific (Non-list) Parameters:</h4>
+                    <h5>Single values:</h5>
                     <table style={ {borderSpacing: "8px 0px"} }><tbody>
                         <tr>
                             {Object.keys(this.props.paramValues).map( (p) => (
@@ -619,6 +613,7 @@ class ParamFormRunSingle extends ParamForm{
                                             <td style={ {minWidth: this.columnWidth} }>
                                                 <ParamName
                                                     name={p}
+                                                    type={this.props.paramConfigs[p].type}
                                                 />
                                             </td>
                                         </tr>
@@ -688,7 +683,7 @@ class ParamFormRunArray extends ParamForm{
 
         return(
                 <div style={ {overflow:"auto"} }>
-                    <h4>Run-specific (Non-list) Parameters:</h4>
+                    <h5>Lists:</h5>
                     <TabPanel
                         title="Run IDs:"
                         tabs={this.props.runIds}
@@ -709,6 +704,7 @@ class ParamFormRunArray extends ParamForm{
                                                 <td style={ {minWidth: this.columnWidth} }>
                                                     <ParamName
                                                         name={p}
+                                                        type={this.props.paramConfigs[p].type}
                                                     />
                                                     {this.props.paramConfigs[p].null_allowed &&
                                                         <span className="w3-right">
@@ -1033,58 +1029,69 @@ class JobParamFormHTML extends React.Component {
                         changePrevPath={this.props.changePrevPath}
                     />
                     <hr/>
-                    <h3>Provide Parameters:</h3>
-                    {this.state.modeExists["global_single"] && 
-                        <ParamFormGlobalSingle
-                            paramValues={this.state.paramValuesByMode["global_single"]}
-                            paramConfigs={this.state.paramConfigs}
-                            changeParamValue={(name, index, newValue) => this.changeParamValue("global_single", name, index, newValue)}
-                            toggleNull={this.toggleNull}
-                            jobId={this.props.jobId}
-                            prevPath={this.props.prevPath}
-                            changePrevPath={this.props.changePrevPath}
-                        />
+                    {(this.state.modeExists["global_single"] || this.state.modeExists["global_array"]) &&
+                        <span>
+                            <h3>Globally-defined Parameters:</h3>
+                            {this.state.modeExists["global_single"] && 
+                                <ParamFormGlobalSingle
+                                    paramValues={this.state.paramValuesByMode["global_single"]}
+                                    paramConfigs={this.state.paramConfigs}
+                                    changeParamValue={(name, index, newValue) => this.changeParamValue("global_single", name, index, newValue)}
+                                    toggleNull={this.toggleNull}
+                                    jobId={this.props.jobId}
+                                    prevPath={this.props.prevPath}
+                                    changePrevPath={this.props.changePrevPath}
+                                />
+                            }
+                            {this.state.modeExists["global_array"] && 
+                                <ParamFormGlobalArray
+                                    paramValues={this.state.paramValuesByMode["global_array"]}
+                                    paramConfigs={this.state.paramConfigs}
+                                    changeParamValue={(name, index, newValue) => this.changeParamValue("global_array", name, index, newValue)}
+                                    toggleNull={this.toggleNull}
+                                    addOrRemoveItem={this.addOrRemoveItem}
+                                    jobId={this.props.jobId}
+                                    prevPath={this.props.prevPath}
+                                    changePrevPath={this.props.changePrevPath}
+                                />
+                            }
+                            <br/>
+                        </span>
                     }
-                    {this.state.modeExists["global_array"] && 
-                        <ParamFormGlobalArray
-                            paramValues={this.state.paramValuesByMode["global_array"]}
-                            paramConfigs={this.state.paramConfigs}
-                            changeParamValue={(name, index, newValue) => this.changeParamValue("global_array", name, index, newValue)}
-                            toggleNull={this.toggleNull}
-                            addOrRemoveItem={this.addOrRemoveItem}
-                            jobId={this.props.jobId}
-                            prevPath={this.props.prevPath}
-                            changePrevPath={this.props.changePrevPath}
-                        />
+                    {(this.state.modeExists["run_single"] || this.state.modeExists["run_array"]) &&
+                        <span>
+                            <h3>Run-specific Parameters:</h3>
+                            {this.state.modeExists["run_single"] && 
+                                <ParamFormRunSingle
+                                    paramValues={this.state.paramValuesByMode["run_single"]}
+                                    paramConfigs={this.state.paramConfigs}
+                                    runIds={this.props.run_names}
+                                    changeParamValue={(name, index, newValue) => this.changeParamValue("run_single", name, index, newValue)}
+                                    toggleNull={this.toggleNull}
+                                    jobId={this.props.jobId}
+                                    prevPath={this.props.prevPath}
+                                    changePrevPath={this.props.changePrevPath}
+                                />
+                            }
+                            {this.state.modeExists["run_array"] && 
+                                <ParamFormRunArray
+                                    paramValues={this.state.paramValuesByMode["run_array"]}
+                                    paramConfigs={this.state.paramConfigs}
+                                    paramHelperValues={this.state.paramHelperValues}
+                                    runIds={this.props.run_names}
+                                    changeParamValue={(name, index, newValue) => this.changeParamValue("run_array", name, index, newValue)}
+                                    toggleNull={this.toggleNull}
+                                    addOrRemoveItem={this.addOrRemoveItem}
+                                    jobId={this.props.jobId}
+                                    prevPath={this.props.prevPath}
+                                    changePrevPath={this.props.changePrevPath}
+                                />
+                            }
+                            <br/>
+                        </span>
                     }
-                    {this.state.modeExists["run_single"] && 
-                        <ParamFormRunSingle
-                            paramValues={this.state.paramValuesByMode["run_single"]}
-                            paramConfigs={this.state.paramConfigs}
-                            runIds={this.props.run_names}
-                            changeParamValue={(name, index, newValue) => this.changeParamValue("run_single", name, index, newValue)}
-                            toggleNull={this.toggleNull}
-                            jobId={this.props.jobId}
-                            prevPath={this.props.prevPath}
-                            changePrevPath={this.props.changePrevPath}
-                        />
-                    }
-                    {this.state.modeExists["run_array"] && 
-                        <ParamFormRunArray
-                            paramValues={this.state.paramValuesByMode["run_array"]}
-                            paramConfigs={this.state.paramConfigs}
-                            paramHelperValues={this.state.paramHelperValues}
-                            runIds={this.props.run_names}
-                            changeParamValue={(name, index, newValue) => this.changeParamValue("run_array", name, index, newValue)}
-                            toggleNull={this.toggleNull}
-                            addOrRemoveItem={this.addOrRemoveItem}
-                            jobId={this.props.jobId}
-                            prevPath={this.props.prevPath}
-                            changePrevPath={this.props.changePrevPath}
-                        />
-                    }
-    
-                    <h3>Validate Selection and Create Job</h3>
+
+                    <h3>Validate Selection and Create Job:</h3>
 
                     <ActionButton
                         name="validate"
@@ -1105,19 +1112,6 @@ class JobParamFormHTML extends React.Component {
                         includeSubbDirsForSearching={this.props.includeSubbDirsForSearching}
                         disabled={!this.state.form_passed_validation}
                     />
-
-                    <h4>Configs:</h4>
-                    <p>
-                        {JSON.stringify(this.state.paramConfigs)}
-                    </p>
-                    <h4>Param Values By Mode:</h4>
-                    <p>
-                        {JSON.stringify(this.state.paramValuesByMode)}
-                    </p>
-                    <h4>Param Helper Values:</h4>
-                    <p>
-                        {JSON.stringify(this.state.paramHelperValues)}
-                    </p>
                 </div>
             )
         }

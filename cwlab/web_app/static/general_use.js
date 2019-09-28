@@ -1266,11 +1266,11 @@ class FileUploadComponent extends React.Component {
         const instruction = this.props.instruction
         const upload_selector = (
             <input 
-            className="w3-button w3-border w3-border-grey"
-            type="file" 
-            name="file" 
-            onChange={this.handleFileChange}
-            disabled={this.props.disabled ? true : false}
+                className="w3-button w3-border w3-border-grey"
+                type="file" 
+                name="file" 
+                onChange={this.handleFileChange}
+                disabled={this.props.disabled ? true : false}
             />
         )
         const action_button = (
