@@ -1196,7 +1196,8 @@ class FileUploadComponent extends React.Component {
         // props.meta_data meta data send together with the file
         // props.onUploadCompletion function to exectute on completion, 
         //  takes one argument: true (on success)/ false (on error)
-        //props.buttonLabel
+        // props.buttonLabel
+        // props.showProgress
 
         this.state = {
             status: "wait_for_upload", // can be "wait_for_upload"/"uploading"/"done"
@@ -1238,30 +1239,66 @@ class FileUploadComponent extends React.Component {
                 formData.append("meta", JSON.stringify(this.props.meta_data))
             }
 
-            let request = new XMLHttpRequest()
-            request.upload.addEventListener("progress", event => {
-                if (event.lengthComputable) {
-                    this.setState({
-                        serverMessages: [{
-                            type: "warning",
-                            text: (
-                                "Uploading file: " + 
-                                parseInt((event.loaded / event.total) * 100).toString() + "%"
-                            )
-                        }]
-                    })
-                }
-            })
-            
-            request.open("POST", this.props.requestRoute)
-
-            request.onreadystatechange = function() {
-                var status;
-                var data;
-                if (xhr.readyState == 4) {
-                    status = xhr.status;
-                    if (status == 200) {
-                        result = JSON.parse(xhr.responseText);
+            if (this.props.showProgress){let request = new XMLHttpRequest()
+                request.upload.addEventListener("progress", event => {
+                    if (event.lengthComputable) {
+                        this.setState({
+                            serverMessages: [{
+                                type: "warning",
+                                text: (
+                                    "Uploading file: " + 
+                                    parseInt((event.loaded / event.total) * 100).toString() + "%"
+                                )
+                            }]
+                        })
+                    }
+                })
+                
+                request.open("POST", this.props.requestRoute)
+    
+                request.onreadystatechange = function() {
+                    var status;
+                    var data;
+                    if (xhr.readyState == 4) {
+                        status = xhr.status;
+                        if (status == 200) {
+                            result = JSON.parse(xhr.responseText);
+                            this.state.serverMessages = result.messages;
+                            let errorOccured = false;
+                            for( let i=0;  i<this.state.serverMessages.length; i++){
+                                if(this.state.serverMessages[i].type == "error"){
+                                    errorOccured = true;
+                                    break;
+                                }
+                            }
+                            if (errorOccured){
+                                this.setState({status: "wait_for_upload", error: true})
+                                this.handleCompletion(false)
+                            } 
+                            else {
+                                this.setState({status: "done", error: false});
+                                this.handleCompletion(true)
+                            }
+                        } 
+                        else {
+                            // server could not be reached
+                            this.state.serverMessages = [{type: "error", text: serverNotReachableError}];
+                            this.handleCompletion(false)
+                            this.setState({status: "wait_for_upload", error: true});
+                        }
+                    }
+                };
+    
+                request.send(formData)    
+            }
+            else {
+                fetch(this.props.requestRoute, {
+                    method: "POST",
+                    body: formData,
+                    cache: "no-cache"
+                }).then(res => res.json())
+                .then(
+                    (result) => {
                         this.state.serverMessages = result.messages;
                         let errorOccured = false;
                         for( let i=0;  i<this.state.serverMessages.length; i++){
@@ -1278,54 +1315,20 @@ class FileUploadComponent extends React.Component {
                             this.setState({status: "done", error: false});
                             this.handleCompletion(true)
                         }
-                    } 
-                    else {
+                    },
+                    (error) => {
                         // server could not be reached
                         this.state.serverMessages = [{type: "error", text: serverNotReachableError}];
                         this.handleCompletion(false)
                         this.setState({status: "wait_for_upload", error: true});
                     }
-                }
-            };
-
-            request.send(formData)
-
-            // fetch(this.props.requestRoute, {
-            //     method: "POST",
-            //     body: formData,
-            //     cache: "no-cache"
-            // }).then(res => res.json())
-            // .then(
-            //     (result) => {
-            //         this.state.serverMessages = result.messages;
-            //         let errorOccured = false;
-            //         for( let i=0;  i<this.state.serverMessages.length; i++){
-            //             if(this.state.serverMessages[i].type == "error"){
-            //                 errorOccured = true;
-            //                 break;
-            //             }
-            //         }
-            //         if (errorOccured){
-            //             this.setState({status: "wait_for_upload", error: true})
-            //             this.handleCompletion(false)
-            //         } 
-            //         else {
-            //             this.setState({status: "done", error: false});
-            //             this.handleCompletion(true)
-            //         }
-            //     },
-            //     (error) => {
-            //         // server could not be reached
-            //         this.state.serverMessages = [{type: "error", text: serverNotReachableError}];
-            //         this.handleCompletion(false)
-            //         this.setState({status: "wait_for_upload", error: true});
-            //     }
-            // )
+                )
+            }
+            
         }
     }
 
     render() {
-        status = this.state.status
         const messages = <DisplayServerMessages messages={this.state.serverMessages} />
         const instruction = this.props.instruction
         const upload_selector = (
@@ -1334,7 +1337,7 @@ class FileUploadComponent extends React.Component {
                 type="file" 
                 name="file" 
                 onChange={this.handleFileChange}
-                disabled={this.props.disabled ? true : false}
+                disabled={(this.props.disabled || this.state.status != "uploading") ? true : false}
             />
         )
         const action_button = (
@@ -1342,7 +1345,7 @@ class FileUploadComponent extends React.Component {
                 name="import"
                 value="import"
                 label={this.props.buttonLabel ? (this.props.buttonLabel) : ("import")}
-                loading={status == "uploading"} 
+                loading={this.state.status == "uploading"} 
                 onAction={this.upload}
                 disabled={this.props.disabled ? true : false}
             />
