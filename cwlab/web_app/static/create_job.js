@@ -160,12 +160,28 @@ class ParamName extends React.Component{
     constructor(props){
         super(props);
         // props.name
+        // props.type
+
+        const typeLabelStyle = {
+            fontFamily: "courier"
+    }
+
+        this.typeIcon = {
+            File: <i className="fas fa-file" />,
+            Directory: <i className="fas fa-folder" />,
+            boolean: <i className="fas fa-check" />,
+            int: <b>ℤ</b>,
+            long: <b>ℤ</b>,
+            float: <b>ℤ</b>,
+            double: <b>ℤ</b>,
+            string: <i className="fas fa-quote-right" />
+        }
     }
 
     render(){
         return(
-            <span className="w3-text-green" style={ {display: "inline-block"} }>
-                {this.props.name}:
+            <span className="w3-text-green" style={ {display: "inline-block", whiteSpace: "nowrap"} }>
+                {this.typeIcon[this.props.type]}&nbsp;{this.props.name}:
             </span>
         )
     }
