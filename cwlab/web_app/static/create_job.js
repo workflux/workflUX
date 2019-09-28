@@ -209,6 +209,7 @@ class ParamField extends React.Component{
 
         this.inputTypes = {
             "string":"input_text",
+            "boolean":"input_boolean",
             "File":"input_file",
             "Directory":"input_dir",
         }
@@ -224,6 +225,9 @@ class ParamField extends React.Component{
             }
             else if (["int", "long", "float", "double"].includes(this.props.type)){
                 paramValue = paramValue.replace(/[^0-9\-.]/g,"")
+            }
+            else if (this.props.type == "boolean"){
+                paramValue = paramValue ? "true" : "false"
             }
         }
         this.props.onChange(this.props.name, this.props.index ? (this.props.index) : (0), paramValue)
@@ -253,6 +257,36 @@ class ParamField extends React.Component{
                         disabled={disableInput}
                     />
                 )
+                break;
+            case "input_boolean":
+                if (disableInput){
+                    return(
+                        <input
+                            className="param-input"
+                            type="text"
+                            name={"input_" + this.key}
+                            value={this.props.paramValue}
+                            onChange={this.handleChange}
+                            required={true}
+                            disabled={true}
+                        />
+                    )
+                }
+                else{
+                    return(
+                        <span style={ {whiteSpace: "nowrap"} }>
+                            false&nbsp;
+                            <BooleanSlider
+                                name={"input_" + this.key}
+                                value={this.props.paramValue}
+                                onChange={this.handleChange}
+                                checked={["Yes","yes", "True", "true", "1"].includes(this.props.paramValue)}
+                                forwardEvent={true}
+                            />
+                            &nbsp;true
+                        </span>
+                    )
+                }
                 break;
             case "input_file":
                 return(
