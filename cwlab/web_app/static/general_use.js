@@ -784,6 +784,7 @@ class BrowseDir extends React.Component {
         this.changeStateVar = this.changeStateVar.bind(this);
         this.changeBaseDir = this.changeBaseDir.bind(this);
         this.terminateBrowseDialog = this.terminateBrowseDialog.bind(this);
+        this.handleFileUpload = this.handleFileUpload.bind(this);
     }
 
     componentDidMount(){
@@ -867,6 +868,15 @@ class BrowseDir extends React.Component {
         this.getItemsInDir(false, this.state.allowedDirs[event.currentTarget.value].path)
     }
 
+    handleFileUpload(isSuccess, data){
+        if(isSuccess && this.allowInput){
+            this.setState({
+                selectedItem: data.file_path
+            })
+            this.getItemsInDir(false, this.state.dirPath)
+        }
+    }
+
     terminateBrowseDialog(event){
         let changes
         let selectedItem
@@ -886,6 +896,9 @@ class BrowseDir extends React.Component {
     }
 
     render(){
+        const allowInput = this.allowInput && ["upload", "input"].includes(this.state.allowedDirs[this.state.baseDir].mode)
+        const allowUpload = this.allowUpload && this.state.allowedDirs[this.state.baseDir].mode == "upload"
+        const allowDownload = this.allowDownload && this.state.allowedDirs[this.state.baseDir].mode == "download"
         return(
             <div>
                 <div
@@ -1010,7 +1023,26 @@ class BrowseDir extends React.Component {
                                             )
                                         }
                                     </div>
-                                    {!this.selectDir && (this.allowInput || this.allow_download) && (
+                                    {allowUpload && (
+                                        <div className="w3-container">
+                                            <FileUploadComponent
+                                                requestRoute={routeUploadFile}
+                                                instruction="Upload file:"
+                                                buttonLabel="upload"
+                                                oneLine={true}
+                                                disabled={this.state.actionStatus != "none"}
+                                                meta_data={ 
+                                                    {
+                                                        job_id: this.props.jobId,
+                                                        dir_path: this.state.dirPath
+                                                    }
+                                                }
+                                                showProgress={true}
+                                                onUploadCompletion={this.handleFileUpload}
+                                            />
+                                        </div>
+                                    )}
+                                    {!this.selectDir && ( allowInput|| allowDownload) && (
                                         <div className="w3-container">
                                             <span className="w3-text-green">Selected file:</span>&nbsp;
                                             <IneditableValueField>
@@ -1029,7 +1061,7 @@ class BrowseDir extends React.Component {
                                                 forwardEvent={true}
                                             />
                                         )}
-                                        {this.allowInput && (
+                                        {allowInput && (
                                             this.selectDir ? (
                                                     <ActionButton
                                                         name="select_dir"
@@ -1219,9 +1251,9 @@ class FileUploadComponent extends React.Component {
         })
     }
 
-    handleCompletion(isSuccess){
+    handleCompletion(isSuccess, data){
         if(this.props.onUploadCompletion){
-            this.props.onUploadCompletion(isSuccess)
+            this.props.onUploadCompletion(isSuccess, data)
         }
     }
 
@@ -1256,35 +1288,35 @@ class FileUploadComponent extends React.Component {
                 
                 request.open("POST", this.props.requestRoute)
     
-                request.onreadystatechange = function() {
+                request.onreadystatechange = () => {
                     var status;
-                    var data;
-                    if (xhr.readyState == 4) {
-                        status = xhr.status;
+                    if (request.readyState == 4) {
+                        status = request.status;
                         if (status == 200) {
-                            result = JSON.parse(xhr.responseText);
-                            this.state.serverMessages = result.messages;
+                            var result = JSON.parse(request.responseText);
+                            var messages = result.messages;
+                            var data = result.data;
                             let errorOccured = false;
-                            for( let i=0;  i<this.state.serverMessages.length; i++){
-                                if(this.state.serverMessages[i].type == "error"){
+                            for( let i=0;  i<messages.length; i++){
+                                if(messages[i].type == "error"){
                                     errorOccured = true;
                                     break;
                                 }
                             }
                             if (errorOccured){
-                                this.setState({status: "wait_for_upload", error: true})
-                                this.handleCompletion(false)
+                                this.setState({status: "wait_for_upload", error: true, serverMessages: messages})
+                                this.handleCompletion(false, data)
                             } 
                             else {
-                                this.setState({status: "done", error: false});
-                                this.handleCompletion(true)
+                                this.setState({status: "done", error: false, serverMessages: messages});
+                                this.handleCompletion(true, data)
                             }
                         } 
                         else {
                             // server could not be reached
-                            this.state.serverMessages = [{type: "error", text: serverNotReachableError}];
-                            this.handleCompletion(false)
-                            this.setState({status: "wait_for_upload", error: true});
+                            var messages = [{type: "error", text: serverNotReachableError}];
+                            this.handleCompletion(false, {})
+                            this.setState({status: "wait_for_upload", error: true, serverMessages: messages});
                         }
                     }
                 };
@@ -1299,28 +1331,29 @@ class FileUploadComponent extends React.Component {
                 }).then(res => res.json())
                 .then(
                     (result) => {
-                        this.state.serverMessages = result.messages;
+                        var messages = result.messages;
+                        var data = result.data;
                         let errorOccured = false;
-                        for( let i=0;  i<this.state.serverMessages.length; i++){
-                            if(this.state.serverMessages[i].type == "error"){
+                        for( let i=0;  i<messages.length; i++){
+                            if(messages[i].type == "error"){
                                 errorOccured = true;
                                 break;
                             }
                         }
                         if (errorOccured){
-                            this.setState({status: "wait_for_upload", error: true})
-                            this.handleCompletion(false)
+                            this.setState({status: "wait_for_upload", error: true, serverMessages: messages})
+                            this.handleCompletion(false, data)
                         } 
                         else {
-                            this.setState({status: "done", error: false});
-                            this.handleCompletion(true)
+                            this.setState({status: "done", error: false, serverMessages: messages});
+                            this.handleCompletion(true, data)
                         }
                     },
                     (error) => {
                         // server could not be reached
-                        this.state.serverMessages = [{type: "error", text: serverNotReachableError}];
-                        this.handleCompletion(false)
-                        this.setState({status: "wait_for_upload", error: true});
+                        var messages = [{type: "error", text: serverNotReachableError}];
+                        this.handleCompletion(false, {})
+                        this.setState({status: "wait_for_upload", error: true, serverMessages: messages});
                     }
                 )
             }
@@ -1337,7 +1370,7 @@ class FileUploadComponent extends React.Component {
                 type="file" 
                 name="file" 
                 onChange={this.handleFileChange}
-                disabled={(this.props.disabled || this.state.status != "uploading") ? true : false}
+                disabled={(this.props.disabled || this.state.status == "uploading") ? true : false}
             />
         )
         const action_button = (
@@ -1352,12 +1385,24 @@ class FileUploadComponent extends React.Component {
         )
         if (this.props.oneLine){
             return (
-                <span>
-                    {instruction}&nbsp;
-                    {upload_selector}&nbsp;
-                    {action_button}
-                    {messages}
-                </span>
+                <table>
+                    <tbody>
+                        <tr>
+                            <td>
+                                {instruction}
+                            </td>
+                            <td>
+                                {upload_selector}
+                            </td>
+                            <td>
+                                {action_button}
+                            </td>
+                            <td>
+                                {messages}
+                            </td>
+                        </tr>
+                    </tbody>
+                </table>
             )
         }
         else {

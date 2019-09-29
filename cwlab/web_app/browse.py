@@ -5,6 +5,68 @@ from cwlab import app
 from cwlab.users.manage import login_required
 from cwlab.general_use import browse_dir as browse_dir_, get_allowed_base_dirs, check_if_path_in_dirs
 from cwlab.xls2cwl_job.read_xls import remove_non_printable_characters
+from werkzeug import secure_filename
+from json import loads as json_loads
+
+@app.route('/upload_file/', methods=['POST'])
+def upload_file():
+    messages = []
+    data={}
+    try:
+        login_required()
+        if 'file' not in request.files:
+            sys.exit( 'No file received.')
+
+        import_file = request.files['file']
+        if import_file.filename == '':
+            sys.exit( "No file specified.")
+
+        filename = secure_filename(import_file.filename)
+
+        # save the file to the CWL directory:
+        metadata = json_loads(request.form.get("meta"))
+        dir_path = metadata["dir_path"]
+        job_id = metadata["job_id"] if "job_id" in metadata.keys() else None
+
+        # check if dir path allowed:
+        allowed_dirs = get_allowed_base_dirs(
+            job_id=job_id, 
+            allow_input=False,
+            allow_upload=True,
+            allow_download=False
+        )
+
+        if dir_path == "":
+            sys.exit("Path does not exist or you have no permission to enter it.")
+        dir_path = os.path.realpath(dir_path)
+        if not os.path.exists(dir_path) or \
+            not os.path.isdir(dir_path) or \
+            check_if_path_in_dirs(dir_path, allowed_dirs) is None:
+            sys.exit("Path does not exist or you have no permission to enter it.")
+        
+        import_filepath = os.path.join(dir_path, filename)
+        import_file.save(import_filepath)
+        data["file_path"] = import_filepath
+
+        messages.append( { 
+            "type":"success", 
+            "text": "Successfully uploaded file."
+        } )
+    except SystemExit as e:
+        messages.append( { 
+            "type":"error", 
+            "text": str(e) 
+        } )
+    except:
+        messages.append( { 
+            "type":"error", 
+            "text":"An unkown error occured." 
+        } )
+    return jsonify({
+            "data": data,
+            "messages": messages
+        }
+    )
 
 @app.route('/browse_dir/', methods=['POST'])
 def browse_dir():
@@ -36,7 +98,6 @@ def browse_dir():
             if path == "":
                 sys.exit("Path does not exist or you have no permission to enter it.")
             path = os.path.realpath(path)
-            print(path)
             if not os.path.exists(path):
                 sys.exit("Path does not exist or you have no permission to enter it.")
             if get_parent_dir or not os.path.isdir(path):
