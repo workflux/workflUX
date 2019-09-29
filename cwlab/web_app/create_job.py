@@ -173,7 +173,6 @@ def send_filled_param_form_sheet():
         
         # save the file to the CWL directory:
         metadata = json_loads(request.form.get("meta"))
-        print(metadata)
         job_id = metadata["job_id"]
         import_filepath = get_path("job_param_sheet_temp", job_id=job_id, param_sheet_format=import_fileext)
         import_file.save(import_filepath)
