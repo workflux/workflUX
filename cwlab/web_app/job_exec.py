@@ -1,7 +1,7 @@
 import sys
 import os
 from flask import render_template, jsonify, redirect, flash, url_for, request, send_from_directory
-# from flask_login import current_user, login_user, logout_user, login_required
+from flask_login import current_user
 from werkzeug.urls import url_parse
 from cwlab import app 
 from cwlab.general_use import fetch_files_in_dir, allowed_extensions_by_type, \
@@ -134,6 +134,7 @@ def start_exec():    # returns all parmeter and its default mode (global/job spe
     messages = []
     try:
         login_required()
+        user_id = current_user.get_id() if app.config["ENABLE_USERS"] else None
         data = request.get_json()
         cwl_target = data["cwl_target"]
         job_id = data["job_id"]
@@ -143,7 +144,8 @@ def start_exec():    # returns all parmeter and its default mode (global/job spe
             job_id,
             run_ids,
             exec_profile_name,
-            cwl_target
+            cwl_target,
+            user_id
         )
         
         if len(started_runs) > 0:

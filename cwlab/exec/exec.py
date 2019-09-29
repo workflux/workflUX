@@ -53,7 +53,7 @@ def query_info_from_db(job_id):
                 sleep(retry_delay + retry_delay*random())
     return db_job_id_request
 
-def exec_runs(job_id, run_ids, exec_profile_name, cwl):
+def exec_runs(job_id, run_ids, exec_profile_name, cwl, user_id):
     
     # check if runs are already running:
     already_running_runs = []
@@ -85,6 +85,7 @@ def exec_runs(job_id, run_ids, exec_profile_name, cwl):
             time_finished=None, #*
             timeout_limit=None, #*
             pid=-1, #*
+            user_id=user_id if not user_id is None else None,
             exec_profile=app.config["EXEC_PROFILES"][exec_profile_name],
             exec_profile_name=exec_profile_name
         )
