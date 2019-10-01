@@ -393,11 +393,12 @@ class Table extends React.Component {
     }
 
     handleSelectionChange(event){
-        let newSelection = this.props.selection
+        let newSelection
         if (this.props.selection.includes(event.currentTarget.value)){
-            delete newSelection[newSelection.indexOf(event.currentTarget.value)]
+            newSelection = this.props.selection.filter(item => item != event.currentTarget.value)
         }
         else {
+            newSelection = this.props.selection
             newSelection.push(event.currentTarget.value)
         }
         this.props.handleSelectionChange(newSelection)

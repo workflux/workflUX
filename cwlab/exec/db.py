@@ -16,8 +16,9 @@ class Exec(db.Model):
     time_finished = db.Column(db.DateTime())
     timeout_limit = db.Column(db.DateTime())
     pid = db.Column(db.Integer())
-    user_id = db.Columne(db.Integer())
+    user_id = db.Column(db.Integer())
     exec_profile = db.Column(db.JSON(none_as_null=True))
+    max_parallel_exec = db.Column(db.Integer())
     exec_profile_name = db.Column(db.String(64))
 
     def __repr__(self):

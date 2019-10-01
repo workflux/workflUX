@@ -136,9 +136,11 @@ class Config(object):
             "post_exec": 120
         }
         general_defaults = {
-            "max_retries_default": 3,
-            "max_parallel_runs_default": 3, # if exceeded, jobs will be queued
-            "wait_when_queued": 10, # When beeing queued, wait this long before trying to start again
+            "max_retries": 2,
+            "max_parallel_exec": 4, # if exceeded, jobs will be queued
+            "allow_user_decrease_max_parallel_exec": True,
+            "max_queue_duration": 864000,
+            "wait_in_queue_period": 4
         }
         for exec_profile in self.EXEC_PROFILES.keys():
             timeout = timeout_defaults
@@ -147,6 +149,9 @@ class Config(object):
             self.EXEC_PROFILES[exec_profile]["timeout"] = timeout
             general = general_defaults
             general.update(self.EXEC_PROFILES[exec_profile])
+            self.EXEC_PROFILES[exec_profile] = general
+            
+
 
 
         # Configure web server:
