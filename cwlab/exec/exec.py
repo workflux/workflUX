@@ -63,7 +63,7 @@ def exec_runs(job_id, run_ids, exec_profile_name, cwl, user_id=None, max_parrall
         if db_run_id_request.count() > 0:
             # find latest:
             run_info =  db_run_id_request.filter(Exec.id==max([r.id for r in db_run_id_request])).first()
-            if run_info.time_finished is None:
+            if run_info.time_finished is None or run_info.status == "finished":
                 already_running_runs.append(run_id)
     run_ids = sorted(list(set(run_ids) - set(already_running_runs)))
 
