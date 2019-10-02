@@ -18,7 +18,6 @@ class Exec(db.Model):
     pid = db.Column(db.Integer())
     user_id = db.Column(db.Integer())
     exec_profile = db.Column(db.JSON(none_as_null=True))
-    max_parallel_exec = db.Column(db.Integer())
     exec_profile_name = db.Column(db.String(64))
 
     def __repr__(self):

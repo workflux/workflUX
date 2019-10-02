@@ -68,12 +68,11 @@ def exec_runs(job_id, run_ids, exec_profile_name, cwl, user_id=None, max_parrall
     run_ids = sorted(list(set(run_ids) - set(already_running_runs)))
 
     # create new exec entry in database:
+    exec_profile = app.config["EXEC_PROFILES"][exec_profile_name]
     if not max_parrallel_exec_user_def is None and \
-        app.config["EXEC_PROFILES"][exec_profile_name]["allow_user_decrease_max_parallel_exec"] and \
-        max_parrallel_exec_user_def < app.config["EXEC_PROFILES"][exec_profile_name]["max_parallel_exec"]:
-        max_parallel_exec = max_parrallel_exec_user_def
-    else:
-        max_parallel_exec = app.config["EXEC_PROFILES"][exec_profile_name]["max_parallel_exec"]
+        exec_profile["allow_user_decrease_max_parallel_exec"] and \
+        max_parrallel_exec_user_def < exec_profile["max_parallel_exec"]:
+        exec_profile["max_parallel_exec"] = max_parrallel_exec_user_def
     exec_db_entry = {}
     for run_id in run_ids:
         exec_db_entry[run_id] = Exec(
@@ -90,10 +89,9 @@ def exec_runs(job_id, run_ids, exec_profile_name, cwl, user_id=None, max_parrall
             time_started=datetime.now(),
             time_finished=None, #*
             timeout_limit=None, #*
-            max_parallel_exec=max_parallel_exec,
             pid=-1, #*
             user_id=user_id if not user_id is None else None,
-            exec_profile=app.config["EXEC_PROFILES"][exec_profile_name],
+            exec_profile=exec_profile,
             exec_profile_name=exec_profile_name
         )
         #* will be set by the background process itself

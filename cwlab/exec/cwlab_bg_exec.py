@@ -87,7 +87,6 @@ log = exec_db_entry.log
 time_started = exec_db_entry.time_started
 exec_profile = exec_db_entry.exec_profile
 exec_profile_name = exec_db_entry.exec_profile_name
-max_parallel_exec = exec_db_entry.max_parallel_exec
 
 
 
@@ -136,9 +135,9 @@ while wait:
         number_running_exec = running_exec.count()
         max_parallel_exec_running = 0
         for exec_ in running_exec.all():
-            if exec_.max_parallel_exec > max_parallel_exec_running:
-                max_parallel_exec_running = exec_.max_parallel_exec
-        if number_running_exec >= max(max_parallel_exec, max_parallel_exec_running):
+            if exec_.exec_profile["max_parallel_exec"] > max_parallel_exec_running:
+                max_parallel_exec_running = exec_.exec_profile["max_parallel_exec"]
+        if number_running_exec >= max(exec_profile["max_parallel_exec"], max_parallel_exec_running):
             wait_queue()
             continue
     next_in_queue = query_info_from_db("next_in_queue", db_retry_delay_queue, no_exit=True)
@@ -146,6 +145,9 @@ while wait:
         wait_queue()
         continue
     wait=False
+
+exec_db_entry.time_started = datetime.now()
+commit()
 
 # create out_dir:
 if not os.path.exists(out_dir):
