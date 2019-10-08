@@ -783,7 +783,7 @@ class ParamFormRunArray extends ParamForm{
                                                             paramValue={this.props.paramValues[p][
                                                                 indexByRunId[p][index]
                                                             ]}
-                                                            index={index}
+                                                            index={indexByRunId[p][index]}
                                                             onChange={this.props.changeParamValue}
                                                             isNull={isNull[p]}
                                                             itemNullAllowed={this.props.paramConfigs[p].null_items_allowed}
