@@ -731,6 +731,44 @@ class AjaxComponent extends React.Component {
     }
 }
 
+class TopPanel extends React.Component {
+    constructor(props){
+        super(props);
+        // props.children
+    }
+    render(){
+        return(
+            <div>
+                <div
+                    style={ {
+                        position: "fixed",  
+                        zIndex: "10002",
+                        top: "0",
+                        left: "0",
+                        width: "100vw",
+                        height: "100vh"
+                    } }
+                >
+                    {this.props.children}
+                </div>
+                <div
+                    className="w3-white"
+                    style={ {
+                        position: "fixed",  
+                        zIndex: "10000",
+                        top: "0",
+                        left: "0",
+                        width: "100vw",
+                        height: "100vh",
+                        opacity: "0.5"
+                    } }
+                />
+            </div>
+            
+        )
+    }
+}
+
 class BrowseDir extends React.Component {
     constructor(props){
         super(props);
@@ -747,6 +785,7 @@ class BrowseDir extends React.Component {
         // props.defaultBaseDir
         // props.showCancelButton
         // props.terminateBrowseDialog
+        // props.disableOnTop
 
         this.baseDirInfo = {
             input: "select only",
@@ -900,211 +939,201 @@ class BrowseDir extends React.Component {
         const allowInput = this.allowInput && ["upload", "input"].includes(this.state.allowedDirs[this.state.baseDir].mode)
         const allowUpload = this.allowUpload && this.state.allowedDirs[this.state.baseDir].mode == "upload"
         const allowDownload = this.allowDownload && this.state.allowedDirs[this.state.baseDir].mode == "download"
-        return(
-            <div>
-                <div
-                    style={ {
-                        position: "fixed",  
-                        zIndex: "10002",
-                        top: "0",
-                        left: "0",
-                        width: "100vw",
-                        height: "100vh"
-                    } }
-                >
-                    <div
-                        className="w3-card w3-metro-darken w3-display-middle"
-                        style={ {
-                            width: "80%"
-                        } }
-                    >
-                        {this.state.actionStatus == "init" ? (
-                                <LoadingIndicator size="large" message="Loading directory. Please wait." />
-                            ) : (
-                                <span>
-                                    <div>
-                                        <div className="w3-bar">
-                                            <ActionButton
-                                                name="up"
-                                                value="up"
-                                                className="w3-bar-item"
-                                                label={<span><i className="fas fa-arrow-up" />&nbsp;up</span>}
-                                                onAction={this.handleAction}
-                                                disabled={this.state.actionStatus != "none"}
-                                                forwardEvent={true}
-                                            />
-                                            <ActionButton
-                                                name="refresh"
-                                                value="refresh"
-                                                className="w3-bar-item"
-                                                label={<span><i className="fas fa-sync" />&nbsp;refresh</span>}
-                                                onAction={this.handleAction}
-                                                disabled={this.state.actionStatus != "none"}
-                                                forwardEvent={true}
-                                            />
-                                            <div className="w3-bar-item">
-                                                Change base directory:&nbsp;
-                                                <select
-                                                    className="w3-button w3-white w3-border w3-padding-small" 
-                                                    name="inputBaseDir"
-                                                    onChange={this.changeBaseDir}
-                                                    value={this.state.baseDir}
+        const content=(
+            <div
+                className="w3-card w3-metro-darken w3-display-middle"
+                style={ {
+                    width: "80%"
+                } }
+            >
+                {this.state.actionStatus == "init" ? (
+                        <LoadingIndicator size="large" message="Loading directory. Please wait." />
+                    ) : (
+                        <span>
+                            <div>
+                                <div className="w3-bar">
+                                    <ActionButton
+                                        name="up"
+                                        value="up"
+                                        className="w3-bar-item"
+                                        label={<span><i className="fas fa-arrow-up" />&nbsp;up</span>}
+                                        onAction={this.handleAction}
+                                        disabled={this.state.actionStatus != "none"}
+                                        forwardEvent={true}
+                                    />
+                                    <ActionButton
+                                        name="refresh"
+                                        value="refresh"
+                                        className="w3-bar-item"
+                                        label={<span><i className="fas fa-sync" />&nbsp;refresh</span>}
+                                        onAction={this.handleAction}
+                                        disabled={this.state.actionStatus != "none"}
+                                        forwardEvent={true}
+                                    />
+                                    <div className="w3-bar-item">
+                                        Change base directory:&nbsp;
+                                        <select
+                                            className="w3-button w3-white w3-border w3-padding-small" 
+                                            name="inputBaseDir"
+                                            onChange={this.changeBaseDir}
+                                            value={this.state.baseDir}
+                                        >
+                                            {Object.keys(this.state.allowedDirs).map((d) =>(
+                                                <option
+                                                    key={d}
+                                                    value={d}
                                                 >
-                                                    {Object.keys(this.state.allowedDirs).map((d) =>(
-                                                        <option
-                                                            key={d}
-                                                            value={d}
-                                                        >
-                                                            {d + " (" + this.baseDirInfo[this.state.allowedDirs[d].mode] + ")"}
-                                                        </option>
-                                                    ))}
-                                                </select>
-                                            </div>
-                                        </div>
-                                        <span className="w3-text-green">
-                                            Current Dir:
-                                        </span>
-                                        <input
-                                            className="w3-input w3-bar-item"
-                                            type="text"
-                                            name="address"
-                                            value={this.state.address}
-                                            disabled={this.state.actionStatus != "none"}
-                                            onChange={this.changeStateVar}
-                                            onKeyPress={this.handleAction}
-                                        />
-            
-                                        <DisplayServerMessages messages={this.state.serverMessages} />
+                                                    {d + " (" + this.baseDirInfo[this.state.allowedDirs[d].mode] + ")"}
+                                                </option>
+                                            ))}
+                                        </select>
                                     </div>
-                                    <div 
-                                        className="w3-panel w3-theme-d3"
-                                        style={ {
-                                            overflowY: "auto",
-                                            height: "50vh"
-                                        } }
-                                    >
-                                        {this.state.actionStatus == "none" ? (
-                                                this.state.items.length == 0 ? (
-                                                        <span>No items found.</span>
-                                                    ) : (
-                                                        this.state.items.map((i) =>(
-                                                            <button 
-                                                                key={i.abs_path}
-                                                                className={this.state.selectedItem == i.abs_path ? (
-                                                                        "w3-button w3-block w3-left-align w3-green"
-                                                                    ) : (
-                                                                        "w3-button w3-block w3-left-align"
-                                                                    )
-                                                                }
-                                                                name={i.is_dir ? "open" : "selectedItem"}
-                                                                value={i.abs_path}
-                                                                disabled={!i.is_dir && (!i.hit || this.selectDir)}
-                                                                onClick={i.is_dir ? (
-                                                                        this.handleAction
-                                                                    ) : (
-                                                                        this.changeStateVar
-                                                                    )
-                                                                }
-                                                            >
-                                                                    {i.is_dir ? (
-                                                                            <i className="fas fa-folder" />
-                                                                        ) : (
-                                                                            <i className="fas fa-file" />
-                                                                        )
-                                                                    }&nbsp;
-                                                                    {i.name}
-                                                            </button>
-                                                        ))
-                                                    )
+                                </div>
+                                <span className="w3-text-green">
+                                    Current Dir:
+                                </span>
+                                <input
+                                    className="w3-input w3-bar-item"
+                                    type="text"
+                                    name="address"
+                                    value={this.state.address}
+                                    disabled={this.state.actionStatus != "none"}
+                                    onChange={this.changeStateVar}
+                                    onKeyPress={this.handleAction}
+                                />
+
+                                <DisplayServerMessages messages={this.state.serverMessages} />
+                            </div>
+                            <div 
+                                className="w3-panel w3-theme-d3"
+                                style={ {
+                                    overflowY: "auto",
+                                    height: "50vh"
+                                } }
+                            >
+                                {this.state.actionStatus == "none" ? (
+                                        this.state.items.length == 0 ? (
+                                                <span>No items found.</span>
                                             ) : (
-                                                <LoadingIndicator
-                                                    size="large"
-                                                    message="Loading directory. Please wait."
-                                                />
+                                                this.state.items.map((i) =>(
+                                                    <button 
+                                                        key={i.abs_path}
+                                                        className={this.state.selectedItem == i.abs_path ? (
+                                                                "w3-button w3-block w3-left-align w3-green"
+                                                            ) : (
+                                                                "w3-button w3-block w3-left-align"
+                                                            )
+                                                        }
+                                                        name={i.is_dir ? "open" : "selectedItem"}
+                                                        value={i.abs_path}
+                                                        disabled={!i.is_dir && (!i.hit || this.selectDir)}
+                                                        onClick={i.is_dir ? (
+                                                                this.handleAction
+                                                            ) : (
+                                                                this.changeStateVar
+                                                            )
+                                                        }
+                                                    >
+                                                            {i.is_dir ? (
+                                                                    <i className="fas fa-folder" />
+                                                                ) : (
+                                                                    <i className="fas fa-file" />
+                                                                )
+                                                            }&nbsp;
+                                                            {i.name}
+                                                    </button>
+                                                ))
                                             )
+                                    ) : (
+                                        <LoadingIndicator
+                                            size="large"
+                                            message="Loading directory. Please wait."
+                                        />
+                                    )
+                                }
+                            </div>
+                            {allowUpload && (
+                                <div className="w3-container">
+                                    <FileUploadComponent
+                                        requestRoute={routeUploadFile}
+                                        instruction="Upload file:"
+                                        buttonLabel="upload"
+                                        oneLine={true}
+                                        disabled={this.state.actionStatus != "none"}
+                                        meta_data={ 
+                                            {
+                                                job_id: this.props.jobId,
+                                                dir_path: this.state.dirPath
+                                            }
                                         }
-                                    </div>
-                                    {allowUpload && (
-                                        <div className="w3-container">
-                                            <FileUploadComponent
-                                                requestRoute={routeUploadFile}
-                                                instruction="Upload file:"
-                                                buttonLabel="upload"
-                                                oneLine={true}
-                                                disabled={this.state.actionStatus != "none"}
-                                                meta_data={ 
-                                                    {
-                                                        job_id: this.props.jobId,
-                                                        dir_path: this.state.dirPath
-                                                    }
-                                                }
-                                                showProgress={true}
-                                                onUploadCompletion={this.handleFileUpload}
-                                            />
-                                        </div>
-                                    )}
-                                    {!this.selectDir && ( allowInput|| allowDownload) && (
-                                        <div className="w3-container">
-                                            <span className="w3-text-green">Selected file:</span>&nbsp;
-                                            <IneditableValueField>
-                                                {this.state.selectedItem ? this.state.selectedItem :"No file selected."}
-                                            </IneditableValueField>
-                                        </div>
-                                    )}
-                                    <div className="w3-bar">
-                                        {this.props.showCancelButton && (
+                                        showProgress={true}
+                                        onUploadCompletion={this.handleFileUpload}
+                                    />
+                                </div>
+                            )}
+                            {allowDownload || (!this.selectDir && allowInput) && (
+                                <div className="w3-container">
+                                    <span className="w3-text-green">Selected file:</span>&nbsp;
+                                    <IneditableValueField>
+                                        {this.state.selectedItem ? this.state.selectedItem :"No file selected."}
+                                    </IneditableValueField>
+                                </div>
+                            )}
+                            {! allowDownload && (
+                                <div className="w3-container">
+                                    <span className="w3-text-green">Selected file:</span>&nbsp;
+                                    <IneditableValueField>
+                                        {this.state.selectedItem ? this.state.selectedItem :"No file selected."}
+                                    </IneditableValueField>
+                                </div>
+                            )}
+                            <div className="w3-bar">
+                                {this.props.showCancelButton && (
+                                    <ActionButton
+                                        name="cancel"
+                                        value="cancel"
+                                        className="w3-bar-item w3-right"
+                                        label={<span><i className="fas fa-times" />&nbsp;cancel</span>}
+                                        onAction={this.terminateBrowseDialog}
+                                        forwardEvent={true}
+                                    />
+                                )}
+                                {allowInput && (
+                                    this.selectDir ? (
                                             <ActionButton
-                                                name="cancel"
-                                                value="cancel"
+                                                name="select_dir"
+                                                value="select_dir"
                                                 className="w3-bar-item w3-right"
-                                                label={<span><i className="fas fa-times" />&nbsp;cancel</span>}
+                                                label={<span><i className="fas fa-check" />&nbsp;choose current dir</span>}
+                                                onAction={this.terminateBrowseDialog}
+                                                disabled={this.state.actionStatus != "none"}
+                                                forwardEvent={true}
+                                            />
+                                        ) : (
+                                            <ActionButton
+                                                name="select_file"
+                                                value="select_file"
+                                                className="w3-bar-item w3-right"
+                                                label={<span><i className="fas fa-check" />&nbsp;choose selected file</span>}
+                                                disabled={!this.state.selectedItem || this.state.actionStatus != "none"}
                                                 onAction={this.terminateBrowseDialog}
                                                 forwardEvent={true}
                                             />
-                                        )}
-                                        {allowInput && (
-                                            this.selectDir ? (
-                                                    <ActionButton
-                                                        name="select_dir"
-                                                        value="select_dir"
-                                                        className="w3-bar-item w3-right"
-                                                        label={<span><i className="fas fa-check" />&nbsp;choose current dir</span>}
-                                                        onAction={this.terminateBrowseDialog}
-                                                        disabled={this.state.actionStatus != "none"}
-                                                        forwardEvent={true}
-                                                    />
-                                                ) : (
-                                                    <ActionButton
-                                                        name="select_file"
-                                                        value="select_file"
-                                                        className="w3-bar-item w3-right"
-                                                        label={<span><i className="fas fa-check" />&nbsp;choose selected file</span>}
-                                                        disabled={!this.state.selectedItem || this.state.actionStatus != "none"}
-                                                        onAction={this.terminateBrowseDialog}
-                                                        forwardEvent={true}
-                                                    />
-                                                )
-                                        )}
-                                    </div>
-                                </span>
-                            )
-                        }
-                        
-                    </div>
-                </div>
-                <div
-                    className="w3-white"
-                    style={ {
-                        position: "fixed",  
-                        zIndex: "10000",
-                        top: "0",
-                        left: "0",
-                        width: "100vw",
-                        height: "100vh",
-                        opacity: "0.5"
-                    } }
-                />
+                                        )
+                                )}
+                            </div>
+                        </span>
+                    )
+                }
             </div>
+        )
+        return( this.props.disableOnTop ? (
+                content
+            ) : (
+                <TopPanel>
+                    {content}
+                </TopPanel>
+            )
         )
     }
 }
