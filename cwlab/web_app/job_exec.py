@@ -65,11 +65,19 @@ def get_job_list():
     
     # get exec profiles names:
     exec_profile_names = list(app.config["EXEC_PROFILES"].keys())
+    exec_profile_params = {}
+    for exec_profile_name in exec_profile_names:
+        exec_profile_params[exec_profile_name] = {
+            "max_retries": app.config["EXEC_PROFILES"][exec_profile_name]["max_retries"],
+            "max_parallel_exec": app.config["EXEC_PROFILES"][exec_profile_name]["max_parallel_exec"],
+            "allow_user_decrease_max_parallel_exec": app.config["EXEC_PROFILES"][exec_profile_name]["allow_user_decrease_max_parallel_exec"],
+        }
 
 
     return jsonify({
             "data": {
                 "exec_profiles": exec_profile_names,
+                "exec_profile_params": exec_profile_params,
                 "jobs": jobs
             },
             "messages": messages
@@ -141,14 +149,14 @@ def start_exec():    # returns all parmeter and its default mode (global/job spe
     job_id = data["job_id"]
     run_ids = sorted(data["run_ids"])
     exec_profile_name = data["exec_profile"]
-    print(job_id)
-    print(run_ids)
+    max_parrallel_exec_user_def = int(data["parallel_exec"]) if "parallel_exec" in data.keys() else None
     started_runs, already_running_runs = exec_runs(
         job_id,
         run_ids,
         exec_profile_name,
         cwl_target,
-        user_id
+        user_id,
+        max_parrallel_exec_user_def
     )
     
     if len(started_runs) > 0:

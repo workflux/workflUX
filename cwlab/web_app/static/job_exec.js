@@ -349,6 +349,7 @@ class JobContent extends React.Component {
     // props.jobId
     // props.cwlTarget
     // props.execProfiles
+    // props.execProfileParams
     // props.whichRunDetails
     // props.showRunDetails
     // props.showRunList
@@ -360,6 +361,10 @@ class JobContent extends React.Component {
             runSelection: [],
             actionStatus: "loading",
             execProfile: this.props.execProfiles[0],
+            parallelExec: this.props.execProfileParams[this.props.execProfiles[0]]["max_parallel_exec"],
+            maxRetries: this.props.execProfileParams[this.props.execProfiles[0]]["max_retries"],
+            maxParallelExec: this.props.execProfileParams[this.props.execProfiles[0]]["max_parallel_exec"],
+            allowUserDecreaseMaxParallelExec: this.props.execProfileParams[this.props.execProfiles[0]]["allow_user_decrease_max_parallel_exec"],
             runDangerZoneUnlocked: false,
             globalDangerZoneUnlocked: false,
             serverMessages: [],
@@ -411,7 +416,20 @@ class JobContent extends React.Component {
     }
 
     changeExecProfile(event){
-        this.setState({execProfile: event.currentTarget.value})
+        if(event.currentTarget.name == "exec_profile"){
+            this.setState({
+                execProfile: event.currentTarget.value,
+                parallelExec: this.props.execProfileParams[event.currentTarget.value]["max_parallel_exec"],
+                maxRetries: this.props.execProfileParams[event.currentTarget.value]["max_retries"],
+                maxParallelExec: this.props.execProfileParams[event.currentTarget.value]["max_parallel_exec"],
+                allowUserDecreaseMaxParallelExec: this.props.execProfileParams[event.currentTarget.value]["allow_user_decrease_max_parallel_exec"]
+            })
+        }
+        else if(event.currentTarget.name == "parallel_exec"){
+            this.setState({
+                parallelExec: event.currentTarget.value
+            })
+        }
     }
 
     getRunList(){
@@ -441,7 +459,8 @@ class JobContent extends React.Component {
                 cwl_target: this.props.cwlTarget,
                 job_id: this.props.jobId,
                 run_ids: this.state.runSelection,
-                exec_profile: this.state.execProfile
+                exec_profile: this.state.execProfile,
+                parallel_exec: this.state.parallelExec
             },
             route: routeStartExec
         })
@@ -540,6 +559,24 @@ class JobContent extends React.Component {
                                     </select> 
                                 </label>
                             </p>
+                            {this.state.allowUserDecreaseMaxParallelExec && (
+                                <p>
+                                    <label>
+                                        Select how many runs may execute in parallel: &nbsp;
+                                        <select className="w3-button w3-white w3-border w3-padding-small" 
+                                            name="parallel_exec"
+                                            onChange={this.changeExecProfile}
+                                            value={this.state.parallelExec}
+                                        >
+                                            {
+                                                [...Array(this.state.maxParallelExec).keys()].map((key) =>
+                                                    <option key={key} value={key+1}>{key+1}</option>
+                                                )
+                                            }
+                                        </select>
+                                    </label>
+                                </p>
+                            )}
                             <p>
                                 <ActionButton
                                     name="start"
@@ -700,6 +737,7 @@ class JobList extends React.Component {
         super(props);
         // props.jobInfo
         // props.execProfiles
+        // props.execProfileParams
         // props.triggerReload
         this.state = {
             whichFocus: "",
@@ -759,6 +797,7 @@ class JobList extends React.Component {
                 jobId={this.state.whichFocus} 
                 cwlTarget={jobInfo.cwl_target} 
                 execProfiles={this.props.execProfiles}
+                execProfileParams={this.props.execProfileParams}
                 whichRunDetails={this.state.whichRunDetails}
                 showRunDetails={this.showRunDetails}
                 showRunList={this.showRunList}
@@ -803,6 +842,7 @@ class JobExecRoot extends React.Component {
                         <JobList 
                             jobInfo={data.jobs} 
                             execProfiles={data.exec_profiles} 
+                            execProfileParams={data.exec_profile_params} 
                             initMessages={messages}
                             triggerReload={triggerReload}
                         />
