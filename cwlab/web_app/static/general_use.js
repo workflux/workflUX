@@ -1079,14 +1079,6 @@ class BrowseDir extends React.Component {
                                     </IneditableValueField>
                                 </div>
                             )}
-                            {! allowDownload && (
-                                <div className="w3-container">
-                                    <span className="w3-text-green">Selected file:</span>&nbsp;
-                                    <IneditableValueField>
-                                        {this.state.selectedItem ? this.state.selectedItem :"No file selected."}
-                                    </IneditableValueField>
-                                </div>
-                            )}
                             <div className="w3-bar">
                                 {this.props.showCancelButton && (
                                     <ActionButton
