@@ -1427,7 +1427,15 @@ class JobCreationPrep extends React.Component {
                         {this.props.configData.params.map( (p) => (
                             <tr key={p.param_name}> 
                                 <td>{p.param_name}</td>
-                                <td>{p.type}</td>
+                                <td>
+                                    {p.is_array && 
+                                        "List of "
+                                    }
+                                    {p.type}
+                                    {p.optional && 
+                                        " [optional]"
+                                    }
+                                </td>
                                 {this.state.run_mode ? (
                                         <td>
                                             global &nbsp;

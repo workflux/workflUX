@@ -34,6 +34,8 @@ def get_param_config_info(file_path):
         param_config_info.append({
             "param_name":param, 
             "type":configs[param]["type"],
+            "is_array":configs[param]["is_array"],
+            "optional":configs[param]["null_allowed"],
             "is_run_specific":is_run_specific
         })
     return param_config_info
