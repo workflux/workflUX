@@ -14,16 +14,17 @@ DB_DIR: 'C:\Users\kerst\OneDrive\home_dell\CWLab\scratch\database'
 
 DEBUG: True
 
+# ENABLE_USERS: True
+
 EXEC_PROFILES:
   cwltool_windows:
     
     shell: powershell
 
     max_retries: 0
-
-    max_parallel_runs: 3
-
-    wait_when_queued: 1
+    max_parallel_exec: 2
+    max_queue_duration: 864000
+    wait_in_queue_period: 4
 
     exec: |
       . "${PYTHON_PATH}" -m cwltool --default-container ubuntu:16.04 --outdir "${OUTPUT_DIR}" "${CWL}" "${RUN_YAML}" 2>&1 | %{ "$_" } | Out-File -Encoding "UTF8" "${LOG_FILE}"
