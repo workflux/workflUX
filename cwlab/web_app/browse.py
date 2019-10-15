@@ -1,9 +1,9 @@
 import sys
 import os
-from flask import render_template, jsonify, redirect, flash, url_for, request
+from flask import render_template, jsonify, redirect, flash, url_for, request, send_from_directory
 from cwlab import app 
 from cwlab.users.manage import login_required
-from cwlab.general_use import browse_dir as browse_dir_, get_allowed_base_dirs, check_if_path_in_dirs
+from cwlab.general_use import browse_dir as browse_dir_, get_allowed_base_dirs, check_if_path_in_dirs, zip_dir
 from cwlab.xls2cwl_job.read_xls import remove_non_printable_characters
 from werkzeug import secure_filename
 from json import loads as json_loads
@@ -85,10 +85,12 @@ def browse_dir():
         allow_download = data_req["allow_download"]
         default_base_dir = data_req["default_base_dir"] if "default_base_dir" in data_req.keys() else None
         job_id = data_req["job_id"] if "job_id" in data_req.keys() else None
+        run_id = data_req["run_id"] if "run_id" in data_req.keys() else None
         on_error_return_base_dir_items = data_req["on_error_return_base_dir_items"]
 
         data["allowed_dirs"] = get_allowed_base_dirs(
             job_id=job_id, 
+            run_id=run_id, 
             allow_input=allow_input,
             allow_upload=allow_upload,
             allow_download=allow_download
@@ -109,13 +111,17 @@ def browse_dir():
             data["dir"] = path
         except SystemExit as e:
             if on_error_return_base_dir_items:
+                print("peep")
                 if (not default_base_dir is None) and default_base_dir in data["allowed_dirs"].keys():
+                    print("peep")
                     data["base_dir"] = default_base_dir
                 else:
                     data["base_dir"] = list(data["allowed_dirs"].keys())[0]
                 path = data["allowed_dirs"][data["base_dir"]]["path"]
                 data["dir"] = path
+                print(data["dir"])
                 data["items"] = browse_dir_(path, ignore_files, file_exts, show_only_hits)
+                print(data["items"])
             else:
                 sys.exit(str(e))
     except SystemExit as e:
@@ -133,3 +139,54 @@ def browse_dir():
             "messages": messages
         }
     )
+
+
+@app.route('/download/', methods=['GET','POST'])
+def download():
+    messages = []
+    data = {}
+    try:
+        login_required()
+        data_req = json_loads(request.form.get("meta"))
+        job_id = data_req["job_id"]
+        run_id = data_req["run_id"]
+        path = data_req["path"]
+        send_file = data_req["send_file"]
+        if path == "":
+            sys.exit("Path does not exist or you have no permission to enter it.")
+        path = os.path.realpath(path)
+        if not os.path.exists(path):
+            sys.exit("Path does not exist or you have no permission to enter it.")
+        allowed_dirs = get_allowed_base_dirs(
+            job_id=job_id,
+            run_id=run_id,
+            allow_input=False,
+            allow_upload=False,
+            allow_download=True
+        )
+        base_dir = check_if_path_in_dirs(path, allowed_dirs)
+        if base_dir is None:
+            sys.exit("Path does not exist or you have no permission to enter it.")
+        if os.path.isdir(path):
+            data["zip_path"] = zip_dir(path)
+        if send_file:
+            return send_from_directory(
+                os.path.dirname(path),
+                os.path.basename(path),
+                attachment_filename=os.path.basename(path),
+                as_attachment=True
+            )
+    except SystemExit as e:
+        messages.append( { 
+            "type":"error", 
+            "text": str(e) 
+        } )
+    except:
+        messages.append( { 
+            "type":"error", 
+            "text":"An uknown error occured." 
+        } )
+    return jsonify({
+        "data":data,
+        "messages":messages
+    })

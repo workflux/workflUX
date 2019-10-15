@@ -31,9 +31,6 @@ class RunDetailsLog extends React.Component {
         return(
             <div>
                 <div className="w3-cell-row">
-                    <div className="w3-cell">
-                        <h3>Execution Log:</h3>
-                    </div>
                     <div className="w3-cell w3-right">
                         auto refresh: off &nbsp;
                         <BooleanSlider
@@ -51,7 +48,7 @@ class RunDetailsLog extends React.Component {
                 </div>
                 <div 
                     className="w3-metro-darken w3-panel"
-                    style={ {whiteSpace: "pre-wrap", maxHeight:"50vh", overflowY: "auto"} }  
+                    style={ {whiteSpace: "pre-wrap", maxHeight:"60vh", overflowY: "auto"} }  
                     ref={(el) => { this.logContentContainer = el; }}
                 >
                     {this.props.logContent}
@@ -73,12 +70,15 @@ class RunDetails extends React.Component {
             logContent: "Loading",
             yamlContent: "Loading",
             serverMessages: [],
-            autoRefresh: true
+            autoRefresh: true,
+            whichFocus: "Input Parameters"
         }
         this.mounted = false
         this.getRunDetails = this.getRunDetails.bind(this);
         this.toggleAutoRefresh = this.toggleAutoRefresh.bind(this);
         this.handleBackButton = this.handleBackButton.bind(this);
+        this.downloadFileOrFolder = this.downloadFileOrFolder.bind(this);
+        this.changeFocus = this.changeFocus.bind(this);
         this.ajaxRequest = ajaxRequest.bind(this)
     }
 
@@ -127,6 +127,10 @@ class RunDetails extends React.Component {
         })
     }
 
+    downloadFileOrFolder(changes, selectedItem){
+
+    }
+
     toggleAutoRefresh(dummy, autoRefresh){
         this.setState({autoRefresh: autoRefresh})
     }
@@ -135,7 +139,43 @@ class RunDetails extends React.Component {
         this.props.handleBack()
     }
 
+    changeFocus(tab){
+        this.setState({whichFocus: tab})
+    }
+
     render() {
+        let content
+        if(this.state.whichFocus == "Input Parameters"){
+            content=(
+                <div 
+                    className="w3-metro-darken w3-panel"
+                    style={ {whiteSpace: "pre-wrap", maxHeight:"60vh", overflowY: "auto"} } 
+                >
+                    {this.state.yamlContent}
+                </div>
+            )
+        }
+        else if(this.state.whichFocus == "Execution Log"){
+            content=(
+                <RunDetailsLog 
+                    logContent={this.state.logContent}
+                    toggleAutoRefresh={this.toggleAutoRefresh}
+                    autoRefresh={this.state.autoRefresh}
+                />
+            )
+        }
+        else {
+            content=( 
+                <BrowseDir
+                    allowDownload={true}
+                    jobId={this.props.jobId}
+                    runId={this.props.runId}
+                    defaultBaseDir="OUTPUT_DIR_CURRENT_RUN"
+                    terminateBrowseDialog={this.downloadFileOrFolder}
+                    disableOnTop={true}
+                />
+            )
+        }
         return (
             <div>
                 <ActionButton
@@ -146,18 +186,18 @@ class RunDetails extends React.Component {
                     }
                     onAction={this.handleBackButton}
                 />
-                <h3>Input Parameters:</h3>
-                <div 
-                    className="w3-metro-darken w3-panel"
-                    style={ {whiteSpace: "pre-wrap", maxHeight:"50vh", overflowY: "auto"} } 
+                <div
+                    style={ {paddingTop: "10px", paddingBottom: "10px"} }
                 >
-                    {this.state.yamlContent}
+                    <TabPanel
+                        title=""
+                        tabs={["Input Parameters", "Execution Log", "Output Files"]}
+                        changeFocus={this.changeFocus}
+                        whichFocus={this.state.whichFocus}
+                    >
+                    {content}
+                </TabPanel>
                 </div>
-                <RunDetailsLog 
-                    logContent={this.state.logContent}
-                    toggleAutoRefresh={this.toggleAutoRefresh}
-                    autoRefresh={this.state.autoRefresh}
-                />
                 <DisplayServerMessages messages={this.state.serverMessages} />
             </div>
         );

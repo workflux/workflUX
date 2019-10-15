@@ -8,6 +8,7 @@ from cwlab.xls2cwl_job.web_interface import get_param_config_info as get_param_c
 from cwlab import db
 from random import random
 from pathlib import Path
+import zipfile
 basedir = os.path.abspath(os.path.dirname(__file__))
 
 def browse_dir(path,
@@ -96,6 +97,25 @@ allowed_extensions_by_type = {
     "CWL": ["cwl", "yaml"],
     "spreadsheet": ["xlsx", "ods", "xls"]
 }
+
+def zip_dir(dir_path):
+    zip_path = dir_path + ".cwlab.zip"
+    contents = os.walk(dir_path)
+    zip_file = zipfile.ZipFile(zip_path, 'w', zipfile.ZIP_DEFLATED)
+    for root, dirs, files in contents:
+        for dir_ in dirs:
+            absolute_path = os.path.join(root, dir_)
+            relative_path = absolute_path.replace(dir_path + '\\', '')
+            zip_file.write(absolute_path, relative_path)
+        for file_ in files:
+            if file_.endswith(".cwlab.zip"):
+                continue
+            absolute_path = os.path.join(root, file_)
+            relative_path = absolute_path.replace(dir_path + '\\', '')
+            zip_file.write(absolute_path, relative_path)
+    zip_file.close()
+    return(zip_path)
+    
 
 def is_allowed_file(filename, type="CWL"):
     # validates uploaded files
@@ -215,13 +235,18 @@ def db_commit(retry_delays=[1,4]):
             else:
                 sleep(retry_delay + retry_delay*random())
     
-def get_allowed_base_dirs(job_id=None, allow_input=True, allow_upload=True, allow_download=False):
+def get_allowed_base_dirs(job_id=None, run_id=None, allow_input=True, allow_upload=True, allow_download=False):
     allowed_dirs = {}
     if (app.config["DOWNLOAD_ALLOWED"] and allow_download) or (allow_input and not allow_download):
         mode = "download" if (app.config["DOWNLOAD_ALLOWED"] and allow_download) else "input"
         if not job_id is None:
             allowed_dirs["OUTPUT_DIR_CURRENT_JOB"] = {
                 "path": get_path("runs_out_dir", job_id=job_id),
+                "mode": mode
+            }
+        if not run_id is None:
+            allowed_dirs["OUTPUT_DIR_CURRENT_RUN"] = {
+                "path": get_path("run_out_dir", job_id=job_id, run_id=run_id),
                 "mode": mode
             }
     if (app.config["UPLOAD_ALLOWED"] and allow_upload) or (allow_input and not allow_download):

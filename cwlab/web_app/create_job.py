@@ -5,7 +5,7 @@ from flask import render_template, jsonify, redirect, flash, url_for, request, s
 from werkzeug.urls import url_parse
 from cwlab import app 
 from cwlab.general_use import fetch_files_in_dir, is_allowed_file, allowed_extensions_by_type, get_job_templates, \
-    get_job_templ_info, get_path, get_job_name_from_job_id
+    get_job_templ_info, get_path, get_job_name_from_job_id, get_run_ids
 import requests
 from re import match
 from cwlab.xls2cwl_job.web_interface import gen_form_sheet, generate_xls_from_param_values
@@ -381,6 +381,13 @@ def create_job():    # generate param form sheet with data sent
             search_subdirs=include_subdirs_for_searching, 
             input_dir=search_dir
         )
+
+        # make output directories:
+        run_ids = get_run_ids(job_id)
+        for run_id in run_ids:
+            run_out_dir = get_path("run_out_dir", job_id, run_id)
+            if not os.path.exists(run_out_dir):
+                os.mkdir(run_out_dir)
 
         messages.append( { 
             "type":"success", 

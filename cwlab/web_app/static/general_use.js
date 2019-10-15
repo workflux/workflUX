@@ -9,6 +9,7 @@ function ajaxRequest({
     statusValueAfterRequest="none",
     messageVar="serverMessages",
     sendData={},
+    sendViaFormData=false,
     route,
     onSuccess= (data, messages) => {
                 return({})
@@ -17,15 +18,25 @@ function ajaxRequest({
         return({})
     } 
 }){
+    let formData
+    if (sendViaFormData){
+        formData = new FormData()
+        formData.append("meta", JSON.stringify(sendData))
+    }
     this.setState({
         [statusVar]: statusValueDuringRequest
     })
     fetch(route, {
         method: "POST",
-        body: JSON.stringify(sendData),
-        headers: new Headers({
-            'Content-Type': 'application/json'
-        }),
+        body: sendViaFormData ? formData : JSON.stringify(sendData),
+        headers: new Headers(sendViaFormData ? (
+                {}
+            ) : (
+                {
+                    'Content-Type': 'application/json'
+                }
+            )
+        ),
         cache: "no-cache"
     }).then(res => res.json())
     .then(
@@ -749,7 +760,14 @@ class TopPanel extends React.Component {
                         height: "100vh"
                     } }
                 >
-                    {this.props.children}
+                    <div
+                        className="w3-card w3-metro-darken w3-display-middle"
+                        style={ {
+                            width: "80%"
+                        } }
+                    >
+                        {this.props.children}
+                    </div>
                 </div>
                 <div
                     className="w3-white"
@@ -782,6 +800,7 @@ class BrowseDir extends React.Component {
         // props.allowUpload
         // props.allowDownload
         // props.jobId
+        // props.runId
         // props.defaultBaseDir
         // props.showCancelButton
         // props.terminateBrowseDialog
@@ -804,10 +823,11 @@ class BrowseDir extends React.Component {
         this.selectDir = this.props.allowInput ? this.props.selectDir : false
 
         this.state = {
-            dirPath: this.props.path,
-            address: this.props.path,
+            dirPath: this.props.path ? this.props.path : "",
+            address: this.props.path ? this.props.path : "",
             actionStatus: "init",
             serverMessages: [],
+            downloadMessages: [],
             items: [],
             selectedItem: this.props.path && this.props.path != "Please fill" && this.props.path != "" ? (
                     this.props.path
@@ -825,6 +845,7 @@ class BrowseDir extends React.Component {
         this.changeBaseDir = this.changeBaseDir.bind(this);
         this.terminateBrowseDialog = this.terminateBrowseDialog.bind(this);
         this.handleFileUpload = this.handleFileUpload.bind(this);
+        this.downloadFileOrFolder = this.downloadFileOrFolder.bind(this);
     }
 
     componentDidMount(){
@@ -853,6 +874,7 @@ class BrowseDir extends React.Component {
                 allow_upload: this.allowUpload ? true : false,
                 allow_download: this.allowDownload ? true : false,
                 job_id: this.props.jobId ? this.props.jobId : null,
+                run_id: this.props.runId ? this.props.runId : null,
                 on_error_return_base_dir_items: init ? true : false,
                 default_base_dir: this.props.defaultBaseDir ? this.props.defaultBaseDir : null
             },
@@ -934,18 +956,56 @@ class BrowseDir extends React.Component {
         }
         this.props.terminateBrowseDialg(changes, selectedItem)
     }
+    
+    downloadFileOrFolder(event){
+        if (event.currentTarget.name == "download_dir"){
+            this.setState({
+                downloadMessages: {
+                    type: "warning",
+                    text: "Creating zip. This might take several minutes. Please wait."
+                }
+            })
+        }
+        const path = event.currentTarget.name == "download_dir" ? this.state.dirPath : this.state.selectedItem
+        this.ajaxRequest({
+            statusVar: "actionStatus",
+            statusValueDuringRequest: event.currentTarget.name,
+            messageVar: "downloadMessages",
+            sendData: {
+                path: path,
+                job_id: this.props.jobId ? this.props.jobId : null,
+                run_id: this.props.runId ? this.props.runId : null,
+                send_file: false
+            },
+            sendViaFormData: true,
+            route: routeDownload,
+            onSuccess: (data, messages) => {
+                let form = document.createElement('form');
+                form.method = 'post';
+                form.action = routeDownload;
+                let input = document.createElement('input');
+                input.type = 'hidden';
+                input.name = "meta";
+                input.value = JSON.stringify({
+                    path: event.currentTarget.name == "download_dir" ? data["zip_path"] : path,
+                    job_id: this.props.jobId ? this.props.jobId : null,
+                    run_id: this.props.runId ? this.props.runId : null,
+                    send_file: true
+                });
+                form.appendChild(input);
+                document.body.appendChild(form);
+                form.submit();
+                return({downloadMessages: []})
+            }
+        })
+    }
 
     render(){
         const allowInput = this.allowInput && ["upload", "input"].includes(this.state.allowedDirs[this.state.baseDir].mode)
         const allowUpload = this.allowUpload && this.state.allowedDirs[this.state.baseDir].mode == "upload"
         const allowDownload = this.allowDownload && this.state.allowedDirs[this.state.baseDir].mode == "download"
         const content=(
-            <div
-                className="w3-card w3-metro-darken w3-display-middle"
-                style={ {
-                    width: "80%"
-                } }
-            >
+            <div>
                 {this.state.actionStatus == "init" ? (
                         <LoadingIndicator size="large" message="Loading directory. Please wait." />
                     ) : (
@@ -1011,7 +1071,7 @@ class BrowseDir extends React.Component {
                                     height: "50vh"
                                 } }
                             >
-                                {this.state.actionStatus == "none" ? (
+                                {["none", "download_file", "download_dir"].includes(this.state.actionStatus) ? (
                                         this.state.items.length == 0 ? (
                                                 <span>No items found.</span>
                                             ) : (
@@ -1071,7 +1131,7 @@ class BrowseDir extends React.Component {
                                     />
                                 </div>
                             )}
-                            {allowDownload || (!this.selectDir && allowInput) && (
+                            {(allowDownload || (!this.selectDir && allowInput)) && (
                                 <div className="w3-container">
                                     <span className="w3-text-green">Selected file:</span>&nbsp;
                                     <IneditableValueField>
@@ -1113,7 +1173,34 @@ class BrowseDir extends React.Component {
                                             />
                                         )
                                 )}
+                                {allowDownload && (
+                                    <span>
+                                        <ActionButton
+                                            name="download_dir"
+                                            value="download_dir"
+                                            className="w3-bar-item w3-right"
+                                            label={<span><i className="fas fa-check" />&nbsp;download current dir as zip</span>}
+                                            onAction={this.downloadFileOrFolder}
+                                            disabled={this.state.actionStatus != "none"}
+                                            loading={this.state.actionStatus == "download_dir"}
+                                            forwardEvent={true}
+                                        />
+                                        <ActionButton
+                                            name="download_file"
+                                            value="download_file"
+                                            className="w3-bar-item w3-right"
+                                            label={<span><i className="fas fa-check" />&nbsp;download selected file</span>}
+                                            disabled={!this.state.selectedItem || this.state.actionStatus != "none"}
+                                            onAction={this.downloadFileOrFolder}
+                                            loading={this.state.actionStatus == "download_file"}
+                                            forwardEvent={true}
+                                        />
+                                    </span>
+                                )}
                             </div>
+                            {allowDownload && (
+                                <DisplayServerMessages messages={this.state.downloadMessages} />
+                            )}
                         </span>
                     )
                 }
