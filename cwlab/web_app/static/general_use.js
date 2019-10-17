@@ -398,7 +398,7 @@ class Tooltip extends React.Component {
                     ) : (
                         <span 
                             className="tooltiptext w3-metro-darken"
-                            style={ {width: width.toString().concat("px"), whiteSpace: "no-wrap"} }
+                            style={ {width: width.toString().concat("px"), whiteSpace: "no-wrap", zIndex: "100"} }
                         >
                             {preview}
                         </span>   
