@@ -20,12 +20,15 @@ def is_basic_type_instance(value):
 def read_config_from_cwl_file(cwl_file):
     print_pref = "[read_cwl_file]:"
     configs = {}
+    metadata = {"doc": ""}
     loadingContext = LoadingContext({"construct_tool_object": default_make_tool, "disable_js_validation": True})
     try:
         cwl_document = load_tool(cwl_file, loadingContext)
     except SystemExit as e:
         sys.exit( print_pref + "failed to read cwl file \"" + cwl_file + "\": does not exist or is invalid")
-    inp_records = cwl_document.__dict__["inputs_record_schema"]["fields"]
+    inp_records = cwl_document.inputs_record_schema["fields"]
+    if "doc" in cwl_document.tool:
+        metadata["doc"] = cwl_document.tool["doc"]
     for inp_rec in inp_records:
         name = clean_string( inp_rec["name"] )
         is_array = False
@@ -98,15 +101,21 @@ def read_config_from_cwl_file(cwl_file):
                 sys.exit( print_pref + "E: invalid secondaryFiles field for parameter " + name )
         else:
             secondary_files = [ "" ]
+        # read doc:
+        if "doc" in inp_rec:
+            doc = inp_rec["doc"]
+        else:
+            doc = ""
         # assemble config parameters:
         inp_configs = {
             "type": type_,
             "is_array": is_array,
             "null_allowed": null_allowed,
             "null_items_allowed": null_items_allowed,
-    	    "secondary_files": secondary_files,
-            "default_value": default_value
+            "secondary_files": secondary_files,
+            "default_value": default_value,
+            "doc": doc
         }
         # add to configs dict:
         configs[ name ] = inp_configs
-    return configs
+    return configs, metadata

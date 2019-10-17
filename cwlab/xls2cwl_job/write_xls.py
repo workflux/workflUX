@@ -224,6 +224,7 @@ def build_configs_sheet(configs, attributes={}):
             "null_items_allowed": str,
     	    "secondary_files": generate_mutliple_quoted_strings,
             "default_value": generate_mutliple_quoted_strings,
+            'doc': str,
             "split_into_runs_by": generate_mutliple_quoted_strings,
             "aligned_to": str,
             "group_by": generate_mutliple_quoted_strings,
@@ -241,6 +242,7 @@ def build_configs_sheet(configs, attributes={}):
             "null_items_allowed",
     	    "secondary_files",
             "default_value",
+            "doc",
             "split_into_runs_by",
             "aligned_to",
             "group_by",
@@ -266,8 +268,17 @@ def build_configs_sheet(configs, attributes={}):
         data.append(row)
     return data
 
+def build_metadata_sheet(metadata):
+    attributes={}
+    attributes["type"] = "metadata"
+    sheet_header_row = [build_attribute_header(attributes)]
+    data = [sheet_header_row]
+    for key in metadata.keys():
+        row = [key, metadata[key]]
+        data.append(row)
+    return data
 
-def build_book(all_parameters, configs, config_attributes={}):
+def build_book(all_parameters, configs, config_attributes={}, metadata={"doc": ""}):
     print_pref = "[build_book]:"
     book = {}
     # split all parameters by output sheet name and get sheet attributes:
@@ -281,10 +292,11 @@ def build_book(all_parameters, configs, config_attributes={}):
             run_id=sheets_assignment["run_id"]
         ) 
     book["config"] = build_configs_sheet(configs, config_attributes) 
+    book["metadata"] = build_metadata_sheet(metadata) 
     return book
 
-def write_xls(all_parameters, configs, output_file, config_attributes={}):
+def write_xls(all_parameters, configs, output_file, config_attributes={}, metadata={"doc": ""}):
     print_pref = "[parameter_to_xls]:"
-    book = build_book(all_parameters, configs, config_attributes)
+    book = build_book(all_parameters, configs, config_attributes, metadata)
     pyexcel_xlsx.save_data( afile= output_file, data=book )
 

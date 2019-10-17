@@ -1,5 +1,7 @@
 cwlVersion: v1.0
 class: Workflow
+doc: |
+  bla
 
 requirements:
   SubworkflowFeatureRequirement: {}
@@ -10,6 +12,7 @@ requirements:
 inputs:
   fastq1:
     type: File
+    doc: test
   fastq2: 
     type: File
         

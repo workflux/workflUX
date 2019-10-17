@@ -2,19 +2,25 @@
     "$graph": [
         {
             "class": "CommandLineTool",
-            "requirements": {
-                "InlineJavascriptRequirement": {},
-                "StepInputExpressionRequirement": {}
-            },
-            "hints": {
-                "ResourceRequirement": {
-                    "coresMin": 1,
-                    "ramMin": 5000
+            "requirements": [
+                {
+                    "class": "InlineJavascriptRequirement"
                 },
-                "DockerRequirement": {
-                    "dockerPull": "kerstenbreuer/trim_galore:0.4.4_1.14_0.11.7"
+                {
+                    "class": "StepInputExpressionRequirement"
                 }
-            },
+            ],
+            "hints": [
+                {
+                    "dockerPull": "kerstenbreuer/trim_galore:0.4.4_1.14_0.11.7",
+                    "class": "DockerRequirement"
+                },
+                {
+                    "coresMin": 1,
+                    "ramMin": 5000,
+                    "class": "ResourceRequirement"
+                }
+            ],
             "baseCommand": "fastqc",
             "arguments": [
                 {
@@ -25,38 +31,40 @@
                     "valueFrom": "--noextract"
                 }
             ],
-            "inputs": {
-                "fastq1": {
-                    "type": "File?",
+            "inputs": [
+                {
+                    "type": [
+                        "null",
+                        "File"
+                    ],
                     "inputBinding": {
                         "position": 1
-                    }
+                    },
+                    "id": "#fastqc.cwl/bam"
                 },
-                "fastq2": {
-                    "type": "File?",
+                {
+                    "type": [
+                        "null",
+                        "File"
+                    ],
+                    "inputBinding": {
+                        "position": 1
+                    },
+                    "id": "#fastqc.cwl/fastq1"
+                },
+                {
+                    "type": [
+                        "null",
+                        "File"
+                    ],
                     "inputBinding": {
                         "position": 2
-                    }
-                },
-                "bam": {
-                    "type": "File?",
-                    "inputBinding": {
-                        "position": 1
-                    }
-                }
-            },
-            "outputs": {
-                "fastqc_zip": {
-                    "doc": "all data e.g. figures",
-                    "type": {
-                        "type": "array",
-                        "items": "File"
                     },
-                    "outputBinding": {
-                        "glob": "*_fastqc.zip"
-                    }
-                },
-                "fastqc_html": {
+                    "id": "#fastqc.cwl/fastq2"
+                }
+            ],
+            "outputs": [
+                {
                     "doc": "html report showing results from zip",
                     "type": {
                         "type": "array",
@@ -64,13 +72,26 @@
                     },
                     "outputBinding": {
                         "glob": "*_fastqc.html"
-                    }
+                    },
+                    "id": "#fastqc.cwl/fastqc_html"
+                },
+                {
+                    "doc": "all data e.g. figures",
+                    "type": {
+                        "type": "array",
+                        "items": "File"
+                    },
+                    "outputBinding": {
+                        "glob": "*_fastqc.zip"
+                    },
+                    "id": "#fastqc.cwl/fastqc_zip"
                 }
-            },
+            ],
             "id": "#fastqc.cwl"
         },
         {
             "class": "Workflow",
+            "doc": "bla\n",
             "requirements": [
                 {
                     "class": "InlineJavascriptRequirement"
@@ -88,6 +109,7 @@
             "inputs": [
                 {
                     "type": "File",
+                    "doc": "test",
                     "id": "#main/fastq1"
                 },
                 {
