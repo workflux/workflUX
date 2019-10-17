@@ -332,6 +332,95 @@ class ActionButton extends React.Component {
     }
 }
 
+class Tooltip extends React.Component {
+    constructor(props) {
+        super(props);
+        // props.hoverButton
+        // props.children
+        // props.preview
+        // props.title
+        this.state = {
+            showTopPanel: false
+        }
+
+        this.showTopPanel = this.showTopPanel.bind(this);
+    }
+
+    showTopPanel(event){
+        this.setState({
+            showTopPanel: event.currentTarget.name == "show_top_panel" ? true : false
+        })
+    }
+
+    render(){
+        let preview = this.props.preview ? this.props.preview : this.props.children
+        preview = preview.length > 40 ? (
+            preview.substring(0, 28).concat(" ... [click]")
+        ) : (
+            preview
+        )
+        let width = preview.length*8+20
+        if (width < 140) {
+            width = 140
+        }
+        else if (width > 400){
+            width = 400
+        }
+        return(
+            <div 
+                className="tooltip"
+            >
+                {this.state.showTopPanel ? (
+                        <TopPanel>
+                            <div 
+                                className="w3-bar"
+                                style={ {height: "40px"} }
+                            >
+                                <div 
+                                    className="w3-bar-item w3-display-topleft"
+                                    style={ {padding: "8px 16px"} }
+                                >
+                                    {this.props.title}
+                                </div>
+                                <ActionButton
+                                    name="exit_top_panel"
+                                    value="exit_top_panel"
+                                    className="w3-black w3-bar-item w3-display-topright"
+                                    label={<i className="fas fa-times"/>}
+                                    onAction={this.showTopPanel}
+                                    forwardEvent={true}
+                                />
+                            </div>
+                            <div className="w3-container" style={ {overflowY: "auto", whiteSpace: "pre-line"} }>
+                                {this.props.children}
+                            </div>
+                        </TopPanel>
+                    ) : (
+                        <span 
+                            className="tooltiptext w3-metro-darken"
+                            style={ {width: width.toString().concat("px"), whiteSpace: "no-wrap"} }
+                        >
+                            {preview}
+                        </span>   
+                    )
+                }
+                {this.props.hoverButton ? (
+                        this.props.hoverButton
+                    ) : (
+                        <a
+                            name="show_top_panel"
+                            onClick={this.showTopPanel}
+                        >
+                            <i className="fas fa-info-circle w3-text-blue"/>
+                        </a>
+                    )
+                }
+            </div>
+        )
+    }
+
+}
+
 class CollapsibleListItem extends React.Component {
     constructor(props) {
         super(props);
@@ -753,7 +842,7 @@ class TopPanel extends React.Component {
                 <div
                     style={ {
                         position: "fixed",  
-                        zIndex: "10002",
+                        zIndex: "100002",
                         top: "0",
                         left: "0",
                         width: "100vw",
@@ -773,7 +862,7 @@ class TopPanel extends React.Component {
                     className="w3-white"
                     style={ {
                         position: "fixed",  
-                        zIndex: "10000",
+                        zIndex: "100000",
                         top: "0",
                         left: "0",
                         width: "100vw",

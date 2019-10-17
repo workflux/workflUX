@@ -49,7 +49,6 @@ def get_job_templ_config_info():    # returns all parmeter and its default mode 
     messages = []
     param_config_info = []
     template_attributes = []
-    default_search_dir = ""
     try:
         login_required()
         cwl_target = request.get_json()["cwl_target"]
@@ -65,7 +64,6 @@ def get_job_templ_config_info():    # returns all parmeter and its default mode 
             "type":"error", 
             "text":"An uknown error occured." 
         } )
-    print(messages)
     return jsonify({
         "data":{
             "params":param_config_info,

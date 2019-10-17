@@ -160,7 +160,7 @@ class ParamName extends React.Component{
     constructor(props){
         super(props);
         // props.name
-        // props.type
+        // props.config
 
         const typeLabelStyle = {
             fontFamily: "courier"
@@ -181,7 +181,56 @@ class ParamName extends React.Component{
     render(){
         return(
             <span className="w3-text-green" style={ {display: "inline-block", whiteSpace: "nowrap"} }>
-                {this.typeIcon[this.props.type]}&nbsp;{this.props.name}:
+                {this.typeIcon[this.props.config.type]}&nbsp;
+                {this.props.name}&nbsp;
+                <Tooltip
+                    title={"Info ".concat(this.props.name).concat(":")}
+                    preview={
+                        (this.props.config.is_array ? "List of " : "") +
+                        this.props.config.type + 
+                        (this.props.config.null_allowed ? " [optional]" : "") +
+                        (this.props.config.null_item_allowed ? " [items optional]" : "") +
+                        (this.props.config.doc ? ", help: ".concat(this.props.config.doc) : ", help: no info available")
+                    }
+                >   
+                    <span className="w3-text-green">Type:</span>&nbsp;
+                    {
+                        (this.props.config.is_array ? "List of " : "") +
+                        this.props.config.type
+                    }<br/>
+                    <span className="w3-text-green">Optional:</span>&nbsp;
+                    {this.props.config.null_allowed ? (
+                            "Yes. You may disable this parameter."
+                        ) : (
+                            "No. You have to fill in a value."
+                        )
+                    }<br/>
+                    {(this.props.config.null_item_allowed && this.props.is_array) && (
+                        <span>
+                            <span className="w3-text-green">Type:</span>&nbsp;
+                            You may disable single items of the list.<br/>
+                        </span>
+                    )}
+                    <span className="w3-text-green">Default:</span>&nbsp;
+                    {this.props.config.default ? (
+                            this.props.config.default
+                        ) : (
+                            "no default"
+                        )
+                    }<br/>
+                    <span className="w3-text-green">Help:</span>&nbsp;
+                    {this.props.config.doc ? (
+                            <div 
+                                className="w3-container"
+                                style={ {whiteSpace: "pre-line"} }
+                            >
+                                {this.props.config.doc}
+                            </div>
+                        ) : (
+                            "no info available"
+                        )
+                    }
+                </Tooltip>
             </span>
         )
     }
@@ -501,7 +550,7 @@ class ParamFormGlobalSingle extends ParamForm{
                                 style={ {height: this.headerHeight} }
                             >
                                 <td style={ {padding: "8px", width: "auto"} }>
-                                    <ParamName name={p} type={this.props.paramConfigs[p].type}/>
+                                    <ParamName name={p} config={this.props.paramConfigs[p]}/>
                                 </td>
                                 <td style={ {padding: "8px", width: "auto"} }>
                                     {this.props.paramConfigs[p].null_allowed &&
@@ -560,7 +609,7 @@ class ParamFormGlobalArray extends ParamForm{
                                                 <td style={ {minWidth: this.columnWidth} }>
                                                     <ParamName
                                                         name={p}
-                                                        type={this.props.paramConfigs[p].type}
+                                                        config={this.props.paramConfigs[p]}
                                                     />
                                                     {this.props.paramConfigs[p].null_allowed &&
                                                         <span className="w3-right">
@@ -647,7 +696,7 @@ class ParamFormRunSingle extends ParamForm{
                                             <td style={ {minWidth: this.columnWidth} }>
                                                 <ParamName
                                                     name={p}
-                                                    type={this.props.paramConfigs[p].type}
+                                                    config={this.props.paramConfigs[p]}
                                                 />
                                             </td>
                                         </tr>
@@ -738,7 +787,7 @@ class ParamFormRunArray extends ParamForm{
                                                 <td style={ {minWidth: this.columnWidth} }>
                                                     <ParamName
                                                         name={p}
-                                                        type={this.props.paramConfigs[p].type}
+                                                        config={this.props.paramConfigs[p]}
                                                     />
                                                     {this.props.paramConfigs[p].null_allowed &&
                                                         <span className="w3-right">
@@ -1427,7 +1476,19 @@ class JobCreationPrep extends React.Component {
                     <tbody>
                         {this.props.configData.params.map( (p) => (
                             <tr key={p.param_name}> 
-                                <td>{p.param_name}</td>
+                                <td>
+                                    {p.param_name}&nbsp;
+                                    <Tooltip
+                                        title={"Info ".concat(p.param_name).concat(":")}
+                                    >
+                                        {p.doc ? (
+                                                p.doc
+                                            ) : (
+                                                "no info available"
+                                            )
+                                        }
+                                    </Tooltip>
+                                </td>
                                 <td>
                                     {p.is_array && 
                                         "List of "
@@ -1511,14 +1572,23 @@ class JobCreationPrep extends React.Component {
         if (this.state.display == "prep"){
             return(
                 <div>
-                    <h3>Input parameters:</h3>
-                    {paramTable}
-                    <hr/>
+                    {this.props.configData.templ_attr.doc && (
+                        <span>
+                            <h3>Workflow info:</h3>
+                            <p style={ {whiteSpace: "pre-line"} }>
+                                {this.props.configData.templ_attr.doc}
+                            </p>
+                            <hr/>
+                        </span>
+                    )}
                     <h3>Job ID:</h3>
                     {jobIdForm}
                     <hr/>
                     <h3>Number of runs:</h3>
                     {runNumberForm}
+                    <hr/>
+                    <h3>Input parameters:</h3>
+                    {paramTable}
                     <hr/>
                     <h3>Provide Parameter Values:</h3>
                     <p>
