@@ -4,6 +4,8 @@ WEB_SERVER_PORT: 5000
 
 DEBUG: False
 
+ENABLE_USERS: True
+
 EXEC_PROFILES:
   cwltool_windows:
     

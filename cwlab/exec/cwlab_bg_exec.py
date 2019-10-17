@@ -34,6 +34,9 @@ if debug:
 else:
     db_retry_delays = [1, 5, 20, 60, 600]
 
+# wait random time:
+sleep(1 + 1*random())
+
 # open connection to database
 for db_retry_delay in db_retry_delays:
     try:
@@ -51,17 +54,22 @@ for db_retry_delay in db_retry_delays:
         else:
             sleep(db_retry_delay + db_retry_delay*random())
 
-def query_info_from_db(what):
-    for db_retry_delay in db_retry_delays:
+def query_info_from_db(what, db_retry_delays_=None, no_exit=False):
+    db_retry_delays_ = db_retry_delays if db_retry_delays_ is None else db_retry_delays_
+    db_request = ""
+    for db_retry_delay in db_retry_delays_:
         try:
             if what == "run_info":
-                db_request = session.query(Exec).get(int(exec_db_id))
-            else:
-                pass #! no other options yet
+                db_request = session.query(Exec).get(exec_db_id)
+            elif what == "next_in_queue":
+                db_request = session.query(Exec).filter(Exec.status == "queued").order_by(Exec.id.asc()).first()
+            elif what == "running_exec":
+                db_request = session.query(Exec).filter(Exec.time_finished == None).filter(Exec.status != "queued")
             break
         except:
             if db_retry_delay == db_retry_delays[-1]:
-                sys.exit("Exception query to database: \n" + str(e))
+                if not no_exit:
+                    sys.exit("Exception query to database: \n" + str(e))
             else:
                 sleep(db_retry_delay + db_retry_delay*random())
     return db_request
@@ -76,28 +84,70 @@ yaml = exec_db_entry.yaml
 out_dir = exec_db_entry.out_dir
 global_temp_dir = exec_db_entry.global_temp_dir
 log = exec_db_entry.log
+time_started = exec_db_entry.time_started
 exec_profile = exec_db_entry.exec_profile
 exec_profile_name = exec_db_entry.exec_profile_name
 
 
+
 # retry on commit:
-def commit():
-    for db_retry_delay in db_retry_delays:
+def commit(db_retry_delays_=None, no_exit=False):
+    db_retry_delays_ = db_retry_delays if db_retry_delays_ is None else db_retry_delays_
+    for db_retry_delay in db_retry_delays_:
         try:
             session.commit()
             break
         except Exception as e:
             print(">>> retry db commit: " + str(db_retry_delay))
             if db_retry_delay == db_retry_delays[-1]:
-                sys.exit("Exception during commit to database:  \n" + str(e))
+                if not no_exit:
+                    sys.exit("Exception during commit to database:  \n" + str(e))
             else:
                 sleep(db_retry_delay + db_retry_delay*random())
 
 # set pid:
 pid = os.getpid()
+print(">>> Run's pid: " + str(pid))
 exec_db_entry.pid = pid
 commit()
-print(">>> Run's pid: " + str(pid))
+
+# wait until number of running jobs decreases below max_parallel_exec:
+db_retry_delay_queue = [1]
+wait = True
+def wait_queue():
+    sleep(exec_profile["wait_in_queue_period"] + exec_profile["wait_in_queue_period"]*random())
+def calc_duration(time_a, time_b):
+    delta = time_b - time_a
+    delta_second = delta.seconds + delta.days*86400
+    return delta_second
+while wait:
+    if calc_duration(time_started, datetime.now()) > exec_profile["max_queue_duration"]:
+        exec_db_entry.status = "queued too long" 
+        exec_db_entry.err_message = "Max queueing duration exceeded."
+        exec_db_entry.time_finished = datetime.now()
+        commit()
+        sys.exit(exec_db_entry.err_message)
+    running_exec = query_info_from_db("running_exec", db_retry_delay_queue, no_exit=True)
+    if running_exec == "":
+        wait_queue()
+        continue
+    if not running_exec is None:
+        number_running_exec = running_exec.count()
+        max_parallel_exec_running = 0
+        for exec_ in running_exec.all():
+            if exec_.exec_profile["max_parallel_exec"] > max_parallel_exec_running:
+                max_parallel_exec_running = exec_.exec_profile["max_parallel_exec"]
+        if number_running_exec >= max(exec_profile["max_parallel_exec"], max_parallel_exec_running):
+            wait_queue()
+            continue
+    next_in_queue = query_info_from_db("next_in_queue", db_retry_delay_queue, no_exit=True)
+    if next_in_queue == "" or next_in_queue.id != exec_db_id:
+        wait_queue()
+        continue
+    wait=False
+
+exec_db_entry.time_started = datetime.now()
+commit()
 
 # create out_dir:
 if not os.path.exists(out_dir):

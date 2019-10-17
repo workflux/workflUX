@@ -3,28 +3,38 @@ import sys
 import os
 import pyexcel as pe
 import pyexcel_xlsx, pyexcel_xls, pyexcel_ods, pyexcel_io
-from .read_xls import read_and_remove_sheet_attributes, sheet_file
+from .read_xls import read_and_remove_sheet_attributes, sheet_file, metadata_sheet as read_metadata_sheet
 from .fill_in_defaults import fill_in_config_defaults, fill_in_param_defaults
 from itertools import chain, repeat
 from .write_xls import write_xls
 from .__init__ import validate_manipulate_split_type_match
 
 def read_template_attributes(sheet_file):
+    metadata = {}
     try:
         config_sheet = pe.get_book(file_name=sheet_file)["config"]
     except:
         sys.exit("Error reading the job template \"" + sheet_file + "\": does the template have a \"config\" sheet?")
     _, attributes = read_and_remove_sheet_attributes(config_sheet)
+    try:
+        metadata_sheet, _ = read_and_remove_sheet_attributes(pe.get_book(file_name=sheet_file)["metadata"])
+        metadata = read_metadata_sheet(metadata_sheet)
+        if "doc" in metadata.keys():
+            attributes["doc"] = metadata["doc"]
+    except:
+        pass
     del(attributes["type"])
     # add cwl attribute if missing:
     if not "CWL" in attributes.keys():
         attributes["CWL"] = ""
     if not "desc" in attributes.keys():
         attributes["desc"] = ""
+    if not "doc" in attributes.keys():
+        attributes["doc"] = ""
     return attributes
 
 def get_param_config_info(file_path):
-    _, configs = sheet_file(file_path, verbose_level=0)
+    _, configs, _ = sheet_file(file_path, verbose_level=0)
     param_config_info = []
     for param in configs.keys():
         if configs[param]["split_into_runs_by"][0] == "job_id":
@@ -34,13 +44,16 @@ def get_param_config_info(file_path):
         param_config_info.append({
             "param_name":param, 
             "type":configs[param]["type"],
-            "is_run_specific":is_run_specific
+            "is_array":configs[param]["is_array"],
+            "optional":configs[param]["null_allowed"],
+            "is_run_specific":is_run_specific,
+            "doc":configs[param]["doc"]
         })
     return param_config_info
 
 
 def get_param_config(file_path):
-    _, configs = sheet_file(file_path, verbose_level=0)
+    _, configs, _ = sheet_file(file_path, verbose_level=0)
     return configs
 
 def gen_form_sheet(
@@ -56,7 +69,7 @@ def gen_form_sheet(
                                                             # the config file
 ):
     # read configs from template
-    _, configs = sheet_file(template_config_file_path, verbose_level=0)
+    _, configs, _ = sheet_file(template_config_file_path, verbose_level=0)
     # get default param values:
     param_values = fill_in_param_defaults({}, configs, show_please_fill)
 

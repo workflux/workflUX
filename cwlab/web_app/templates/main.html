@@ -17,6 +17,7 @@
         <script src="/static/import_cwl.js" type="text/babel"></script>
         <script src="/static/create_job.js" type="text/babel"></script>
         <script src="/static/job_exec.js" type="text/babel"></script>
+        <script src="/static/users.js" type="text/babel"></script>
         <script src="/static/main.js" type="text/babel"></script>
 
         <script > 
@@ -25,6 +26,7 @@
             const routeGetJobTemplList = "{{ url_for('get_job_templ_list') }}"
             const routeGetJobTemplConfigInfo = "{{ url_for('get_job_templ_config_info') }}"
             const routeGetParamValues = "{{ url_for('get_param_values') }}"
+            const routePrepareJobEnv = "{{ url_for('prepare_job_env') }}"
             const routeGenParamFormSheet = "{{ url_for('generate_param_form_sheet') }}"
             const routeSendFilledParamFormSheet = "{{ url_for('send_filled_param_form_sheet') }}"
             const routeSendFilledParamValues = "{{ url_for('send_filled_param_values') }}"
@@ -36,8 +38,25 @@
             const routeGetRunDetails = "{{ url_for('get_run_details') }}"
             const routeTerminateRuns = "{{ url_for('terminate_runs') }}"
             const routeDeleteJob = "{{ url_for('delete_job') }}"
-            const autoRefreshInterval = parseInt(parseFloat("{{ auto_refresh_interval }}")*1000)
-            const readMaxCharsFromFile = parseInt("{{ read_max_chars_from_file }}")
+            const routeLogin = "{{ url_for('login') }}"
+            const routeRegister = "{{ url_for('register') }}"
+            const routeGetGeneralUserInfo = "{{ url_for('get_general_user_info') }}"
+            const routeGetAllUsersInfo = "{{ url_for('get_all_users_info') }}"
+            const routeChangePassword = "{{ url_for('change_password') }}"
+            const routeDeleteAccount = "{{ url_for('delete_account') }}"
+            const routeLogout = "{{ url_for('logout') }}"
+            const routeModifyOrDeleteUsers = "{{ url_for('modify_or_delete_users') }}"
+            const routeBrowseDir = "{{ url_for('browse_dir') }}"
+            const routeUploadFile = "{{ url_for('upload_file') }}"
+            const routeDownload = "{{ url_for('download') }}"
+            const autoRefreshInterval = parseInt(parseFloat("{{ config.WEB_AUTO_REFRESH_INTERVAL }}")*1000)
+            const readMaxCharsFromFile = parseInt("{{ config.READ_MAX_CHARS_FROM_FILE }}")
+            const loginEnabled = "{{ config.ENABLE_USERS }}" === "True"
+            const loggedIn = "{{ logged_in }}" === "True"
+            const username = "{{ username }}"
+            const userLevel = "{{ user_level }}"
+            const loginInstruction = "{{ config.LOGIN_INSTRUCTION }}"
+            const registrationInstruction = "{{ config.REGISTRATION_INSTRUCTION }}"
 
 
             // other global params:

@@ -4,15 +4,17 @@ import sys
 import re
 import pyexcel as pe
 import pyexcel_xlsx, pyexcel_xls, pyexcel_ods, pyexcel_io
-from unidecode import unidecode
 
+def remove_non_printable_characters(string_to_clean, codec="utf-8"):
+    string_to_clean_encoded = string_to_clean.encode(codec, "ignore")
+    return("".join(c for c in string_to_clean if c.isprintable()))
 
 def clean_string( string_to_clean ):
     # removes leading and tailing whitespaces
     # and converts unicode strings to ascii:
     print_pref = "[clean_string]:"
     if isinstance(string_to_clean, str):
-        str_cleaned = string_to_clean.strip()
+        str_cleaned = remove_non_printable_characters(string_to_clean).strip()
     elif isinstance(string_to_clean, int):
         str_cleaned = str( string_to_clean )
     elif isinstance(string_to_clean, float):
@@ -20,13 +22,7 @@ def clean_string( string_to_clean ):
     elif isinstance(string_to_clean, bool):
         str_cleaned = str( string_to_clean )
     else:
-        if sys.version_info.major == 2:
-            if isinstance(string_to_clean, unicode):
-                str_cleaned = unidecode( string_to_clean.strip() )
-            else:
-                sys.exit( print_pref + "E: is not a string or number" )
-        else:
-            sys.exit( print_pref + "E: is not a string or number" )
+        sys.exit( print_pref + "E: is not a string or number" )
     return str_cleaned
 
 def quote_clean_string( string_to_clean ):
@@ -128,6 +124,7 @@ def field( field_key, field_string ):
         "is_array":boolean_field,
         "null_allowed":boolean_field,
         "null_items_allowed":boolean_field,
+        "doc":clean_string,
         "is_run_specific":boolean_field,
         "secondary_files":multi_attribute_field_quote_clean,
         "manipulate_value":multi_attribute_field_quote_clean,
@@ -328,12 +325,28 @@ def parameter_sheet(sheet, sheet_attributes, verbose_level=2):
     return param_values
 
 
+def metadata_sheet(sheet, verbose_level=2):
+    # read a parameter sheet
+    print_pref = "[metadata_sheet]:"
+    metadata={}
+    sheet.name_rows_by_column(0)
+    try:
+        param_names = parameter_names(sheet.rownames)
+    except SystemExit as e:
+        sys.exit( print_pref + str(e) )
+    for param in param_names:
+        try:
+            metadata[param] = clean_string( sheet.row[param][0] ) if len(sheet.row[param]) > 0 else ""
+        except SystemExit as e:
+            sys.exit( print_pref + "E: failed to read value of parameter \"" + param + "\":" + str(e) )      
+    return metadata
+
 def spread_sheet(sheet, verbose_level=2):
     print_pref = "[sheet]:"
     # dictionaries to store content, parameter_names are used as keys:
     configs = {}
     param_values = {}
-
+    metadata = {}
     # read and remove headers and remove tailing empty columns/rows:
     try:
         attribute_less_sheet, sheet_attributes = read_and_remove_sheet_attributes( sheet )
@@ -354,22 +367,26 @@ def spread_sheet(sheet, verbose_level=2):
             param_values = parameter_sheet( trimmed_sheet, sheet_attributes, verbose_level )
         except SystemExit as e:
             sys.exit( print_pref + str(e))
+    elif sheet_attributes["type"] == "metadata":
+            metadata = metadata_sheet( trimmed_sheet, verbose_level )
     # if not type config or param: empty param_values and configs will be returned
     
-    return param_values, configs
+    return param_values, configs, metadata
 
 
-def sheet_file( sheet_file, verbose_level=2 ):
+def sheet_file( sheet_file, verbose_level=2):
     sheets = pe.get_book(file_name=sheet_file)
     print_pref = "[sheet_file]:"
     param_values = {}
     configs = {}
+    metadata = {}
 
     for sheet_idx, sheet in enumerate(sheets):
-        #try:
-        param_values_tmp, configs_tmp = spread_sheet(sheet, verbose_level)
-        #except SystemExit as e:
-        #    sys.exit( print_pref + "failed to read sheet \"" + str(sheet.name) + "\":" + str(e))
+        try:
+            param_values_tmp, configs_tmp, metadata_ = spread_sheet(sheet, verbose_level)
+            metadata.update(metadata_)
+        except SystemExit as e:
+           sys.exit( print_pref + "failed to read sheet \"" + str(sheet.name) + "\":" + str(e))
         
         # merge with existing data, conflicting data not allowed:
         if len(set(param_values_tmp.keys()).intersection(param_values.keys())) > 0:
@@ -380,16 +397,18 @@ def sheet_file( sheet_file, verbose_level=2 ):
             param_values.update(param_values_tmp)
             configs.update(configs_tmp)
 
-    return param_values, configs
+    return param_values, configs, metadata
 
-def sheet_files( sheet_files, verbose_level=2 ):
+def sheet_files( sheet_files, verbose_level=2):
     print_pref = "[sheet_files]:"
     param_values = {}
     configs = {}
+    metadata = {}
 
     for sfile in sheet_files:
         try:
-            param_values_tmp, configs_tmp = sheet_file(sfile, verbose_level)
+            param_values_tmp, configs_tmp, metadata_ = sheet_file(sfile, verbose_level)
+            metadata.update(metadata_)
         except SystemExit as e:
             sys.exit( print_pref + "failed to read file \"" + sfile + "\":" + str(e))
         
@@ -401,5 +420,4 @@ def sheet_files( sheet_files, verbose_level=2 ):
         else:
             param_values.update(param_values_tmp)
             configs.update(configs_tmp)
-
-    return param_values, configs
+    return param_values, configs, metadata

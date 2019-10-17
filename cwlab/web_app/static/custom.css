@@ -116,6 +116,15 @@
   border: 2px solid black;
 }
 
+.param-input-browse {
+  display: inline-block;
+  padding: 2px 4px;
+  width: calc(100% - 32px);
+  background-color: hsl(0, 0%, 90%);
+  box-sizing: border-box;
+  border: 2px solid black;
+}
+
 .param-input:disabled {
   color: hsl(0, 0%, 25%);
   background-color: hsl(0, 0%, 50%);
@@ -186,3 +195,36 @@
   .slider.round:before {
     border-radius: 50%;
   } 
+
+  /* Tooltip container */
+  .tooltip {
+    position: relative;
+    display: inline-block;
+    border-bottom: 1px dotted black;
+  }
+  
+  .tooltip .tooltiptext {
+    font-family: courier;
+    font-size: 14px;
+    visibility: hidden;
+    text-align: center;
+    border-radius: 6px;
+    padding: 5px 0;
+    position: absolute;
+    top: -5px;
+    left: calc(100% + 10px);
+  }
+  
+  .tooltip .tooltiptext::after {
+    content: "";
+    position: absolute;
+    top: 15px;
+    right: 100%;
+    margin-top: -5px;
+    border-width: 5px;
+    border-style: solid;
+    border-color: transparent black transparent transparent;
+  }
+  .tooltip:hover .tooltiptext {
+    visibility: visible;
+  }

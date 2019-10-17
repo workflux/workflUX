@@ -5,6 +5,15 @@ from time import strftime, gmtime
 from platform import system
 basedir = os.path.abspath(os.path.dirname(__file__))
 
+def normalize_path(path):
+    return os.path.realpath(path)
+
+def normalize_path_dict(dict):
+    norm_dict = {}
+    for key in dict.keys():
+        norm_dict[key] = normalize_path(dict[key])
+    return norm_dict
+
 class Config(object):
     def __init__(self,CONFIG_FILE=None):
         if system() == "Windows":
@@ -40,30 +49,42 @@ class Config(object):
             strftime("%Y%m%d%H%M%S", gmtime())
         )
 
-        self.TEMP_DIR = (
+        self.TEMP_DIR = normalize_path(
             os.environ.get('CWLAB_TEMP_DIR') or
             self.CONFIG_FILE_content.get('TEMP_DIR') or  
             os.path.join( cwlab_fallback_dir, "temp")
         )
-        self.CWL_DIR = (
+        self.CWL_DIR = normalize_path(
             os.environ.get('CWLAB_CWL_DIR') or  
             self.CONFIG_FILE_content.get('CWL_DIR') or  
             os.path.join( cwlab_fallback_dir, "CWL")
         )
-        self.EXEC_DIR = (
+        self.EXEC_DIR = normalize_path(
             os.environ.get('CWLAB_EXEC_DIR') or 
             self.CONFIG_FILE_content.get('EXEC_DIR') or   
             os.path.join( cwlab_fallback_dir, "exec")
         )
-        self.INPUT_DIR = (
-            os.environ.get('CWLAB_INPUT_DIR') or 
-            self.CONFIG_FILE_content.get('INPUT_DIR') or   
-            os.path.join( cwlab_fallback_dir, "input")
-        )
-        self.DB_DIR = (
+        self.DB_DIR = normalize_path(
             os.environ.get('CWLAB_DB_DIR') or 
             self.CONFIG_FILE_content.get('DB_DIR') or  
             os.path.join( cwlab_fallback_dir, "database")
+        )
+        self.ADD_INPUT_DIRS = normalize_path_dict(
+            self.CONFIG_FILE_content.get('ADD_INPUT_DIRS') or 
+            {"ROOT": "/"}
+        )
+        self.ADD_INPUT_UPLOAD_DIRS = normalize_path_dict(
+            self.CONFIG_FILE_content.get('ADD_INPUT_UPLOAD_DIRS') or 
+            {"ROOT": "/"}
+        )
+
+        self.UPLOAD_ALLOWED = (
+            self.CONFIG_FILE_content.get('UPLOAD_ALLOWED') or
+            True
+        )
+        self.DOWNLOAD_ALLOWED = (
+            self.CONFIG_FILE_content.get('DOWNLOAD_ALLOWED') or
+            True
         )
         
         self.DEBUG = (
@@ -98,6 +119,12 @@ class Config(object):
             1
         )
 
+        self.ENABLE_USERS = (
+            os.environ.get('CWLAB_ENABLE_USERS') or
+            self.CONFIG_FILE_content.get('ENABLE_USERS') or  
+            False
+        )
+
         # execution profile:
         self.EXEC_PROFILES = self.CONFIG_FILE_content.get('EXEC_PROFILES') or {}
         
@@ -109,9 +136,11 @@ class Config(object):
             "post_exec": 120
         }
         general_defaults = {
-            "max_retries_default": 3,
-            "max_parallel_runs_default": 3, # if exceeded, jobs will be queued
-            "wait_when_queued": 10, # When beeing queued, wait this long before trying to start again
+            "max_retries": 2,
+            "max_parallel_exec": 4, # if exceeded, jobs will be queued
+            "allow_user_decrease_max_parallel_exec": True,
+            "max_queue_duration": 864000,
+            "wait_in_queue_period": 4
         }
         for exec_profile in self.EXEC_PROFILES.keys():
             timeout = timeout_defaults
@@ -120,6 +149,9 @@ class Config(object):
             self.EXEC_PROFILES[exec_profile]["timeout"] = timeout
             general = general_defaults
             general.update(self.EXEC_PROFILES[exec_profile])
+            self.EXEC_PROFILES[exec_profile] = general
+            
+
 
 
         # Configure web server:
@@ -134,6 +166,21 @@ class Config(object):
             "5000"
         )
 
+        # custumatize messages:
+        self.LOGIN_INSTRUCTION = (
+            os.environ.get('CWLAB_LOGIN_INSTRUCTION') or
+            self.CONFIG_FILE_content.get('LOGIN_INSTRUCTION') or  
+            ""
+        )
+        self.REGISTRATION_INSTRUCTION = (
+            os.environ.get('CWLAB_REGISTRATION_INSTRUCTION') or
+            self.CONFIG_FILE_content.get('REGISTRATION_INSTRUCTION') or  
+            "Please fill in the following fields. " +
+            "Your registration request will need approval by the administrator to acitivate your account."
+        )
+
         # not accessible by user:
         self.SEND_FILE_MAX_AGE_DEFAULT = 0 # disables caching
+
+
         

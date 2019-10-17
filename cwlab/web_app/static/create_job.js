@@ -3,8 +3,12 @@ class CreateJobButton extends React.Component {
     constructor(props){
         super(props);
         // props.jobId
-        // props.sheet_format
+        // props.sheetFormat
         // props.disabled
+        // props.validatePaths
+        // props.searchPaths
+        // props.searchDir
+        // props.includeSubbDirsForSearching
     }
 
     render(){
@@ -16,7 +20,11 @@ class CreateJobButton extends React.Component {
                 sendData={
                     {
                         job_id: this.props.jobId,
-                        sheet_format: this.props.sheet_format
+                        sheet_format: this.props.sheetFormat,
+                        validate_paths: this.props.validatePaths,
+                        search_paths: this.props.searchPaths,
+                        search_dir: this.props.searchDir,
+                        include_subdirs_for_searching: this.props.includeSubbDirsForSearching
                     }
                 }
                 route={routeCreateJob}
@@ -28,6 +36,7 @@ class CreateJobButton extends React.Component {
 class PathValAndSearch extends React.Component{
     constructor(props){
         super(props);
+        // props.jobId
         // props.validatePaths
         // props.searchPaths
         // props.searchDir
@@ -35,6 +44,8 @@ class PathValAndSearch extends React.Component{
         // props.includeSubbDirsForSearching
         // props.changeIncludeSubDirsForSearching
         // props.changePathValAndSearch
+        // props.prevPath
+        // props.changePrevPath
         this.handleChangeSearchDir = this.handleChangeSearchDir.bind(this);
         this.handleChangeValAndSearch = this.handleChangeValAndSearch.bind(this);
     }
@@ -48,6 +59,7 @@ class PathValAndSearch extends React.Component{
     handleChangeSearchDir(event){
         this.props.changeSearchDir(event.currentTarget.value)
     }
+    
 
     render(){
         const validate_or_search = this.props.validatePaths ? (
@@ -76,13 +88,21 @@ class PathValAndSearch extends React.Component{
                         </li>
                     </ul>
                     <span className="w3-text-green">Search directory: </span>
-                    <input
-                        className="w3-input"
-                        type="text"
-                        name={"select_input_dir"}
+                    <BrowseDirTextField
+                        name="select_input_dir"
                         value={this.props.searchDir}
                         onChange={this.handleChangeSearchDir}
-                        required={true}
+                        ignoreFiles={false}
+                        fileExts={[]}
+                        showOnlyHits={false}
+                        selectDir={true}
+                        allowInput={true}
+                        allowUpload={false}
+                        allowDownload={false}
+                        jobId={this.props.jobId}
+                        defaultBaseDir="INPUT_DIR_CURRENT_JOB"
+                        prevPath={this.props.prevPath}
+                        changePrevPath={this.props.changePrevPath}
                     />
                     <br/>
                     <span className="w3-text-green">Include sub-directories for searching: </span>
@@ -140,12 +160,77 @@ class ParamName extends React.Component{
     constructor(props){
         super(props);
         // props.name
+        // props.config
+
+        const typeLabelStyle = {
+            fontFamily: "courier"
+        }
+
+        this.typeIcon = {
+            File: <i className="fas fa-file" />,
+            Directory: <i className="fas fa-folder" />,
+            boolean: <i className="fas fa-check" />,
+            int: <b>ℤ</b>,
+            long: <b>ℤ</b>,
+            float: <b>ℤ</b>,
+            double: <b>ℤ</b>,
+            string: <i className="fas fa-quote-right" />
+        }
     }
 
     render(){
         return(
-            <span className="w3-text-green" style={ {display: "inline-block"} }>
-                {this.props.name}:
+            <span className="w3-text-green" style={ {display: "inline-block", whiteSpace: "nowrap"} }>
+                {this.typeIcon[this.props.config.type]}&nbsp;
+                {this.props.name}&nbsp;
+                <Tooltip
+                    title={"Info ".concat(this.props.name).concat(":")}
+                    preview={
+                        (this.props.config.is_array ? "List of " : "") +
+                        this.props.config.type + 
+                        (this.props.config.null_allowed ? " [optional]" : "") +
+                        (this.props.config.null_item_allowed ? " [items optional]" : "") +
+                        (this.props.config.doc ? ", help: ".concat(this.props.config.doc) : ", help: no info available")
+                    }
+                >   
+                    <span className="w3-text-green">Type:</span>&nbsp;
+                    {
+                        (this.props.config.is_array ? "List of " : "") +
+                        this.props.config.type
+                    }<br/>
+                    <span className="w3-text-green">Optional:</span>&nbsp;
+                    {this.props.config.null_allowed ? (
+                            "Yes. You may disable this parameter."
+                        ) : (
+                            "No. You have to fill in a value."
+                        )
+                    }<br/>
+                    {(this.props.config.null_item_allowed && this.props.is_array) && (
+                        <span>
+                            <span className="w3-text-green">Type:</span>&nbsp;
+                            You may disable single items of the list.<br/>
+                        </span>
+                    )}
+                    <span className="w3-text-green">Default:</span>&nbsp;
+                    {this.props.config.default ? (
+                            this.props.config.default
+                        ) : (
+                            "no default"
+                        )
+                    }<br/>
+                    <span className="w3-text-green">Help:</span>&nbsp;
+                    {this.props.config.doc ? (
+                            <div 
+                                className="w3-container"
+                                style={ {whiteSpace: "pre-line"} }
+                            >
+                                {this.props.config.doc}
+                            </div>
+                        ) : (
+                            "no info available"
+                        )
+                    }
+                </Tooltip>
             </span>
         )
     }
@@ -161,6 +246,9 @@ class ParamField extends React.Component{
         // props.name
         // props.index for array params
         // props.isNull
+        // props.jobId
+        // props.prevPath
+        // props.changePrevPath
 
         this.key = this.props.index ? (
             this.props.name + "%" + this.props.index.toString()
@@ -169,17 +257,28 @@ class ParamField extends React.Component{
         )
 
         this.inputTypes = {
-            // "int":"input_number",
-            // "long":"input_number",
             "string":"input_text",
-            "File":"input_text"
+            "boolean":"input_boolean",
+            "File":"input_file",
+            "Directory":"input_dir",
         }
         
         this.handleChange = this.handleChange.bind(this);
     }
 
     handleChange(event){
-        const paramValue = event.currentTarget.value
+        let paramValue = event.currentTarget.value
+        if (paramValue != "none" && paramValue != "noneItem"){
+            if (["int", "long"].includes(this.props.type)){
+                paramValue = paramValue.replace(/[^0-9\-]/g,"")
+            }
+            else if (["int", "long", "float", "double"].includes(this.props.type)){
+                paramValue = paramValue.replace(/[^0-9\-.]/g,"")
+            }
+            else if (this.props.type == "boolean"){
+                paramValue = paramValue ? "true" : "false"
+            }
+        }
         this.props.onChange(this.props.name, this.props.index ? (this.props.index) : (0), paramValue)
     }
 
@@ -195,19 +294,6 @@ class ParamField extends React.Component{
         
         let input_field
         switch(inputType){
-            case "input_number":
-                return(
-                    <input
-                        className="param-input"
-                        type="number"
-                        name={"input_" + this.key}
-                        value={this.props.paramValue}
-                        onChange={this.handleChange}
-                        required={true}
-                        disabled={disableInput}
-                    />
-                )
-                break;
             case "input_text":
                 return(
                     <input
@@ -221,6 +307,79 @@ class ParamField extends React.Component{
                     />
                 )
                 break;
+            case "input_boolean":
+                if (disableInput){
+                    return(
+                        <input
+                            className="param-input"
+                            type="text"
+                            name={"input_" + this.key}
+                            value={this.props.paramValue}
+                            onChange={this.handleChange}
+                            required={true}
+                            disabled={true}
+                        />
+                    )
+                }
+                else{
+                    return(
+                        <span style={ {whiteSpace: "nowrap"} }>
+                            false&nbsp;
+                            <BooleanSlider
+                                name={"input_" + this.key}
+                                value={this.props.paramValue}
+                                onChange={this.handleChange}
+                                checked={["Yes","yes", "True", "true", "1"].includes(this.props.paramValue)}
+                                forwardEvent={true}
+                            />
+                            &nbsp;true
+                        </span>
+                    )
+                }
+                break;
+            case "input_file":
+                return(
+                    <BrowseDirTextField
+                        name={"input_" + this.key}
+                        value={this.props.paramValue}
+                        onChange={this.handleChange}
+                        disabled={disableInput}
+                        ignoreFiles={false}
+                        fileExts={[]}
+                        showOnlyHits={false}
+                        selectDir={false}
+                        allowInput={true}
+                        allowUpload={true}
+                        allowDownload={false}
+                        jobId={this.props.jobId}
+                        defaultBaseDir="INPUT_DIR_CURRENT_JOB"
+                        prevPath={this.props.prevPath}
+                        changePrevPath={this.props.changePrevPath}
+                        smallSize={true}
+                    />
+                )
+                break;
+                case "input_dir":
+                    return(
+                        <BrowseDirTextField
+                            name={"input_" + this.key}
+                            value={this.props.paramValue}
+                            onChange={this.handleChange}
+                            ignoreFiles={false}
+                            fileExts={[]}
+                            showOnlyHits={false}
+                            selectDir={true}
+                            allowInput={true}
+                            allowUpload={true}
+                            allowDownload={false}
+                            jobId={this.props.jobId}
+                            defaultBaseDir="INPUT_DIR_CURRENT_JOB"
+                            prevPath={this.props.prevPath}
+                            changePrevPath={this.props.changePrevPath}
+                            smallSize={true}
+                        />
+                    )
+                    break;
         }
     }
 }
@@ -245,7 +404,7 @@ class ParamNullCheckbox extends React.Component{
         this.props.toggleNull(
             this.props.mode,
             this.props.name, 
-            !event.target.checked,
+            !event.currentTarget.checked,
             this.props.nullValue,
             this.props.refersTo,
             typeof this.props.indexOrRunId === "undefined" ? (null) : (this.props.indexOrRunId)
@@ -333,6 +492,9 @@ class ParamForm extends React.Component{
         // props.runIds
         // props.changeParamValue
         // props.toggleNull
+        // props.jobId
+        // props.prevPath
+        // props.changePrevPath
         
         this.state = {
             whichRunIdFocus: null
@@ -343,7 +505,7 @@ class ParamForm extends React.Component{
         this.headerHeight = "35px"
 
         this.checkIfNull = this.checkIfNull.bind(this);
-        this.fieldBackgroundColorClass = this.fieldBackgroundColorClass.bind(this);
+        this.fieldBackgroundclassName = this.fieldBackgroundclassName.bind(this);
         this.changeRunIdFocus = this.changeRunIdFocus.bind(this);
     }
 
@@ -360,7 +522,7 @@ class ParamForm extends React.Component{
         return isNull
     }
 
-    fieldBackgroundColorClass(isNull){
+    fieldBackgroundclassName(isNull){
         return(
             isNull ? ("param-field-isnull") : ("param-field-notnull")
         )
@@ -379,16 +541,16 @@ class ParamFormGlobalSingle extends ParamForm{
 
         return(
             <div style={ {overflow:"auto"} }>
-                <h4>Gobally-defined (Non-list) Parameters:</h4>
+                <h5>Single values:</h5>
                 <table style={ {borderSpacing: "0px 8px"} }><tbody>
                     {Object.keys(this.props.paramValues).map( (p) => (
                             <tr 
                                 key={p} 
-                                className={this.fieldBackgroundColorClass(isNull[p])} 
+                                className={this.fieldBackgroundclassName(isNull[p])} 
                                 style={ {height: this.headerHeight} }
                             >
                                 <td style={ {padding: "8px", width: "auto"} }>
-                                    <ParamName name={p} />
+                                    <ParamName name={p} config={this.props.paramConfigs[p]}/>
                                 </td>
                                 <td style={ {padding: "8px", width: "auto"} }>
                                     {this.props.paramConfigs[p].null_allowed &&
@@ -411,6 +573,9 @@ class ParamFormGlobalSingle extends ParamForm{
                                         paramValue={this.props.paramValues[p][0]}
                                         onChange={this.props.changeParamValue}
                                         isNull={isNull[p]}
+                                        jobId={this.props.jobId}
+                                        prevPath={this.props.prevPath}
+                                        changePrevPath={this.props.changePrevPath}
                                     />
                                 </td>
                             </tr>
@@ -429,13 +594,13 @@ class ParamFormGlobalArray extends ParamForm{
 
         return(
                 <div style={ {overflow:"auto"} }>
-                    <h4>Gobally-defined List Parameters:</h4>
+                    <h5>Lists:</h5>
                     <table style={ {borderSpacing: "8px 0px"} }><tbody>
                         <tr>
                             {Object.keys(this.props.paramValues).map( (p) => (
                                     <td 
                                         key={p} 
-                                        className={this.fieldBackgroundColorClass(isNull[p]) + " w3-cell-top"}
+                                        className={this.fieldBackgroundclassName(isNull[p]) + " w3-cell-top"}
                                         style={ {padding: "8px", minWidth: this.columnWidth} }
                                     >
                                         <table><tbody>
@@ -444,6 +609,7 @@ class ParamFormGlobalArray extends ParamForm{
                                                 <td style={ {minWidth: this.columnWidth} }>
                                                     <ParamName
                                                         name={p}
+                                                        config={this.props.paramConfigs[p]}
                                                     />
                                                     {this.props.paramConfigs[p].null_allowed &&
                                                         <span className="w3-right">
@@ -486,6 +652,9 @@ class ParamFormGlobalArray extends ParamForm{
                                                             isNull={isNull[p]}
                                                             itemNullAllowed={this.props.paramConfigs[p].null_items_allowed}
                                                             index={index}
+                                                            jobId={this.props.jobId}
+                                                            prevPath={this.props.prevPath}
+                                                            changePrevPath={this.props.changePrevPath}
                                                         />
                                                     </td>
                                                 </tr>
@@ -512,13 +681,13 @@ class ParamFormRunSingle extends ParamForm{
     render(){
         return(
                 <div style={ {overflow:"auto"} }>
-                    <h4>Run-specific (Non-list) Parameters:</h4>
+                    <h5>Single values:</h5>
                     <table style={ {borderSpacing: "8px 0px"} }><tbody>
                         <tr>
                             {Object.keys(this.props.paramValues).map( (p) => (
                                 <td 
                                     key={p} 
-                                    className={this.fieldBackgroundColorClass(false) + " w3-cell-top"}
+                                    className={this.fieldBackgroundclassName(false) + " w3-cell-top"}
                                     style={ {padding: "8px", minWidth: this.columnWidth} }
                                 >
                                     <table><tbody>
@@ -527,6 +696,7 @@ class ParamFormRunSingle extends ParamForm{
                                             <td style={ {minWidth: this.columnWidth} }>
                                                 <ParamName
                                                     name={p}
+                                                    config={this.props.paramConfigs[p]}
                                                 />
                                             </td>
                                         </tr>
@@ -556,6 +726,9 @@ class ParamFormRunSingle extends ParamForm{
                                                         isNull={this.props.paramValues[p][index]=="null"}
                                                         itemNullAllowed={this.props.paramConfigs[p].null_allowed}
                                                         index={index}
+                                                        jobId={this.props.jobId}
+                                                        prevPath={this.props.prevPath}
+                                                        changePrevPath={this.props.changePrevPath}
                                                     />
                                                 </td>
                                             </tr>
@@ -593,7 +766,7 @@ class ParamFormRunArray extends ParamForm{
 
         return(
                 <div style={ {overflow:"auto"} }>
-                    <h4>Run-specific (Non-list) Parameters:</h4>
+                    <h5>Lists:</h5>
                     <TabPanel
                         title="Run IDs:"
                         tabs={this.props.runIds}
@@ -605,7 +778,7 @@ class ParamFormRunArray extends ParamForm{
                                 {Object.keys(this.props.paramValues).map( (p) => (
                                     <td 
                                         key={p} 
-                                        className={this.fieldBackgroundColorClass(isNull[p]) + " w3-cell-top"}
+                                        className={this.fieldBackgroundclassName(isNull[p]) + " w3-cell-top"}
                                         style={ {padding: "8px", minWidth: this.columnWidth} }
                                     >
                                         <table><tbody>
@@ -614,6 +787,7 @@ class ParamFormRunArray extends ParamForm{
                                                 <td style={ {minWidth: this.columnWidth} }>
                                                     <ParamName
                                                         name={p}
+                                                        config={this.props.paramConfigs[p]}
                                                     />
                                                     {this.props.paramConfigs[p].null_allowed &&
                                                         <span className="w3-right">
@@ -658,9 +832,13 @@ class ParamFormRunArray extends ParamForm{
                                                             paramValue={this.props.paramValues[p][
                                                                 indexByRunId[p][index]
                                                             ]}
+                                                            index={indexByRunId[p][index]}
                                                             onChange={this.props.changeParamValue}
                                                             isNull={isNull[p]}
                                                             itemNullAllowed={this.props.paramConfigs[p].null_items_allowed}
+                                                            jobId={this.props.jobId}
+                                                            prevPath={this.props.prevPath}
+                                                            changePrevPath={this.props.changePrevPath}
                                                         />
                                                     </td>
                                                 </tr>
@@ -683,6 +861,7 @@ class ParamFormRunArray extends ParamForm{
         )
     }
 }
+
 class JobParamFormHTML extends React.Component {
     constructor(props){
         super(props);
@@ -698,6 +877,8 @@ class JobParamFormHTML extends React.Component {
         // props.searchPaths
         // props.searchDir
         // props.includeSubbDirsForSearching
+        // props.prevPath
+        // props.changePrevPath
 
         this.state = {
             actionStatus: "loading",
@@ -766,7 +947,6 @@ class JobParamFormHTML extends React.Component {
                     })
                 }
             })
-
     }
 
     validateParamValues(){
@@ -920,6 +1100,7 @@ class JobParamFormHTML extends React.Component {
                 <div>
                     <DisplayServerMessages messages={this.state.serverMessages} />
                     <PathValAndSearch
+                        jobId={this.props.jobId}
                         validatePaths={this.props.validatePaths}
                         searchPaths={this.props.searchPaths}
                         changePathValAndSearch={this.props.changePathValAndSearch}
@@ -927,48 +1108,73 @@ class JobParamFormHTML extends React.Component {
                         changeSearchDir={this.props.changeSearchDir}
                         includeSubbDirsForSearching={this.props.includeSubbDirsForSearching}
                         changeIncludeSubDirsForSearching={this.props.changeIncludeSubDirsForSearching}
+                        prevPath={this.props.prevPath}
+                        changePrevPath={this.props.changePrevPath}
                     />
                     <hr/>
-                    <h3>Provide Parameters:</h3>
-                    {this.state.modeExists["global_single"] && 
-                        <ParamFormGlobalSingle
-                            paramValues={this.state.paramValuesByMode["global_single"]}
-                            paramConfigs={this.state.paramConfigs}
-                            changeParamValue={(name, index, newValue) => this.changeParamValue("global_single", name, index, newValue)}
-                            toggleNull={this.toggleNull}
-                        />
+                    {(this.state.modeExists["global_single"] || this.state.modeExists["global_array"]) &&
+                        <span>
+                            <h3>Globally-defined Parameters:</h3>
+                            {this.state.modeExists["global_single"] && 
+                                <ParamFormGlobalSingle
+                                    paramValues={this.state.paramValuesByMode["global_single"]}
+                                    paramConfigs={this.state.paramConfigs}
+                                    changeParamValue={(name, index, newValue) => this.changeParamValue("global_single", name, index, newValue)}
+                                    toggleNull={this.toggleNull}
+                                    jobId={this.props.jobId}
+                                    prevPath={this.props.prevPath}
+                                    changePrevPath={this.props.changePrevPath}
+                                />
+                            }
+                            {this.state.modeExists["global_array"] && 
+                                <ParamFormGlobalArray
+                                    paramValues={this.state.paramValuesByMode["global_array"]}
+                                    paramConfigs={this.state.paramConfigs}
+                                    changeParamValue={(name, index, newValue) => this.changeParamValue("global_array", name, index, newValue)}
+                                    toggleNull={this.toggleNull}
+                                    addOrRemoveItem={this.addOrRemoveItem}
+                                    jobId={this.props.jobId}
+                                    prevPath={this.props.prevPath}
+                                    changePrevPath={this.props.changePrevPath}
+                                />
+                            }
+                            <br/>
+                        </span>
                     }
-                    {this.state.modeExists["global_array"] && 
-                        <ParamFormGlobalArray
-                            paramValues={this.state.paramValuesByMode["global_array"]}
-                            paramConfigs={this.state.paramConfigs}
-                            changeParamValue={(name, index, newValue) => this.changeParamValue("global_array", name, index, newValue)}
-                            toggleNull={this.toggleNull}
-                            addOrRemoveItem={this.addOrRemoveItem}
-                        />
+                    {(this.state.modeExists["run_single"] || this.state.modeExists["run_array"]) &&
+                        <span>
+                            <h3>Run-specific Parameters:</h3>
+                            {this.state.modeExists["run_single"] && 
+                                <ParamFormRunSingle
+                                    paramValues={this.state.paramValuesByMode["run_single"]}
+                                    paramConfigs={this.state.paramConfigs}
+                                    runIds={this.props.run_names}
+                                    changeParamValue={(name, index, newValue) => this.changeParamValue("run_single", name, index, newValue)}
+                                    toggleNull={this.toggleNull}
+                                    jobId={this.props.jobId}
+                                    prevPath={this.props.prevPath}
+                                    changePrevPath={this.props.changePrevPath}
+                                />
+                            }
+                            {this.state.modeExists["run_array"] && 
+                                <ParamFormRunArray
+                                    paramValues={this.state.paramValuesByMode["run_array"]}
+                                    paramConfigs={this.state.paramConfigs}
+                                    paramHelperValues={this.state.paramHelperValues}
+                                    runIds={this.props.run_names}
+                                    changeParamValue={(name, index, newValue) => this.changeParamValue("run_array", name, index, newValue)}
+                                    toggleNull={this.toggleNull}
+                                    addOrRemoveItem={this.addOrRemoveItem}
+                                    jobId={this.props.jobId}
+                                    prevPath={this.props.prevPath}
+                                    changePrevPath={this.props.changePrevPath}
+                                />
+                            }
+                            <br/>
+                        </span>
                     }
-                    {this.state.modeExists["run_single"] && 
-                        <ParamFormRunSingle
-                            paramValues={this.state.paramValuesByMode["run_single"]}
-                            paramConfigs={this.state.paramConfigs}
-                            runIds={this.props.run_names}
-                            changeParamValue={(name, index, newValue) => this.changeParamValue("run_single", name, index, newValue)}
-                            toggleNull={this.toggleNull}
-                        />
-                    }
-                    {this.state.modeExists["run_array"] && 
-                        <ParamFormRunArray
-                            paramValues={this.state.paramValuesByMode["run_array"]}
-                            paramConfigs={this.state.paramConfigs}
-                            paramHelperValues={this.state.paramHelperValues}
-                            runIds={this.props.run_names}
-                            changeParamValue={(name, index, newValue) => this.changeParamValue("run_array", name, index, newValue)}
-                            toggleNull={this.toggleNull}
-                            addOrRemoveItem={this.addOrRemoveItem}
-                        />
-                    }
-    
-                    <h3>Validate Selection and Create Job</h3>
+
+                    <h3>Validate Selection and Create Job:</h3>
 
                     <ActionButton
                         name="validate"
@@ -982,22 +1188,13 @@ class JobParamFormHTML extends React.Component {
 
                     <CreateJobButton
                         jobId={this.props.jobId}
-                        sheet_format="xlsx"
+                        sheetFormat="xlsx"
+                        validatePaths={this.props.validatePaths}
+                        searchPaths={this.props.searchPaths}
+                        searchDir={this.props.searchDir}
+                        includeSubbDirsForSearching={this.props.includeSubbDirsForSearching}
                         disabled={!this.state.form_passed_validation}
                     />
-
-                    <h4>Configs:</h4>
-                    <p>
-                        {JSON.stringify(this.state.paramConfigs)}
-                    </p>
-                    <h4>Param Values By Mode:</h4>
-                    <p>
-                        {JSON.stringify(this.state.paramValuesByMode)}
-                    </p>
-                    <h4>Param Helper Values:</h4>
-                    <p>
-                        {JSON.stringify(this.state.paramHelperValues)}
-                    </p>
                 </div>
             )
         }
@@ -1021,9 +1218,11 @@ class JobParamFormSpreadsheet extends React.Component {
         // props.searchPaths
         // props.searchDir
         // props.includeSubbDirsForSearching
+        // props.prevPath
+        // props.changePrevPath
 
         this.state = {
-            sheet_format: "xlsx",
+            sheetFormat: "xlsx",
             file_transfer_status: "none",
             form_passed_validation: false,
             sheetFormMessages: []
@@ -1036,7 +1235,7 @@ class JobParamFormSpreadsheet extends React.Component {
     }
 
     changeSheetFormat(event){
-        this.setState({"sheet_format": event.currentTarget.value})
+        this.setState({"sheetFormat": event.currentTarget.value})
     }
 
     genFormSheet(){
@@ -1050,7 +1249,7 @@ class JobParamFormSpreadsheet extends React.Component {
                 run_mode: this.props.run_mode, 
                 run_names: this.props.run_names.filter((r) => r != ""),
                 job_id: this.props.jobId,
-                sheet_format: this.state.sheet_format
+                sheet_format: this.state.sheetFormat
             },
             route: routeGenParamFormSheet,
             onSuccess: (data, messages) => {
@@ -1068,6 +1267,7 @@ class JobParamFormSpreadsheet extends React.Component {
         return(
             <div>
                 <PathValAndSearch
+                    jobId={this.props.jobId}
                     validatePaths={this.props.validatePaths}
                     searchPaths={this.props.searchPaths}
                     changePathValAndSearch={this.props.changePathValAndSearch}
@@ -1075,6 +1275,8 @@ class JobParamFormSpreadsheet extends React.Component {
                     changeSearchDir={this.props.changeSearchDir}
                     includeSubbDirsForSearching={this.props.includeSubbDirsForSearching}
                     changeIncludeSubDirsForSearching={this.props.changeIncludeSubDirsForSearching}
+                    prevPath={this.props.prevPath}
+                    changePrevPath={this.props.changePrevPath}
                 />
                 <hr/>
                 <h3>Provide Parameters Using a Spreadsheet:</h3>
@@ -1084,7 +1286,7 @@ class JobParamFormSpreadsheet extends React.Component {
                         <select className="w3-button w3-white w3-border" 
                             name="sheet_format"
                             onChange={this.changeSheetFormat}
-                            value={this.state.sheet_format}
+                            value={this.state.sheetFormat}
                             >
                             <option value="xlsx">excel format (xlsx)</option>
                             <option value="xls">excel format (xls)</option>
@@ -1125,7 +1327,11 @@ class JobParamFormSpreadsheet extends React.Component {
                 <DisplayServerMessages messages={this.state.sheetFormMessages} />
                 <CreateJobButton
                     jobId={this.props.jobId}
-                    sheet_format={this.state.sheet_format}
+                    sheetFormat={this.state.sheetFormat}
+                    validatePaths={this.props.validatePaths}
+                    searchPaths={this.props.searchPaths}
+                    searchDir={this.props.searchDir}
+                    includeSubbDirsForSearching={this.props.includeSubbDirsForSearching}
                     disabled={!this.state.form_passed_validation}
                 />
             </div>
@@ -1150,15 +1356,18 @@ class JobCreationPrep extends React.Component {
             paramModes[p.param_name] = p.is_run_specific
         )
         this.state = {
+            actionStatus: "none",
+            serverMessages: [],
             run_mode: false, 
             run_names: ["run1", "run2", "run3"],
             param_modes: paramModes,
             job_name: "new_job",
             display: "prep", // one of prep, form_ssheet, from_html
             validatePaths: true,
-            searchPaths: true,
-            searchDir: this.props.configData.default_search_dir,
-            includeSubbDirsForSearching: true
+            searchPaths: false,
+            searchDir: "Please fill",
+            includeSubbDirsForSearching: true,
+            prevPath: null
         }
 
         // construct job_id:
@@ -1182,6 +1391,9 @@ class JobCreationPrep extends React.Component {
         this.changeSearchDir = this.changeSearchDir.bind(this)
         this.changeIncludeSubDirsForSearching = this.changeIncludeSubDirsForSearching.bind(this)
         this.changePathValAndSearch = this.changePathValAndSearch.bind(this)
+        this.prepareJobEnv = this.prepareJobEnv.bind(this)
+        this.changePrevPath = this.changePrevPath.bind(this)
+        this.ajaxRequest = ajaxRequest.bind(this)
     }
 
     changeJobName(event){
@@ -1228,6 +1440,28 @@ class JobCreationPrep extends React.Component {
         })
     }
 
+    prepareJobEnv(value){
+        this.ajaxRequest({
+            statusVar: "actionStatus",
+            statusValueDuringRequest: value,
+            messageVar: "serverMessages",
+            sendData: {
+                job_id: this.jobIdNum + "_" + this.state.job_name
+            },
+            route: routePrepareJobEnv,
+            onSuccess: (data, messages) => {
+                return({display: value})
+            }
+        })
+    }
+
+    changePrevPath(value){
+        this.setState({
+            prevPath: value
+        })
+    }
+
+
     render() {
         const paramTable = (
             <div style={ {maxHeight:"50vh", overflowY: "auto"} }>
@@ -1242,8 +1476,28 @@ class JobCreationPrep extends React.Component {
                     <tbody>
                         {this.props.configData.params.map( (p) => (
                             <tr key={p.param_name}> 
-                                <td>{p.param_name}</td>
-                                <td>{p.type}</td>
+                                <td>
+                                    {p.param_name}&nbsp;
+                                    <Tooltip
+                                        title={"Info ".concat(p.param_name).concat(":")}
+                                    >
+                                        {p.doc ? (
+                                                p.doc
+                                            ) : (
+                                                "no info available"
+                                            )
+                                        }
+                                    </Tooltip>
+                                </td>
+                                <td>
+                                    {p.is_array && 
+                                        "List of "
+                                    }
+                                    {p.type}
+                                    {p.optional && 
+                                        " [optional]"
+                                    }
+                                </td>
                                 {this.state.run_mode ? (
                                         <td>
                                             global &nbsp;
@@ -1318,14 +1572,23 @@ class JobCreationPrep extends React.Component {
         if (this.state.display == "prep"){
             return(
                 <div>
-                    <h3>Input parameters:</h3>
-                    {paramTable}
-                    <hr/>
+                    {this.props.configData.templ_attr.doc && (
+                        <span>
+                            <h3>Workflow info:</h3>
+                            <p style={ {whiteSpace: "pre-line"} }>
+                                {this.props.configData.templ_attr.doc}
+                            </p>
+                            <hr/>
+                        </span>
+                    )}
                     <h3>Job ID:</h3>
                     {jobIdForm}
                     <hr/>
                     <h3>Number of runs:</h3>
                     {runNumberForm}
+                    <hr/>
+                    <h3>Input parameters:</h3>
+                    {paramTable}
                     <hr/>
                     <h3>Provide Parameter Values:</h3>
                     <p>
@@ -1339,15 +1602,18 @@ class JobCreationPrep extends React.Component {
                             name="form_html"
                             value="form_html"
                             label={<span><i className="fas fa-list-alt"></i>&nbsp;HTML form</span>}
-                            onAction={this.toggleParamForm}
+                            loading={this.actionStatus == "form_html"}
+                            onAction={this.prepareJobEnv}
                         />&nbsp; or &nbsp;
                         <ActionButton
                             name="form_ssheet"
                             value="form_ssheet"
+                            loading={this.actionStatus == "form_ssheet"}
                             label={<span><i className="fas fa-file-excel"></i>&nbsp;Spreadsheet</span>}
-                            onAction={this.toggleParamForm}
+                            onAction={this.prepareJobEnv}
                         />
                     </p>
+                    <DisplayServerMessages messages={this.state.serverMessages} />
                 </div>
             )
         }
@@ -1375,6 +1641,8 @@ class JobCreationPrep extends React.Component {
                                     searchPaths={this.state.searchPaths}
                                     searchDir={this.state.searchDir}
                                     includeSubbDirsForSearching={this.state.includeSubbDirsForSearching}
+                                    prevPath={this.state.prevPath}
+                                    changePrevPath={this.changePrevPath}
                                 />
                             </div>
                         ) : (
@@ -1392,6 +1660,8 @@ class JobCreationPrep extends React.Component {
                                     searchPaths={this.state.searchPaths}
                                     searchDir={this.state.searchDir}
                                     includeSubbDirsForSearching={this.state.includeSubbDirsForSearching}
+                                    prevPath={this.state.prevPath}
+                                    changePrevPath={this.changePrevPath}
                                 />
                             </div>
                         )

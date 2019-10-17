@@ -16,6 +16,7 @@ class Exec(db.Model):
     time_finished = db.Column(db.DateTime())
     timeout_limit = db.Column(db.DateTime())
     pid = db.Column(db.Integer())
+    user_id = db.Column(db.Integer())
     exec_profile = db.Column(db.JSON(none_as_null=True))
     exec_profile_name = db.Column(db.String(64))
 

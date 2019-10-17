@@ -1,8 +1,6 @@
 *.pyc
 /migrations
-/scratch/database
-/scratch/exec
-/scratch/CWL
+/scratch
 .vscode
 test
 /scratch/temp

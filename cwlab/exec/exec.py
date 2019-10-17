@@ -53,7 +53,7 @@ def query_info_from_db(job_id):
                 sleep(retry_delay + retry_delay*random())
     return db_job_id_request
 
-def exec_runs(job_id, run_ids, exec_profile_name, cwl):
+def exec_runs(job_id, run_ids, exec_profile_name, cwl, user_id=None, max_parrallel_exec_user_def=None):
     
     # check if runs are already running:
     already_running_runs = []
@@ -63,11 +63,16 @@ def exec_runs(job_id, run_ids, exec_profile_name, cwl):
         if db_run_id_request.count() > 0:
             # find latest:
             run_info =  db_run_id_request.filter(Exec.id==max([r.id for r in db_run_id_request])).first()
-            if run_info.time_finished is None:
+            if run_info.time_finished is None or run_info.status == "finished":
                 already_running_runs.append(run_id)
-    run_ids = list(set(run_ids) - set(already_running_runs))
+    run_ids = sorted(list(set(run_ids) - set(already_running_runs)))
 
     # create new exec entry in database:
+    exec_profile = app.config["EXEC_PROFILES"][exec_profile_name]
+    if not max_parrallel_exec_user_def is None and \
+        exec_profile["allow_user_decrease_max_parallel_exec"] and \
+        max_parrallel_exec_user_def < exec_profile["max_parallel_exec"]:
+        exec_profile["max_parallel_exec"] = max_parrallel_exec_user_def
     exec_db_entry = {}
     for run_id in run_ids:
         exec_db_entry[run_id] = Exec(
@@ -85,13 +90,14 @@ def exec_runs(job_id, run_ids, exec_profile_name, cwl):
             time_finished=None, #*
             timeout_limit=None, #*
             pid=-1, #*
-            exec_profile=app.config["EXEC_PROFILES"][exec_profile_name],
+            user_id=user_id if not user_id is None else None,
+            exec_profile=exec_profile,
             exec_profile_name=exec_profile_name
         )
         #* will be set by the background process itself
         db.session.add(exec_db_entry[run_id])
-    
     db_commit()
+    
 
     # start the background process:
     # the child process will be detached from the parent
@@ -99,9 +105,6 @@ def exec_runs(job_id, run_ids, exec_profile_name, cwl):
     # even if the parent process is terminated / fails,
     # the child process will continue
     started_runs = []
-    log_dir = get_path("backgr_logs_dir", job_id=job_id)
-    if not os.path.isdir(log_dir) and app.config["DEBUG"]:
-        os.makedirs(log_dir)
     for run_id in run_ids:
         create_background_process(
             [
@@ -111,7 +114,7 @@ def exec_runs(job_id, run_ids, exec_profile_name, cwl):
                 str(exec_db_entry[run_id].id),
                 str(app.config["DEBUG"])
             ],
-            get_path("backgr_log", job_id=job_id, run_id=run_id)
+            get_path("debug_run_log", job_id=job_id, run_id=run_id)
         )
         started_runs.append(run_id)
     return started_runs, already_running_runs
@@ -212,13 +215,12 @@ def terminate_runs(
     for run_id in run_info.keys():
         if isinstance(run_info[run_id]["time_started"], datetime) and \
             not isinstance(run_info[run_id]["time_finished"], datetime):
-            p = Process(run_info[run_id]["pid"])
-            print(run_info[run_id]["pid"])
-            is_killed = kill_proc_tree(run_info[run_id]["pid"])
-            if not is_killed:
-                could_not_be_terminated.append(run_id)
-                continue
-            cleanup_zombie_process(run_info[run_id]["pid"])
+            if run_info[run_id]["pid"] != -1:
+                is_killed = kill_proc_tree(run_info[run_id]["pid"])
+                if not is_killed:
+                    could_not_be_terminated.append(run_id)
+                    continue
+                cleanup_zombie_process(run_info[run_id]["pid"])
             db_run_entry = db_request.filter(Exec.id==run_info[run_id]["db_id"])
             db_run_entry.time_finished = datetime.now()
             db_run_entry.status = "terminated by user"

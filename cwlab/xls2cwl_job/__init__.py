@@ -4,7 +4,6 @@ import sys
 import os
 import pyexcel as pe
 import pyexcel_xlsx, pyexcel_xls, pyexcel_ods, pyexcel_io
-from unidecode import unidecode
 import re
 import yaml
 
@@ -63,18 +62,18 @@ def import_from_xls(sheet_file="", sheet_files=[],
     if sheet_file == "":
         if len(sheet_files) == 0:
             sys.exit("E: please specify a file or a list of file to read from")
-        param_values, configs = read_xls.sheet_files(sheet_files, verbose_level=0)
+            param_values, configs, metadata = read_xls.sheet_files(sheet_files, verbose_level=0)
     else:
-        param_values, configs = read_xls.sheet_file(sheet_file, verbose_level=0)
+        param_values, configs, metadata = read_xls.sheet_file(sheet_file, verbose_level=0)
     # split into runs, validate parameters, and manipulate them:
     type_matched_params_by_run_id, params_by_run_id, configs = validate_manipulate_split_type_match( param_values, configs, validate_paths, search_paths, search_subdirs, input_dir, default_run_id)
-    return type_matched_params_by_run_id, params_by_run_id, configs
+    return type_matched_params_by_run_id, params_by_run_id, configs, metadata
 
 
 def only_validate_xls(sheet_file="", sheet_files=[],
     validate_paths=True, search_paths=True, search_subdirs=True, input_dir=""):
     try:
-        type_matched_params_by_run_id, params_by_run_id, configs = import_from_xls(sheet_file, sheet_files, validate_paths, search_paths, search_subdirs, input_dir)
+        type_matched_params_by_run_id, params_by_run_id, configs, metadata = import_from_xls(sheet_file, sheet_files, validate_paths, search_paths, search_subdirs, input_dir)
     except SystemExit as e:
         return 'INVALID:' + str(e)
     return "VALID"
@@ -85,7 +84,7 @@ def transcode( sheet_file="", sheet_files=[], output_basename="",  default_run_i
     always_include_run_in_output_name=False, # if False, run_id will be hidden in the names of the output yaml files
     output_suffix=".cwl_run.yaml", output_dir=".", verbose_level=2, validate_paths=True, search_paths=True, search_subdirs=True, input_dir=""):
     try:
-        type_matched_params_by_run_id, params_by_run_id, configs = import_from_xls(sheet_file, sheet_files, validate_paths, search_paths, search_subdirs, input_dir, default_run_id)
+        type_matched_params_by_run_id, params_by_run_id, configs, metadata = import_from_xls(sheet_file, sheet_files, validate_paths, search_paths, search_subdirs, input_dir, default_run_id)
         make_yaml.write_multiple_runs(type_matched_params_by_run_id, output_dir, output_basename, output_suffix, always_include_run_in_output_name)
     except SystemExit as e:
         sys.exit( 'Failed to translate - the error was:' + str(e))
@@ -95,9 +94,9 @@ def transcode( sheet_file="", sheet_files=[], output_basename="",  default_run_i
 def generate_xls_from_cwl(cwl_file, output_file="", show_please_fill=False):
     if output_file == "":
         output_file = os.path.basename(cwl_file) + ".xlsx"
-    configs = read_cwl.read_config_from_cwl_file(cwl_file)
+    configs, metadata = read_cwl.read_config_from_cwl_file(cwl_file)
     param_values, configs = fill_in_defaults.fill_in_defaults({}, configs, show_please_fill) # fill in defaults 
-    write_xls.write_xls(param_values, configs, output_file)
+    write_xls.write_xls(param_values, configs, output_file, metadata=metadata)
 
 
 

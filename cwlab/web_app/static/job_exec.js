@@ -31,9 +31,6 @@ class RunDetailsLog extends React.Component {
         return(
             <div>
                 <div className="w3-cell-row">
-                    <div className="w3-cell">
-                        <h3>Execution Log:</h3>
-                    </div>
                     <div className="w3-cell w3-right">
                         auto refresh: off &nbsp;
                         <BooleanSlider
@@ -51,7 +48,7 @@ class RunDetailsLog extends React.Component {
                 </div>
                 <div 
                     className="w3-metro-darken w3-panel"
-                    style={ {whiteSpace: "pre-wrap", maxHeight:"50vh", overflowY: "auto"} }  
+                    style={ {whiteSpace: "pre-wrap", maxHeight:"60vh", overflowY: "auto"} }  
                     ref={(el) => { this.logContentContainer = el; }}
                 >
                     {this.props.logContent}
@@ -73,15 +70,20 @@ class RunDetails extends React.Component {
             logContent: "Loading",
             yamlContent: "Loading",
             serverMessages: [],
-            autoRefresh: true
+            autoRefresh: true,
+            whichFocus: "Input Parameters"
         }
+        this.mounted = false
         this.getRunDetails = this.getRunDetails.bind(this);
         this.toggleAutoRefresh = this.toggleAutoRefresh.bind(this);
         this.handleBackButton = this.handleBackButton.bind(this);
+        this.downloadFileOrFolder = this.downloadFileOrFolder.bind(this);
+        this.changeFocus = this.changeFocus.bind(this);
         this.ajaxRequest = ajaxRequest.bind(this)
     }
 
     componentDidMount(){
+        this.mounted = true
         // setup timer to automatically update
         this.getRunDetails()
         this.timerId = setInterval(
@@ -96,6 +98,7 @@ class RunDetails extends React.Component {
 
     componentWillUnmount() {
         clearInterval(this.timerId);
+        this.mounted = false
     }
   
     
@@ -112,10 +115,20 @@ class RunDetails extends React.Component {
             onSuccess: (data, messages) => {
                 return({
                     logContent: data.log,
-                    yamlContent: data.yaml
+                    yamlContent: data.yaml,
+                    doNotUpdate: !this.mounted
+                })
+            },
+            onError: (messages) => {
+                return({
+                    doNotUpdate: !this.mounted
                 })
             }
         })
+    }
+
+    downloadFileOrFolder(changes, selectedItem){
+
     }
 
     toggleAutoRefresh(dummy, autoRefresh){
@@ -126,7 +139,43 @@ class RunDetails extends React.Component {
         this.props.handleBack()
     }
 
+    changeFocus(tab){
+        this.setState({whichFocus: tab})
+    }
+
     render() {
+        let content
+        if(this.state.whichFocus == "Input Parameters"){
+            content=(
+                <div 
+                    className="w3-metro-darken w3-panel"
+                    style={ {whiteSpace: "pre-wrap", maxHeight:"60vh", overflowY: "auto"} } 
+                >
+                    {this.state.yamlContent}
+                </div>
+            )
+        }
+        else if(this.state.whichFocus == "Execution Log"){
+            content=(
+                <RunDetailsLog 
+                    logContent={this.state.logContent}
+                    toggleAutoRefresh={this.toggleAutoRefresh}
+                    autoRefresh={this.state.autoRefresh}
+                />
+            )
+        }
+        else {
+            content=( 
+                <BrowseDir
+                    allowDownload={true}
+                    jobId={this.props.jobId}
+                    runId={this.props.runId}
+                    defaultBaseDir="OUTPUT_DIR_CURRENT_RUN"
+                    terminateBrowseDialog={this.downloadFileOrFolder}
+                    disableOnTop={true}
+                />
+            )
+        }
         return (
             <div>
                 <ActionButton
@@ -137,111 +186,21 @@ class RunDetails extends React.Component {
                     }
                     onAction={this.handleBackButton}
                 />
-                <h3>Input Parameters:</h3>
-                <div 
-                    className="w3-metro-darken w3-panel"
-                    style={ {whiteSpace: "pre-wrap", maxHeight:"50vh", overflowY: "auto"} } 
+                <div
+                    style={ {paddingTop: "10px", paddingBottom: "10px"} }
                 >
-                    {this.state.yamlContent}
+                    <TabPanel
+                        title=""
+                        tabs={["Input Parameters", "Execution Log", "Output Files"]}
+                        changeFocus={this.changeFocus}
+                        whichFocus={this.state.whichFocus}
+                    >
+                    {content}
+                </TabPanel>
                 </div>
-                <RunDetailsLog 
-                    logContent={this.state.logContent}
-                    toggleAutoRefresh={this.toggleAutoRefresh}
-                    autoRefresh={this.state.autoRefresh}
-                />
                 <DisplayServerMessages messages={this.state.serverMessages} />
             </div>
         );
-    }
-}
-
-class RunListElement extends React.Component {
-    // Inputs:
-    // props.runId
-    // props.checked
-    // props.status
-    // props.duration
-    // props.execProfile
-    // props.retryCount
-    // props.onSelectionChange function to handle change
-    //  takes 2 arguments: runId, is_checked
-    // props.showRunDetails
-    constructor(props){
-        super(props)
-        this.handleSelectionChange = this.handleSelectionChange.bind(this)
-        this.get_status_color = this.get_status_color.bind(this)
-        this.handleShowDetails = this.handleShowDetails.bind(this)
-    }
-
-    get_status_color(status){
-        const statusColorClass = {
-            "Loading": "w3-grey",
-            "not started yet": "w3-grey",
-            "queued": "w3-grey",
-            "preparing for execution": "w3-amber",
-            "executing": "w3-amber",
-            "evaluating results": "w3-amber",
-            "finishing": "w3-amber",
-            "finished": "w3-green",
-        }
-        if (Object.keys(statusColorClass).includes(status)){
-            return(statusColorClass[status])
-        } else{
-            return("w3-red")
-        }
-    }
-    
-    handleSelectionChange(event){
-        this.props.onSelectionChange(this.props.runId, event.target.checked)
-    }
-
-    handleShowDetails(){
-        this.props.showRunDetails(this.props.runId)
-    }
-
-    render(){
-        let duration = ""
-        if ( this.props.duration == "-" ){
-            duration = "-"
-        }
-        else{
-            if (this.props.duration[0] > 0){
-                duration += this.props.duration[0].toString() + "d "
-            }
-            if (this.props.duration[1] > 0){
-                duration += this.props.duration[1].toString() + "h "
-            }
-            duration += this.props.duration[2].toString() + "m "
-        }
-
-        return (
-            <tr>
-                <td>
-                    <input 
-                        type="checkbox" 
-                        name="runs"
-                        value={this.props.runId}
-                        checked={this.props.checked}
-                        onChange={this.handleSelectionChange}
-                    />
-                </td>
-                <td>{this.props.runId}</td>
-                <td className={this.get_status_color(this.props.status)}>
-                    {this.props.status}
-                    {
-                        this.props.retryCount > 0 && 
-                            "(retry: " + this.props.retryCount.toString() + "\")"
-                    }
-                </td>
-                <td>
-                    {duration}
-                </td>
-                <td>{this.props.execProfile}</td>
-                <td>
-                    <a onClick={this.handleShowDetails}><i className="fas fa-eye w3-button w3-text-green"></i></a>
-                </td>
-            </tr>
-        )
     }
 }
 
@@ -266,15 +225,24 @@ class RunList extends React.Component {
                 exec_profile: "-", 
                 retry_count: 0
         }
+        this.mounted = false;
         let runInfo = {}
         this.props.runIds.map( (r) => runInfo[r] = this.initRunInfo)
         this.state = {
             actionStatus: "none", 
             serverMessages: [],
-            runInfo: runInfo,
-            mirroredJobId: this.props.jobId
+            runInfo: runInfo
+        }
+        this.columnNames = {
+            runId: "Run ID",
+            status: "Status",
+            duration: "duration",
+            execProfile: "Exec. Profile",
+            details: "Details"
         }
         this.getRunInfo = this.getRunInfo.bind(this)
+        this.getDurationString = this.getDurationString.bind(this)
+        this.getStatusColor = this.getStatusColor.bind(this)
         this.ajaxRequest = ajaxRequest.bind(this)
     }
 
@@ -289,17 +257,18 @@ class RunList extends React.Component {
             },
             route: routeGetRunStatus,
             onSuccess: (data, messages) => {
-                return({runInfo: data})
+                return({runInfo: data, doNotUpdate: !this.mounted})
             },
             onError: (messages) => {
                 let runInfo = {}
                 this.props.runIds.map( (r) => runInfo[r] = this.errorRunInfo)
-                return({runInfo: runInfo})
+                return({runInfo: runInfo, doNotUpdate: !this.mounted})
             }
         })
     }
 
     componentDidMount(){
+        this.mounted = true
         this.getRunInfo()
         // setup timer to automatically update
         this.timerId = setInterval(
@@ -312,21 +281,7 @@ class RunList extends React.Component {
 
     componentWillUnmount() {
         clearInterval(this.timerId);
-    }
-
-    static getDerivedStateFromProps(nextProps, prevState) {
-        if(nextProps.jobId !== prevState.mirroredJobId){
-            let runInfo = {}
-            nextProps.runIds.map( (r) => runInfo[r] = {
-                    status: "Loading", 
-                    duration: "-", 
-                        exec_profile: "-", 
-                        retry_count: 0
-                }
-            )
-            return({runInfo: runInfo, mirroredJobId: nextProps.jobId, actionStatus: "none"})
-        }
-        return(null)
+        this.mounted = false
     }
 
     componentDidUpdate(){
@@ -334,7 +289,43 @@ class RunList extends React.Component {
             this.getRunInfo()
         }
     }
-    
+
+    getStatusColor(status){
+        const statusclassName = {
+            "Loading": "w3-grey",
+            "not started yet": "w3-grey",
+            "waiting to queue": "w3-grey",
+            "queued": "w3-grey",
+            "preparing for execution": "w3-amber",
+            "executing": "w3-amber",
+            "evaluating results": "w3-amber",
+            "finishing": "w3-amber",
+            "finished": "w3-green",
+        }
+        if (Object.keys(statusclassName).includes(status)){
+            return(statusclassName[status])
+        } else{
+            return("w3-red")
+        }
+    }
+
+    getDurationString(duration){
+        let durationString = ""
+        if ( duration == "-" ){
+            durationString = "-"
+        }
+        else{
+            if (duration[0] > 0){
+                durationString += duration[0].toString() + "d "
+            }
+            if (duration[1] > 0){
+                durationString += duration[1].toString() + "h "
+            }
+            durationString += duration[2].toString() + "m "
+        }
+        return(durationString)
+    }
+
     render(){
         let runInfo = {}
         this.props.runIds.map( (r) => (
@@ -345,51 +336,47 @@ class RunList extends React.Component {
             )
         ))
 
+        const rowData = this.props.runIds.map( (r) => (
+            {
+                runId: {value: r},
+                status: {
+                    value: (
+                        <span>
+                            {runInfo[r].status}
+                            {
+                                runInfo[r].retry_count > 0 && 
+                                    "(retry: " + runInfo[r].retry_count.toString() + "\")"
+                            }
+                        </span>
+                    ),
+                    className: this.getStatusColor(runInfo[r].status)
+                },
+                duration: {value: this.getDurationString(runInfo[r].duration)},
+                execProfile: {value: runInfo[r].exec_profile},
+                details: {
+                    value: (
+                        <a
+                            onClick={(event) => this.props.showRunDetails(r)}
+                        >
+                            <i className="fas fa-eye w3-button w3-text-green" />
+                        </a>
+                    )
+                }    
+            }
+        ))
+
         return(
             <div>
                 <DisplayServerMessages messages={this.state.serverMessages} />
-                <div style={ {maxHeight:"50vh", overflowY: "auto"} }>
-                    <table className="w3-table w3-bordered w3-border">
-                        <thead className="w3-text-green">
-                            <tr>
-                                <th>
-                                    <i 
-                                        className="fas fa-arrow-down" 
-                                        style={ {paddingRight:"10px"} }
-                                    />
-                                    <ActionButton 
-                                        name="select all"
-                                        value="select all"
-                                        label="all"
-                                        onAction={this.props.toggelRunSelectionAll}
-                                        colorClass="w3-black w3-text-green"
-                                        smallPadding={true}
-                                    />
-                                </th>
-                                <th>Run Id</th>
-                                <th>Status</th>
-                                <th>Duration</th>
-                                <th>Exec Profile</th>
-                                <th>Details</th>
-                            </tr>
-                        </thead>
-                        <tbody>
-                            {this.props.runIds.map( (r) => (
-                                <RunListElement 
-                                    key={r}
-                                    runId={r}
-                                    status={runInfo[r].status}
-                                    duration={runInfo[r].duration}
-                                    execProfile={runInfo[r].exec_profile}
-                                    retryCount={runInfo[r].retry_count}
-                                    checked={this.props.runSelection[r]}
-                                    onSelectionChange={this.props.changeRunSelection}
-                                    showRunDetails={this.props.showRunDetails}
-                                />
-                            ))}
-                        </tbody>
-                    </table>
-                </div>
+                <Table
+                    columnKeys={Object.keys(this.columnNames)}
+                    columnNames={this.columnNames}
+                    selectionEnabled={true}
+                    handleSelectionChange={this.props.changeRunSelection}
+                    selection={this.props.runSelection}
+                    rowData={rowData}
+                    selectionKey="runId"
+                />
             </div>
         )
     }
@@ -402,17 +389,22 @@ class JobContent extends React.Component {
     // props.jobId
     // props.cwlTarget
     // props.execProfiles
+    // props.execProfileParams
     // props.whichRunDetails
     // props.showRunDetails
     // props.showRunList
     // props.triggerJobListReload
     constructor(props){
         super(props)
-        this.state = {
+        this.initState = {
             runIds: [],
             runSelection: [],
             actionStatus: "loading",
             execProfile: this.props.execProfiles[0],
+            parallelExec: this.props.execProfileParams[this.props.execProfiles[0]]["max_parallel_exec"],
+            maxRetries: this.props.execProfileParams[this.props.execProfiles[0]]["max_retries"],
+            maxParallelExec: this.props.execProfileParams[this.props.execProfiles[0]]["max_parallel_exec"],
+            allowUserDecreaseMaxParallelExec: this.props.execProfileParams[this.props.execProfiles[0]]["allow_user_decrease_max_parallel_exec"],
             runDangerZoneUnlocked: false,
             globalDangerZoneUnlocked: false,
             serverMessages: [],
@@ -420,10 +412,10 @@ class JobContent extends React.Component {
             actionRunDangerMessages: [],
             actionGlobalDangerMessages: []
         }
+        this.state = this.initState
         this.actionMessages = []
 
         this.changeRunSelection = this.changeRunSelection.bind(this)
-        this.toggelRunSelectionAll = this.toggelRunSelectionAll.bind(this)
         this.execRuns = this.execRuns.bind(this)
         this.changeExecProfile = this.changeExecProfile.bind(this)
         this.toggleDangerZoneLock = this.toggleDangerZoneLock.bind(this)
@@ -434,8 +426,14 @@ class JobContent extends React.Component {
     }
 
     componentDidMount(){
-        // setup timer to automatically update
         this.getRunList()
+    }
+
+    componentDidUpdate(prevProps){
+        if (prevProps.jobId != this.props.jobId){
+            this.setState(this.initState)
+            this.getRunList()
+        }
     }
 
     toggleDangerZoneLock(value, unlocked){
@@ -450,29 +448,28 @@ class JobContent extends React.Component {
             })
         }
     }
-    
-    toggelRunSelectionAll(){
-        // if all runs are selected, deselect all:
-        const select = !Object.values(this.state.runSelection).every(Boolean) 
-        let update = {}
-        this.state.runIds.map((r) =>
-            (update[r] = select)
-        )
-        this.setState({
-            runSelection: update
-        })
-    }
 
-    changeRunSelection(runId, is_checked){
-        let update = {}
-        update[runId] = is_checked
+    changeRunSelection(newSelection){
         this.setState({
-            runSelection: Object.assign(this.state.runSelection, update)
+            runSelection: newSelection
         })
     }
 
     changeExecProfile(event){
-        this.setState({execProfile: event.currentTarget.value})
+        if(event.currentTarget.name == "exec_profile"){
+            this.setState({
+                execProfile: event.currentTarget.value,
+                parallelExec: this.props.execProfileParams[event.currentTarget.value]["max_parallel_exec"],
+                maxRetries: this.props.execProfileParams[event.currentTarget.value]["max_retries"],
+                maxParallelExec: this.props.execProfileParams[event.currentTarget.value]["max_parallel_exec"],
+                allowUserDecreaseMaxParallelExec: this.props.execProfileParams[event.currentTarget.value]["allow_user_decrease_max_parallel_exec"]
+            })
+        }
+        else if(event.currentTarget.name == "parallel_exec"){
+            this.setState({
+                parallelExec: event.currentTarget.value
+            })
+        }
     }
 
     getRunList(){
@@ -485,24 +482,15 @@ class JobContent extends React.Component {
             },
             route: routeGetRunList,
             onSuccess: (data, messages) => {
-                let runSelection = {}
-                data.run_ids.map((r) =>
-                    (runSelection[r] = false)
-                )
                 return({
                     runIds: data.run_ids, 
-                    runSelection: runSelection
+                    runSelection: []
                 }) 
             }
         })
     }
 
     execRuns(){
-        const runSelection = this.state.runSelection
-        let selectedRuns = []
-        this.state.runIds.map((run) =>
-            runSelection[run] && (selectedRuns.push(run))
-        )
         this.ajaxRequest({
             statusVar: "actionStatus",
             statusValueDuringRequest: "starting",
@@ -510,26 +498,22 @@ class JobContent extends React.Component {
             sendData: {
                 cwl_target: this.props.cwlTarget,
                 job_id: this.props.jobId,
-                run_ids: selectedRuns,
-                exec_profile: this.state.execProfile
+                run_ids: this.state.runSelection,
+                exec_profile: this.state.execProfile,
+                parallel_exec: this.state.parallelExec
             },
             route: routeStartExec
         })
     }
 
     terminateRuns(mode="terminate"){
-        const runSelection = this.state.runSelection
-        let selectedRuns = []
-        this.state.runIds.map((run) =>
-            runSelection[run] && (selectedRuns.push(run))
-        )
         this.ajaxRequest({
             statusVar: "actionStatus",
             statusValueDuringRequest: "terminating",
             messageVar: "actionRunDangerMessages",
             sendData: {
                 job_id: this.props.jobId,
-                run_ids: selectedRuns,
+                run_ids: this.state.runSelection,
                 mode: mode
             },
             route: routeTerminateRuns,
@@ -570,7 +554,7 @@ class JobContent extends React.Component {
             )
         }
         else if (this.props.whichRunDetails == null){
-            const is_run_selected= Object.values(this.state.runSelection).includes(true)
+            const is_run_selected= this.state.runSelection.length > 0
             const disable_run_actions = (! is_run_selected) || (this.state.actionStatus != "none")
             const disable_danger_run_actions = disable_run_actions || (! this.state.runDangerZoneUnlocked)
             return(
@@ -615,6 +599,24 @@ class JobContent extends React.Component {
                                     </select> 
                                 </label>
                             </p>
+                            {this.state.allowUserDecreaseMaxParallelExec && (
+                                <p>
+                                    <label>
+                                        Select how many runs may execute in parallel: &nbsp;
+                                        <select className="w3-button w3-white w3-border w3-padding-small" 
+                                            name="parallel_exec"
+                                            onChange={this.changeExecProfile}
+                                            value={this.state.parallelExec}
+                                        >
+                                            {
+                                                [...Array(this.state.maxParallelExec).keys()].map((key) =>
+                                                    <option key={key} value={key+1}>{key+1}</option>
+                                                )
+                                            }
+                                        </select>
+                                    </label>
+                                </p>
+                            )}
                             <p>
                                 <ActionButton
                                     name="start"
@@ -775,6 +777,7 @@ class JobList extends React.Component {
         super(props);
         // props.jobInfo
         // props.execProfiles
+        // props.execProfileParams
         // props.triggerReload
         this.state = {
             whichFocus: "",
@@ -817,21 +820,14 @@ class JobList extends React.Component {
                     job.job_id.substring(13,job.job_id.length)
                 }<br/>
                 <IneditableValueField
-                    backColorClass="w3-theme"
+                    backclassName="w3-theme"
                 >
                     {job.cwl_target}
                 </IneditableValueField>
             </p>
         ))
-        let itemContent = (
-            <div>
-                <DisplayServerMessages messages={this.props.initMessages}/> 
-                <p>
-                    <i className="fas fa-arrow-left"></i>
-                    Select a job.
-                </p>
-            </div>
-        );
+
+        let itemContent
         if(this.state.whichFocus && this.state.whichFocus != "") {
             let jobInfo={}
             this.props.jobInfo.map((job) =>
@@ -841,11 +837,23 @@ class JobList extends React.Component {
                 jobId={this.state.whichFocus} 
                 cwlTarget={jobInfo.cwl_target} 
                 execProfiles={this.props.execProfiles}
+                execProfileParams={this.props.execProfileParams}
                 whichRunDetails={this.state.whichRunDetails}
                 showRunDetails={this.showRunDetails}
                 showRunList={this.showRunList}
                 triggerJobListReload={this.props.triggerReload}
             />
+        }
+        else {
+            itemContent = (
+                <div>
+                    <DisplayServerMessages messages={this.props.initMessages}/> 
+                    <p>
+                        <i className="fas fa-arrow-left"></i>
+                        Select a job.
+                    </p>
+                </div>
+            );
         }
 
         return (
@@ -874,6 +882,7 @@ class JobExecRoot extends React.Component {
                         <JobList 
                             jobInfo={data.jobs} 
                             execProfiles={data.exec_profiles} 
+                            execProfileParams={data.exec_profile_params} 
                             initMessages={messages}
                             triggerReload={triggerReload}
                         />
@@ -895,6 +904,7 @@ class JobExecRoot extends React.Component {
                 buildContentOnSuccess={this.buildContentOnSuccess}
                 loaderSize="large"
                 loaderMessage="Loading available job templates"
+                suppressMessages={true}
             />
         );
     }
