@@ -143,11 +143,11 @@ class Config(object):
             "wait_in_queue_period": 4
         }
         for exec_profile in self.EXEC_PROFILES.keys():
-            timeout = timeout_defaults
+            timeout = timeout_defaults.copy()
             if "timeout" in self.EXEC_PROFILES[exec_profile].keys():
                 timeout.update(self.EXEC_PROFILES[exec_profile]["timeout"])
             self.EXEC_PROFILES[exec_profile]["timeout"] = timeout
-            general = general_defaults
+            general = general_defaults.copy()
             general.update(self.EXEC_PROFILES[exec_profile])
             self.EXEC_PROFILES[exec_profile] = general
             
