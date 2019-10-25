@@ -1,6 +1,5 @@
 from cwlab import app
-from cwlab.general_use import get_path, get_duration, db_commit, read_file_content, get_run_ids, \
-    get_allowed_base_dirs, check_if_path_in_dirs, zip_dir
+from cwlab.general_use import get_path, get_duration, db_commit, read_file_content, get_run_ids
 from .db import Exec
 from cwlab import db
 from datetime import datetime
@@ -54,13 +53,7 @@ def query_info_from_db(job_id):
                 sleep(retry_delay + retry_delay*random())
     return db_job_id_request
 
-def exec_runs(job_id, run_ids, exec_profile_name, cwl, user_id=None, max_parrallel_exec_user_def=None, add_exec_info={}):
-    # check if cwl is absolute path and exists, else search for it in the CWL dir:
-    if os.path.exists(cwl):
-        cwl = os.path.abspath(cwl)
-    else:
-        cwl = get_path("cwl", cwl_target=cwl)
-
+def exec_runs(job_id, run_ids, exec_profile_name, user_id=None, max_parrallel_exec_user_def=None, add_exec_info={}):
     # check if runs are already running:
     already_running_runs = []
     db_job_id_request = query_info_from_db(job_id)
@@ -84,7 +77,7 @@ def exec_runs(job_id, run_ids, exec_profile_name, cwl, user_id=None, max_parrall
         exec_db_entry[run_id] = Exec(
             job_id=job_id,
             run_id=run_id,
-            cwl=cwl,
+            cwl=get_path("job_cwl", job_id=job_id),
             yaml=get_path("run_yaml", job_id=job_id, run_id=run_id),
             out_dir=get_path("run_out_dir", job_id=job_id, run_id=run_id),
             global_temp_dir=app.config["TEMP_DIR"],

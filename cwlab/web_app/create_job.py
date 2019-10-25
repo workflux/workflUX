@@ -12,7 +12,7 @@ from cwlab.xls2cwl_job.web_interface import gen_form_sheet, generate_xls_from_pa
 from cwlab.xls2cwl_job import only_validate_xls, transcode as make_yaml_runs
 from cwlab.xls2cwl_job.read_xls import remove_non_printable_characters
 from time import sleep
-from shutil import move
+from shutil import move, copyfile
 from json import loads as json_loads
 from cwlab.users.manage import login_required
 
@@ -379,6 +379,26 @@ def create_job():    # generate param form sheet with data sent
             search_subdirs=include_subdirs_for_searching, 
             input_dir=search_dir
         )
+
+        # get cwl path:
+        cwl = get_job_templ_info("attributes", sheet_form_dest_path)["CWL"]
+
+        # check if cwl is absolute path and exists, else search for it in the CWL dir:
+        if os.path.exists(cwl):
+            cwl = os.path.abspath(cwl)
+            allowed_dirs = get_allowed_base_dirs(
+                job_id=job_id,
+                allow_input=True,
+                allow_upload=False,
+                allow_download=False
+            )
+            if check_if_path_in_dirs(path, allowed_dirs) is None:
+                sys.exit("The provided CWL file does not exit or you have no permission to access it.")
+        else:
+            cwl = get_path("cwl", cwl_target=cwl)
+
+        # copy cwl document:
+        copyfile(cwl, get_path("job_cwl", job_id=job_id))
 
         # make output directories:
         run_ids = get_run_ids(job_id)

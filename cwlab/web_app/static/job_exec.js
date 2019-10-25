@@ -496,7 +496,6 @@ class JobContent extends React.Component {
             statusValueDuringRequest: "starting",
             messageVar: "actionRunExecMessages",
             sendData: {
-                cwl_target: this.props.cwlTarget,
                 job_id: this.props.jobId,
                 run_ids: this.state.runSelection,
                 exec_profile: this.state.execProfile,
