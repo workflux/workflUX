@@ -19,6 +19,7 @@ class Exec(db.Model):
     user_id = db.Column(db.Integer())
     exec_profile = db.Column(db.JSON(none_as_null=True))
     exec_profile_name = db.Column(db.String(64))
+    add_exec_info = db.Column(db.JSON(none_as_null=True))
 
     def __repr__(self):
         return '<Exec {}>'.format({self.id, self.status, self.run_id, self.job_id})  

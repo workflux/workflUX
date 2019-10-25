@@ -87,6 +87,7 @@ log = exec_db_entry.log
 time_started = exec_db_entry.time_started
 exec_profile = exec_db_entry.exec_profile
 exec_profile_name = exec_db_entry.exec_profile_name
+add_exec_info = exec_db_entry.add_exec_info
 
 
 
@@ -155,19 +156,22 @@ if not os.path.exists(out_dir):
     
 # run steps:
 def prepare_shell():
-    var_cmdls = [
-        "JOB_ID=\"" +  job_id + "\"",
-        "RUN_ID=\"" +  run_id + "\"",
-        "CWL=\"" +  cwl + "\"",
-        "RUN_YAML=\"" +  yaml + "\"",
-        "OUTPUT_DIR=\"" +  out_dir + "\"",
-        "GLOBAL_TEMP_DIR=\"" +  global_temp_dir + "\"",
-        "LOG_FILE=\"" +  log + "\"",
-        "SUCCESS=\"True\"",
-        "ERR_MESSAGE=\"None\"",
-        "FINISH_TAG=\"DONE\"",
-        "PYTHON_PATH=\"" + python_interpreter + "\""
-    ]
+    var_dict = {
+        "JOB_ID": job_id,
+        "RUN_ID": run_id,
+        "CWL": cwl,
+        "RUN_YAML": yaml,
+        "OUTPUT_DIR": out_dir,
+        "GLOBAL_TEMP_DIR": global_temp_dir,
+        "LOG_FILE": log,
+        "SUCCESS": "True",
+        "ERR_MESSAGE": "None",
+        "FINISH_TAG": "DONE",
+        "PYTHON_PATH":python_interpreter
+    }
+    var_dict.update(add_exec_info)
+
+    var_cmdls = [key + "=\"" + var_dict[key] + "\"" for key in var_dict.keys()]
 
     if exec_profile["shell"] == "bash":
         init_pref = ""

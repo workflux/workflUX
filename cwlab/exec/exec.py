@@ -53,7 +53,7 @@ def query_info_from_db(job_id):
                 sleep(retry_delay + retry_delay*random())
     return db_job_id_request
 
-def exec_runs(job_id, run_ids, exec_profile_name, cwl, user_id=None, max_parrallel_exec_user_def=None):
+def exec_runs(job_id, run_ids, exec_profile_name, cwl, user_id=None, max_parrallel_exec_user_def=None, add_exec_info={}):
     
     # check if runs are already running:
     already_running_runs = []
@@ -92,7 +92,8 @@ def exec_runs(job_id, run_ids, exec_profile_name, cwl, user_id=None, max_parrall
             pid=-1, #*
             user_id=user_id if not user_id is None else None,
             exec_profile=exec_profile,
-            exec_profile_name=exec_profile_name
+            exec_profile_name=exec_profile_name,
+            add_exec_info=add_exec_info
         )
         #* will be set by the background process itself
         db.session.add(exec_db_entry[run_id])
