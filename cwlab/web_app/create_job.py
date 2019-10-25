@@ -5,11 +5,12 @@ from flask import render_template, jsonify, redirect, flash, url_for, request, s
 from werkzeug.urls import url_parse
 from cwlab import app 
 from cwlab.general_use import fetch_files_in_dir, is_allowed_file, allowed_extensions_by_type, get_job_templates, \
-    get_job_templ_info, get_path, get_job_name_from_job_id, get_run_ids
+    get_job_templ_info, get_path, get_run_ids
 import requests
+from cwlab.exec.exec import make_job_dir_tree, create_job as create_job_
 from re import match
 from cwlab.xls2cwl_job.web_interface import gen_form_sheet, generate_xls_from_param_values
-from cwlab.xls2cwl_job import only_validate_xls, transcode as make_yaml_runs
+from cwlab.xls2cwl_job import only_validate_xls
 from cwlab.xls2cwl_job.read_xls import remove_non_printable_characters
 from time import sleep
 from shutil import move, copyfile
@@ -290,24 +291,7 @@ def prepare_job_env():    # generate param form sheet with data sent
         login_required()
         request_json = request.get_json()
         job_id = request_json["job_id"]
-
-        # prepare job directory
-        job_dir = get_path("job_dir", job_id)
-        if not os.path.exists(job_dir):
-            os.mkdir(job_dir)
-        runs_yaml_dir = get_path("runs_yaml_dir", job_id)
-        if not os.path.exists(runs_yaml_dir):
-            os.mkdir(runs_yaml_dir)
-        runs_out_dir = get_path("runs_out_dir", job_id)
-        if not os.path.exists(runs_out_dir):
-            os.mkdir(runs_out_dir)
-        runs_log_dir = get_path("runs_log_dir", job_id)
-        if not os.path.exists(runs_log_dir):
-            os.mkdir(runs_log_dir)
-        runs_input_dir = get_path("runs_input_dir", job_id)
-        if not os.path.exists(runs_input_dir):
-            os.mkdir(runs_input_dir)
-
+        make_job_dir_tree(job_id)        
     except SystemExit as e:
         messages.append( { 
             "type":"error", 
@@ -363,49 +347,15 @@ def create_job():    # generate param form sheet with data sent
             os.remove(sheet_form)
         except:
             pass
-        sheet_form_dest_path = get_path("job_param_sheet", job_id=job_id, param_sheet_format=sheet_format)
-        move(sheet_form_temp, sheet_form_dest_path)
-        
-        # create yaml runs:
-        make_yaml_runs(
-            sheet_file=sheet_form_dest_path,
-            output_basename="",
-            default_run_id=get_job_name_from_job_id(job_id),
-            always_include_run_in_output_name=True,
-            output_suffix=".yaml",
-            output_dir=get_path("runs_yaml_dir", job_id=job_id),
-            validate_paths=validate_paths, 
-            search_paths=search_paths, 
-            search_subdirs=include_subdirs_for_searching, 
-            input_dir=search_dir
+
+        create_job_(
+            job_id=job_id,
+            job_param_sheet=sheet_form_temp,
+            validate_paths=validate_paths,
+            search_paths=search_paths,
+            search_subdirs=include_subdirs_for_searching,
+            search_dir=search_dir
         )
-
-        # get cwl path:
-        cwl = get_job_templ_info("attributes", sheet_form_dest_path)["CWL"]
-
-        # check if cwl is absolute path and exists, else search for it in the CWL dir:
-        if os.path.exists(cwl):
-            cwl = os.path.abspath(cwl)
-            allowed_dirs = get_allowed_base_dirs(
-                job_id=job_id,
-                allow_input=True,
-                allow_upload=False,
-                allow_download=False
-            )
-            if check_if_path_in_dirs(path, allowed_dirs) is None:
-                sys.exit("The provided CWL file does not exit or you have no permission to access it.")
-        else:
-            cwl = get_path("cwl", cwl_target=cwl)
-
-        # copy cwl document:
-        copyfile(cwl, get_path("job_cwl", job_id=job_id))
-
-        # make output directories:
-        run_ids = get_run_ids(job_id)
-        for run_id in run_ids:
-            run_out_dir = get_path("run_out_dir", job_id, run_id)
-            if not os.path.exists(run_out_dir):
-                os.mkdir(run_out_dir)
 
         messages.append( { 
             "type":"success", 

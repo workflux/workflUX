@@ -1,5 +1,6 @@
 from cwlab import app
-from cwlab.general_use import get_path, get_duration, db_commit, read_file_content, get_run_ids
+from cwlab.general_use import get_path, get_duration, db_commit, read_file_content, get_run_ids, \
+    get_job_name_from_job_id, get_job_templ_info, get_allowed_base_dirs, check_if_path_in_dirs
 from .db import Exec
 from cwlab import db
 from datetime import datetime
@@ -9,9 +10,85 @@ from time import sleep
 from random import random
 from psutil import pid_exists, Process, STATUS_ZOMBIE, wait_procs
 from platform import system as platform_system
-from shutil import rmtree
+from shutil import rmtree, copy, copyfile, move
+from cwlab.xls2cwl_job import only_validate_xls, transcode as make_yaml_runs
 basedir = os.path.abspath(os.path.dirname(__file__))
 python_interpreter = sys.executable
+
+def make_job_dir_tree(job_id):
+    job_dir = get_path("job_dir", job_id)
+    if not os.path.exists(job_dir):
+        os.mkdir(job_dir)
+    runs_yaml_dir = get_path("runs_yaml_dir", job_id)
+    if not os.path.exists(runs_yaml_dir):
+        os.mkdir(runs_yaml_dir)
+    runs_out_dir = get_path("runs_out_dir", job_id)
+    if not os.path.exists(runs_out_dir):
+        os.mkdir(runs_out_dir)
+    runs_log_dir = get_path("runs_log_dir", job_id)
+    if not os.path.exists(runs_log_dir):
+        os.mkdir(runs_log_dir)
+    runs_input_dir = get_path("runs_input_dir", job_id)
+    if not os.path.exists(runs_input_dir):
+        os.mkdir(runs_input_dir)
+
+def create_job(job_id, job_param_sheet=None, run_yamls=None, cwl=None,
+    validate_paths=True, search_paths=False, search_subdirs=False, search_dir=None):
+    if job_param_sheet is None and (run_yamls is None or cwl is None):
+        sys.exit("You have to either provide a job_param_sheet or a list of run_yamls plus a cwl document")
+    runs_yaml_dir = get_path("runs_yaml_dir", job_id=job_id)
+
+    # make directories:
+    make_job_dir_tree(job_id)
+
+    # make run yamls:
+    if not job_param_sheet is None:
+        if search_paths and search_dir is None:
+            sys.exit("search_paths was set to True but no search dir has been defined.")
+        job_param_sheet_dest_path = get_path("job_param_sheet", job_id=job_id, param_sheet_format=job_param_sheet)
+        move(job_param_sheet, job_param_sheet_dest_path)
+        make_yaml_runs(
+            sheet_file=job_param_sheet_dest_path,
+            output_basename="",
+            default_run_id=get_job_name_from_job_id(job_id),
+            always_include_run_in_output_name=True,
+            output_suffix=".yaml",
+            output_dir=runs_yaml_dir,
+            validate_paths=validate_paths, 
+            search_paths=search_paths, 
+            search_subdirs=search_subdirs, 
+            input_dir=search_dir
+        )
+        if cwl is None:
+            cwl = get_job_templ_info("attributes", job_param_sheet_dest_path)["CWL"]
+    else:
+        [copy(run_yaml, runs_yaml_dir) for run_yaml in run_yamls]
+
+    # check if cwl is absolute path and exists, else search for it in the CWL dir:
+    if os.path.exists(cwl):
+        cwl = os.path.abspath(cwl)
+        allowed_dirs = get_allowed_base_dirs(
+            job_id=job_id,
+            allow_input=True,
+            allow_upload=False,
+            allow_download=False
+        )
+        if check_if_path_in_dirs(cwl, allowed_dirs) is None:
+            sys.exit("The provided CWL file does not exit or you have no permission to access it.")
+    else:
+        cwl = get_path("cwl", cwl_target=cwl)
+    # copy cwl document:
+    copyfile(cwl, get_path("job_cwl", job_id=job_id))
+
+    # make output directories:
+    run_ids = get_run_ids(job_id)
+    for run_id in run_ids:
+        run_out_dir = get_path("run_out_dir", job_id, run_id)
+        if not os.path.exists(run_out_dir):
+                os.mkdir(run_out_dir)
+
+
+
 
 def create_background_process(command_list, log_file):
     kwargs = {}
