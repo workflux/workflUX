@@ -150,6 +150,18 @@ def start_exec():    # returns all parmeter and its default mode (global/job spe
     run_ids = sorted(data["run_ids"])
     exec_profile_name = data["exec_profile"]
     max_parrallel_exec_user_def = int(data["parallel_exec"]) if "parallel_exec" in data.keys() else None
+
+    # check if cwl_target exists as path and if this path is allowed (else assume that it is in the CWL dir):
+    if os.path.exists(cwl_target):
+        allowed_dirs = get_allowed_base_dirs(
+            job_id=job_id,
+            allow_input=False,
+            allow_upload=False,
+            allow_download=True
+        )
+        if check_if_path_in_dirs(path, allowed_dirs) is None:
+            sys.exit("The specified CWL path does not exist or you have no permission to enter it.")
+    
     started_runs, already_running_runs = exec_runs(
         job_id,
         run_ids,
