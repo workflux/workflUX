@@ -212,6 +212,8 @@ def make_temp_dir():
 def import_cwl(cwl_path, name=None):
     if name is None:
         name = os.path.splitext(os.path.basename(cwl_path))[0]
+    if os.path.splitext(name)[1] in ["yaml", "yml", "cwl", "CWL"]:
+        name = os.path.splitext(name)[0]
     cwl_target_name = name + ".cwl"
     loadingContext, workflowobj, uri = fetch_document(cwl_path)
     loadingContext.do_update = False
