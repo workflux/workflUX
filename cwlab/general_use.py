@@ -99,7 +99,7 @@ def read_file_content(
     return str(content), end_pos
 
 allowed_extensions_by_type = {
-    "CWL": ["cwl", "yaml"],
+    "CWL": ["cwl", "yaml", "yml", "CWL"],
     "spreadsheet": ["xlsx", "ods", "xls"]
 }
 
@@ -212,7 +212,7 @@ def make_temp_dir():
 def import_cwl(cwl_path, name=None):
     if name is None:
         name = os.path.splitext(os.path.basename(cwl_path))[0]
-    if os.path.splitext(name)[1] in ["yaml", "yml", "cwl", "CWL"]:
+    if os.path.splitext(name)[1] in allowed_extensions_by_type["CWL"]:
         name = os.path.splitext(name)[0]
     cwl_target_name = name + ".cwl"
     loadingContext, workflowobj, uri = fetch_document(cwl_path)
