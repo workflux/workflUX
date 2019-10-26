@@ -5,10 +5,15 @@ from time import sleep
 from . import app
 from cwlab.xls2cwl_job.web_interface import read_template_attributes as read_template_attributes_from_xls
 from cwlab.xls2cwl_job.web_interface import get_param_config_info as get_param_config_info_from_xls
+from cwlab.xls2cwl_job import generate_xls_from_cwl as generate_job_template_from_cwl
 from cwlab import db
-from random import random
+from random import random, choice as random_choice
 from pathlib import Path
 import zipfile
+from cwltool.load_tool import fetch_document, resolve_and_validate_document
+from cwltool.main import print_pack
+import json
+from string import ascii_letters, digits
 basedir = os.path.abspath(os.path.dirname(__file__))
 
 def browse_dir(path,
@@ -116,6 +121,14 @@ def zip_dir(dir_path):
     zip_file.close()
     return(zip_path)
     
+def unzip_dir(zip_path, target_dir):
+    zip_path=os.path.abspath(zip_path)
+    if not zipfile.is_zipfile(zip_path):
+        sys.exit("The provided file is not a zip.")
+    if not os.path.isdir("target_dir"):
+        sys.exit("The provided target dir does not exist or is not a dir.")
+    with zipfile.ZipFile(zip_path,"r") as zip_ref:
+        zip_ref.extractall(target_dir)
 
 def is_allowed_file(filename, type="CWL"):
     # validates uploaded files
@@ -183,6 +196,46 @@ def get_path(which, job_id=None, run_id=None, param_sheet_format=None, cwl_targe
     elif which == "runs_input_dir":
         path = os.path.join(app.config['EXEC_DIR'], job_id, "runs_inputs")
     return os.path.realpath(path)
+
+def make_temp_dir():
+    for try_ in range(0,10):
+        random_string = "".join([random_choice(ascii_letters + digits) for c in range(0,14)])
+        temp_dir = os.path.join(app.config["TEMP_DIR"], random_string)
+        if not os.path.exists(temp_dir):
+            break
+    try:
+        os.mkdir(temp_dir)
+    except Exception as e:
+        sys.exit("Could not create temporary directory.")
+    return temp_dir
+
+def import_cwl(cwl_path, name=None):
+    if name is None:
+        name = os.path.splitext(os.path.basename(cwl_path))[0]
+    cwl_target_name = name + ".cwl"
+    loadingContext, workflowobj, uri = fetch_document(cwl_path)
+    loadingContext.do_update = False
+    loadingContext, uri = resolve_and_validate_document(loadingContext, workflowobj, uri)
+    processobj = loadingContext.loader.resolve_ref(uri)[0]
+    packed_cwl = json.loads(print_pack(loadingContext.loader, processobj, uri, loadingContext.metadata))
+    cwl_target_path = get_path("cwl", cwl_target=cwl_target_name)
+    if os.path.exists(cwl_target_path):
+        try:
+            os.remove(cwl_target_path)
+        except Exception as e:
+            sys.exit("Could not remove existing cwl file.")
+    try:
+        with open(cwl_target_path, 'w') as cwl_file:
+            json.dump(packed_cwl, cwl_file)
+    except Exception as e:
+        sys.exit("Could not write CWL file.")
+    job_templ_filepath = get_path("job_templ", cwl_target=cwl_target_name)
+    generate_job_template_from_cwl(
+        cwl_file=cwl_target_path, 
+        output_file=job_templ_filepath, 
+        show_please_fill=True
+    )
+    
 
 def get_run_ids(job_id):
     exec_dir = app.config["EXEC_DIR"]
