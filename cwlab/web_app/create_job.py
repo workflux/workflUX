@@ -321,12 +321,12 @@ def create_job():    # generate param form sheet with data sent
 
         if not os.path.isfile(sheet_form_temp):
             sys.exit("Could not find the filled parameter sheet \"" + sheet_form_temp + "\".")
-        
+
         if not is_allowed_file(sheet_form_temp, type="spreadsheet"):
             sys.exit( "The filled parameter sheet \"" + sheet_form_temp + "\" has the wrong file type. " +
                 "Only files with following extensions are allowed: " + 
                 ", ".join(allowed_extensions_by_type["spreadsheet"]))
-        
+
         validate_paths = request_json["validate_paths"]
         search_paths = request_json["search_paths"]
         search_dir = os.path.abspath(remove_non_printable_characters(request_json["search_dir"]))
@@ -354,7 +354,8 @@ def create_job():    # generate param form sheet with data sent
             validate_paths=validate_paths,
             search_paths=search_paths,
             search_subdirs=include_subdirs_for_searching,
-            search_dir=search_dir
+            search_dir=search_dir,
+            sheet_format=sheet_format
         )
 
         messages.append( { 

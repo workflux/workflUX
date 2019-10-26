@@ -33,7 +33,7 @@ def make_job_dir_tree(job_id):
         os.mkdir(runs_input_dir)
 
 def create_job(job_id, job_param_sheet=None, run_yamls=None, cwl=None,
-    validate_paths=True, search_paths=False, search_subdirs=False, search_dir=None):
+    validate_paths=True, search_paths=False, search_subdirs=False, search_dir=None, sheet_format="xlsx"):
     if job_param_sheet is None and (run_yamls is None or cwl is None):
         sys.exit("You have to either provide a job_param_sheet or a list of run_yamls plus a cwl document")
     runs_yaml_dir = get_path("runs_yaml_dir", job_id=job_id)
@@ -45,7 +45,7 @@ def create_job(job_id, job_param_sheet=None, run_yamls=None, cwl=None,
     if not job_param_sheet is None:
         if search_paths and search_dir is None:
             sys.exit("search_paths was set to True but no search dir has been defined.")
-        job_param_sheet_dest_path = get_path("job_param_sheet", job_id=job_id, param_sheet_format=job_param_sheet)
+        job_param_sheet_dest_path = get_path("job_param_sheet", job_id=job_id, param_sheet_format=sheet_format)
         move(job_param_sheet, job_param_sheet_dest_path)
         make_yaml_runs(
             sheet_file=job_param_sheet_dest_path,
@@ -60,7 +60,7 @@ def create_job(job_id, job_param_sheet=None, run_yamls=None, cwl=None,
             input_dir=search_dir
         )
         if cwl is None:
-            cwl = get_job_templ_info("attributes", job_param_sheet_dest_path)["CWL"]
+            cwl = get_job_templ_info("attributes", job_templ_filepath=job_param_sheet_dest_path)["CWL"]
     else:
         [copy(run_yaml, runs_yaml_dir) for run_yaml in run_yamls]
 
