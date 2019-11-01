@@ -38,6 +38,7 @@ else:
 sleep(1 + 1*random())
 
 # open connection to database
+exec_profile_name = ""
 for db_retry_delay in db_retry_delays:
     try:
         engine = create_engine(db_uri)
@@ -62,9 +63,9 @@ def query_info_from_db(what, db_retry_delays_=None, no_exit=False):
             if what == "run_info":
                 db_request = session.query(Exec).get(exec_db_id)
             elif what == "next_in_queue":
-                db_request = session.query(Exec).filter(Exec.status == "queued").order_by(Exec.id.asc()).first()
+                db_request = session.query(Exec).filter(Exec.status == "queued").filter(Exec.exec_profile_name == exec_profile_name).order_by(Exec.id.asc()).first()
             elif what == "running_exec":
-                db_request = session.query(Exec).filter(Exec.time_finished == None).filter(Exec.status != "queued")
+                db_request = session.query(Exec).filter(Exec.time_finished == None).filter(Exec.status != "queued").filter(Exec.exec_profile_name == exec_profile_name)
             break
         except:
             if db_retry_delay == db_retry_delays[-1]:
