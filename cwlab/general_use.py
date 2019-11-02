@@ -16,6 +16,12 @@ import json
 from string import ascii_letters, digits
 basedir = os.path.abspath(os.path.dirname(__file__))
 
+def normalize_path(path):
+    if app.config["CORRECT_SYMLINKS"]:
+        return os.path.realpath(path)
+    else:
+        return os.path.abspath(path)
+
 def browse_dir(path,
     ignore_files=False,
     file_exts=[],
@@ -195,7 +201,8 @@ def get_path(which, job_id=None, run_id=None, param_sheet_format=None, cwl_targe
         path = os.path.join(app.config['EXEC_DIR'], job_id, "runs_log", run_id + ".debug.log")
     elif which == "runs_input_dir":
         path = os.path.join(app.config['EXEC_DIR'], job_id, "runs_inputs")
-    return os.path.realpath(path)
+
+    return normalize_path(path)
 
 def make_temp_dir():
     for try_ in range(0,10):
@@ -341,9 +348,9 @@ def get_allowed_base_dirs(job_id=None, run_id=None, allow_input=True, allow_uplo
 def check_if_path_in_dirs(path, dir_dict):
     hit = ""
     hit_key = None
-    path = os.path.realpath(path)
+    path = normalize_path(path)
     for dir_ in dir_dict.keys():
-        dir_path = os.path.realpath(dir_dict[dir_]["path"])
+        dir_path = normalize_path(dir_dict[dir_]["path"])
         if path.startswith(dir_path) and len(hit) < len(dir_path):
             hit=dir_path
             hit_key = dir_

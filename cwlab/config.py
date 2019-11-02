@@ -5,13 +5,17 @@ from time import strftime, gmtime
 from platform import system
 basedir = os.path.abspath(os.path.dirname(__file__))
 
-def normalize_path(path):
-    return os.path.realpath(path)
+def normalize_path(path, correct_symlinks=True):
+    if correct_symlinks:
+        return os.path.realpath(path)
+    else:
+        return os.path.abspath(path)
+        
 
-def normalize_path_dict(dict):
+def normalize_path_dict(dict, correct_symlinks=True):
     norm_dict = {}
     for key in dict.keys():
-        norm_dict[key] = normalize_path(dict[key])
+        norm_dict[key] = normalize_path(dict[key], correct_symlinks)
     return norm_dict
 
 class Config(object):
@@ -43,6 +47,12 @@ class Config(object):
         cwlab_fallback_dir = os.path.join(os.path.expanduser("~"), "cwlab")
 
         # parameters:
+        self.CORRECT_SYMLINKS = (
+            os.environ.get('CWLAB_CORRECT_SYMLINKS') or
+            self.CONFIG_FILE_content.get('CORRECT_SYMLINKS') or  
+            True
+        )
+
         self.SECRET_KEY = (
             os.environ.get('CWLAB_SECRET_KEY') or 
             self.CONFIG_FILE_content.get('SECRET_KEY') or  
@@ -52,30 +62,36 @@ class Config(object):
         self.TEMP_DIR = normalize_path(
             os.environ.get('CWLAB_TEMP_DIR') or
             self.CONFIG_FILE_content.get('TEMP_DIR') or  
-            os.path.join( cwlab_fallback_dir, "temp")
+            os.path.join( cwlab_fallback_dir, "temp"),
+            correct_symlinks=self.CORRECT_SYMLINKS
         )
         self.CWL_DIR = normalize_path(
             os.environ.get('CWLAB_CWL_DIR') or  
             self.CONFIG_FILE_content.get('CWL_DIR') or  
-            os.path.join( cwlab_fallback_dir, "CWL")
+            os.path.join( cwlab_fallback_dir, "CWL"),
+            correct_symlinks=self.CORRECT_SYMLINKS
         )
         self.EXEC_DIR = normalize_path(
             os.environ.get('CWLAB_EXEC_DIR') or 
             self.CONFIG_FILE_content.get('EXEC_DIR') or   
-            os.path.join( cwlab_fallback_dir, "exec")
+            os.path.join( cwlab_fallback_dir, "exec"),
+            correct_symlinks=self.CORRECT_SYMLINKS
         )
         self.DB_DIR = normalize_path(
             os.environ.get('CWLAB_DB_DIR') or 
             self.CONFIG_FILE_content.get('DB_DIR') or  
-            os.path.join( cwlab_fallback_dir, "database")
+            os.path.join( cwlab_fallback_dir, "database"),
+            correct_symlinks=self.CORRECT_SYMLINKS
         )
         self.ADD_INPUT_DIRS = normalize_path_dict(
             self.CONFIG_FILE_content.get('ADD_INPUT_DIRS') or 
-            {"ROOT": "/"}
+            {"ROOT": "/"},
+            correct_symlinks=self.CORRECT_SYMLINKS
         )
         self.ADD_INPUT_UPLOAD_DIRS = normalize_path_dict(
             self.CONFIG_FILE_content.get('ADD_INPUT_UPLOAD_DIRS') or 
-            {"ROOT": "/"}
+            {"ROOT": "/"},
+            correct_symlinks=self.CORRECT_SYMLINKS
         )
 
         self.UPLOAD_ALLOWED = (

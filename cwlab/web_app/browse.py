@@ -3,7 +3,8 @@ import os
 from flask import render_template, jsonify, redirect, flash, url_for, request, send_from_directory
 from cwlab import app 
 from cwlab.users.manage import login_required
-from cwlab.general_use import browse_dir as browse_dir_, get_allowed_base_dirs, check_if_path_in_dirs, zip_dir
+from cwlab.general_use import browse_dir as browse_dir_, get_allowed_base_dirs, check_if_path_in_dirs, \
+    zip_dir, normalize_path
 from cwlab.xls2cwl_job.read_xls import remove_non_printable_characters
 from werkzeug import secure_filename
 from json import loads as json_loads
@@ -38,7 +39,7 @@ def upload_file():
 
         if dir_path == "":
             sys.exit("Path does not exist or you have no permission to enter it.")
-        dir_path = os.path.realpath(dir_path)
+        dir_path = normalize_path(dir_path)
         if not os.path.exists(dir_path) or \
             not os.path.isdir(dir_path) or \
             check_if_path_in_dirs(dir_path, allowed_dirs) is None:
@@ -99,7 +100,7 @@ def browse_dir():
         try:
             if path == "":
                 sys.exit("Path does not exist or you have no permission to enter it.")
-            path = os.path.realpath(path)
+            path = normalize_path(path)
             if not os.path.exists(path):
                 sys.exit("Path does not exist or you have no permission to enter it.")
             if get_parent_dir or not os.path.isdir(path):
@@ -154,7 +155,7 @@ def download():
         send_file = data_req["send_file"]
         if path == "":
             sys.exit("Path does not exist or you have no permission to enter it.")
-        path = os.path.realpath(path)
+        path = normalize_path(path)
         if not os.path.exists(path):
             sys.exit("Path does not exist or you have no permission to enter it.")
         allowed_dirs = get_allowed_base_dirs(
