@@ -47,11 +47,9 @@ class Config(object):
         cwlab_fallback_dir = os.path.join(os.path.expanduser("~"), "cwlab")
 
         # parameters:
-        self.CORRECT_SYMLINKS = (
-            os.environ.get('CWLAB_CORRECT_SYMLINKS') or
-            self.CONFIG_FILE_content.get('CORRECT_SYMLINKS') or  
-            True
-        )
+        self.CORRECT_SYMLINKS = self.CONFIG_FILE_content.get('CORRECT_SYMLINKS') \
+            if not self.CONFIG_FILE_content.get('CORRECT_SYMLINKS') is None \
+            else True
 
         self.SECRET_KEY = (
             os.environ.get('CWLAB_SECRET_KEY') or 
@@ -94,18 +92,17 @@ class Config(object):
             correct_symlinks=self.CORRECT_SYMLINKS
         )
 
-        self.UPLOAD_ALLOWED = (
-            self.CONFIG_FILE_content.get('UPLOAD_ALLOWED') or
-            True
-        )
-        self.DOWNLOAD_ALLOWED = (
-            self.CONFIG_FILE_content.get('DOWNLOAD_ALLOWED') or
-            True
-        )
+        self.UPLOAD_ALLOWED = self.CONFIG_FILE_content.get('UPLOAD_ALLOWED') \
+            if not self.CONFIG_FILE_content.get('UPLOAD_ALLOWED') is None \
+            else True
+        self.DOWNLOAD_ALLOWED = self.CONFIG_FILE_content.get('DOWNLOAD_ALLOWED') \
+            if not self.CONFIG_FILE_content.get('DOWNLOAD_ALLOWED') is None \
+            else True
         
         self.DEBUG = (
             os.environ.get('CWLAB_DEBUG') == "True" or
-            self.CONFIG_FILE_content.get('DEBUG')
+            self.CONFIG_FILE_content.get('DEBUG') or
+            False
         )
 
         if self.DEBUG:
@@ -166,9 +163,6 @@ class Config(object):
             general = general_defaults.copy()
             general.update(self.EXEC_PROFILES[exec_profile])
             self.EXEC_PROFILES[exec_profile] = general
-            
-
-
 
         # Configure web server:
         self.WEB_SERVER_HOST = (
