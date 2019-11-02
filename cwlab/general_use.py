@@ -17,7 +17,7 @@ from string import ascii_letters, digits
 from pkg_resources import get_distribution
 cwltool_version = get_distribution("cwltool").version
 from distutils.version import StrictVersion
-if StrictVersion(cwltool_version) > StrictVersion("1.0.20181012180214"):
+if StrictVersion(cwltool_version) > StrictVersion("1.0.20181201184214"):
     from cwltool.load_tool import resolve_and_validate_document
 else:
     from cwltool.load_tool import validate_document
