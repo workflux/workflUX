@@ -10,10 +10,17 @@ from cwlab import db
 from random import random, choice as random_choice
 from pathlib import Path
 import zipfile
-from cwltool.load_tool import fetch_document, resolve_and_validate_document
+from cwltool.load_tool import fetch_document
 from cwltool.main import print_pack
 import json
 from string import ascii_letters, digits
+from pkg_resources import get_distribution
+cwltool_version = get_distribution("cwltool").version
+from distutils.version import StrictVersion
+if StrictVersion(cwltool_version) > StrictVersion("1.0.20181012180214"):
+    from cwltool.load_tool import resolve_and_validate_document
+else:
+    from cwltool.load_tool import validate_document
 basedir = os.path.abspath(os.path.dirname(__file__))
 
 def normalize_path(path):
@@ -216,17 +223,26 @@ def make_temp_dir():
         sys.exit("Could not create temporary directory.")
     return temp_dir
 
+def pack_cwl(cwl_path):
+    if StrictVersion(cwltool_version) > StrictVersion("1.0.20181012180214"):
+        loadingContext, workflowobj, uri = fetch_document(cwl_path)
+        loadingContext.do_update = False
+        loadingContext, uri = resolve_and_validate_document(loadingContext, workflowobj, uri)
+        processobj = loadingContext.loader.resolve_ref(uri)[0]
+        packed_cwl = json.loads(print_pack(loadingContext.loader, processobj, uri, loadingContext.metadata))
+    else:
+        document_loader, workflowobj, uri = fetch_document(cwl_path)
+        document_loader, _, processobj, metadata, uri = validate_document(document_loader, workflowobj, uri)
+        packed_cwl = cwltool.pack.pack(document_loader, processobj, uri, metadata)
+    return packed_cwl
+
 def import_cwl(cwl_path, name=None):
     if name is None:
         name = os.path.splitext(os.path.basename(cwl_path))[0]
     if os.path.splitext(name)[1] in allowed_extensions_by_type["CWL"]:
         name = os.path.splitext(name)[0]
     cwl_target_name = name + ".cwl"
-    loadingContext, workflowobj, uri = fetch_document(cwl_path)
-    loadingContext.do_update = False
-    loadingContext, uri = resolve_and_validate_document(loadingContext, workflowobj, uri)
-    processobj = loadingContext.loader.resolve_ref(uri)[0]
-    packed_cwl = json.loads(print_pack(loadingContext.loader, processobj, uri, loadingContext.metadata))
+    packed_cwl = packed_cwl(cwl_path)
     cwl_target_path = get_path("cwl", cwl_target=cwl_target_name)
     if os.path.exists(cwl_target_path):
         try:
