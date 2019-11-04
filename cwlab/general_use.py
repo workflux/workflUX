@@ -224,7 +224,7 @@ def make_temp_dir():
     return temp_dir
 
 def pack_cwl(cwl_path):
-    if StrictVersion(cwltool_version) > StrictVersion("1.0.20181012180214"):
+    if StrictVersion(cwltool_version) > StrictVersion("1.0.20181201184214"):
         loadingContext, workflowobj, uri = fetch_document(cwl_path)
         loadingContext.do_update = False
         loadingContext, uri = resolve_and_validate_document(loadingContext, workflowobj, uri)
@@ -232,8 +232,8 @@ def pack_cwl(cwl_path):
         packed_cwl = json.loads(print_pack(loadingContext.loader, processobj, uri, loadingContext.metadata))
     else:
         document_loader, workflowobj, uri = fetch_document(cwl_path)
-        document_loader, _, processobj, metadata, uri = validate_document(document_loader, workflowobj, uri)
-        packed_cwl = cwltool.pack.pack(document_loader, processobj, uri, metadata)
+        document_loader, _, processobj, metadata, uri = validate_document(document_loader, workflowobj, uri, [], {})
+        packed_cwl = json.loads(print_pack(document_loader, processobj, uri, metadata))
     return packed_cwl
 
 def import_cwl(cwl_path, name=None):
@@ -242,7 +242,7 @@ def import_cwl(cwl_path, name=None):
     if os.path.splitext(name)[1] in allowed_extensions_by_type["CWL"]:
         name = os.path.splitext(name)[0]
     cwl_target_name = name + ".cwl"
-    packed_cwl = packed_cwl(cwl_path)
+    packed_cwl = pack_cwl(cwl_path)
     cwl_target_path = get_path("cwl", cwl_target=cwl_target_name)
     if os.path.exists(cwl_target_path):
         try:
