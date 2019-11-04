@@ -1,18 +1,43 @@
 
 class ImportCWLRoot extends React.Component {
+    constructor(props){
+        super(props);
+        this.state = {
+            importName: ""
+        }
+
+        this.changeInputField = this.changeInputField.bind(this);
+    }
+
+    changeInputField(event){
+        this.setState({
+            [event.currentTarget.name]: event.currentTarget.value
+        })
+    }
+
     render() {
         return(
             <div className="w3-panel">
+                <p>
+                    Import a CWL-wrapped tool or a CWL workflow.
+                </p>
                 <span className="w3-text-green">Choose a name:</span>&nbsp;
                 <input type="text"
                     className="w3-input w3-border"
-                    name="job_name"
-                    value={this.state.job_name}
-                    onChange={this.changeJobName}
+                    name="importName"
+                    style={ {width: "50%"} }
+                    value={this.state.importName}
+                    onChange={this.changeInputField}
                 />
+                <br/>
+                <span className="w3-text-green">Choose a CWL file:</span>&nbsp;
+                <Message type="hint">
+                    Please Note: Currently, CWL workflows are only supported in packed format. 
+                    Please see <a href="https://github.com/common-workflow-language/cwltool#combining-parts-of-a-workflow-into-a-single-document">the documentation of cwltool</a> for details.
+                </Message>
                 <FileUploadComponent
                     requestRoute={routeImportPackedCwl}
-                    instruction="Please select a CWL file:"
+                    metaData={ {"import_name": this.state.importName} }
                 />
             </div>
         );

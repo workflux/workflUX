@@ -9,6 +9,7 @@ from cwlab.general_use import is_allowed_file, allowed_extensions_by_type, get_p
 from cwlab.xls2cwl_job import generate_xls_from_cwl as generate_job_template_from_cwl
 from cwlab.users.manage import login_required
 from shutil import rmtree
+from json import loads as json_loads
 
 
 
@@ -31,12 +32,17 @@ def import_packed_cwl():
                 ", ".join(allowed_extensions_by_type["CWL"]))
         
         # save the file to the CWL directory:
-        import_filename = secure_filename(import_file.filename)
+        metadata = json_loads(request.form.get("meta"))
+        import_filename = secure_filename(import_file.filename) 
+        
         temp_dir = make_temp_dir()
         imported_filepath = os.path.join(temp_dir, import_filename)
         import_file.save(imported_filepath)
 
-        import_cwl_(cwl_path=imported_filepath)
+        import_name = secure_filename(metadata["import_name"]) \
+            if "import_name" in metadata.keys() and metadata["import_name"] != "" \
+            else import_filename
+        import_cwl_(cwl_path=imported_filepath, name=import_name)
         
         try:
             rmtree(temp_dir)

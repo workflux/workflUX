@@ -1465,9 +1465,7 @@ class FileUploadComponent extends React.Component {
             this.setState({status:"uploading"})
             let formData = new FormData()
             formData.append("file", fileToUpload)
-            if (this.props.meta_data){
-                formData.append("meta", JSON.stringify(this.props.meta_data))
-            }
+            formData.append("meta", JSON.stringify(this.props.metaData ? this.props.metaData : {}))
 
             if (this.props.showProgress){let request = new XMLHttpRequest()
                 request.upload.addEventListener("progress", event => {
@@ -1586,9 +1584,11 @@ class FileUploadComponent extends React.Component {
                 <table>
                     <tbody>
                         <tr>
-                            <td>
-                                {instruction}
-                            </td>
+                            {this.props.instruction && (
+                                <td>
+                                    {this.props.instruction}
+                                </td>
+                            )}
                             <td>
                                 {upload_selector}
                             </td>
@@ -1607,13 +1607,12 @@ class FileUploadComponent extends React.Component {
             return (
                 <div>
                     <div>
-                        <p>
-                            {instruction}<br/>
-                            {upload_selector}
-                        </p>
-                    </div>
-                    <div>
-                        {action_button}
+                        {this.props.instruction && (
+                            <span>
+                                {this.props.instruction}<br/>
+                            </span>
+                        )}
+                        {upload_selector}{action_button}
                     </div>
                     <div>
                         {messages}
