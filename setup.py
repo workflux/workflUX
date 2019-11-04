@@ -35,7 +35,8 @@ setup(
                       'pyexcel-xlsx',
                       'PyYAML',
                       'pexpect',
-                      'cwltool==1.0.20181201184214',
+                      'cwltool==1.0.20181201184214; platform_system=="Windows"',
+                      'cwltool>=1.0.20180809224403; platform_system!="Windows"',
                       'psutil'               
                       ],
     classifiers=[
