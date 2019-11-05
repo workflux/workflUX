@@ -139,7 +139,7 @@ def unzip_dir(zip_path, target_dir):
     zip_path=os.path.abspath(zip_path)
     if not zipfile.is_zipfile(zip_path):
         sys.exit("The provided file is not a zip.")
-    if not os.path.isdir("target_dir"):
+    if not os.path.isdir(target_dir):
         sys.exit("The provided target dir does not exist or is not a dir.")
     with zipfile.ZipFile(zip_path,"r") as zip_ref:
         zip_ref.extractall(target_dir)
