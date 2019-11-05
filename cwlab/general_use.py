@@ -113,7 +113,8 @@ def read_file_content(
 
 allowed_extensions_by_type = {
     "CWL": ["cwl", "yaml", "yml", "CWL"],
-    "spreadsheet": ["xlsx", "ods", "xls"]
+    "spreadsheet": ["xlsx", "ods", "xls"],
+    "zip": ["zip"]
 }
 
 def zip_dir(dir_path):
@@ -208,6 +209,7 @@ def get_path(which, job_id=None, run_id=None, param_sheet_format=None, cwl_targe
         path = os.path.join(app.config['EXEC_DIR'], job_id, "runs_log", run_id + ".debug.log")
     elif which == "runs_input_dir":
         path = os.path.join(app.config['EXEC_DIR'], job_id, "runs_inputs")
+
 
     return normalize_path(path)
 
@@ -315,8 +317,13 @@ def db_commit(retry_delays=[1,4]):
             else:
                 sleep(retry_delay + retry_delay*random())
     
-def get_allowed_base_dirs(job_id=None, run_id=None, allow_input=True, allow_upload=True, allow_download=False):
+def get_allowed_base_dirs(job_id=None, run_id=None, allow_input=True, allow_upload=True, allow_download=False, include_tmp_dir=False):
     allowed_dirs = {}
+    if allow_input and (not allow_download) and include_tmp_dir:
+        allowed_dirs["OUTPUT_DIR_CURRENT_JOB"] = {
+            "path": app.config["TEMP_DIR"],
+            "mode": "input"
+        }
     if (app.config["DOWNLOAD_ALLOWED"] and allow_download) or (allow_input and not allow_download):
         mode = "download" if (app.config["DOWNLOAD_ALLOWED"] and allow_download) else "input"
         if not job_id is None:
