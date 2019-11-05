@@ -893,6 +893,9 @@ class BrowseDir extends React.Component {
         // props.defaultBaseDir
         // props.showCancelButton
         // props.terminateBrowseDialog
+        // props.fixedBaseDir
+        // props.fixedBaseDirName
+        // props.includeTmpDir
         // props.disableOnTop
 
         this.baseDirInfo = {
@@ -965,7 +968,10 @@ class BrowseDir extends React.Component {
                 job_id: this.props.jobId ? this.props.jobId : null,
                 run_id: this.props.runId ? this.props.runId : null,
                 on_error_return_base_dir_items: init ? true : false,
-                default_base_dir: this.props.defaultBaseDir ? this.props.defaultBaseDir : null
+                default_base_dir: this.props.defaultBaseDir ? this.props.defaultBaseDir : null,
+                fixed_base_dir: this.props.fixedBaseDir ? this.props.fixedBaseDir : null,
+                fixed_base_dir_name: this.props.fixedBaseDirName ? this.props.fixedBaseDirName: "FIXED_BASE_DIR",
+                include_tmp_dir: this.props.includeTmpDir ? true : false
             },
             route: routeBrowseDir,
             onSuccess: (data, messages) => {
