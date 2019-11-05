@@ -89,6 +89,7 @@ def browse_dir():
         run_id = data_req["run_id"] if "run_id" in data_req.keys() else None
         on_error_return_base_dir_items = data_req["on_error_return_base_dir_items"]
         fixed_base_dir = data_req["fixed_base_dir"] if "fixed_base_dir" in data_req.keys() else None
+        fixed_base_dir_name = data_req["fixed_base_dir_name"] if "fixed_base_dir_name" in data_req.keys() else "FIXED_BASE_DIR"
         include_tmp_dir = data_req["include_tmp_dir"] if "include_tmp_dir" in data_req.keys() else False
 
         data["allowed_dirs"] = get_allowed_base_dirs(
@@ -99,6 +100,16 @@ def browse_dir():
             allow_download=allow_download,
             include_tmp_dir=include_tmp_dir
         )
+        
+        if not fixed_base_dir is None:
+            if check_if_path_in_dirs(fixed_base_dir, data["allowed_dirs"]) is None:
+                sys.exit("Fixed base dir is not allowed.")
+            data["allowed_dirs"] = {
+                fixed_base_dir_name: {
+                    "path": fixed_base_dir,
+                    "mode": data["allowed_dirs"][check_if_path_in_dirs(fixed_base_dir, data["allowed_dirs"])]["mode"]
+                }
+            }
 
         try:
             if path == "":
@@ -124,13 +135,7 @@ def browse_dir():
                 data["items"] = browse_dir_(path, ignore_files, file_exts, show_only_hits)
             else:
                 sys.exit(str(e))
-        if not fixed_base_dir is None and check_if_path_in_dirs(fixed_base_dir, data["allowed_dirs"]):
-            data["allowed_dirs"] = {
-                "FIXED_BASE_DIR": {
-                    path: fixed_base_dir,
-                    mode: data["allowed_dirs"][check_if_path_in_dirs(fixed_base_dir, data["allowed_dirs"])]["mode"]
-                }
-            }
+
     except SystemExit as e:
         messages.append( { 
             "type":"error", 
