@@ -88,13 +88,16 @@ def browse_dir():
         job_id = data_req["job_id"] if "job_id" in data_req.keys() else None
         run_id = data_req["run_id"] if "run_id" in data_req.keys() else None
         on_error_return_base_dir_items = data_req["on_error_return_base_dir_items"]
+        fixed_base_dir = data_req["fixed_base_dir"] if "fixed_base_dir" in data_req.keys() else None
+        include_tmp_dir = data_req["include_tmp_dir"] if "include_tmp_dir" in data_req.keys() else False
 
         data["allowed_dirs"] = get_allowed_base_dirs(
             job_id=job_id, 
             run_id=run_id, 
             allow_input=allow_input,
             allow_upload=allow_upload,
-            allow_download=allow_download
+            allow_download=allow_download,
+            include_tmp_dir=include_tmp_dir
         )
 
         try:
@@ -112,19 +115,22 @@ def browse_dir():
             data["dir"] = path
         except SystemExit as e:
             if on_error_return_base_dir_items:
-                print("peep")
                 if (not default_base_dir is None) and default_base_dir in data["allowed_dirs"].keys():
-                    print("peep")
                     data["base_dir"] = default_base_dir
                 else:
                     data["base_dir"] = list(data["allowed_dirs"].keys())[0]
                 path = data["allowed_dirs"][data["base_dir"]]["path"]
                 data["dir"] = path
-                print(data["dir"])
                 data["items"] = browse_dir_(path, ignore_files, file_exts, show_only_hits)
-                print(data["items"])
             else:
                 sys.exit(str(e))
+        if not fixed_base_dir is None and check_if_path_in_dirs(fixed_base_dir, data["allowed_dirs"]):
+            data["allowed_dirs"] = {
+                "FIXED_BASE_DIR": {
+                    path: fixed_base_dir,
+                    mode: data["allowed_dirs"][check_if_path_in_dirs(fixed_base_dir, data["allowed_dirs"])]["mode"]
+                }
+            }
     except SystemExit as e:
         messages.append( { 
             "type":"error", 
