@@ -13,14 +13,24 @@
 
 // }
 
-class ImportSingleCWL extends React.Component{
+
+class ImportCWLZip extends React.Component{
     constructor(props){
         super(props);
         this.state = {
-            importName: ""
+            importName: "",
+            actionStatus: "none",
+            importMessages: [],
+            extractedTmpDir: "",
+            cwlPath: ""
         }
 
         this.changeInputField = this.changeInputField.bind(this);
+        this.onUploadCompletion = this.onUploadCompletion.bind(this);
+        this.onCWLSelection = this.onCWLSelection.bind(this);
+        this.importCWLPath = this.importCWLPath.bind(this);
+        this.browseContent = this.browseContent.bind(this);
+        this.ajaxRequest = ajaxRequest.bind(this);
     }
 
     changeInputField(event){
@@ -28,6 +38,180 @@ class ImportSingleCWL extends React.Component{
             [event.currentTarget.name]: event.currentTarget.value
         })
     }
+
+    onUploadCompletion(isSuccess, data){
+        if (isSuccess){
+            this.setState({
+                extractedTmpDir: data["temp_dir"],
+                cwlPath: ""
+            })
+        }
+        else {
+            this.setState({
+                extractedTmpDir: "",
+                cwlPath: ""
+            })
+        }
+    }
+
+    onCWLSelection(changes, selectedItem){
+        if (changes){
+            this.setState({
+                cwlPath: selectedItem,
+                importName: selectedItem.split('\\').pop().split('/').pop().replace(".cwl", "").replace(".CWL",""),
+                actionStatus: "none"
+            })
+        }
+        else {
+            this.setState({
+                actionStatus: "none"
+            })
+        }
+    }
+
+    browseContent(){
+        this.setState({actionStatus: "browse"})
+    }
+
+    importCWLPath(){
+        this.ajaxRequest({
+            statusVar: "actionStatus",
+            statusValueDuringRequest: "import",
+            messageVar: "importMessages",
+            sendData: {
+                cwl_path: this.state.cwlPath,
+                import_name: this.state.importName
+            },
+            route: routeImportCwlByPath
+        })
+    }
+
+    render(){
+        const cwlBasename = this.state.cwlPath.split('\\').pop().split('/').pop()
+        return(
+            <div className="w3-panel">
+                <p>
+                    Import CWL document(s) via a zip file
+                </p>
+                <span className="w3-text-green">1. Choose a zip file containing CWL documents:</span>&nbsp;
+                <FileUploadComponent
+                    requestRoute={routeUploadCwlZip}
+                    buttonLabel="extract content"
+                    onUploadCompletion={this.onUploadCompletion}
+                />
+                {this.state.extractedTmpDir && (
+                    <span>
+                        
+                        <span className="w3-text-green">
+                            2. Browse the zip content and select a CWL document to import:
+                        </span>
+                        <br/>
+                        <ActionButton
+                            name="browse"
+                            value="browse"
+                            onAction={this.browseContent}
+                            label="browse and select"
+                            loading={this.state.actionStatus == "browse"}
+                            disabled={this.state.actionStatus != "none"}
+                        />&nbsp;
+                        <IneditableValueField>
+                            {this.state.cwlPath ? (
+                                    cwlBasename
+                                ) : (
+                                    "no CWL document selected"
+                                )
+                            }
+                        </IneditableValueField>
+                        {this.state.actionStatus == "browse" && (
+                            <BrowseDir
+                                path={this.state.cwlPath}
+                                fileExts={["cwl", "CWL"]}
+                                allowInput={true}
+                                fixedBaseDir={this.state.extractedTmpDir}
+                                fixedBaseDirName={"ZIP_CONTENT"}
+                                defaultBaseDir={this.state.extractedTmpDir}
+                                selectDir={false}
+                                includeTmpDir={true}
+                                showCancelButton={true}
+                                terminateBrowseDialog={this.onCWLSelection}
+                            />
+                        )}
+                        {this.state.cwlPath && (
+                            <span>
+                                <br/>
+                                <div className="w3-text-green" style={ {paddingTop: "10px"} }>3. Choose a name and import:</div>
+                                <input type="text"
+                                    className="w3-input w3-border"
+                                    name="importName"
+                                    style={ {width: "50%", display: "inline-block"} }
+                                    value={this.state.importName}
+                                    onChange={this.changeInputField}
+                                />
+                                <ActionButton
+                                    name="import"
+                                    value="import"
+                                    onAction={this.importCWLPath}
+                                    label="import using selected name"
+                                    loading={this.state.actionStatus == "import"}
+                                    disabled={this.state.actionStatus != "none"}
+                                />
+                                <DisplayServerMessages messages={this.state.importMessages} />
+                            </span>
+                        )}
+                    </span>
+
+                )}
+            </div>
+        )
+    }
+
+}
+
+class ImportSingleCWL extends React.Component{
+    constructor(props){
+        super(props);
+        this.state = {
+            importName: "",
+            actionStatus: "none",
+            serverMessages: []
+        }
+
+        this.changeInputField = this.changeInputField.bind(this);
+        // this.importCWL = this.importCWL.bind(this);
+        // this.ajaxRequest = ajaxRequest.bind(this)
+    }
+
+    changeInputField(event){
+        this.setState({
+            [event.currentTarget.name]: event.currentTarget.value
+        })
+    }
+
+    // importCWL(){
+    //     this.ajaxRequest({
+    //         statusVar: "actionStatus",
+    //         statusValueDuringRequest: "importing",
+    //         messageVar: "serverMessages",
+    //         sendViaFormData=true,
+    //         sendData: {
+    //             job_id: this.props.jobId,
+    //             run_id: this.props.runId
+    //         },
+    //         route: routeGetRunDetails,
+    //         onSuccess: (data, messages) => {
+    //             return({
+    //                 logContent: data.log,
+    //                 yamlContent: data.yaml,
+    //                 doNotUpdate: !this.mounted
+    //             })
+    //         },
+    //         onError: (messages) => {
+    //             return({
+    //                 doNotUpdate: !this.mounted
+    //             })
+    //         }
+    //     })
+    // }
 
     render(){
         return(
@@ -63,16 +247,18 @@ class ImportCWLRoot extends React.Component {
     constructor(props){
         super(props);
         this.state = {
-            importName: "",
             importMethod: "singleCWL"
         }
 
         this.importMethods = {
             singleCWL: {
-                descr: "a single CWL file (CWL-wrapped tool or a packed CWL Workflow)",
+                descr: "via a single CWL document (CWL-wrapped tool or a packed CWL Workflow)",
                 component: <ImportSingleCWL />
+            },
+            CWLZip: {
+                descr: "via a zip file containing multiple CWL documents (e.g. a CWL workflow with its dependencies)",
+                component: <ImportCWLZip />
             }
-
         }
 
         this.changeInputField = this.changeInputField.bind(this);
@@ -88,7 +274,7 @@ class ImportCWLRoot extends React.Component {
         return(
             <div className="w3-panel">
                 <h3>Import a Tool or Workflow</h3>
-                <span className="w3-text-green">Choose how and what you like to import:</span>
+                <span className="w3-text-green">Choose how you would like to import:</span>
                 <select className="w3-button w3-white w3-border w3-padding-small" 
                     name="importMethod"
                     onChange={this.changeInputField}
