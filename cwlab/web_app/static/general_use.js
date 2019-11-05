@@ -1043,7 +1043,7 @@ class BrowseDir extends React.Component {
             changes = true
             selectedItem = this.state.dirPath
         }
-        this.props.terminateBrowseDialg(changes, selectedItem)
+        this.props.terminateBrowseDialog(changes, selectedItem)
     }
     
     downloadFileOrFolder(event){
@@ -1333,7 +1333,7 @@ class BrowseDirTextField extends React.Component {
         };  
 
         this.browse = this.browse.bind(this);
-        this.terminateBrowseDialg = this.terminateBrowseDialg.bind(this);
+        this.terminateBrowseDialog = this.terminateBrowseDialog.bind(this);
     }
 
     browse(){
@@ -1342,7 +1342,7 @@ class BrowseDirTextField extends React.Component {
         })
     }
 
-    terminateBrowseDialg(changes, selectedItem){
+    terminateBrowseDialog(changes, selectedItem){
         this.setState({
             actionStatus: "none"
         })
@@ -1405,7 +1405,7 @@ class BrowseDirTextField extends React.Component {
                         prevPath={this.props.prevPath}
                         changePrevPath={this.props.changePrevPath}
                         showCancelButton={true}
-                        terminateBrowseDialg={this.terminateBrowseDialg}
+                        terminateBrowseDialog={this.terminateBrowseDialog}
                     />
                 )}
             </span>
@@ -1424,8 +1424,7 @@ class FileUploadComponent extends React.Component {
         // props.oneLine if true, everything will be in one line
         // props.diabled if true, upload button disabled
         // props.meta_data meta data send together with the file
-        // props.onUploadCompletion function to exectute on completion, 
-        //  takes one argument: true (on success)/ false (on error)
+        // props.onUploadCompletion function to exectute on completion
         // props.buttonLabel
         // props.showProgress
 
