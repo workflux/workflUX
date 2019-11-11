@@ -518,11 +518,11 @@ class JobContent extends React.Component {
             route: routeTerminateRuns,
             onSuccess: (data, messages) => {
                 this.getRunList()       
-                return({})
+                return({runDangerZoneUnlocked: false})
             },
             onError: (data, messages) => {
                 this.getRunList()       
-                return({})
+                return({runDangerZoneUnlocked: false})
             }
         })
     }
