@@ -15,6 +15,9 @@ from cwltool.main import print_pack
 import json
 from string import ascii_letters, digits
 from pkg_resources import get_distribution
+from urllib import request as url_request
+from shutil import copyfileobj
+from werkzeug import secure_filename
 cwltool_version = get_distribution("cwltool").version
 from distutils.version import StrictVersion
 if StrictVersion(cwltool_version) > StrictVersion("1.0.20181201184214"):
@@ -143,6 +146,19 @@ def unzip_dir(zip_path, target_dir):
         sys.exit("The provided target dir does not exist or is not a dir.")
     with zipfile.ZipFile(zip_path,"r") as zip_ref:
         zip_ref.extractall(target_dir)
+
+def download_file(url, fallback_filename=None):
+    temp_dir = make_temp_dir()
+    try:
+        file_name = secure_filename(url.rsplit('/', 1)[-1])
+    except Exception:
+        
+        file_name = fallback_filename if not fallback_filename is None else "download"
+    file_path = os.path.join(temp_dir, file_name)
+    with url_request.urlopen(url) as url_response, open(file_path, 'wb') as download_file:
+        copyfileobj(url_response, download_file)
+
+    return file_path
 
 def is_allowed_file(filename, type="CWL"):
     # validates uploaded files
