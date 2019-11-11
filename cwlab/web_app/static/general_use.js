@@ -161,12 +161,14 @@ class TabPanel extends React.Component { // controlled by Root Component
                     className="w3-card w3-metro-darken"
                     style={ {width:"100%"} }
                 >
-                    <div 
-                        className="w3-padding-small"
-                        style={ {display: "inline-block"} }
-                    >
-                        {this.props.title}
-                    </div>
+                    {this.props.title && (
+                        <div 
+                            className="w3-padding-small"
+                            style={ {display: "inline-block"} }
+                        >
+                            {this.props.title}
+                        </div>
+                    )}
                     {
                         this.props.tabs.map( (tab) => (
                                 <a
