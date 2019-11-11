@@ -219,7 +219,7 @@ class ImportSingleCWL extends React.Component{
                 <p>
                     Import a CWL-wrapped tool or a packed CWL workflow.
                 </p>
-                <span className="w3-text-green">Choose a name:</span>&nbsp;
+                <span className="w3-text-green">1. Choose a name:</span>&nbsp;
                 <input type="text"
                     className="w3-input w3-border"
                     name="importName"
@@ -228,7 +228,7 @@ class ImportSingleCWL extends React.Component{
                     onChange={this.changeInputField}
                 />
                 <br/>
-                <span className="w3-text-green">Choose a CWL file:</span>&nbsp;
+                <span className="w3-text-green">2. Choose and import a CWL file:</span>&nbsp;
                 <Message type="hint">
                     Please Note: Currently, CWL workflows are only supported in packed format. 
                     Please see <a href="https://github.com/common-workflow-language/cwltool#combining-parts-of-a-workflow-into-a-single-document">the documentation of cwltool</a> for details.
@@ -251,12 +251,16 @@ class ImportCWLRoot extends React.Component {
         }
 
         this.importMethods = {
-            singleCWL: {
-                descr: "via a single CWL document (CWL-wrapped tool or a packed CWL Workflow)",
+            file: {
+                descr: "upload a single CWL document (CWL-wrapped tool or a packed CWL Workflow)",
                 component: <ImportSingleCWL />
             },
             CWLZip: {
-                descr: "via a zip file containing multiple CWL documents (e.g. a CWL workflow with its dependencies)",
+                descr: "upload a zip file containing CWL documents (e.g. a CWL workflow with its dependencies)",
+                component: <ImportCWLZip />
+            },
+            public: {
+                descr: "URL to public CWL document or CWL-containing zip ",
                 component: <ImportCWLZip />
             }
         }
@@ -274,7 +278,6 @@ class ImportCWLRoot extends React.Component {
         return(
             <div className="w3-panel">
                 <h3>Import a Tool or Workflow</h3>
-                <span className="w3-text-green">Choose how you would like to import:</span>
                 <select className="w3-button w3-white w3-border w3-padding-small" 
                     name="importMethod"
                     onChange={this.changeInputField}
