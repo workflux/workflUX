@@ -530,7 +530,7 @@ class JobContent extends React.Component {
     deleteJob(){
         this.ajaxRequest({
             statusVar: "actionStatus",
-            statusValueDuringRequest: "deleting_job",
+            statusValueDuringRequest: "delete_job",
             messageVar: "actionGlobalDangerMessages",
             sendData: {
                 job_id: this.props.jobId
@@ -738,12 +738,12 @@ class JobContent extends React.Component {
                                         <tr>
                                             <td>
                                                 <ActionButton
-                                                    name="delete entire job"
-                                                    value="delete entire job"
+                                                    name="delete_job"
+                                                    value="delete_job"
                                                     onAction={this.deleteJob}
                                                     label={<span><i className="fas fa-trash-alt w3-text-red"/>&nbsp;delete job</span>}
                                                     disabled={!this.state.globalDangerZoneUnlocked}
-                                                    loading={this.state.actionStatus == "delete"} 
+                                                    loading={this.state.actionStatus == "delete_job"} 
                                                 />
                                             </td>
                                             <td>
