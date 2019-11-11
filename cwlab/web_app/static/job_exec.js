@@ -508,7 +508,7 @@ class JobContent extends React.Component {
     terminateRuns(mode="terminate"){
         this.ajaxRequest({
             statusVar: "actionStatus",
-            statusValueDuringRequest: "terminating",
+            statusValueDuringRequest: mode,
             messageVar: "actionRunDangerMessages",
             sendData: {
                 job_id: this.props.jobId,
@@ -664,7 +664,7 @@ class JobContent extends React.Component {
                                                     onAction={this.terminateRuns}
                                                     label={<span><i className="fas fa-stop-circle w3-text-red"/>&nbsp;terminate</span>}
                                                     disabled={disable_danger_run_actions}
-                                                    loading={this.state.actionStatus == "terminating"} 
+                                                    loading={this.state.actionStatus == "terminate"} 
                                                 />
                                             </td>
                                             <td>
@@ -680,7 +680,7 @@ class JobContent extends React.Component {
                                                     onAction={this.terminateRuns}
                                                     label={<span><i className="fas fa-undo w3-text-red"/>&nbsp;reset</span>}
                                                     disabled={disable_danger_run_actions}
-                                                    loading={this.state.actionStatus == "resetting"} 
+                                                    loading={this.state.actionStatus == "reset"} 
                                                 />
                                             </td>
                                             <td>
