@@ -251,7 +251,7 @@ class ImportCWLRoot extends React.Component {
         }
 
         this.importMethods = {
-            file: {
+            singleCWL: {
                 descr: "upload a single CWL document (CWL-wrapped tool or a packed CWL Workflow)",
                 component: <ImportSingleCWL />
             },
