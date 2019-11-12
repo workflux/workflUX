@@ -3,7 +3,7 @@ from cwlab.general_use import get_path, get_duration, db_commit, read_file_conte
     get_job_name_from_job_id, get_job_templ_info, get_allowed_base_dirs, check_if_path_in_dirs
 from .db import Exec
 from cwlab import db
-from cwlab.user.manage import get_user_info
+from cwlab.users.manage import get_user_info
 from datetime import datetime
 import os, sys, platform
 from subprocess import Popen, PIPE
