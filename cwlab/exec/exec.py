@@ -3,6 +3,7 @@ from cwlab.general_use import get_path, get_duration, db_commit, read_file_conte
     get_job_name_from_job_id, get_job_templ_info, get_allowed_base_dirs, check_if_path_in_dirs
 from .db import Exec
 from cwlab import db
+from cwlab.user.manage import get_user_info
 from datetime import datetime
 import os, sys, platform
 from subprocess import Popen, PIPE
@@ -130,7 +131,15 @@ def query_info_from_db(job_id):
                 sleep(retry_delay + retry_delay*random())
     return db_job_id_request
 
-def exec_runs(job_id, run_ids, exec_profile_name, user_id=None, max_parrallel_exec_user_def=None, add_exec_info={}):
+def exec_runs(job_id, run_ids, exec_profile_name, user_id=None, max_parrallel_exec_user_def=None, add_exec_info={}, send_email=True):
+    if send_email and app.config["SEND_EMAIL"]:
+        if not user_id is None:
+            user_email = get_user_info(user_id)["user_email"]
+        else:
+            user_email = app.config["DEFAULT_EMAIL"]
+    else:
+        user_email = None
+
     # check if runs are already running:
     already_running_runs = []
     db_job_id_request = query_info_from_db(job_id)
@@ -166,10 +175,11 @@ def exec_runs(job_id, run_ids, exec_profile_name, user_id=None, max_parrallel_ex
             time_finished=None, #*
             timeout_limit=None, #*
             pid=-1, #*
-            user_id=user_id if not user_id is None else None,
+            user_id=user_id,
             exec_profile=exec_profile,
             exec_profile_name=exec_profile_name,
-            add_exec_info=add_exec_info
+            add_exec_info=add_exec_info,
+            user_email=user_email
         )
         #* will be set by the background process itself
         db.session.add(exec_db_entry[run_id])

@@ -11,6 +11,8 @@ from datetime import datetime, timedelta
 from time import sleep
 from random import random
 from re import sub
+from email.mime.text import MIMEText
+from subprocess import Popen, PIPE
 
 if platform_system() == 'Windows':
     from signal import CTRL_BREAK_EVENT
@@ -19,7 +21,6 @@ else:
     from pexpect import spawn
 
 python_interpreter = sys.executable
-
 
 # commandline arguments
 db_uri = sys.argv[1]
@@ -47,6 +48,7 @@ for db_retry_delay in db_retry_delays:
         Base = automap_base()
         Base.prepare(engine, reflect=True)
         Exec = Base.classes["exec"]
+        User = Base.classes["user"]
         break
     except Exception as e:
         print(">>> retry db query: " + str(db_retry_delay))
@@ -89,7 +91,24 @@ time_started = exec_db_entry.time_started
 exec_profile = exec_db_entry.exec_profile
 exec_profile_name = exec_db_entry.exec_profile_name
 add_exec_info = exec_db_entry.add_exec_info
+user_id = exec_db_entry.user_id
+user_email = exec_db_entry.user_email
 
+# send mail:
+def send_mail(subj, text):
+    if user_email is None:
+        print(">>> skipping email: no email address provided")
+    elif platform_system() != "Linux":
+        print(">>> skipping email: only available on Linux")
+    else:
+        print(">>> sending email")
+        msg = MIMEText(text)
+        msg["To"] = user_email
+        msg["Subject"] = subj
+        p = Popen(["sendmail", "-t", "-oi"], stdin=PIPE, universal_newlines=True)
+        p.communicate(msg.as_string())
+        exit_code = p.wait()
+        print("Email exit code was: {}".format(str(exit_code)))
 
 
 # retry on commit:
@@ -282,6 +301,40 @@ for retry_count in range(0, exec_profile["max_retries"]+1):
         terminate_shell(p) 
         break
 
-# set finish time     
+# set finish time
 exec_db_entry.time_finished = datetime.now()
 commit()
+
+# send mail
+if exec_db_entry.status == "finished":
+    subj = "{}_{} successfully finished".format(run_id, job_id)
+    text = """
+        The run \"{}\" of job \"{}\" successfully finished.
+
+        Time started: {}
+        Time finished: {}
+
+        Output can be found at: {}
+    """.format(
+            run_id, job_id, 
+            str(exec_db_entry.time_started), str(exec_db_entry.time_finished), out_dir
+        )
+else:
+    subj = "{}_{} failed".format(run_id, job_id)
+    text = """
+        The run \"{}\" of job \"{}\" failed with status: {}
+
+        The error message was: {}
+
+        Time started: {}
+        Time failed: {}
+
+        There might be intermediate output at: {}
+    """.format(
+            run_id, job_id, 
+            exec_db_entry.status, exec_db_entry.err_message,
+            str(exec_db_entry.time_started), str(exec_db_entry.time_finished), out_dir
+        )
+send_mail(subj, text)
+
+

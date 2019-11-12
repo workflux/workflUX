@@ -50,6 +50,22 @@ class Config(object):
         self.CORRECT_SYMLINKS = self.CONFIG_FILE_content.get('CORRECT_SYMLINKS') \
             if not self.CONFIG_FILE_content.get('CORRECT_SYMLINKS') is None \
             else True
+            
+        self.ENABLE_USERS = (
+            os.environ.get('CWLAB_ENABLE_USERS') or
+            self.CONFIG_FILE_content.get('ENABLE_USERS') or  
+            False
+        )
+           
+        self.DEFAULT_EMAIL = (
+            os.environ.get('CWLAB_DEFAULT_EMAIL') or 
+            self.CONFIG_FILE_content.get('DEFAULT_EMAIL') or  
+            None
+        )
+         
+        self.SEND_EMAIL = self.CONFIG_FILE_content.get('SEND_EMAIL')  \
+            if not self.CONFIG_FILE_content.get('SEND_EMAIL') is None \
+            else (self.ENABLE_USERS or not self.DEFAULT_EMAIL is None)
 
         self.SECRET_KEY = (
             os.environ.get('CWLAB_SECRET_KEY') or 
@@ -130,12 +146,6 @@ class Config(object):
             os.environ.get('CWLAB_WEB_AUTO_REFRESH_INTERVAL') or
             self.CONFIG_FILE_content.get('WEB_AUTO_REFRESH_INTERVAL') or  
             1
-        )
-
-        self.ENABLE_USERS = (
-            os.environ.get('CWLAB_ENABLE_USERS') or
-            self.CONFIG_FILE_content.get('ENABLE_USERS') or  
-            False
         )
 
         # execution profile:
