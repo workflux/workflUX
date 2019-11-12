@@ -134,7 +134,7 @@ def query_info_from_db(job_id):
 def exec_runs(job_id, run_ids, exec_profile_name, user_id=None, max_parrallel_exec_user_def=None, add_exec_info={}, send_email=True):
     if send_email and app.config["SEND_EMAIL"]:
         if not user_id is None:
-            user_email = get_user_info(user_id)["user_email"]
+            user_email = get_user_info(user_id)["email"]
         else:
             user_email = app.config["DEFAULT_EMAIL"]
     else:
