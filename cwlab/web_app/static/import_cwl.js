@@ -14,7 +14,7 @@
 // }
 
 
-class ImportCWLZip extends React.Component{
+class ImportCwlZip extends React.Component{
     constructor(props){
         super(props);
         this.state = {
@@ -82,7 +82,7 @@ class ImportCWLZip extends React.Component{
                 cwl_path: this.state.cwlPath,
                 import_name: this.state.importName
             },
-            route: routeImportCwlByPath
+            route: routeImportCwlByPathOrUrl
         })
     }
 
@@ -167,7 +167,7 @@ class ImportCWLZip extends React.Component{
 
 }
 
-class ImportSingleCWL extends React.Component{
+class ImportCwlFile extends React.Component{
     constructor(props){
         super(props);
         this.state = {
@@ -252,16 +252,16 @@ class ImportCWLRoot extends React.Component {
 
         this.importMethods = {
             singleCWL: {
-                descr: "upload a single CWL document (CWL-wrapped tool or a packed CWL Workflow)",
-                component: <ImportSingleCWL />
+                descr: "from file (CWL-wrapped tool or a packed CWL Workflow)",
+                component: <ImportCwlFile />
             },
             CWLZip: {
-                descr: "upload a zip file containing CWL documents (e.g. a CWL workflow with its dependencies)",
-                component: <ImportCWLZip />
+                descr: "from zip file (e.g. a CWL workflow with its dependencies)",
+                component: <ImportCwlZip />
             },
             public: {
-                descr: "URL to public CWL document or CWL-containing zip ",
-                component: <ImportCWLZip />
+                descr: "URL to public CWL document (e.g. from github)",
+                component: <ImportCwlUrl />
             }
         }
 
