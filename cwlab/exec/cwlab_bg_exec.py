@@ -102,9 +102,16 @@ def send_mail(subj, text):
         print(">>> skipping email: only available on Linux")
     else:
         print(">>> sending email")
-        msg = MIMEText(text)
+        msg = MIMEText("""
+        <html>
+            <h1>CW<span style=\"color: green\">Lab</span></h1>
+            <h3>{}</h3>
+            <span>{}</span>
+        </html>
+        """.format(subj, text))
         msg["To"] = user_email
-        msg["Subject"] = subj
+        msg["Subject"] = subj 
+        msg["Content-Type"] = "text/html"
         p = Popen(["sendmail", "-t", "-oi"], stdin=PIPE, universal_newlines=True)
         p.communicate(msg.as_string())
         exit_code = p.wait()
@@ -307,31 +314,23 @@ commit()
 
 # send mail
 if exec_db_entry.status == "finished":
-    subj = "{}_{} successfully finished".format(run_id, job_id)
+    subj = "The run \"{}\" of job \"{}\" successfully finished.".format(run_id, job_id)
     text = """
-        The run \"{}\" of job \"{}\" successfully finished.
-
-        Time started: {}
-        Time finished: {}
-
-        Output can be found at: {}
+    Time started: {}<br/>
+    Time finished: {}<br/><br/>
+    Output can be found at: {}
     """.format(
-            run_id, job_id, 
             str(exec_db_entry.time_started), str(exec_db_entry.time_finished), out_dir
         )
 else:
-    subj = "{}_{} failed".format(run_id, job_id)
+    subj = "The run \"{}\" of job \"{}\" failed.".format(run_id, job_id)
     text = """
-        The run \"{}\" of job \"{}\" failed with status: {}
-
-        The error message was: {}
-
-        Time started: {}
-        Time failed: {}
-
-        There might be intermediate output at: {}
+    Final status: {}<br/>
+    The error message was: {}<br/><br/>
+    Time started: {}<br/>
+    Time failed: {}<br/><br/>
+    There might be intermediate output at: {}
     """.format(
-            run_id, job_id, 
             exec_db_entry.status, exec_db_entry.err_message,
             str(exec_db_entry.time_started), str(exec_db_entry.time_finished), out_dir
         )
