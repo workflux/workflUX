@@ -196,28 +196,115 @@ class ImportCwlFile extends React.Component{
             </div>
         )
     }
+}
 
+class ImportCwlUrl extends React.Component{
+    constructor(props){
+        super(props);
+        this.state = {
+            importName: "",
+            cwlUrl: "",
+            actionStatus: "none",
+            importMessages: []
+        }
+
+        this.changeInputField = this.changeInputField.bind(this);
+        this.importCWLUrl = this.importCWLUrl.bind(this);
+    }
+
+    changeInputField(event){
+        this.setState({
+            [event.currentTarget.name]: event.currentTarget.value
+        })
+    }
+
+    importCWLUrl(){
+        this.ajaxRequest({
+            statusVar: "actionStatus",
+            statusValueDuringRequest: "import",
+            messageVar: "importMessages",
+            sendData: {
+                cwl_path: this.state.cwlUrl,
+                import_name: this.state.importName
+            },
+            route: routeImportCwlByPathOrUrl
+        })
+    }
+
+    render(){
+        return(
+            <div className="w3-panel">
+                <p>
+                    Import a CWL-wrapped tool or CWL workflow (packed or not) from a public URL.
+                </p>
+                <span className="w3-text-green">1. Provide a URL to a CWL document:</span>&nbsp;
+                <Message type="hint">
+                    <table>
+                        <tbody>
+                            <tr>
+                                <td>
+                                    <i className="fab fa-github" style={ {fontSize:"48px"} }/>
+                                </td>
+                                <td>
+                                    You can directly use a URL from github. However, please make sure to provide the URL to the raw file, e.g.:<br/>
+                                    <a href="https://raw.githubusercontent.com/CompEpigen/ATACseq_workflows/1.1.1/CWL/workflows/ATACseq_pipeline.cwl">
+                                        https://raw.githubusercontent.com/CompEpigen/ATACseq_workflows/1.1.1/CWL/workflows/ATACseq_pipeline.cwl
+                                    </a>
+                                </td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </Message>
+                <input type="text"
+                    className="w3-input w3-border"
+                    name="cwlUrl"
+                    style={ {width: "50%"} }
+                    value={this.state.cwlUrl}
+                    onChange={this.changeInputField}
+                />
+                <br/>
+                <span className="w3-text-green">2. Choose a name:</span>&nbsp;
+                <input type="text"
+                    className="w3-input w3-border"
+                    name="importName"
+                    style={ {width: "50%"} }
+                    value={this.state.importName}
+                    onChange={this.changeInputField}
+                />
+                <br/>
+                <ActionButton
+                    name="import"
+                    value="import"
+                    onAction={this.importCWLPath}
+                    label="import using selected name"
+                    loading={this.state.actionStatus == "import"}
+                    disabled={this.state.actionStatus != "none"}
+                />
+                <DisplayServerMessages messages={this.state.importMessages} />
+            </div>
+        )
+    }
 }
 
 class ImportCWLRoot extends React.Component {
     constructor(props){
         super(props);
         this.state = {
-            importMethod: "singleCWL"
+            importMethod: "cwlUrl"
         }
 
         this.importMethods = {
-            singleCWL: {
+            cwlUrl: {
+                descr: "URL to public CWL document (e.g. from github)",
+                component: <ImportCwlUrl />
+            },
+            cwlFile: {
                 descr: "from file (CWL-wrapped tool or a packed CWL Workflow)",
                 component: <ImportCwlFile />
             },
-            CWLZip: {
+            cwlZip: {
                 descr: "from zip file (e.g. a CWL workflow with its dependencies)",
                 component: <ImportCwlZip />
-            },
-            public: {
-                descr: "URL to public CWL document (e.g. from github)",
-                component: <ImportCwlUrl />
             }
         }
 
