@@ -5,13 +5,12 @@ from werkzeug.urls import url_parse
 from werkzeug.utils import secure_filename
 from cwlab import app
 from cwlab.general_use import is_allowed_file, allowed_extensions_by_type, get_path, \
-    make_temp_dir, import_cwl as import_cwl_, unzip_dir, get_allowed_base_dirs, check_if_path_in_dirs
+    make_temp_dir, import_cwl as import_cwl_, unzip_dir, get_allowed_base_dirs, \
+    check_if_path_in_dirs, download_file
 from cwlab.xls2cwl_job import generate_xls_from_cwl as generate_job_template_from_cwl
 from cwlab.users.manage import login_required
 from shutil import rmtree
 from json import loads as json_loads
-
-
 
 @app.route('/import_packed_cwl/', methods=['POST'])
 def import_packed_cwl():
@@ -63,8 +62,6 @@ def import_packed_cwl():
         } )
     
     return jsonify({"data":data,"messages":messages})
-
-
     
 @app.route('/upload_cwl_zip/', methods=['POST'])
 def upload_cwl_zip():
@@ -116,9 +113,47 @@ def upload_cwl_zip():
     
     return jsonify({"data":data,"messages":messages})
 
+@app.route('/download_zip_url/', methods=['POST'])
+def download_zip_url():
+    messages = []
+    data = {}
+    try:
+        login_required()
+        data_req = request.get_json()
+        zip_url = data_req["zip_url"]
 
-@app.route('/import_cwl_by_path/', methods=['POST'])
-def import_cwl_by_path():
+        try:
+            downloaded_zip = download_file(zip_url, "downloaded.zip")
+        except Exception:
+            sys.exit("Could not download the provided URL, is the URL valid; {}".format(zip_url))
+
+        temp_extract_dir = make_temp_dir()
+        unzip_dir(downloaded_zip, temp_extract_dir)
+
+        try:
+            rmtree(os.path.dirname(downloaded_zip))
+        except Exception as e:
+            pass
+
+        data["temp_dir"] = temp_extract_dir
+
+        messages.append( { 
+            "type":"success", 
+            "text": import_file.filename + " was successfully downloaded and extracted."
+        } )
+
+    except SystemExit as e:
+        messages.append( { "type":"error", "text": str(e) } )
+    except:
+        messages.append( { 
+            "type":"error", 
+            "text":"An uknown error occured." 
+        } )
+    
+    return jsonify({"data":data,"messages":messages})
+
+@app.route('/import_cwl_by_path_or_url/', methods=['POST'])
+def import_cwl_by_path_or_url():
     messages = []
     data = []
     try:
