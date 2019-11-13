@@ -12,8 +12,8 @@ from cwlab.users.manage import login_required
 from shutil import rmtree
 from json import loads as json_loads
 
-@app.route('/import_packed_cwl/', methods=['POST'])
-def import_packed_cwl():
+@app.route('/upload_cwl/', methods=['POST'])
+def upload_cwl():
     messages = []
     data = []
     try:

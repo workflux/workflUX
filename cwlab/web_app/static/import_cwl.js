@@ -193,7 +193,7 @@ class ImportCwlFile extends React.Component{
                     </a> for details on how to pack a workflow.
                 </Message>
                 <FileUploadComponent
-                    requestRoute={routeImportPackedCwl}
+                    requestRoute={routeUploadCwl}
                     metaData={ {"import_name": this.state.importName} }
                 />
             </div>
