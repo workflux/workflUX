@@ -18,6 +18,7 @@ from pkg_resources import get_distribution
 from urllib import request as url_request
 from shutil import copyfileobj
 from werkzeug import secure_filename
+from urllib.request import urlopen
 cwltool_version = get_distribution("cwltool").version
 from distutils.version import StrictVersion
 if StrictVersion(cwltool_version) > StrictVersion("1.0.20181201184214"):
@@ -32,6 +33,12 @@ def normalize_path(path):
     else:
         return os.path.abspath(path)
 
+def vaidate_url(url):
+    try:
+        test = urlopen(url)
+    except Exception:
+        sys.exit("Cannot open the provided url: {}".format(url))
+        
 def browse_dir(path,
     ignore_files=False,
     file_exts=[],

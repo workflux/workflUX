@@ -213,6 +213,7 @@ class ImportCwlUrl extends React.Component{
 
         this.changeInputField = this.changeInputField.bind(this);
         this.importCWLUrl = this.importCWLUrl.bind(this);
+        this.ajaxRequest = ajaxRequest.bind(this);
     }
 
     changeInputField(event){
@@ -228,6 +229,7 @@ class ImportCwlUrl extends React.Component{
             messageVar: "importMessages",
             sendData: {
                 cwl_path: this.state.cwlUrl,
+                is_url: true,
                 import_name: this.state.importName
             },
             route: routeImportCwlByPathOrUrl
@@ -278,7 +280,7 @@ class ImportCwlUrl extends React.Component{
                 <ActionButton
                     name="import"
                     value="import"
-                    onAction={this.importCWLPath}
+                    onAction={this.importCWLUrl}
                     label="import using selected name"
                     loading={this.state.actionStatus == "import"}
                     disabled={this.state.actionStatus != "none"}

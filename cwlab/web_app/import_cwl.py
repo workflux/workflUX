@@ -6,7 +6,7 @@ from werkzeug.utils import secure_filename
 from cwlab import app
 from cwlab.general_use import is_allowed_file, allowed_extensions_by_type, get_path, \
     make_temp_dir, import_cwl as import_cwl_, unzip_dir, get_allowed_base_dirs, \
-    check_if_path_in_dirs, download_file
+    check_if_path_in_dirs, download_file, vaidate_url
 from cwlab.xls2cwl_job import generate_xls_from_cwl as generate_job_template_from_cwl
 from cwlab.users.manage import login_required
 from shutil import rmtree
@@ -160,16 +160,20 @@ def import_cwl_by_path_or_url():
         login_required()
         data_req = request.get_json()
         cwl_path = data_req["cwl_path"]
+        is_url = data_req["is_url"] if "is_url" in data_req.keys() else False
         import_name = data_req["import_name"]
 
-        allowed_dirs = get_allowed_base_dirs(
-            allow_input=False,
-            allow_upload=True,
-            allow_download=False
-        )
-        if not os.path.isfile(cwl_path) or \
-            check_if_path_in_dirs(cwl_path, allowed_dirs) is None:
-            sys.exit("Path does not exist or you have no permission to enter it.")
+        if is_url:
+            vaidate_url(cwl_path)
+        else:
+            allowed_dirs = get_allowed_base_dirs(
+                allow_input=False,
+                allow_upload=True,
+                allow_download=False
+            )
+            if not os.path.isfile(cwl_path) or \
+                check_if_path_in_dirs(cwl_path, allowed_dirs) is None:
+                sys.exit("Path does not exist or you have no permission to enter it.")
 
         import_cwl_(cwl_path=cwl_path, name=import_name)
 
