@@ -1,19 +1,3 @@
-// class ImportButton extends React.Component {
-//     constructor(props){
-//         super(props);
-//         // props.file
-//         // props.pathOrUrl
-//         // props.isUrl
-//         // props.onStart
-//         // props.onCompletion
-//         // props.route
-//     }
-
-
-
-// }
-
-
 class ImportCwlZip extends React.Component{
     constructor(props){
         super(props);
@@ -177,8 +161,6 @@ class ImportCwlFile extends React.Component{
         }
 
         this.changeInputField = this.changeInputField.bind(this);
-        // this.importCWL = this.importCWL.bind(this);
-        // this.ajaxRequest = ajaxRequest.bind(this)
     }
 
     changeInputField(event){
@@ -186,32 +168,6 @@ class ImportCwlFile extends React.Component{
             [event.currentTarget.name]: event.currentTarget.value
         })
     }
-
-    // importCWL(){
-    //     this.ajaxRequest({
-    //         statusVar: "actionStatus",
-    //         statusValueDuringRequest: "importing",
-    //         messageVar: "serverMessages",
-    //         sendViaFormData=true,
-    //         sendData: {
-    //             job_id: this.props.jobId,
-    //             run_id: this.props.runId
-    //         },
-    //         route: routeGetRunDetails,
-    //         onSuccess: (data, messages) => {
-    //             return({
-    //                 logContent: data.log,
-    //                 yamlContent: data.yaml,
-    //                 doNotUpdate: !this.mounted
-    //             })
-    //         },
-    //         onError: (messages) => {
-    //             return({
-    //                 doNotUpdate: !this.mounted
-    //             })
-    //         }
-    //     })
-    // }
 
     render(){
         return(
