@@ -15,7 +15,7 @@ def load_user(id, return_username_only=False):
     for retry_delay in retry_delays:
         try:
             user = User.query.get(int(id))
-        except:
+        except Exception as e:
             assert retry_delay != retry_delays[-1], "Could not connect to database."
             sleep(retry_delay + retry_delay*random())
     if return_username_only:
@@ -31,7 +31,7 @@ def get_user_by_username(username):
             if db_request.count() == 0:
                 return None
             user = db_request.first()
-        except:
+        except Exception as e:
             assert retry_delay != retry_delays[-1], "Could not connect to database."
             sleep(retry_delay + retry_delay*random())
     return user
@@ -52,7 +52,7 @@ def get_users(only_admins=False, return_usernames=False):
             if only_admins:
                 db_user_request = db_user_request.filter(User.level=="admin")
             users = db_user_request.all()
-        except:
+        except Exception as e:
             assert retry_delay != retry_delays[-1], "Could not connect to database."
             sleep(retry_delay + retry_delay*random())
     if return_usernames:
@@ -156,7 +156,7 @@ def get_all_users_info():
     for retry_delay in retry_delays:
         try:
             users = db.session.query(User).all()
-        except:
+        except Exception as e:
             assert retry_delay != retry_delays[-1], "Could not connect to database."
             sleep(retry_delay + retry_delay*random())
     info = []

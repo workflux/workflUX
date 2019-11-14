@@ -11,6 +11,7 @@ from cwlab.xls2cwl_job import generate_xls_from_cwl as generate_job_template_fro
 from cwlab.users.manage import login_required
 from shutil import rmtree
 from json import loads as json_loads
+from cwlab.log import handle_known_error, handle_unknown_error
 
 @app.route('/upload_cwl/', methods=['POST'])
 def upload_cwl():
@@ -53,12 +54,9 @@ def upload_cwl():
         } )
 
     except AssertionError as e:
-        messages.append( { "type":"error", "text": str(e) } )
-    except:
-        messages.append( { 
-            "type":"error", 
-            "text":"An uknown error occured." 
-        } )
+        messages.append( handle_known_error(e, return_front_end_message=True))
+    except Exception as e:
+        messages.append(handle_unknown_error(e, return_front_end_message=True))
     
     return jsonify({"data":data,"messages":messages})
     
@@ -102,12 +100,9 @@ def upload_cwl_zip():
         } )
 
     except AssertionError as e:
-        messages.append( { "type":"error", "text": str(e) } )
-    except:
-        messages.append( { 
-            "type":"error", 
-            "text":"An uknown error occured." 
-        } )
+        messages.append( handle_known_error(e, return_front_end_message=True))
+    except Exception as e:
+        messages.append(handle_unknown_error(e, return_front_end_message=True))
     
     return jsonify({"data":data,"messages":messages})
 
@@ -141,12 +136,9 @@ def download_zip_url():
         } )
 
     except AssertionError as e:
-        messages.append( { "type":"error", "text": str(e) } )
-    except:
-        messages.append( { 
-            "type":"error", 
-            "text":"An uknown error occured." 
-        } )
+        messages.append( handle_known_error(e, return_front_end_message=True))
+    except Exception as e:
+        messages.append(handle_unknown_error(e, return_front_end_message=True))
     
     return jsonify({"data":data,"messages":messages})
 
@@ -181,11 +173,8 @@ def import_cwl_by_path_or_url():
         } )
 
     except AssertionError as e:
-        messages.append( { "type":"error", "text": str(e) } )
-    except:
-        messages.append( { 
-            "type":"error", 
-            "text":"An uknown error occured." 
-        } )
+        messages.append( handle_known_error(e, return_front_end_message=True))
+    except Exception as e:
+        messages.append(handle_unknown_error(e, return_front_end_message=True))
     
     return jsonify({"data":data,"messages":messages})

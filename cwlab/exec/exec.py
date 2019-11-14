@@ -110,7 +110,7 @@ def cleanup_zombie_process(pid):
             p = Process(pid)
             if p.status() == STATUS_ZOMBIE:
                 p.wait()
-    except:
+    except Exception as e:
         pass
 
 
@@ -120,7 +120,7 @@ def query_info_from_db(job_id):
         try:
             db_job_id_request = db.session.query(Exec).filter(Exec.job_id==job_id)
             break
-        except:
+        except Exception as e:
             assert retry_delay != retry_delays[-1], "Could not connect to database."
             sleep(retry_delay + retry_delay*random())
     return db_job_id_request
@@ -266,14 +266,14 @@ def kill_proc_tree(pid, include_parent=True,
     for p in children:
         try:
             p.terminate()
-        except:
+        except Exception as e:
             pass
     _, survived_terminate = wait_procs(children, timeout=timeout,
                                     callback=on_terminate)
     for p in survived_terminate:
         try:
             p.kill()
-        except:
+        except Exception as e:
             pass
     _, survived_kill = wait_procs(survived_terminate, timeout=timeout,
                                     callback=on_terminate)
@@ -317,7 +317,7 @@ def terminate_runs(
                 if isinstance(run_info[run_id]["time_started"], datetime):
                     db_request.filter(Exec.run_id==run_id).delete(synchronize_session=False)
                     db_changed = True
-            except:
+            except Exception as e:
                 could_not_be_cleaned.append(run_id)
                 continue
         if mode == "delete":
@@ -325,7 +325,7 @@ def terminate_runs(
                 yaml_path = get_path("run_yaml", job_id, run_id)
                 if os.path.exists(yaml_path):
                     os.remove(yaml_path)
-            except:
+            except Exception as e:
                 could_not_be_cleaned.append(run_id)
                 continue
         succeeded.append(run_id)

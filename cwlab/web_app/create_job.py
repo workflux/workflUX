@@ -16,6 +16,7 @@ from time import sleep
 from shutil import move, copyfile
 from json import loads as json_loads
 from cwlab.users.manage import login_required
+from cwlab.log import handle_known_error, handle_unknown_error
 
 
 
@@ -28,15 +29,9 @@ def get_job_templ_list():   # returns list of job templates
         login_required()
         templates = get_job_templates()
     except AssertionError as e:
-        messages.append( { 
-            "type":"error", 
-            "text": str(e) 
-        } )
-    except:
-        messages.append( { 
-            "type":"error", 
-            "text":"An uknown error occured." 
-        } )
+        messages.append( handle_known_error(e, return_front_end_message=True))
+    except Exception as e:
+        messages.append(handle_unknown_error(e, return_front_end_message=True))
     return jsonify({
             "data": templates,
             "messages": messages
@@ -56,15 +51,9 @@ def get_job_templ_config_info():    # returns all parmeter and its default mode 
         param_config_info = get_job_templ_info("config", cwl_target)
         template_attributes = get_job_templ_info("attributes", cwl_target)
     except AssertionError as e:
-        messages.append( { 
-            "type":"error", 
-            "text": str(e) 
-        } )
-    except:
-        messages.append( { 
-            "type":"error", 
-            "text":"An uknown error occured." 
-        } )
+        messages.append( handle_known_error(e, return_front_end_message=True))
+    except Exception as e:
+        messages.append(handle_unknown_error(e, return_front_end_message=True))
     return jsonify({
         "data":{
             "params":param_config_info,
@@ -91,7 +80,7 @@ def generate_param_form_sheet():    # generate param form sheet with data sent
         try:
             param_form_sheet = get_path("job_param_sheet_temp", job_id=job_id)
             os.remove(param_form_sheet)
-        except:
+        except Exception as e:
             pass
 
         output_file_path = get_path("job_param_sheet_temp", job_id=job_id, param_sheet_format=sheet_format)
@@ -107,15 +96,9 @@ def generate_param_form_sheet():    # generate param form sheet with data sent
         )
         data["get_form_sheet_href"] = url_for("get_param_form_sheet", job_id=job_id)
     except AssertionError as e:
-        messages.append( { 
-            "type":"error", 
-            "text": str(e) 
-        } )
-    except:
-        messages.append( { 
-            "type":"error", 
-            "text":"An uknown error occured." 
-        } )
+        messages.append( handle_known_error(e, return_front_end_message=True))
+    except Exception as e:
+        messages.append(handle_unknown_error(e, return_front_end_message=True))
     return jsonify({
         "data":data,
         "messages":messages
@@ -136,15 +119,9 @@ def get_param_form_sheet(job_id):
             as_attachment=True
         )
     except AssertionError as e:
-        messages.append( { 
-            "type":"error", 
-            "text": str(e) 
-        } )
-    except:
-        messages.append( { 
-            "type":"error", 
-            "text":"An uknown error occured." 
-        } )
+        messages.append( handle_known_error(e, return_front_end_message=True))
+    except Exception as e:
+        messages.append(handle_unknown_error(e, return_front_end_message=True))
     return jsonify({
         "data":data,
         "messages":messages
@@ -185,12 +162,9 @@ def send_filled_param_form_sheet():
                 "\" does not exist or is not a directory."
             )
     except AssertionError as e:
-        messages.append( { "type":"error", "text": str(e) } )
-    except:
-        messages.append( { 
-            "type":"error", 
-            "text":"An uknown error occured." 
-        } )
+        messages.append( handle_known_error(e, return_front_end_message=True))
+    except Exception as e:
+        messages.append(handle_unknown_error(e, return_front_end_message=True))
     
     if len(messages) == 0:
         try:
@@ -206,12 +180,13 @@ def send_filled_param_form_sheet():
                 os.remove(import_filepath)
                 raise AssertionError(validation_result)
         except AssertionError as e:
-            messages.append( { "type":"error", "text": "The provided form failed validation: " + str(e) } )
-        except:
-            messages.append( { 
-                "type":"error", 
-                "text":"An uknown error occured." 
-            } )
+        messages.append(handle_known_error(
+            e, 
+            alt_err_message="The provided form failed validation: {}".format(str(e)),
+            return_front_end_message=True
+        ))
+        except Exception as e:
+            messages.append(handle_unknown_error(e, return_front_end_message=True))
 
     if len(messages) == 0:
         messages.append( { 
@@ -261,12 +236,13 @@ def send_filled_param_values():
             config_attributes={"CWL": cwl_target}
         )
     except AssertionError as e:
-        messages.append( { "type":"error", "text": "The provided form failed validation: " + str(e) } )
-    except:
-        messages.append( { 
-            "type":"error", 
-            "text":"An uknown error occured." 
-        } )
+        messages.append(handle_known_error(
+            e, 
+            alt_err_message="The provided form failed validation: {}".format(str(e)),
+            return_front_end_message=True
+        ))
+    except Exception as e:
+        messages.append(handle_unknown_error(e, return_front_end_message=True))
 
     if len(messages) == 0:
         messages.append( { 
@@ -287,15 +263,9 @@ def prepare_job_env():    # generate param form sheet with data sent
         job_id = request_json["job_id"]
         make_job_dir_tree(job_id)        
     except AssertionError as e:
-        messages.append( { 
-            "type":"error", 
-            "text": str(e) 
-        } )
-    except:
-        messages.append( { 
-            "type":"error", 
-            "text":"An uknown error occured." 
-        } )
+        messages.append( handle_known_error(e, return_front_end_message=True))
+    except Exception as e:
+        messages.append(handle_unknown_error(e, return_front_end_message=True))
     return jsonify({
         "data":data,
         "messages":messages
@@ -338,7 +308,7 @@ def create_job():    # generate param form sheet with data sent
         try:
             sheet_form = get_path("job_param_sheet", job_id=job_id)
             os.remove(sheet_form)
-        except:
+        except Exception as e:
             pass
 
         create_job_(
@@ -356,15 +326,9 @@ def create_job():    # generate param form sheet with data sent
             "text":"Successfully created job \"" + job_id + "\"." 
         } )
     except AssertionError as e:
-        messages.append( { 
-            "type":"error", 
-            "text": str(e) 
-        } )
-    except:
-        messages.append( { 
-            "type":"error", 
-            "text":"An uknown error occured." 
-        } )
+        messages.append( handle_known_error(e, return_front_end_message=True))
+    except Exception as e:
+        messages.append(handle_unknown_error(e, return_front_end_message=True))
     return jsonify({
         "data":data,
         "messages":messages
@@ -392,15 +356,9 @@ def get_param_values():
             "configs": configs
         }
     except AssertionError as e:
-        messages.append( { 
-            "type":"error", 
-            "text": str(e) 
-        } )
-    except:
-        messages.append( { 
-            "type":"error", 
-            "text":"An unkown error occured." 
-        } )
+        messages.append( handle_known_error(e, return_front_end_message=True))
+    except Exception as e:
+        messages.append(handle_unknown_error(e, return_front_end_message=True))
     return jsonify({
         "data":data,
         "messages":messages

@@ -67,7 +67,7 @@ def query_info_from_db(what, db_retry_delays_=None, no_error=False):
             elif what == "running_exec":
                 db_request = session.query(Exec).filter(Exec.time_finished == None).filter(Exec.status != "queued").filter(Exec.exec_profile_name == exec_profile_name)
             break
-        except:
+        except Exception as e:
             if db_retry_delay == db_retry_delays[-1]:
                 assert no_error, "Exception query to database: \n" + str(e)
             else:
@@ -247,7 +247,7 @@ def run_step(p, step_name, retry_count):
         exit_code = 1
         success = False
         err_message = "timeout waiting for expected pattern"
-    except:
+    except Exception as e:
         exit_code = 1
         success = False
         err_message = "Unkown error checking for exit code."

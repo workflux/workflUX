@@ -8,6 +8,7 @@ from cwlab.utils import browse_dir as browse_dir_, get_allowed_base_dirs, check_
 from cwlab.xls2cwl_job.read_xls import remove_non_printable_characters
 from werkzeug import secure_filename
 from json import loads as json_loads
+from cwlab.log import handle_known_error, handle_unknown_error
 
 @app.route('/upload_file/', methods=['POST'])
 def upload_file():
@@ -51,15 +52,9 @@ def upload_file():
             "text": "Successfully uploaded file."
         } )
     except AssertionError as e:
-        messages.append( { 
-            "type":"error", 
-            "text": str(e) 
-        } )
-    except:
-        messages.append( { 
-            "type":"error", 
-            "text":"An unkown error occured." 
-        } )
+        messages.append( handle_known_error(e, return_front_end_message=True))
+    except Exception as e:
+        messages.append(handle_unknown_error(e, return_front_end_message=True))
     return jsonify({
             "data": data,
             "messages": messages
@@ -129,15 +124,9 @@ def browse_dir():
                 raise AssertionError(str(e))
 
     except AssertionError as e:
-        messages.append( { 
-            "type":"error", 
-            "text": str(e) 
-        } )
-    except:
-        messages.append( { 
-            "type":"error", 
-            "text":"An unkown error occured." 
-        } )
+        messages.append( handle_known_error(e, return_front_end_message=True))
+    except Exception as e:
+        messages.append(handle_unknown_error(e, return_front_end_message=True))
     return jsonify({
             "data": data,
             "messages": messages
@@ -177,15 +166,9 @@ def download():
                 as_attachment=True
             )
     except AssertionError as e:
-        messages.append( { 
-            "type":"error", 
-            "text": str(e) 
-        } )
-    except:
-        messages.append( { 
-            "type":"error", 
-            "text":"An uknown error occured." 
-        } )
+        messages.append( handle_known_error(e, return_front_end_message=True))
+    except Exception as e:
+        messages.append(handle_unknown_error(e, return_front_end_message=True))
     return jsonify({
         "data":data,
         "messages":messages

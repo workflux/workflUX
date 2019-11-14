@@ -8,6 +8,7 @@ from cwlab.users.manage import check_user_credentials, check_all_format_conforma
     add_user, get_user_info, change_password as change_password_, load_user, delete_user, \
     get_all_users_info as get_all_users_info_, change_user_status_or_level, get_user_by_username
 from cwlab.users.manage import login_required
+from cwlab.log import handle_known_error, handle_unknown_error
 
 @app.route('/login/', methods=['POST'])
 def login():
@@ -32,15 +33,9 @@ def login():
             } )
         data={ "success": True }
     except AssertionError as e:
-        messages.append( { 
-            "type":"error", 
-            "text": str(e) 
-        } )
-    except:
-        messages.append( { 
-            "type":"error", 
-            "text":"An unkown error occured." 
-        } )
+        messages.append( handle_known_error(e, return_front_end_message=True))
+    except Exception as e:
+        messages.append(handle_unknown_error(e, return_front_end_message=True))
     return jsonify({
             "data": data,
             "messages": messages
@@ -71,15 +66,9 @@ def register():
                 "text": "Successfully send. An administrator will need to approve your account."
             } )
     except AssertionError as e:
-        messages.append( { 
-            "type":"error", 
-            "text": str(e) 
-        } )
-    except:
-        messages.append( { 
-            "type":"error", 
-            "text":"An unkown error occured." 
-        } )
+        messages.append( handle_known_error(e, return_front_end_message=True))
+    except Exception as e:
+        messages.append(handle_unknown_error(e, return_front_end_message=True))
     return jsonify({
             "data": data,
             "messages": messages
@@ -94,15 +83,9 @@ def get_general_user_info():
         login_required()
         data = get_user_info(current_user.get_id())
     except AssertionError as e:
-        messages.append( { 
-            "type":"error", 
-            "text": str(e) 
-        } )
-    except:
-        messages.append( { 
-            "type":"error", 
-            "text":"An unkown error occured." 
-        } )
+        messages.append( handle_known_error(e, return_front_end_message=True))
+    except Exception as e:
+        messages.append(handle_unknown_error(e, return_front_end_message=True))
     return jsonify({
             "data": data,
             "messages": messages
@@ -117,15 +100,9 @@ def get_all_users_info():
         login_required(admin=True)
         data = get_all_users_info_()
     except AssertionError as e:
-        messages.append( { 
-            "type":"error", 
-            "text": str(e) 
-        } )
-    except:
-        messages.append( { 
-            "type":"error", 
-            "text":"An unkown error occured." 
-        } )
+        messages.append( handle_known_error(e, return_front_end_message=True))
+    except Exception as e:
+        messages.append(handle_unknown_error(e, return_front_end_message=True))
     return jsonify({
             "data": data,
             "messages": messages
@@ -164,15 +141,9 @@ def modify_or_delete_users():
                 "text":"Successfully set level on users: \"" + ", ".join(user_selection) + "\""
             } )
     except AssertionError as e:
-        messages.append( { 
-            "type":"error", 
-            "text": str(e) 
-        } )
-    except:
-        messages.append( { 
-            "type":"error", 
-            "text":"An unkown error occured." 
-        } )
+        messages.append( handle_known_error(e, return_front_end_message=True))
+    except Exception as e:
+        messages.append(handle_unknown_error(e, return_front_end_message=True))
     return jsonify({
             "data": data,
             "messages": messages
@@ -196,15 +167,9 @@ def change_password():
             "text": "Successfully changed password. You will be logged out."
         } )
     except AssertionError as e:
-        messages.append( { 
-            "type":"error", 
-            "text": str(e) 
-        } )
-    except:
-        messages.append( { 
-            "type":"error", 
-            "text":"An unkown error occured." 
-        } )
+        messages.append( handle_known_error(e, return_front_end_message=True))
+    except Exception as e:
+        messages.append(handle_unknown_error(e, return_front_end_message=True))
     return jsonify({
             "data": data,
             "messages": messages
@@ -228,15 +193,9 @@ def delete_account():
             "text": "Successfully deleted your account. You will be logged out."
         } )
     except AssertionError as e:
-        messages.append( { 
-            "type":"error", 
-            "text": str(e) 
-        } )
-    except:
-        messages.append( { 
-            "type":"error", 
-            "text":"An unkown error occured." 
-        } )
+        messages.append( handle_known_error(e, return_front_end_message=True))
+    except Exception as e:
+        messages.append(handle_unknown_error(e, return_front_end_message=True))
     return jsonify({
             "data": data,
             "messages": messages
@@ -252,15 +211,9 @@ def logout():
         logout_user()
         data["success"] = True
     except AssertionError as e:
-        messages.append( { 
-            "type":"error", 
-            "text": str(e) 
-        } )
-    except:
-        messages.append( { 
-            "type":"error", 
-            "text":"An unkown error occured." 
-        } )
+        messages.append( handle_known_error(e, return_front_end_message=True))
+    except Exception as e:
+        messages.append(handle_unknown_error(e, return_front_end_message=True))
     return jsonify({
             "data": data,
             "messages": messages

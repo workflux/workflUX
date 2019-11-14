@@ -16,3 +16,22 @@ def attach_file_handler():
     error_log_file_handler.setFormatter(file_logging_formatter)
     error_log_file_handler.setLevel(ERROR)
     app.logger.addHandler(error_log_file_handler)
+
+def handle_known_error(error, alt_err_message=None, return_front_end_message=False):
+    err_message = str(error) if alt_err_message is None else alt_err_message
+    app.logger.warning("known error: {}".format(err_message))
+    if return_front_end_message:
+        return {
+            "type": "error",
+            "text": err_message
+        }
+
+def handle_unknown_error(error, alt_err_message=None, return_front_end_message=False):
+    app.logger.exception(error)
+    if return_front_end_message:
+        err_message =  "An unkown error occured." if alt_err_message is None else alt_err_message
+        err_message += " Please contact an admin to resolve this."
+        return {
+            "type": "error",
+            "text": err_message
+        }

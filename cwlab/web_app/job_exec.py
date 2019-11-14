@@ -18,6 +18,7 @@ from time import sleep
 from random import random
 from shutil import move
 from cwlab.users.manage import login_required
+from cwlab.log import handle_known_error, handle_unknown_error
 
 @app.route('/get_job_list/', methods=['GET','POST'])
 def get_job_list():
@@ -53,15 +54,12 @@ def get_job_list():
                 "cwl_target": cwl_target
                 })
     except AssertionError as e:
-        messages.append( { 
-            "type":"error", 
-            "text": str(e) 
-        } )
-    except:
-        messages.append( { 
-            "type":"error", 
-            "text":"An unkown error occured reading the execution directory." 
-        } )
+        messages.append( handle_known_error(e, return_front_end_message=True))
+        messages.append(handle_unknown_error(
+            e, 
+            alt_err_message="An unkown error occured reading the execution directory",
+            return_front_end_message=True
+        ))
     
     # get exec profiles names:
     exec_profile_names = list(app.config["EXEC_PROFILES"].keys())
@@ -96,15 +94,13 @@ def get_run_list():
         run_ids.sort()
         data["run_ids"] = run_ids
     except AssertionError as e:
-        messages.append( { 
-            "type":"error", 
-            "text": str(e) 
-        } )
-    except:
-        messages.append( { 
-            "type":"error", 
-            "text":"An unkown error occured reading the execution directory." 
-        } )
+        messages.append( handle_known_error(e, return_front_end_message=True))
+    except Exception as e:
+        messages.append(handle_unknown_error(
+            e, 
+            alt_err_message="An unkown error occured reading the execution directory",
+            return_front_end_message=True
+        ))
     return jsonify({
             "data": data,
             "messages": messages
@@ -120,15 +116,13 @@ def get_run_status():
         data_req = request.get_json()
         data = get_run_info(data_req["job_id"], data_req["run_ids"])
     except AssertionError as e:
-        messages.append( { 
-            "type":"error", 
-            "text": str(e) 
-        } )
-    except:
-        messages.append( { 
-            "type":"error", 
-            "text":"An unkown error occured reading the execution directory." 
-        } )
+        messages.append( handle_known_error(e, return_front_end_message=True))
+    except Exception as e:
+        messages.append(handle_unknown_error(
+            e, 
+            alt_err_message="An unkown error occured reading the execution directory",
+            return_front_end_message=True
+        ))
     return jsonify({
             "data": data,
             "messages": messages
@@ -169,15 +163,9 @@ def start_exec():    # returns all parmeter and its default mode (global/job spe
                 "text":"Following runs are already running or have already finished: " + ", ".join(already_running_runs) + ". To restart them, reset them first."
             })
     except AssertionError as e:
-        messages.append( { 
-            "type":"error", 
-            "text": str(e) 
-        } )
-    except:
-        messages.append( { 
-            "type":"error", 
-            "text":"An unkown error occured." 
-        } )
+        messages.append( handle_known_error(e, return_front_end_message=True))
+    except Exception as e:
+        messages.append(handle_unknown_error(e, return_front_end_message=True))
     return jsonify({
         "data":{},
         "messages":messages
@@ -201,15 +189,9 @@ def get_run_details():
             "yaml": yaml_content
         }
     except AssertionError as e:
-        messages.append( { 
-            "type":"error", 
-            "text": str(e) 
-        } )
-    except:
-        messages.append( { 
-            "type":"error", 
-            "text":"An unkown error occured." 
-        } )
+        messages.append( handle_known_error(e, return_front_end_message=True))
+    except Exception as e:
+        messages.append(handle_unknown_error(e, return_front_end_message=True))
     return jsonify({
         "data":data,
         "messages":messages
@@ -243,15 +225,9 @@ def terminate_runs():
                 "text":"Following runs could not be cleaned: " + ", ".join(could_not_be_cleaned)
             })
     except AssertionError as e:
-        messages.append( { 
-            "type":"error", 
-            "text": str(e) 
-        } )
-    except:
-        messages.append( { 
-            "type":"error", 
-            "text":"An unkown error occured." 
-        } )
+        messages.append( handle_known_error(e, return_front_end_message=True))
+    except Exception as e:
+        messages.append(handle_unknown_error(e, return_front_end_message=True))
     return jsonify({
         "data":data,
         "messages":messages
@@ -286,15 +262,9 @@ def delete_job():
                 "text":"Could not delete job dir for \"" + job_id + "\"."
             })
     except AssertionError as e:
-        messages.append( { 
-            "type":"error", 
-            "text": str(e) 
-        } )
-    except:
-        messages.append( { 
-            "type":"error", 
-            "text":"An unkown error occured." 
-        } )
+        messages.append( handle_known_error(e, return_front_end_message=True))
+    except Exception as e:
+        messages.append(handle_unknown_error(e, return_front_end_message=True))
     return jsonify({
         "data":data,
         "messages":messages
