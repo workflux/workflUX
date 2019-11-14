@@ -47,7 +47,8 @@ def setup_working_dirs():
         'TEMP_DIR',
         'CWL_DIR',
         'EXEC_DIR',
-        'DB_DIR'
+        'DB_DIR',
+        'LOG_DIR'
     ]:
         if not os.path.isdir(app.config[param]):
             os.makedirs(app.config[param])

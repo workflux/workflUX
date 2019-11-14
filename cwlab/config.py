@@ -78,6 +78,12 @@ class Config(object):
             os.path.join( cwlab_fallback_dir, "temp"),
             correct_symlinks=self.CORRECT_SYMLINKS
         )
+        self.LOG_DIR = normalize_path(
+            os.environ.get('CWLAB_LOG_DIR') or
+            self.CONFIG_FILE_content.get('LOG_DIR') or  
+            os.path.join(self.TEMP_DIR, "logs"),
+            correct_symlinks=self.CORRECT_SYMLINKS
+        )
         self.CWL_DIR = normalize_path(
             os.environ.get('CWLAB_CWL_DIR') or  
             self.CONFIG_FILE_content.get('CWL_DIR') or  
