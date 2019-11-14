@@ -29,12 +29,11 @@ class Config(object):
                 os.environ.get('CWLAB_CONFIG') or \
                 self.DEFAULT_CONFIG_FILE
 
-        if not os.path.exists(self.CONFIG_FILE):
-            sys.exit(
-                "Error: the specified config file \"" +
-                self.CONFIG_FILE +
-                "\" does not exist."
-            )
+        assert os.path.exists(self.CONFIG_FILE), (
+            "Error: the specified config file \"" +
+            self.CONFIG_FILE +
+            "\" does not exist."
+        )
 
         print(">>> Using config file: " + self.CONFIG_FILE, file=sys.stderr)
 
@@ -42,7 +41,7 @@ class Config(object):
             try:
                 self.CONFIG_FILE_content = safe_load(stream)
             except YAMLError as exc:
-                sys.exit("Error while reading the config.yaml: " + exc)
+                raise AssertionError("Error while reading the config.yaml: " + exc)
 
         cwlab_fallback_dir = os.path.join(os.path.expanduser("~"), "cwlab")
 

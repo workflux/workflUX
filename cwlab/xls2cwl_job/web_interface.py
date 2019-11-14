@@ -14,7 +14,7 @@ def read_template_attributes(sheet_file):
     try:
         config_sheet = pe.get_book(file_name=sheet_file)["config"]
     except:
-        sys.exit("Error reading the job template \"" + sheet_file + "\": does the template have a \"config\" sheet?")
+        raise AssertionError("Error reading the job template \"" + sheet_file + "\": does the template have a \"config\" sheet?")
     _, attributes = read_and_remove_sheet_attributes(config_sheet)
     try:
         metadata_sheet, _ = read_and_remove_sheet_attributes(pe.get_book(file_name=sheet_file)["metadata"])

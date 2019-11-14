@@ -22,7 +22,7 @@ def clean_string( string_to_clean ):
     elif isinstance(string_to_clean, bool):
         str_cleaned = str( string_to_clean )
     else:
-        sys.exit( print_pref + "E: is not a string or number" )
+        raise AssertionError( print_pref + "E: is not a string or number" )
     return str_cleaned
 
 def quote_clean_string( string_to_clean ):
@@ -50,7 +50,7 @@ def boolean_field( field_string ):
     elif bool_string in ["false", "False", "FALSE", "F", "f", "no", "NO","No","0", "N", "n"]:
         return False
     else:
-        sys.exit( print_pref + "E: boolean value is not valid." )
+        raise AssertionError( print_pref + "E: boolean value is not valid." )
 
 
 def type_field( field_string ):
@@ -60,7 +60,7 @@ def type_field( field_string ):
         type_string = "helper" # a helper variable which will not appear in the cwl job yaml
     elif not type_string in ["string", "null", "int", "float", 
         "double", "long", "boolean", "File", "Directory", "helper"]:
-        sys.exit( print_pref + "E: unknown CWL type \"" + type_string + "\"" )
+        raise AssertionError( print_pref + "E: unknown CWL type \"" + type_string + "\"" )
     return type_string
 
 
@@ -68,12 +68,13 @@ def name( field_string ):
     print_pref = "[name]:"
     try:
         name_string = clean_string(field_string)
-    except SystemExit as e:
-        sys.exit( print_pref + "E: field string \"" + str(field_string) + "\":" + str(e) )
+    except AssertionError as e:
+        raise AssertionError( print_pref + "E: field string \"" + str(field_string) + "\":" + str(e) )
     forbidden_pattern = "[^(A-Z)(a-z)\d_-]"
-    if re.search(forbidden_pattern, name_string):
-        sys.exit( print_pref + "E: field string \"" + name_string + " was invalid: only letter (A-Z/a-z)," +
-            "digits, and \"_\" or \"-\" are allowed")
+    assert not re.search(forbidden_pattern, name_string), (
+        print_pref + "E: field string \"" + name_string + " was invalid: only letter (A-Z/a-z)," +
+        "digits, and \"_\" or \"-\" are allowed"
+    )
     return name_string
 
 
@@ -98,11 +99,11 @@ def multi_attribute_field_quote_clean( field_string, seperator='|' ):
 def web_element( field_string ):
     print_pref="[web_element]:"
     element = clean_string(field_string)
-    if not element in ['TextField', 'BooleanField', 'DecimalField', 
+    assert element in ['TextField', 'BooleanField', 'DecimalField', 
                         'IntegerField', 'RadioField', 'SelectField', 'TextAreaField', 
-                        'PasswordField', 'SubmitField', '']:
-        # empty string is okay, this parameter will not show up in a web form
-        sys.exit( print_pref + "E: unknown web element specified: \"" + element + "\"")
+                        'PasswordField', 'SubmitField', ''], ( 
+        print_pref + "E: unknown web element specified: \"" + element + "\""
+    )
     return element
 
 def default_array_size(field_string):
@@ -144,8 +145,7 @@ def field( field_key, field_string ):
         "web_placeholder":quote_clean_string
         }
 
-    if not field_key in read_functions.keys():
-        sys.exit(print_pref + "E: unknown field \"" + field_key + "\"")
+    assert field_key in read_functions.keys(), print_pref + "E: unknown field \"" + field_key + "\""
     field_value = read_functions[field_key](field_string)
     return field_value
 
@@ -156,10 +156,9 @@ def parameter_names( field_string_list ):
     for field_string in field_string_list:
         try:
             param_name = name(field_string)
-        except SystemExit as e:
-            sys.exit( print_pref + str(e))
-        if len(param_name) == 0:
-            sys.exit( print_pref + "E: parameter name is empty")
+        except AssertionError as e:
+            raise AssertionError( print_pref + str(e))
+        assert len(param_name) != 0, print_pref + "E: parameter name is empty"
         param_names.append(param_name)
     return param_names
 
@@ -171,19 +170,19 @@ def parameter_value( field_string_list ):
     for field_string in field_string_list:
         try:
             value = clean_string(field_string)
-        except SystemExit as e:
-            sys.exit( print_pref + str(e))
+        except AssertionError as e:
+            raise AssertionError( print_pref + str(e))
         if len(value) == 0:
             if empty_field_found:
                 break
             else:
                 empty_field_found = True
         else:
-            if empty_field_found:
-                sys.exit( print_pref + "E: empty field, please specify \"null\"" +
-                " if a value should be empty or non-existend") #! maybe change
-            else:
-                param_value.append(value)
+            assert not empty_field_found, ( 
+                print_pref + "E: empty field, please specify \"null\"" +
+                " if a value should be empty or non-existend"
+            ) #! maybe change
+            param_value.append(value)
     return param_value
 
 
@@ -222,7 +221,7 @@ def strip_sheet( sheet, format, verbose_level):
                 if not empty_field_found:
                     empty_field_found = True
                 else:
-                    sys.exit( print_pref + "E: table head in row no. " + idx + 
+                    raise AssertionError( print_pref + "E: table head in row no. " + idx + 
                         " is empty but an empty field was discovered before")
                 del(sheet.row[idx])
             else:
@@ -233,13 +232,13 @@ def strip_sheet( sheet, format, verbose_level):
                 if not empty_field_found:
                     empty_field_found = True
                 else:
-                    sys.exit( print_pref + "E: table head in column no. " + idx + 
+                    raise AssertionError( print_pref + "E: table head in column no. " + idx + 
                         " is empty but an empty field was discovered before")
                 del(sheet.column[idx])
             else:
                 idx+=1
     else:
-        sys.exit(print_pref + "E: unkown format: " + format)
+        raise AssertionError(print_pref + "E: unkown format: " + format)
     return sheet
         
 
@@ -262,8 +261,8 @@ def config_sheet( sheet, verbose_level=2 ):
                 try:
                     configs[param_name][field_key] = field(field_key, 
                                                                 field_string=sheet.column[field_key][row_idx])
-                except SystemExit as e:
-                    sys.exit( print_pref + "E: reading field key \"" + field_key + "\" for parameter \"" +
+                except AssertionError as e:
+                    raise AssertionError( print_pref + "E: reading field key \"" + field_key + "\" for parameter \"" +
                              param_name + "\" (row: " + str(row_idx) + "):" + str(e))
     return configs
 
@@ -277,33 +276,31 @@ def parameter_sheet(sheet, sheet_attributes, verbose_level=2):
         sheet.name_rows_by_column(0)
         try:
             param_names = parameter_names(sheet.rownames)
-        except SystemExit as e:
-            sys.exit( print_pref + str(e) )
+        except AssertionError as e:
+            raise AssertionError( print_pref + str(e) )
 
         for param in param_names:
             try:
                 param_values[param] = parameter_value( sheet.row[param] )
-            except SystemExit as e:
-                sys.exit( print_pref + "E: failed to read value of parameter \"" + param + "\":" + str(e) )
+            except AssertionError as e:
+                raise AssertionError( print_pref + "E: failed to read value of parameter \"" + param + "\":" + str(e) )
         
     elif format == "horizontal":
         sheet.name_columns_by_row(0)
         try:
             param_names = parameter_names(sheet.colnames)
-        except SystemExit as e:
-            sys.exit( print_pref + str(e) )
+        except AssertionError as e:
+            raise AssertionError( print_pref + str(e) )
 
         for param in param_names:
             try:
                 param_values[param] = parameter_value( sheet.column[param] )
-            except SystemExit as e:
-                sys.exit( print_pref + "E: failed to read value of parameter \"" + param + "\":" + str(e) )
+            except AssertionError as e:
+                raise AssertionError( print_pref + "E: failed to read value of parameter \"" + param + "\":" + str(e) )
            
     elif format == "wide":
-        if "param" not in sheet_attributes.keys():
-            sys.exit(print_pref + "E: sheet format was \"wide\" but no attribute \"param\" was specified")
-        if "run_id_param" not in sheet_attributes.keys():
-            sys.exit(print_pref + "E: sheet format was \"wide\" but no attribute \"run_id_param\" was specified")
+        assert "param" in sheet_attributes.keys(), print_pref + "E: sheet format was \"wide\" but no attribute \"param\" was specified"
+        assert "run_id_param" in sheet_attributes.keys(), print_pref + "E: sheet format was \"wide\" but no attribute \"run_id_param\" was specified"
         param_name = sheet_attributes["param"]
         run_id_param = sheet_attributes["run_id_param"]
         sheet.delete_rows([0]) # delete header rows
@@ -320,7 +317,7 @@ def parameter_sheet(sheet, sheet_attributes, verbose_level=2):
         param_values[run_id_param] = aligned_run_ids
 
     else:
-        sys.exit(print_pref + "E: unkown format: " + format)
+        raise AssertionError(print_pref + "E: unkown format: " + format)
         
     return param_values
 
@@ -332,13 +329,13 @@ def metadata_sheet(sheet, verbose_level=2):
     sheet.name_rows_by_column(0)
     try:
         param_names = parameter_names(sheet.rownames)
-    except SystemExit as e:
-        sys.exit( print_pref + str(e) )
+    except AssertionError as e:
+        raise AssertionError( print_pref + str(e) )
     for param in param_names:
         try:
             metadata[param] = clean_string( sheet.row[param][0] ) if len(sheet.row[param]) > 0 else ""
-        except SystemExit as e:
-            sys.exit( print_pref + "E: failed to read value of parameter \"" + param + "\":" + str(e) )      
+        except AssertionError as e:
+            raise AssertionError( print_pref + "E: failed to read value of parameter \"" + param + "\":" + str(e) )      
     return metadata
 
 def spread_sheet(sheet, verbose_level=2):
@@ -350,23 +347,23 @@ def spread_sheet(sheet, verbose_level=2):
     # read and remove headers and remove tailing empty columns/rows:
     try:
         attribute_less_sheet, sheet_attributes = read_and_remove_sheet_attributes( sheet )
-    except SystemExit as e:
-        sys.exit( print_pref + str(e))
+    except AssertionError as e:
+        raise AssertionError( print_pref + str(e))
     try:
         trimmed_sheet = strip_sheet( attribute_less_sheet, sheet_attributes["format"], verbose_level )
-    except SystemExit as e:
-        sys.exit( print_pref + str(e))
+    except AssertionError as e:
+        raise AssertionError( print_pref + str(e))
     # read content
     if sheet_attributes["type"] in ["config", "config_sheet"]:
         try:
             configs = config_sheet( trimmed_sheet, verbose_level )
-        except SystemExit as e:
-            sys.exit( print_pref + str(e))
+        except AssertionError as e:
+            raise AssertionError( print_pref + str(e))
     elif sheet_attributes["type"] in ["param", "param_sheet"]:
         try:
             param_values = parameter_sheet( trimmed_sheet, sheet_attributes, verbose_level )
-        except SystemExit as e:
-            sys.exit( print_pref + str(e))
+        except AssertionError as e:
+            raise AssertionError( print_pref + str(e))
     elif sheet_attributes["type"] == "metadata":
             metadata = metadata_sheet( trimmed_sheet, verbose_level )
     # if not type config or param: empty param_values and configs will be returned
@@ -385,14 +382,14 @@ def sheet_file( sheet_file, verbose_level=2):
         try:
             param_values_tmp, configs_tmp, metadata_ = spread_sheet(sheet, verbose_level)
             metadata.update(metadata_)
-        except SystemExit as e:
-           sys.exit( print_pref + "failed to read sheet \"" + str(sheet.name) + "\":" + str(e))
+        except AssertionError as e:
+           raise AssertionError( print_pref + "failed to read sheet \"" + str(sheet.name) + "\":" + str(e))
         
         # merge with existing data, conflicting data not allowed:
         if len(set(param_values_tmp.keys()).intersection(param_values.keys())) > 0:
-            sys.exit(print_pref + "E: conflicting parameter values, did you specify parameters muliple time?")
+            raise AssertionError(print_pref + "E: conflicting parameter values, did you specify parameters muliple time?")
         elif len(set(configs_tmp.keys()).intersection(configs.keys())) > 0:
-            sys.exit(print_pref + "E: conflicting config values, did you specify config parameters muliple time?")
+            raise AssertionError(print_pref + "E: conflicting config values, did you specify config parameters muliple time?")
         else:
             param_values.update(param_values_tmp)
             configs.update(configs_tmp)
@@ -409,14 +406,14 @@ def sheet_files( sheet_files, verbose_level=2):
         try:
             param_values_tmp, configs_tmp, metadata_ = sheet_file(sfile, verbose_level)
             metadata.update(metadata_)
-        except SystemExit as e:
-            sys.exit( print_pref + "failed to read file \"" + sfile + "\":" + str(e))
+        except AssertionError as e:
+            raise AssertionError( print_pref + "failed to read file \"" + sfile + "\":" + str(e))
         
         # merge with existing data, conflicting data not allowed:
         if len(set(param_values_tmp.keys()).intersection(param_values.keys())) > 0:
-            sys.exit(print_pref + "E: conflicting parameter values, did you specify parameters muliple time?")
+            raise AssertionError(print_pref + "E: conflicting parameter values, did you specify parameters muliple time?")
         elif len(set(configs_tmp.keys()).intersection(configs.keys())) > 0:
-            sys.exit(print_pref + "E: conflicting config values, did you specify config parameters muliple time?")
+            raise AssertionError(print_pref + "E: conflicting config values, did you specify config parameters muliple time?")
         else:
             param_values.update(param_values_tmp)
             configs.update(configs_tmp)

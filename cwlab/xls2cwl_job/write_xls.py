@@ -185,9 +185,10 @@ def build_parameter_sheet(
                 row.append( extended_parameters[param][idx] )
             data.append(row)
     elif format == "wide":
-        if len(param_names) != 1:
-            sys.exit(print_pref + "E: sheet format was declared as wide, " + 
-                "but more than one parameter was handed in")
+        assert len(param_names) == 1, (
+            print_pref + "E: sheet format was declared as wide, " + 
+            "but more than one parameter was handed in"
+        )
         param = param_names[0]
         # split param by run_id:
         param_splited = split_parameter_by_run_id(param, all_parameters, [run_id, "array"])

@@ -22,11 +22,11 @@ def search_file_or_dir(glob_pattern, is_dir=False, input_dir="", search_subdirs=
         for name in objects:
             if fnmatch.fnmatch(name, glob_pattern):
                 result.append(os.path.join(root, name))
-    if len(result) > 1:
-        sys.exit("multiple hits when searching for file or dir with glob_pattern \"" + glob_pattern + "\": " + 
-            ", ".join(result))
-    elif len(result) == 0:
-        sys.exit("no hits found when searching for file or dir with glob_pattern \"" + glob_pattern + "\"")
+    assert len(result) <= 1, (
+        "multiple hits when searching for file or dir with glob_pattern \"" + glob_pattern + "\": " + 
+        ", ".join(result)
+    )
+    assert len(result) != 0, "no hits found when searching for file or dir with glob_pattern \"" + glob_pattern + "\""
     return os.path.abspath(result[0])
 
 
@@ -42,10 +42,10 @@ def get_file_or_dir_path(path_str, is_dir=False, search_paths=True, validate_pat
             if search_paths:  
                 try:
                     path=search_file_or_dir(path_str, is_dir, input_dir)
-                except SystemExit as e:
-                    sys.exit( str(e) )        
+                except AssertionError as e:
+                    raise AssertionError( str(e) )        
             else:
-                sys.exit( "the path to \"" + path_str + "\" is not valid")
+                raise AssertionError( "the path to \"" + path_str + "\" is not valid")
     else:
         path=path_str
     return path
@@ -54,8 +54,8 @@ def get_file_or_dir_path(path_str, is_dir=False, search_paths=True, validate_pat
 def class_file(value_string, secondary_files, validate_paths=True, search_paths=True, input_dir=""):
     try:
         path = get_file_or_dir_path(value_string, False, search_paths, validate_paths, input_dir)
-    except SystemExit as e:
-        sys.exit( str(e) )
+    except AssertionError as e:
+        raise AssertionError( str(e) )
     if secondary_files[0] == "":
         value_type_matched = {"class": "File", "path": path}
     else:
@@ -72,8 +72,8 @@ def class_file(value_string, secondary_files, validate_paths=True, search_paths=
                 sec_file_item_path = path + sec_ext
             try:
                 sec_file_item_path = get_file_or_dir_path(sec_file_item_path, False, False, validate_paths)
-            except SystemExit as e:
-                sys.exit("invalid secondary file for \"" + value_string + "\": " + str(e) )
+            except AssertionError as e:
+                raise AssertionError("invalid secondary file for \"" + value_string + "\": " + str(e) )
             cwl_sec_file_array.append( {"class": "File", "path": sec_file_item_path } )
         value_type_matched = {"class": "File", "path": path, "secondaryFiles": cwl_sec_file_array }
     return value_type_matched
@@ -82,8 +82,8 @@ def class_file(value_string, secondary_files, validate_paths=True, search_paths=
 def class_directory(value_string, validate_paths=True, search_paths=True, input_dir=""):
     try:
         path = get_file_or_dir_path(value_string, True, search_paths, validate_paths, input_dir)
-    except SystemExit as e:
-        sys.exit( str(e) )
+    except AssertionError as e:
+        raise AssertionError( str(e) )
     value_type_matched = {"class": "Directory", "path":path}
     return value_type_matched
 
@@ -94,7 +94,7 @@ def boolean(value_string ):
     elif value_string in ["false", "False", "FALSE", "F", "f", "No", "NO", "no", "n", "N", "0"]:
         return False
     else:
-        sys.exit( "\"" + value_string + "\" cannot be coerced into boolean")
+        raise AssertionError( "\"" + value_string + "\" cannot be coerced into boolean")
 
 
 def match_type( param_name, all_param_values, configs, validate_paths=True, search_paths=True, search_subdirs=True, input_dir=""):
@@ -108,16 +108,17 @@ def match_type( param_name, all_param_values, configs, validate_paths=True, sear
     }
     value = all_param_values[param_name]
     # check if non-array paramaeters have at 1 field:
-    if not configs[param_name]["is_array"] and len(value) > 1:
-        sys.exit( "parameter is no array but has more than one value." )
+    assert not ( not configs[param_name]["is_array"] and len(value) > 1), "parameter is no array but has more than one value."
     # check if value containes not allowed null entries:
-    if configs[param_name]["is_array"] and "null" in value and not configs[param_name]["null_items_allowed"]:
-        sys.exit( "parameter contains \"null\" items but they are not allowed." )
-    if not configs[param_name]["is_array"] and (value[0] == "null" or value[0] == "") and not configs[param_name]["null_allowed"]:
-        sys.exit( "parameter is \"null\" but this is not allowed." )
+    assert not (configs[param_name]["is_array"] and "null" in value and not configs[param_name]["null_items_allowed"]), \
+        "parameter contains \"null\" items but they are not allowed."
+    assert not (
+        not configs[param_name]["is_array"] and 
+        (value[0] == "null" or value[0] == "") and 
+        not configs[param_name]["null_allowed"]
+    ), "parameter is \"null\" but this is not allowed."
     # check if parameter contains empty values:
-    if "" in value:
-        sys.exit( "empty string detected \"\".")
+    assert not "" in value, "empty string detected \"\"."
     # check and translate each entry of value into the desired type:
     value_type_matched = []
     for value_string in value:
@@ -132,7 +133,7 @@ def match_type( param_name, all_param_values, configs, validate_paths=True, sear
                 else:
                     value_type_matched.append( type_matching_functions[configs[param_name]["type"]](value_string) )
         except Exception as e:
-            sys.exit( "value \"" + value_string + "\" is not compatible with allowed type " + configs[param_name]["type"] + ": " + str(e))
+            raise AssertionError( "value \"" + value_string + "\" is not compatible with allowed type " + configs[param_name]["type"] + ": " + str(e))
     if not configs[param_name]["is_array"]:
         value_type_matched = value_type_matched[0]
     return value_type_matched
@@ -149,11 +150,11 @@ def get_type_matched_param_values( param_values, configs, validate_paths=True, s
                 param_values_type_matched[param_name] = None
                 continue
             else:
-                sys.exit( print_pref + " parameter \"" + param_name + "\" failes type matching: " + 
+                raise AssertionError( print_pref + " parameter \"" + param_name + "\" failes type matching: " + 
                     "parameter was empty but null is not allowed.")
         try:
             param_values_type_matched[param_name] = match_type(param_name, param_values, configs,
                 validate_paths, search_paths, search_subdirs, input_dir)
-        except SystemExit as e:
-            sys.exit( print_pref + " parameter \"" + param_name + "\" failes type matching: " + str(e) )
+        except AssertionError as e:
+            raise AssertionError( print_pref + " parameter \"" + param_name + "\" failes type matching: " + str(e) )
     return param_values_type_matched

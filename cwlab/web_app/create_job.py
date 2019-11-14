@@ -27,7 +27,7 @@ def get_job_templ_list():   # returns list of job templates
     try:
         login_required()
         templates = get_job_templates()
-    except SystemExit as e:
+    except AssertionError as e:
         messages.append( { 
             "type":"error", 
             "text": str(e) 
@@ -55,7 +55,7 @@ def get_job_templ_config_info():    # returns all parmeter and its default mode 
         cwl_target = request.get_json()["cwl_target"]
         param_config_info = get_job_templ_info("config", cwl_target)
         template_attributes = get_job_templ_info("attributes", cwl_target)
-    except SystemExit as e:
+    except AssertionError as e:
         messages.append( { 
             "type":"error", 
             "text": str(e) 
@@ -106,7 +106,7 @@ def generate_param_form_sheet():    # generate param form sheet with data sent
             config_attributes={"CWL": cwl_target}
         )
         data["get_form_sheet_href"] = url_for("get_param_form_sheet", job_id=job_id)
-    except SystemExit as e:
+    except AssertionError as e:
         messages.append( { 
             "type":"error", 
             "text": str(e) 
@@ -135,7 +135,7 @@ def get_param_form_sheet(job_id):
             attachment_filename=job_id + ".input_params" + os.path.splitext(sheet_path)[1],
             as_attachment=True
         )
-    except SystemExit as e:
+    except AssertionError as e:
         messages.append( { 
             "type":"error", 
             "text": str(e) 
@@ -157,17 +157,14 @@ def send_filled_param_form_sheet():
     data = []
     try:
         login_required()
-        if 'file' not in request.files:
-            sys.exit( 'No file received.')
+        assert 'file' in request.files, 'No file received.'
 
         import_file = request.files['file']
 
-        if import_file.filename == '':
-            sys.exit( "No file specified.")
+        assert import_file.filename != '', "No file specified."
 
-        if not is_allowed_file(import_file.filename, type="spreadsheet"):
-            sys.exit( "Wrong file type. Only files with following extensions are allowed: " + 
-                ", ".join(allowed_extensions_by_type["spreadsheet"]))
+        assert is_allowed_file(import_file.filename, type="spreadsheet"), "Wrong file type. Only files with following extensions are allowed: " + \
+                ", ".join(allowed_extensions_by_type["spreadsheet"])
         import_fileext = os.path.splitext(import_file.filename)[1].strip(".").lower()
         
         # save the file to the CWL directory:
@@ -183,13 +180,11 @@ def send_filled_param_form_sheet():
 
         if search_paths:
             # test if search dir exists:
-            if not os.path.isdir(search_dir):
-                sys.exit(
-                    "The specified search dir \"" + 
-                    search_dir + 
-                    "\" does not exist or is not a directory."
-                )
-    except SystemExit as e:
+            assert os.path.isdir(search_dir), ("The specified search dir \"" + 
+                search_dir + 
+                "\" does not exist or is not a directory."
+            )
+    except AssertionError as e:
         messages.append( { "type":"error", "text": str(e) } )
     except:
         messages.append( { 
@@ -209,8 +204,8 @@ def send_filled_param_form_sheet():
             )
             if validation_result != "VALID":
                 os.remove(import_filepath)
-                sys.exit(validation_result)
-        except SystemExit as e:
+                raise AssertionError(validation_result)
+        except AssertionError as e:
             messages.append( { "type":"error", "text": "The provided form failed validation: " + str(e) } )
         except:
             messages.append( { 
@@ -249,12 +244,11 @@ def send_filled_param_values():
 
         if search_paths:
             # test if search dir exists:
-            if not os.path.isdir(search_dir):
-                sys.exit(
-                    "The specified search dir \"" + 
-                    search_dir + 
-                    "\" does not exist or is not a directory."
-                )
+            assert os.path.isdir(search_dir), (
+                "The specified search dir \"" + 
+                search_dir + 
+                "\" does not exist or is not a directory."
+            )
 
         generate_xls_from_param_values(
             param_values=param_values,
@@ -266,7 +260,7 @@ def send_filled_param_values():
             input_dir=search_dir,
             config_attributes={"CWL": cwl_target}
         )
-    except SystemExit as e:
+    except AssertionError as e:
         messages.append( { "type":"error", "text": "The provided form failed validation: " + str(e) } )
     except:
         messages.append( { 
@@ -292,7 +286,7 @@ def prepare_job_env():    # generate param form sheet with data sent
         request_json = request.get_json()
         job_id = request_json["job_id"]
         make_job_dir_tree(job_id)        
-    except SystemExit as e:
+    except AssertionError as e:
         messages.append( { 
             "type":"error", 
             "text": str(e) 
@@ -319,13 +313,13 @@ def create_job():    # generate param form sheet with data sent
         sheet_format = request_json["sheet_format"]
         sheet_form_temp = get_path("job_param_sheet_temp", job_id=job_id, param_sheet_format=sheet_format)
 
-        if not os.path.isfile(sheet_form_temp):
-            sys.exit("Could not find the filled parameter sheet \"" + sheet_form_temp + "\".")
+        assert os.path.isfile(sheet_form_temp), "Could not find the filled parameter sheet \"" + sheet_form_temp + "\"."
 
-        if not is_allowed_file(sheet_form_temp, type="spreadsheet"):
-            sys.exit( "The filled parameter sheet \"" + sheet_form_temp + "\" has the wrong file type. " +
+        assert is_allowed_file(sheet_form_temp, type="spreadsheet"), ( 
+            "The filled parameter sheet \"" + sheet_form_temp + "\" has the wrong file type. " +
                 "Only files with following extensions are allowed: " + 
-                ", ".join(allowed_extensions_by_type["spreadsheet"]))
+                ", ".join(allowed_extensions_by_type["spreadsheet"])
+        )
 
         validate_paths = request_json["validate_paths"]
         search_paths = request_json["search_paths"]
@@ -334,12 +328,11 @@ def create_job():    # generate param form sheet with data sent
 
         if search_paths:
             # test if search dir exists:
-            if not os.path.isdir(search_dir):
-                sys.exit(
-                    "The specified search dir \"" + 
-                    search_dir + 
-                    "\" does not exist or is not a directory."
-                )
+            assert os.path.isdir(search_dir), (
+                "The specified search dir \"" + 
+                search_dir + 
+                "\" does not exist or is not a directory."
+            )
 
         # Move form sheet to job dir:
         try:
@@ -362,7 +355,7 @@ def create_job():    # generate param form sheet with data sent
             "type":"success", 
             "text":"Successfully created job \"" + job_id + "\"." 
         } )
-    except SystemExit as e:
+    except AssertionError as e:
         messages.append( { 
             "type":"error", 
             "text": str(e) 
@@ -398,7 +391,7 @@ def get_param_values():
             "param_values": param_values,
             "configs": configs
         }
-    except SystemExit as e:
+    except AssertionError as e:
         messages.append( { 
             "type":"error", 
             "text": str(e) 

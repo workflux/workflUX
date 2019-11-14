@@ -12,7 +12,6 @@ from random import random
 from psutil import pid_exists, Process, STATUS_ZOMBIE, wait_procs
 from platform import system as platform_system
 from shutil import rmtree, copy, copyfile, move
-from cwlab.xls2cwl_job import only_validate_xls, transcode as make_yaml_runs
 basedir = os.path.abspath(os.path.dirname(__file__))
 python_interpreter = sys.executable
 
@@ -35,8 +34,7 @@ def make_job_dir_tree(job_id):
 
 def create_job(job_id, job_param_sheet=None, run_yamls=None, cwl=None,
     validate_paths=True, search_paths=False, search_subdirs=False, search_dir=None, sheet_format="xlsx"):
-    if job_param_sheet is None and (run_yamls is None or cwl is None):
-        sys.exit("You have to either provide a job_param_sheet or a list of run_yamls plus a cwl document")
+    assert not (job_param_sheet is None and (run_yamls is None or cwl is None)), "You have to either provide a job_param_sheet or a list of run_yamls plus a cwl document"
     runs_yaml_dir = get_path("runs_yaml_dir", job_id=job_id)
 
     # make directories:
@@ -44,8 +42,7 @@ def create_job(job_id, job_param_sheet=None, run_yamls=None, cwl=None,
 
     # make run yamls:
     if not job_param_sheet is None:
-        if search_paths and search_dir is None:
-            sys.exit("search_paths was set to True but no search dir has been defined.")
+        assert not (search_paths and search_dir is None), "search_paths was set to True but no search dir has been defined."
         job_param_sheet_dest_path = get_path("job_param_sheet", job_id=job_id, param_sheet_format=sheet_format)
         move(job_param_sheet, job_param_sheet_dest_path)
         make_yaml_runs(
@@ -74,8 +71,7 @@ def create_job(job_id, job_param_sheet=None, run_yamls=None, cwl=None,
             allow_upload=False,
             allow_download=False
         )
-        if check_if_path_in_dirs(cwl, allowed_dirs) is None:
-            sys.exit("The provided CWL file does not exit or you have no permission to access it.")
+        assert not check_if_path_in_dirs(cwl, allowed_dirs) is None, "The provided CWL file does not exit or you have no permission to access it."
     else:
         cwl = get_path("cwl", cwl_target=cwl)
     # copy cwl document:
@@ -125,10 +121,8 @@ def query_info_from_db(job_id):
             db_job_id_request = db.session.query(Exec).filter(Exec.job_id==job_id)
             break
         except:
-            if retry_delay == retry_delays[-1]:
-                sys.exit("Could not connect to database.")
-            else:
-                sleep(retry_delay + retry_delay*random())
+            assert retry_delay != retry_delays[-1], "Could not connect to database."
+            sleep(retry_delay + retry_delay*random())
     return db_job_id_request
 
 def exec_runs(job_id, run_ids, exec_profile_name, user_id=None, max_parrallel_exec_user_def=None, add_exec_info={}, send_email=True):

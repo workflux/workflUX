@@ -8,7 +8,7 @@ def cleanup_string( string_to_clean ):
     if isinstance(string_to_clean, str):
         str_cleaned = remove_non_printable_characters(string_to_clean).rstrip()
     else:
-        sys.exit( print_pref + "E: is not a string" )
+        raise AssertionError( print_pref + "E: is not a string" )
     return str_cleaned
 
 def multi_attribute_field( field_string, seperator='|' ):

@@ -52,12 +52,10 @@ for db_retry_delay in db_retry_delays:
         break
     except Exception as e:
         print(">>> retry db query: " + str(db_retry_delay))
-        if db_retry_delay == db_retry_delays[-1]:
-            sys.exit("Could not connect to database: \n" + str(e))
-        else:
-            sleep(db_retry_delay + db_retry_delay*random())
+        assert db_retry_delay != db_retry_delays[-1], "Could not connect to database: \n" + str(e)
+        sleep(db_retry_delay + db_retry_delay*random())
 
-def query_info_from_db(what, db_retry_delays_=None, no_exit=False):
+def query_info_from_db(what, db_retry_delays_=None, no_error=False):
     db_retry_delays_ = db_retry_delays if db_retry_delays_ is None else db_retry_delays_
     db_request = ""
     for db_retry_delay in db_retry_delays_:
@@ -71,8 +69,7 @@ def query_info_from_db(what, db_retry_delays_=None, no_exit=False):
             break
         except:
             if db_retry_delay == db_retry_delays[-1]:
-                if not no_exit:
-                    sys.exit("Exception query to database: \n" + str(e))
+                assert no_error, "Exception query to database: \n" + str(e)
             else:
                 sleep(db_retry_delay + db_retry_delay*random())
     return db_request
@@ -119,7 +116,7 @@ def send_mail(subj, text):
 
 
 # retry on commit:
-def commit(db_retry_delays_=None, no_exit=False):
+def commit(db_retry_delays_=None, no_error=False):
     db_retry_delays_ = db_retry_delays if db_retry_delays_ is None else db_retry_delays_
     for db_retry_delay in db_retry_delays_:
         try:
@@ -128,8 +125,7 @@ def commit(db_retry_delays_=None, no_exit=False):
         except Exception as e:
             print(">>> retry db commit: " + str(db_retry_delay))
             if db_retry_delay == db_retry_delays[-1]:
-                if not no_exit:
-                    sys.exit("Exception during commit to database:  \n" + str(e))
+                assert no_error, "Exception during commit to database:  \n" + str(e)
             else:
                 sleep(db_retry_delay + db_retry_delay*random())
 
@@ -154,8 +150,8 @@ while wait:
         exec_db_entry.err_message = "Max queueing duration exceeded."
         exec_db_entry.time_finished = datetime.now()
         commit()
-        sys.exit(exec_db_entry.err_message)
-    running_exec = query_info_from_db("running_exec", db_retry_delay_queue, no_exit=True)
+        raise AssertionError(exec_db_entry.err_message)
+    running_exec = query_info_from_db("running_exec", db_retry_delay_queue, no_error=True)
     if running_exec == "":
         wait_queue()
         continue
@@ -168,7 +164,7 @@ while wait:
         if number_running_exec >= max(exec_profile["max_parallel_exec"], max_parallel_exec_running):
             wait_queue()
             continue
-    next_in_queue = query_info_from_db("next_in_queue", db_retry_delay_queue, no_exit=True)
+    next_in_queue = query_info_from_db("next_in_queue", db_retry_delay_queue, no_error=True)
     if next_in_queue == "" or next_in_queue.id != exec_db_id:
         wait_queue()
         continue
@@ -205,7 +201,7 @@ def prepare_shell():
     elif exec_profile["shell"] == "powershell":
         init_pref = "$"
     else:
-        sys.exit("Error unkown shell \"" + exec_profile["shell"] + "\".")
+        raise AssertionError("Error unkown shell \"" + exec_profile["shell"] + "\".")
     
     var_cmdls = [(init_pref + c) for c in var_cmdls]
     p = spawn(exec_profile["shell"], timeout=None)
@@ -273,7 +269,7 @@ def run_step(p, step_name, retry_count):
         if err_message:
             exec_db_entry.err_message = exec_db_entry.err_message + \
                 ": " + err_message
-        sys.exit(err_message)
+        raise AssertionError(err_message)
     
 def terminate_shell(p):
     try:
@@ -297,7 +293,7 @@ for retry_count in range(0, exec_profile["max_retries"]+1):
         exec_db_entry.status = "finished" 
         terminate_shell(p)
         break
-    except SystemExit as e:
+    except AssertionError as e:
         print(">>> A step could not be finished sucessfully: \n" + str(e))
         terminate_shell(p) 
         # will retry

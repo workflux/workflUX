@@ -37,7 +37,7 @@ def vaidate_url(url):
     try:
         test = urlopen(url)
     except Exception:
-        sys.exit("Cannot open the provided url: {}".format(url))
+        raise AssertionError("Cannot open the provided url: {}".format(url))
         
 def browse_dir(path,
     ignore_files=False,
@@ -49,7 +49,7 @@ def browse_dir(path,
     try:
         dir_content_ = list(Path(abs_path).iterdir())
     except:
-        sys.exit("Path does not exist or you have no permission to enter it.")
+        raise AssertionError("Path does not exist or you have no permission to enter it.")
     dir_content = []
     for item in dir_content_:
         is_dir = item.is_dir()
@@ -124,7 +124,8 @@ def read_file_content(
 allowed_extensions_by_type = {
     "CWL": ["cwl", "yaml", "yml", "CWL"],
     "spreadsheet": ["xlsx", "ods", "xls"],
-    "zip": ["zip"]
+    "zip": ["zip"],
+    "janis": "py"
 }
 
 def zip_dir(dir_path):
@@ -147,10 +148,8 @@ def zip_dir(dir_path):
     
 def unzip_dir(zip_path, target_dir):
     zip_path=os.path.abspath(zip_path)
-    if not zipfile.is_zipfile(zip_path):
-        sys.exit("The provided file is not a zip.")
-    if not os.path.isdir(target_dir):
-        sys.exit("The provided target dir does not exist or is not a dir.")
+    assert zipfile.is_zipfile(zip_path), "The provided file is not a zip."
+    assert os.path.isdir(target_dir), "The provided target dir does not exist or is not a dir."
     with zipfile.ZipFile(zip_path,"r") as zip_ref:
         zip_ref.extractall(target_dir)
 
@@ -202,8 +201,7 @@ def get_path(which, job_id=None, run_id=None, param_sheet_format=None, cwl_targe
         else:
             path = os.path.join(app.config["EXEC_DIR"], job_id)
             hits = fetch_files_in_dir(path, allowed_extensions_by_type["spreadsheet"], "param_sheet")
-            if len(hits) == 0:
-                sys.exit("No spreadsheet found for job " + job_id)
+            assert len(hits) != 0, "No spreadsheet found for job " + job_id
             path = os.path.join(path, hits[0]["file_name"])
     elif which == "job_cwl":
         path = os.path.join(app.config["EXEC_DIR"], job_id, "main.cwl")
@@ -213,8 +211,7 @@ def get_path(which, job_id=None, run_id=None, param_sheet_format=None, cwl_targe
         else:
             path = os.path.join(app.config["EXEC_DIR"], job_id)
             hits = fetch_files_in_dir(path, allowed_extensions_by_type["spreadsheet"], "job_templ")
-            if len(hits) == 0:
-                sys.exit("No spreadsheet found for job " + job_id)
+            assert len(hits) != 0, "No spreadsheet found for job " + job_id
             path = os.path.join(path, hits[0]["file_name"])
     elif which == "runs_yaml_dir":
         path = os.path.join(app.config["EXEC_DIR"], job_id, "runs_params")
@@ -245,7 +242,7 @@ def make_temp_dir():
     try:
         os.mkdir(temp_dir)
     except Exception as e:
-        sys.exit("Could not create temporary directory.")
+        raise AssertionError("Could not create temporary directory.")
     return temp_dir
 
 def pack_cwl(cwl_path):
@@ -273,12 +270,12 @@ def import_cwl(cwl_path, name=None):
         try:
             os.remove(cwl_target_path)
         except Exception as e:
-            sys.exit("Could not remove existing cwl file.")
+            raise AssertionError("Could not remove existing cwl file.")
     try:
         with open(cwl_target_path, 'w') as cwl_file:
             json.dump(packed_cwl, cwl_file)
     except Exception as e:
-        sys.exit("Could not write CWL file.")
+        raise AssertionError("Could not write CWL file.")
     job_templ_filepath = get_path("job_templ", cwl_target=cwl_target_name)
     generate_job_template_from_cwl(
         cwl_file=cwl_target_path, 
@@ -286,7 +283,13 @@ def import_cwl(cwl_path, name=None):
         show_please_fill=True
     )
     
-
+def import_janis(janis_script_path, name=None, name_in_janis_script=None):
+    if name is None:
+        name = name_in_janis_script if not name_in_janis_script is None \
+            else os.path.splitext(os.path.basename(janis_script_path))[0]
+    if os.path.splitext(name)[1] in allowed_extensions_by_type["janis"]:
+        name = os.path.splitext(name)[0]
+    
 def get_run_ids(job_id):
     exec_dir = app.config["EXEC_DIR"]
     runs_yaml_dir = get_path("runs_yaml_dir", job_id)
@@ -335,10 +338,8 @@ def db_commit(retry_delays=[1,4]):
             db.session.commit()
             break
         except Exception as e:
-            if retry_delay == retry_delays[-1]:
-                sys.exit("Could not connect to database.")
-            else:
-                sleep(retry_delay + retry_delay*random())
+            assert retry_delay != retry_delays[-1], "Could not connect to database."
+            sleep(retry_delay + retry_delay*random())
     
 def get_allowed_base_dirs(job_id=None, run_id=None, allow_input=True, allow_upload=True, allow_download=False, include_tmp_dir=False):
     allowed_dirs = {}

@@ -2,8 +2,7 @@ import sys
 
 def fill_in_config_defaults(configs):
     print_pref = "[fill_in_param_defaults]:"
-    if len(configs.keys()) == 0:
-        sys.exit(print_pref + "E: no config parameters are available")
+    assert len(configs.keys()) != 0, print_pref + "E: no config parameters are available"
     for param_name in configs.keys():
         config_field_defaults = {
             "null_items_allowed": False,
@@ -21,11 +20,10 @@ def fill_in_config_defaults(configs):
             "parameter_sheet_name": "parameters"
         }
         # check if essential configs[param_name] are present:
-        if not (
+        assert (
             "is_array" in configs[param_name] and
             "type" in configs[param_name]
-        ):
-            sys.exit(print_pref + "E: configs are missing required fields \"type\" and \"is_array\" for parameter " + param_name + " ")
+        ), print_pref + "E: configs are missing required fields \"type\" and \"is_array\" for parameter " + param_name + " "
         # set default values for missing config fields:
         for cfield in config_field_defaults.keys():
             if not cfield in configs[param_name]:

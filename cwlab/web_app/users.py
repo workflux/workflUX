@@ -31,7 +31,7 @@ def login():
                 "text": "Successfully validated."
             } )
         data={ "success": True }
-    except SystemExit as e:
+    except AssertionError as e:
         messages.append( { 
             "type":"error", 
             "text": str(e) 
@@ -70,7 +70,7 @@ def register():
                 "type":"success", 
                 "text": "Successfully send. An administrator will need to approve your account."
             } )
-    except SystemExit as e:
+    except AssertionError as e:
         messages.append( { 
             "type":"error", 
             "text": str(e) 
@@ -93,7 +93,7 @@ def get_general_user_info():
     try:
         login_required()
         data = get_user_info(current_user.get_id())
-    except SystemExit as e:
+    except AssertionError as e:
         messages.append( { 
             "type":"error", 
             "text": str(e) 
@@ -116,7 +116,7 @@ def get_all_users_info():
     try:
         login_required(admin=True)
         data = get_all_users_info_()
-    except SystemExit as e:
+    except AssertionError as e:
         messages.append( { 
             "type":"error", 
             "text": str(e) 
@@ -163,7 +163,7 @@ def modify_or_delete_users():
                 "type":"success", 
                 "text":"Successfully set level on users: \"" + ", ".join(user_selection) + "\""
             } )
-    except SystemExit as e:
+    except AssertionError as e:
         messages.append( { 
             "type":"error", 
             "text": str(e) 
@@ -195,7 +195,7 @@ def change_password():
             "type":"success", 
             "text": "Successfully changed password. You will be logged out."
         } )
-    except SystemExit as e:
+    except AssertionError as e:
         messages.append( { 
             "type":"error", 
             "text": str(e) 
@@ -220,15 +220,14 @@ def delete_account():
         data_req = request.get_json()
         username = data_req["username"]
         current_user_id = current_user.get_id()
-        if username != load_user(current_user_id).username:
-            sys.exit("The entered username does not match your account.")
+        assert username == load_user(current_user_id).username, "The entered username does not match your account."
         delete_user(current_user_id)
         data={"success": True}
         messages.append( { 
             "type":"success", 
             "text": "Successfully deleted your account. You will be logged out."
         } )
-    except SystemExit as e:
+    except AssertionError as e:
         messages.append( { 
             "type":"error", 
             "text": str(e) 
@@ -252,7 +251,7 @@ def logout():
         login_required()
         logout_user()
         data["success"] = True
-    except SystemExit as e:
+    except AssertionError as e:
         messages.append( { 
             "type":"error", 
             "text": str(e) 

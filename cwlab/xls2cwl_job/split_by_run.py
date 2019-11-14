@@ -13,14 +13,14 @@ def split_parameter_by_run_id( parameter_name, all_parameters, instruction, defa
         # get referenced parameter and run_ids to split by
         try:
             parameter_name_to_split_by = validate.get_parameter_reference(instruction[0], all_parameters)
-        except SystemExit as e:
-            sys.exit(print_pref + "E: for parameter \"" + parameter_name + "\":" + str(e))
+        except AssertionError as e:
+            raise AssertionError(print_pref + "E: for parameter \"" + parameter_name + "\":" + str(e))
         values_to_split_by = all_parameters[parameter_name_to_split_by]
         # check if values_to_split_by is aligned to parameter_values:
         try:
             validate.aligned_to(parameter_name, all_parameters, instruction[0])
-        except SystemExit as e:
-            sys.exit(print_pref + str(e))
+        except AssertionError as e:
+            raise AssertionError(print_pref + str(e))
         # split into runs
         for idx, run_id in enumerate(values_to_split_by):
             #! if the "single_value" option and not the "array" option is used,
@@ -48,8 +48,8 @@ def split_all_parameters_by_run_id( all_parameters, configs, default_run_id="glo
         try:
             parameter_by_run_id_tmp = split_parameter_by_run_id( param_name, all_parameters, 
                                         configs[param_name]["split_into_runs_by"], default_run_id )
-        except SystemExit as e:
-            sys.exit(print_pref + str(e))
+        except AssertionError as e:
+            raise AssertionError(print_pref + str(e))
         # update parameters_by_run_id with splitted parameter
         for tmp_run_id in parameter_by_run_id_tmp.keys():
             if tmp_run_id in parameters_by_run_id.keys():

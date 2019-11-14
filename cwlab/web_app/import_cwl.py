@@ -18,17 +18,16 @@ def upload_cwl():
     data = []
     try:
         login_required()
-        if 'file' not in request.files:
-            sys.exit( 'No file received.')
+        assert 'file' in request.files, 'No file received.'
 
         import_file = request.files['file']
 
-        if import_file.filename == '':
-            sys.exit( "No file specified.")
+        assert import_file.filename != '', "No file specified."
 
-        if not is_allowed_file(import_file.filename, type="CWL"):
-            sys.exit( "Wrong file type. Only files with following extensions are allowed: " + 
-                ", ".join(allowed_extensions_by_type["CWL"]))
+        assert is_allowed_file(import_file.filename, type="CWL"), ( 
+            "Wrong file type. Only files with following extensions are allowed: " + 
+            ", ".join(allowed_extensions_by_type["CWL"])
+        )
         
         # save the file to the CWL directory:
         metadata = json_loads(request.form.get("meta"))
@@ -53,7 +52,7 @@ def upload_cwl():
             "text": import_file.filename + " successfully imported."
         } )
 
-    except SystemExit as e:
+    except AssertionError as e:
         messages.append( { "type":"error", "text": str(e) } )
     except:
         messages.append( { 
@@ -69,17 +68,16 @@ def upload_cwl_zip():
     data = {}
     try:
         login_required()
-        if 'file' not in request.files:
-            sys.exit( 'No file received.')
+        assert 'file' in request.files, 'No file received.'
 
         import_file = request.files['file']
 
-        if import_file.filename == '':
-            sys.exit( "No file specified.")
+        assert import_file.filename != '', "No file specified."
 
-        if not is_allowed_file(import_file.filename, type="zip"):
-            sys.exit( "Wrong file type. Only files with following extensions are allowed: " + 
-                ", ".join(allowed_extensions_by_type["CWL"]))
+        assert is_allowed_file(import_file.filename, type="zip"), ( 
+            "Wrong file type. Only files with following extensions are allowed: " + 
+            ", ".join(allowed_extensions_by_type["CWL"])
+        )
 
         # save the file to the CWL directory:
         import_filename = secure_filename(import_file.filename) 
@@ -103,7 +101,7 @@ def upload_cwl_zip():
             "text": import_file.filename + " was successfully uploaded and extracted."
         } )
 
-    except SystemExit as e:
+    except AssertionError as e:
         messages.append( { "type":"error", "text": str(e) } )
     except:
         messages.append( { 
@@ -125,7 +123,7 @@ def download_zip_url():
         try:
             downloaded_zip = download_file(zip_url, "downloaded.zip")
         except Exception:
-            sys.exit("Could not download the provided URL, is the URL valid; {}".format(zip_url))
+            raise AssertionError("Could not download the provided URL, is the URL valid; {}".format(zip_url))
 
         temp_extract_dir = make_temp_dir()
         unzip_dir(downloaded_zip, temp_extract_dir)
@@ -142,7 +140,7 @@ def download_zip_url():
             "text": import_file.filename + " was successfully downloaded and extracted."
         } )
 
-    except SystemExit as e:
+    except AssertionError as e:
         messages.append( { "type":"error", "text": str(e) } )
     except:
         messages.append( { 
@@ -171,9 +169,9 @@ def import_cwl_by_path_or_url():
                 allow_upload=True,
                 allow_download=False
             )
-            if not os.path.isfile(cwl_path) or \
-                check_if_path_in_dirs(cwl_path, allowed_dirs) is None:
-                sys.exit("Path does not exist or you have no permission to enter it.")
+            assert os.path.isfile(cwl_path) and \
+                check_if_path_in_dirs(cwl_path, allowed_dirs) is not None, \
+                "Path does not exist or you have no permission to enter it."
 
         import_cwl_(cwl_path=cwl_path, name=import_name)
 
@@ -182,7 +180,7 @@ def import_cwl_by_path_or_url():
             "text": import_name + " successfully imported."
         } )
 
-    except SystemExit as e:
+    except AssertionError as e:
         messages.append( { "type":"error", "text": str(e) } )
     except:
         messages.append( { 

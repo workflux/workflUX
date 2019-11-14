@@ -9,8 +9,7 @@ def is_basic_type_instance(value):
         return (isinstance(value, int) or 
             isinstance(value, float) or 
             isinstance(value, str) or 
-            isinstance(value, bool) or 
-            isinstance(value, unicode))
+            isinstance(value, bool))
     else:
         return (isinstance(value, int) or 
             isinstance(value, float) or 
@@ -24,8 +23,8 @@ def read_config_from_cwl_file(cwl_file):
     loadingContext = LoadingContext({"construct_tool_object": default_make_tool, "disable_js_validation": True})
     try:
         cwl_document = load_tool(cwl_file, loadingContext)
-    except SystemExit as e:
-        sys.exit( print_pref + "failed to read cwl file \"" + cwl_file + "\": does not exist or is invalid")
+    except AssertionError as e:
+        raise AssertionError( print_pref + "failed to read cwl file \"" + cwl_file + "\": does not exist or is invalid")
     inp_records = cwl_document.inputs_record_schema["fields"]
     if "doc" in cwl_document.tool:
         metadata["doc"] = cwl_document.tool["doc"]
@@ -42,7 +41,7 @@ def read_config_from_cwl_file(cwl_file):
                 inp_rec["type"].remove("null")
                 inp_rec["type"] = inp_rec["type"][0]
             else:
-                sys.exit( print_pref + "E: unkown type for parameter " + name + 
+                raise AssertionError( print_pref + "E: unkown type for parameter " + name + 
                     ": lists of type are only supported when one of two elements is \"null\"")
         # test if array:
         if isinstance(inp_rec["type"], dict):
@@ -51,9 +50,9 @@ def read_config_from_cwl_file(cwl_file):
                     is_array = True
                     inp_rec["type"] = inp_rec["type"]["items"]
                 else:
-                    sys.exit( print_pref + "E: unkown type for parameter " + name )
+                    raise AssertionError( print_pref + "E: unkown type for parameter " + name )
             else:
-                sys.exit( print_pref + "E: unkown type for parameter " + name )
+                raise AssertionError( print_pref + "E: unkown type for parameter " + name )
             # test if "null" is allowed as array item:
             if isinstance(inp_rec["type"], list):
                 if len(inp_rec["type"]) == 2 and "null" in inp_rec["type"]:
@@ -61,12 +60,12 @@ def read_config_from_cwl_file(cwl_file):
                     inp_rec["type"].remove("null")
                     inp_rec["type"] = inp_rec["type"][0]
                 else:
-                    sys.exit( print_pref + "E: unkown type for parameter " + name + 
+                    raise AssertionError( print_pref + "E: unkown type for parameter " + name + 
                         ": lists of type are only supported when one of two elements is \"null\"")
         if isinstance(inp_rec["type"], str):
             type_ = inp_rec["type"]
         else:
-            sys.exit( print_pref + "E: unkown type for parameter " + name )
+            raise AssertionError( print_pref + "E: unkown type for parameter " + name )
         # get the default:
         if "default" in inp_rec:
             if is_basic_type_instance(inp_rec["default"]):
@@ -98,7 +97,7 @@ def read_config_from_cwl_file(cwl_file):
             elif isinstance(inp_rec["secondaryFiles"], list):
                 secondary_files = inp_rec["secondaryFiles"]
             else:
-                sys.exit( print_pref + "E: invalid secondaryFiles field for parameter " + name )
+                raise AssertionError( print_pref + "E: invalid secondaryFiles field for parameter " + name )
         else:
             secondary_files = [ "" ]
         # read doc:

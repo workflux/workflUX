@@ -35,7 +35,7 @@ def get_job_list():
             job_dir = get_path("job_dir", job_id=job_id)
             try:
                 job_param_sheet = get_path("job_param_sheet", job_id=job_id)
-            except SystemExit as e:
+            except AssertionError as e:
                 continue
                 
             job_param_sheet_attributes = get_job_templ_info("attributes", job_templ_filepath=job_param_sheet)
@@ -52,7 +52,7 @@ def get_job_list():
                 "job_abs_path": job_dir,
                 "cwl_target": cwl_target
                 })
-    except SystemExit as e:
+    except AssertionError as e:
         messages.append( { 
             "type":"error", 
             "text": str(e) 
@@ -95,7 +95,7 @@ def get_run_list():
         run_ids = get_run_ids(job_id)
         run_ids.sort()
         data["run_ids"] = run_ids
-    except SystemExit as e:
+    except AssertionError as e:
         messages.append( { 
             "type":"error", 
             "text": str(e) 
@@ -119,7 +119,7 @@ def get_run_status():
         login_required()
         data_req = request.get_json()
         data = get_run_info(data_req["job_id"], data_req["run_ids"])
-    except SystemExit as e:
+    except AssertionError as e:
         messages.append( { 
             "type":"error", 
             "text": str(e) 
@@ -141,43 +141,43 @@ def get_run_status():
 def start_exec():    # returns all parmeter and its default mode (global/job specific) 
                                     # for a given xls config
     messages = []
-    # try:
-    login_required()
-    user_id = current_user.get_id() if app.config["ENABLE_USERS"] else None
-    data = request.get_json()
-    job_id = data["job_id"]
-    run_ids = sorted(data["run_ids"])
-    exec_profile_name = data["exec_profile"]
-    max_parrallel_exec_user_def = int(data["parallel_exec"]) if "parallel_exec" in data.keys() else None
+    try:
+        login_required()
+        user_id = current_user.get_id() if app.config["ENABLE_USERS"] else None
+        data = request.get_json()
+        job_id = data["job_id"]
+        run_ids = sorted(data["run_ids"])
+        exec_profile_name = data["exec_profile"]
+        max_parrallel_exec_user_def = int(data["parallel_exec"]) if "parallel_exec" in data.keys() else None
 
-    started_runs, already_running_runs = exec_runs(
-        job_id,
-        run_ids,
-        exec_profile_name,
-        user_id,
-        max_parrallel_exec_user_def
-    )
-    
-    if len(started_runs) > 0:
-        messages.append({
-            "type":"success",
-            "text":"Successfully started execution for runs: " + ", ".join(started_runs)
-        })
-    if len(already_running_runs) > 0:
-        messages.append({
-            "type":"warning",
-            "text":"Following runs are already running or have already finished: " + ", ".join(already_running_runs) + ". To restart them, reset them first."
-        })
-    # except SystemExit as e:
-    #     messages.append( { 
-    #         "type":"error", 
-    #         "text": str(e) 
-    #     } )
-    # except:
-    #     messages.append( { 
-    #         "type":"error", 
-    #         "text":"An unkown error occured." 
-    #     } )
+        started_runs, already_running_runs = exec_runs(
+            job_id,
+            run_ids,
+            exec_profile_name,
+            user_id,
+            max_parrallel_exec_user_def
+        )
+        
+        if len(started_runs) > 0:
+            messages.append({
+                "type":"success",
+                "text":"Successfully started execution for runs: " + ", ".join(started_runs)
+            })
+        if len(already_running_runs) > 0:
+            messages.append({
+                "type":"warning",
+                "text":"Following runs are already running or have already finished: " + ", ".join(already_running_runs) + ". To restart them, reset them first."
+            })
+    except AssertionError as e:
+        messages.append( { 
+            "type":"error", 
+            "text": str(e) 
+        } )
+    except:
+        messages.append( { 
+            "type":"error", 
+            "text":"An unkown error occured." 
+        } )
     return jsonify({
         "data":{},
         "messages":messages
@@ -200,7 +200,7 @@ def get_run_details():
             "log": log_content,
             "yaml": yaml_content
         }
-    except SystemExit as e:
+    except AssertionError as e:
         messages.append( { 
             "type":"error", 
             "text": str(e) 
@@ -220,38 +220,38 @@ def get_run_details():
 def terminate_runs():    
     messages = []
     data = {}
-    # try:
-    login_required()
-    req_data = request.get_json()
-    job_id = req_data["job_id"]
-    run_ids = sorted(req_data["run_ids"])
-    mode = req_data["mode"] # one of terminate, reset, delete
-    succeeded, could_not_be_terminated, could_not_be_cleaned = terminate_runs_by_id(job_id, run_ids, mode)
-    if len(succeeded) > 0:
-        messages.append({
-            "type":"success",
-            "text":"Successfully terminated/reset/deleted runs: " + ", ".join(succeeded)
-        })
-    if len(could_not_be_terminated) > 0:
-        messages.append({
-            "type":"warning",
-            "text":"Following runs could not be terminated: " + ", ".join(could_not_be_terminated)
-        })
-    if len(could_not_be_cleaned) > 0:
-        messages.append({
-            "type":"warning",
-            "text":"Following runs could not be cleaned: " + ", ".join(could_not_be_cleaned)
-        })
-    # except SystemExit as e:
-    #     messages.append( { 
-    #         "type":"error", 
-    #         "text": str(e) 
-    #     } )
-    # except:
-    #     messages.append( { 
-    #         "type":"error", 
-    #         "text":"An unkown error occured." 
-    #     } )
+    try:
+        login_required()
+        req_data = request.get_json()
+        job_id = req_data["job_id"]
+        run_ids = sorted(req_data["run_ids"])
+        mode = req_data["mode"] # one of terminate, reset, delete
+        succeeded, could_not_be_terminated, could_not_be_cleaned = terminate_runs_by_id(job_id, run_ids, mode)
+        if len(succeeded) > 0:
+            messages.append({
+                "type":"success",
+                "text":"Successfully terminated/reset/deleted runs: " + ", ".join(succeeded)
+            })
+        if len(could_not_be_terminated) > 0:
+            messages.append({
+                "type":"warning",
+                "text":"Following runs could not be terminated: " + ", ".join(could_not_be_terminated)
+            })
+        if len(could_not_be_cleaned) > 0:
+            messages.append({
+                "type":"warning",
+                "text":"Following runs could not be cleaned: " + ", ".join(could_not_be_cleaned)
+            })
+    except AssertionError as e:
+        messages.append( { 
+            "type":"error", 
+            "text": str(e) 
+        } )
+    except:
+        messages.append( { 
+            "type":"error", 
+            "text":"An unkown error occured." 
+        } )
     return jsonify({
         "data":data,
         "messages":messages
@@ -285,7 +285,7 @@ def delete_job():
                 "type":"error",
                 "text":"Could not delete job dir for \"" + job_id + "\"."
             })
-    except SystemExit as e:
+    except AssertionError as e:
         messages.append( { 
             "type":"error", 
             "text": str(e) 

@@ -15,12 +15,10 @@ def upload_file():
     data={}
     try:
         login_required()
-        if 'file' not in request.files:
-            sys.exit( 'No file received.')
+        assert 'file' in request.files, 'No file received.'
 
         import_file = request.files['file']
-        if import_file.filename == '':
-            sys.exit( "No file specified.")
+        assert import_file.filename != '', "No file specified."
 
         filename = secure_filename(import_file.filename)
 
@@ -37,13 +35,12 @@ def upload_file():
             allow_download=False
         )
 
-        if dir_path == "":
-            sys.exit("Path does not exist or you have no permission to enter it.")
+        assert dir_path != "", "Path does not exist or you have no permission to enter it."
         dir_path = normalize_path(dir_path)
-        if not os.path.exists(dir_path) or \
-            not os.path.isdir(dir_path) or \
-            check_if_path_in_dirs(dir_path, allowed_dirs) is None:
-            sys.exit("Path does not exist or you have no permission to enter it.")
+        assert os.path.exists(dir_path) and \
+            os.path.isdir(dir_path) and \
+            check_if_path_in_dirs(dir_path, allowed_dirs) is not None, \
+            "Path does not exist or you have no permission to enter it."
         
         import_filepath = os.path.join(dir_path, filename)
         import_file.save(import_filepath)
@@ -53,7 +50,7 @@ def upload_file():
             "type":"success", 
             "text": "Successfully uploaded file."
         } )
-    except SystemExit as e:
+    except AssertionError as e:
         messages.append( { 
             "type":"error", 
             "text": str(e) 
@@ -102,8 +99,7 @@ def browse_dir():
         )
         
         if not fixed_base_dir is None:
-            if check_if_path_in_dirs(fixed_base_dir, data["allowed_dirs"]) is None:
-                sys.exit("Fixed base dir is not allowed.")
+            assert check_if_path_in_dirs(fixed_base_dir, data["allowed_dirs"]) is not None, "Fixed base dir is not allowed."
             data["allowed_dirs"] = {
                 fixed_base_dir_name: {
                     "path": fixed_base_dir,
@@ -112,19 +108,15 @@ def browse_dir():
             }
 
         try:
-            if path == "":
-                sys.exit("Path does not exist or you have no permission to enter it.")
+            assert path != "" and os.path.exists(path), "Path does not exist or you have no permission to enter it."
             path = normalize_path(path)
-            if not os.path.exists(path):
-                sys.exit("Path does not exist or you have no permission to enter it.")
             if get_parent_dir or not os.path.isdir(path):
                 path = os.path.dirname(path)
             data["base_dir"] = check_if_path_in_dirs(path, data["allowed_dirs"])
-            if data["base_dir"] is None:
-                sys.exit("Path does not exist or you have no permission to enter it.")
+            assert data["base_dir"] is not None, "Path does not exist or you have no permission to enter it."
             data["items"] = browse_dir_(path, ignore_files, file_exts, show_only_hits)
             data["dir"] = path
-        except SystemExit as e:
+        except AssertionError as e:
             if on_error_return_base_dir_items:
                 if (not default_base_dir is None) and default_base_dir in data["allowed_dirs"].keys():
                     data["base_dir"] = default_base_dir
@@ -134,9 +126,9 @@ def browse_dir():
                 data["dir"] = path
                 data["items"] = browse_dir_(path, ignore_files, file_exts, show_only_hits)
             else:
-                sys.exit(str(e))
+                raise AssertionError(str(e))
 
-    except SystemExit as e:
+    except AssertionError as e:
         messages.append( { 
             "type":"error", 
             "text": str(e) 
@@ -164,11 +156,8 @@ def download():
         run_id = data_req["run_id"]
         path = data_req["path"]
         send_file = data_req["send_file"]
-        if path == "":
-            sys.exit("Path does not exist or you have no permission to enter it.")
+        assert path != "" and os.path.exists(path), "Path does not exist or you have no permission to enter it."
         path = normalize_path(path)
-        if not os.path.exists(path):
-            sys.exit("Path does not exist or you have no permission to enter it.")
         allowed_dirs = get_allowed_base_dirs(
             job_id=job_id,
             run_id=run_id,
@@ -177,8 +166,7 @@ def download():
             allow_download=True
         )
         base_dir = check_if_path_in_dirs(path, allowed_dirs)
-        if base_dir is None:
-            sys.exit("Path does not exist or you have no permission to enter it.")
+        assert base_dir is not None, "Path does not exist or you have no permission to enter it."
         if os.path.isdir(path):
             data["zip_path"] = zip_dir(path)
         if send_file:
@@ -188,7 +176,7 @@ def download():
                 attachment_filename=os.path.basename(path),
                 as_attachment=True
             )
-    except SystemExit as e:
+    except AssertionError as e:
         messages.append( { 
             "type":"error", 
             "text": str(e) 
