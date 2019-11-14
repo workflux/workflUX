@@ -180,11 +180,11 @@ def send_filled_param_form_sheet():
                 os.remove(import_filepath)
                 raise AssertionError(validation_result)
         except AssertionError as e:
-        messages.append(handle_known_error(
-            e, 
-            alt_err_message="The provided form failed validation: {}".format(str(e)),
-            return_front_end_message=True
-        ))
+            messages.append(handle_known_error(
+                e, 
+                alt_err_message="The provided form failed validation: {}".format(str(e)),
+                return_front_end_message=True
+            ))
         except Exception as e:
             messages.append(handle_unknown_error(e, return_front_end_message=True))
 
