@@ -27,6 +27,9 @@ else:
     from cwltool.load_tool import validate_document
 basedir = os.path.abspath(os.path.dirname(__file__))
 
+def get_time_string():
+    return datetime.now().strftime("%H:%M:%S")
+
 def normalize_path(path):
     if app.config["CORRECT_SYMLINKS"]:
         return os.path.realpath(path)

@@ -5,7 +5,7 @@ from flask_login import current_user
 from werkzeug.urls import url_parse
 from cwlab import app 
 from cwlab.utils import fetch_files_in_dir, allowed_extensions_by_type, \
-    get_duration, get_job_ids, get_path, get_run_ids, get_job_templ_info
+    get_duration, get_job_ids, get_path, get_run_ids, get_job_templ_info, get_time_string
 import requests
 from re import sub, match
 from cwlab.xls2cwl_job.web_interface import gen_form_sheet as gen_job_param_sheet
@@ -42,6 +42,7 @@ def get_job_list():
             job_param_sheet_attributes = get_job_templ_info("attributes", job_templ_filepath=job_param_sheet)
             if "CWL" not in job_param_sheet_attributes.keys() or job_param_sheet_attributes["CWL"] == "":
                 messages.append( { 
+                    "time": get_time_string(),
                     "type":"warning", 
                     "text":"No CWL target was specified in the job_param_sheet of job \"" + 
                         job_id + "\". Ignoring."
@@ -154,11 +155,13 @@ def start_exec():    # returns all parmeter and its default mode (global/job spe
         
         if len(started_runs) > 0:
             messages.append({
+                "time": get_time_string(),
                 "type":"success",
                 "text":"Successfully started execution for runs: " + ", ".join(started_runs)
             })
         if len(already_running_runs) > 0:
             messages.append({
+                "time": get_time_string(),
                 "type":"warning",
                 "text":"Following runs are already running or have already finished: " + ", ".join(already_running_runs) + ". To restart them, reset them first."
             })
@@ -211,16 +214,19 @@ def terminate_runs():
         succeeded, could_not_be_terminated, could_not_be_cleaned = terminate_runs_by_id(job_id, run_ids, mode)
         if len(succeeded) > 0:
             messages.append({
+                "time": get_time_string(),
                 "type":"success",
                 "text":"Successfully terminated/reset/deleted runs: " + ", ".join(succeeded)
             })
         if len(could_not_be_terminated) > 0:
             messages.append({
+                "time": get_time_string(),
                 "type":"warning",
                 "text":"Following runs could not be terminated: " + ", ".join(could_not_be_terminated)
             })
         if len(could_not_be_cleaned) > 0:
             messages.append({
+                "time": get_time_string(),
                 "type":"warning",
                 "text":"Following runs could not be cleaned: " + ", ".join(could_not_be_cleaned)
             })
@@ -248,16 +254,19 @@ def delete_job():
         elif results["status"] == "failed run termination":
             if len(results["could_not_be_terminated"]) > 0:
                 messages.append({
+                    "time": get_time_string(),
                     "type":"error",
                     "text":"Following runs could not be terminated: " + ", ".join(results["could_not_be_terminated"])
                 })
             if len(results["could_not_be_cleaned"]) > 0:
                 messages.append({
+                    "time": get_time_string(),
                     "type":"error",
                     "text":"Following runs could not be cleaned: " + ", ".join(results["could_not_be_cleaned"])
                 })
         else:
             messages.append({
+                "time": get_time_string(),
                 "type":"error",
                 "text":"Could not delete job dir for \"" + job_id + "\"."
             })

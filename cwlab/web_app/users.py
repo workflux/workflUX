@@ -9,6 +9,7 @@ from cwlab.users.manage import check_user_credentials, check_all_format_conforma
     get_all_users_info as get_all_users_info_, change_user_status_or_level, get_user_by_username
 from cwlab.users.manage import login_required
 from cwlab.log import handle_known_error, handle_unknown_error
+from cwlab.utils import get_time_string
 
 @app.route('/login/', methods=['POST'])
 def login():
@@ -22,12 +23,14 @@ def login():
         validated_user = check_user_credentials(username, password, return_user_if_valid=True)
         if validated_user is None:
             messages.append( { 
+                "time": get_time_string(),
                 "type":"error", 
                 "text": "Username or password is not valid."
             } )
         else:
             login_user(validated_user, remember=remember_me)
             messages.append( { 
+                "time": get_time_string(),
                 "type":"success", 
                 "text": "Successfully validated."
             } )
@@ -56,12 +59,14 @@ def register():
         valid_format = check_all_format_conformance(username, email, password, rep_password)
         if valid_format != "valid":
             messages.append( { 
+                "time": get_time_string(),
                 "type":"error", 
                 "text": valid_format 
             } )
         else:
             add_user(username, email, "user",  password, "need_approval")
             messages.append( { 
+                "time": get_time_string(),
                 "type":"success", 
                 "text": "Successfully send. An administrator will need to approve your account."
             } )
@@ -123,6 +128,7 @@ def modify_or_delete_users():
             for user in user_selection:
                 delete_user(get_user_by_username(user).id)
             messages.append( { 
+                "time": get_time_string(),
                 "type":"success", 
                 "text":"Successfully deleted users: \"" + ", ".join(user_selection) + "\""
             } )
@@ -130,6 +136,7 @@ def modify_or_delete_users():
             for user in user_selection:
                 change_user_status_or_level(get_user_by_username(user).id, new_status=value)
             messages.append( { 
+                "time": get_time_string(),
                 "type":"success", 
                 "text":"Successfully set status on users: \"" + ", ".join(user_selection) + "\""
             } )
@@ -137,6 +144,7 @@ def modify_or_delete_users():
             for user in user_selection:
                 change_user_status_or_level(get_user_by_username(user).id, new_level=value)
             messages.append( { 
+                "time": get_time_string(),
                 "type":"success", 
                 "text":"Successfully set level on users: \"" + ", ".join(user_selection) + "\""
             } )
@@ -163,6 +171,7 @@ def change_password():
         change_password_(current_user.get_id(), old_password, new_password, new_rep_password)
         data={"success": True}
         messages.append( { 
+            "time": get_time_string(),
             "type":"success", 
             "text": "Successfully changed password. You will be logged out."
         } )
@@ -189,6 +198,7 @@ def delete_account():
         delete_user(current_user_id)
         data={"success": True}
         messages.append( { 
+            "time": get_time_string(),
             "type":"success", 
             "text": "Successfully deleted your account. You will be logged out."
         } )

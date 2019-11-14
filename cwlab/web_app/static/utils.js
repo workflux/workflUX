@@ -1,6 +1,10 @@
 // contains general utilities important for multiple modules
 // import styled from "styled-components"
 
+function get_time_str(){
+    date = new Date()
+    return(date.toLocaleTimeString())
+}
 
 function ajaxRequest({
     // in a component bind this function: this.ajaxRequest = ajaxRequest.bind(this)
@@ -68,7 +72,11 @@ function ajaxRequest({
         },
         (error) => {
             // server could not be reached
-            const messages = [{type: "error", text: serverNotReachableError}];
+            const messages = [{
+                time: get_time_str(),
+                type: "error", 
+                text: serverNotReachableError
+            }];
             let stateUpdate = {
                 [statusVar]: statusValueAfterRequest,
                 [messageVar]: messages
@@ -741,7 +749,12 @@ class DisplayServerMessages extends React.Component {
                 {
                     this.props.messages.map( (message, index) => (
                         <div key={index}>
-                            <Message type={message.type}>{message.text}</Message>
+                            <Message type={message.type}>
+                                {message.hasOwnProperty("time") &&(
+                                    <span>{message.time} - </span>
+                                )}
+                                {message.text}
+                            </Message>
                         </div>
                     ))
                 }
@@ -1058,6 +1071,7 @@ class BrowseDir extends React.Component {
         if (event.currentTarget.name == "download_dir"){
             this.setState({
                 downloadMessages: {
+                    time: get_time_str(),
                     type: "warning",
                     text: "Creating zip. This might take several minutes. Please wait."
                 }
@@ -1479,6 +1493,7 @@ class FileUploadComponent extends React.Component {
                     if (event.lengthComputable) {
                         this.setState({
                             serverMessages: [{
+                                time: get_time_str(),
                                 type: "warning",
                                 text: (
                                     "Uploading file: " + 
@@ -1517,7 +1532,11 @@ class FileUploadComponent extends React.Component {
                         } 
                         else {
                             // server could not be reached
-                            var messages = [{type: "error", text: serverNotReachableError}];
+                            var messages = [{
+                                time: get_time_str(),
+                                type: "error", 
+                                text: serverNotReachableError
+                            }];
                             this.handleCompletion(false, {})
                             this.setState({status: "wait_for_upload", error: true, serverMessages: messages});
                         }
@@ -1554,7 +1573,11 @@ class FileUploadComponent extends React.Component {
                     },
                     (error) => {
                         // server could not be reached
-                        var messages = [{type: "error", text: serverNotReachableError}];
+                        var messages = [{
+                            time: get_time_str(),
+                            type: "error", 
+                            text: serverNotReachableError
+                        }];
                         this.handleCompletion(false, {})
                         this.setState({status: "wait_for_upload", error: true, serverMessages: messages});
                     }

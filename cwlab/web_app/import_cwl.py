@@ -6,7 +6,7 @@ from werkzeug.utils import secure_filename
 from cwlab import app
 from cwlab.utils import is_allowed_file, allowed_extensions_by_type, get_path, \
     make_temp_dir, import_cwl as import_cwl_, unzip_dir, get_allowed_base_dirs, \
-    check_if_path_in_dirs, download_file, vaidate_url
+    check_if_path_in_dirs, download_file, vaidate_url, get_time_string
 from cwlab.xls2cwl_job import generate_xls_from_cwl as generate_job_template_from_cwl
 from cwlab.users.manage import login_required
 from shutil import rmtree
@@ -49,6 +49,7 @@ def upload_cwl():
             pass
 
         messages.append( { 
+            "time": get_time_string(),
             "type":"success", 
             "text": import_file.filename + " successfully imported."
         } )
@@ -95,6 +96,7 @@ def upload_cwl_zip():
         data["temp_dir"] = temp_extract_dir
 
         messages.append( { 
+            "time": get_time_string(),
             "type":"success", 
             "text": import_file.filename + " was successfully uploaded and extracted."
         } )
@@ -131,6 +133,7 @@ def download_zip_url():
         data["temp_dir"] = temp_extract_dir
 
         messages.append( { 
+            "time": get_time_string(),
             "type":"success", 
             "text": import_file.filename + " was successfully downloaded and extracted."
         } )
@@ -168,6 +171,7 @@ def import_cwl_by_path_or_url():
         import_cwl_(cwl_path=cwl_path, name=import_name)
 
         messages.append( { 
+            "time": get_time_string(),
             "type":"success", 
             "text": import_name + " successfully imported."
         } )

@@ -2,7 +2,7 @@ from . import app
 from . import db
 from logging.handlers import RotatingFileHandler
 from logging import Formatter
-from .utils import get_path
+from .utils import get_path, get_time_string
 from logging import INFO, ERROR
 
 file_logging_formatter = Formatter('%(asctime)s %(levelname)s: %(message)s [in %(pathname)s:%(lineno)d]')
@@ -22,6 +22,7 @@ def handle_known_error(error, alt_err_message=None, return_front_end_message=Fal
     app.logger.warning("known error: {}".format(err_message))
     if return_front_end_message:
         return {
+            "time": get_time_string(),
             "type": "error",
             "text": err_message
         }
@@ -32,6 +33,7 @@ def handle_unknown_error(error, alt_err_message=None, return_front_end_message=F
         err_message =  "An unkown error occured." if alt_err_message is None else alt_err_message
         err_message += " Please contact an admin to resolve this."
         return {
+            "time": get_time_string(),
             "type": "error",
             "text": err_message
         }
