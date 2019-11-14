@@ -48,7 +48,7 @@ def browse_dir(path,
     abs_path = os.path.abspath(path)
     try:
         dir_content_ = list(Path(abs_path).iterdir())
-    except:
+    except Exception as e:
         raise AssertionError("Path does not exist or you have no permission to enter it.")
     dir_content = []
     for item in dir_content_:

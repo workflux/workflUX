@@ -1,5 +1,5 @@
 from cwlab import db, login, app
-from cwlab.general_use import db_commit
+from cwlab.utils import db_commit
 from .db import User, allowed_levels
 from getpass import getpass
 from time import sleep

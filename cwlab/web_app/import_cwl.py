@@ -4,7 +4,7 @@ from flask import render_template, jsonify, redirect, flash, url_for, request
 from werkzeug.urls import url_parse
 from werkzeug.utils import secure_filename
 from cwlab import app
-from cwlab.general_use import is_allowed_file, allowed_extensions_by_type, get_path, \
+from cwlab.utils import is_allowed_file, allowed_extensions_by_type, get_path, \
     make_temp_dir, import_cwl as import_cwl_, unzip_dir, get_allowed_base_dirs, \
     check_if_path_in_dirs, download_file, vaidate_url
 from cwlab.xls2cwl_job import generate_xls_from_cwl as generate_job_template_from_cwl

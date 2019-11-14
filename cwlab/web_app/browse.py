@@ -3,7 +3,7 @@ import os
 from flask import render_template, jsonify, redirect, flash, url_for, request, send_from_directory
 from cwlab import app 
 from cwlab.users.manage import login_required
-from cwlab.general_use import browse_dir as browse_dir_, get_allowed_base_dirs, check_if_path_in_dirs, \
+from cwlab.utils import browse_dir as browse_dir_, get_allowed_base_dirs, check_if_path_in_dirs, \
     zip_dir, normalize_path
 from cwlab.xls2cwl_job.read_xls import remove_non_printable_characters
 from werkzeug import secure_filename
