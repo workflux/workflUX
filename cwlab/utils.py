@@ -229,8 +229,10 @@ def get_path(which, job_id=None, run_id=None, param_sheet_format=None, cwl_targe
         path = os.path.join(app.config['EXEC_DIR'], job_id, "runs_log", run_id + ".debug.log")
     elif which == "runs_input_dir":
         path = os.path.join(app.config['EXEC_DIR'], job_id, "runs_inputs")
-
-
+    elif which == "error_log":
+        path = os.path.join(app.config['LOG_DIR'], "error.log")
+    elif which == "info_log":
+        path = os.path.join(app.config['LOG_DIR'], "info.log")
     return normalize_path(path)
 
 def make_temp_dir():
