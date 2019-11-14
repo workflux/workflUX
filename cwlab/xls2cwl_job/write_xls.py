@@ -261,7 +261,11 @@ def build_configs_sheet(configs, attributes={}):
     for param_name in configs.keys():
         row = [param_name]
         for cfield in configs_order:
-            cfield_value = generation_method[cfield](configs[param_name][cfield])
+            cfield_value = generation_method[cfield](
+                configs[param_name][cfield] \
+                    if cfield in configs[param_name].keys() \
+                    else ""
+            ) 
             if cfield_value == "\'\'":
                 cfield_value = ""
             row.append(cfield_value)

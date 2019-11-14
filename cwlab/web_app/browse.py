@@ -3,7 +3,8 @@ import os
 from flask import render_template, jsonify, redirect, flash, url_for, request, send_from_directory
 from cwlab import app 
 from cwlab.users.manage import login_required
-from cwlab.general_use import browse_dir as browse_dir_, get_allowed_base_dirs, check_if_path_in_dirs, zip_dir
+from cwlab.general_use import browse_dir as browse_dir_, get_allowed_base_dirs, check_if_path_in_dirs, \
+    zip_dir, normalize_path
 from cwlab.xls2cwl_job.read_xls import remove_non_printable_characters
 from werkzeug import secure_filename
 from json import loads as json_loads
@@ -38,7 +39,7 @@ def upload_file():
 
         if dir_path == "":
             sys.exit("Path does not exist or you have no permission to enter it.")
-        dir_path = os.path.realpath(dir_path)
+        dir_path = normalize_path(dir_path)
         if not os.path.exists(dir_path) or \
             not os.path.isdir(dir_path) or \
             check_if_path_in_dirs(dir_path, allowed_dirs) is None:
@@ -87,19 +88,33 @@ def browse_dir():
         job_id = data_req["job_id"] if "job_id" in data_req.keys() else None
         run_id = data_req["run_id"] if "run_id" in data_req.keys() else None
         on_error_return_base_dir_items = data_req["on_error_return_base_dir_items"]
+        fixed_base_dir = data_req["fixed_base_dir"] if "fixed_base_dir" in data_req.keys() else None
+        fixed_base_dir_name = data_req["fixed_base_dir_name"] if "fixed_base_dir_name" in data_req.keys() else "FIXED_BASE_DIR"
+        include_tmp_dir = data_req["include_tmp_dir"] if "include_tmp_dir" in data_req.keys() else False
 
         data["allowed_dirs"] = get_allowed_base_dirs(
             job_id=job_id, 
             run_id=run_id, 
             allow_input=allow_input,
             allow_upload=allow_upload,
-            allow_download=allow_download
+            allow_download=allow_download,
+            include_tmp_dir=include_tmp_dir
         )
+        
+        if not fixed_base_dir is None:
+            if check_if_path_in_dirs(fixed_base_dir, data["allowed_dirs"]) is None:
+                sys.exit("Fixed base dir is not allowed.")
+            data["allowed_dirs"] = {
+                fixed_base_dir_name: {
+                    "path": fixed_base_dir,
+                    "mode": data["allowed_dirs"][check_if_path_in_dirs(fixed_base_dir, data["allowed_dirs"])]["mode"]
+                }
+            }
 
         try:
             if path == "":
                 sys.exit("Path does not exist or you have no permission to enter it.")
-            path = os.path.realpath(path)
+            path = normalize_path(path)
             if not os.path.exists(path):
                 sys.exit("Path does not exist or you have no permission to enter it.")
             if get_parent_dir or not os.path.isdir(path):
@@ -111,19 +126,16 @@ def browse_dir():
             data["dir"] = path
         except SystemExit as e:
             if on_error_return_base_dir_items:
-                print("peep")
                 if (not default_base_dir is None) and default_base_dir in data["allowed_dirs"].keys():
-                    print("peep")
                     data["base_dir"] = default_base_dir
                 else:
                     data["base_dir"] = list(data["allowed_dirs"].keys())[0]
                 path = data["allowed_dirs"][data["base_dir"]]["path"]
                 data["dir"] = path
-                print(data["dir"])
                 data["items"] = browse_dir_(path, ignore_files, file_exts, show_only_hits)
-                print(data["items"])
             else:
                 sys.exit(str(e))
+
     except SystemExit as e:
         messages.append( { 
             "type":"error", 
@@ -154,7 +166,7 @@ def download():
         send_file = data_req["send_file"]
         if path == "":
             sys.exit("Path does not exist or you have no permission to enter it.")
-        path = os.path.realpath(path)
+        path = normalize_path(path)
         if not os.path.exists(path):
             sys.exit("Path does not exist or you have no permission to enter it.")
         allowed_dirs = get_allowed_base_dirs(

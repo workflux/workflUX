@@ -145,16 +145,15 @@ def start_exec():    # returns all parmeter and its default mode (global/job spe
     login_required()
     user_id = current_user.get_id() if app.config["ENABLE_USERS"] else None
     data = request.get_json()
-    cwl_target = data["cwl_target"]
     job_id = data["job_id"]
     run_ids = sorted(data["run_ids"])
     exec_profile_name = data["exec_profile"]
     max_parrallel_exec_user_def = int(data["parallel_exec"]) if "parallel_exec" in data.keys() else None
+
     started_runs, already_running_runs = exec_runs(
         job_id,
         run_ids,
         exec_profile_name,
-        cwl_target,
         user_id,
         max_parrallel_exec_user_def
     )

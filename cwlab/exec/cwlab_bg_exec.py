@@ -11,6 +11,8 @@ from datetime import datetime, timedelta
 from time import sleep
 from random import random
 from re import sub
+from email.mime.text import MIMEText
+from subprocess import Popen, PIPE
 
 if platform_system() == 'Windows':
     from signal import CTRL_BREAK_EVENT
@@ -19,7 +21,6 @@ else:
     from pexpect import spawn
 
 python_interpreter = sys.executable
-
 
 # commandline arguments
 db_uri = sys.argv[1]
@@ -38,6 +39,7 @@ else:
 sleep(1 + 1*random())
 
 # open connection to database
+exec_profile_name = ""
 for db_retry_delay in db_retry_delays:
     try:
         engine = create_engine(db_uri)
@@ -46,6 +48,7 @@ for db_retry_delay in db_retry_delays:
         Base = automap_base()
         Base.prepare(engine, reflect=True)
         Exec = Base.classes["exec"]
+        User = Base.classes["user"]
         break
     except Exception as e:
         print(">>> retry db query: " + str(db_retry_delay))
@@ -62,9 +65,9 @@ def query_info_from_db(what, db_retry_delays_=None, no_exit=False):
             if what == "run_info":
                 db_request = session.query(Exec).get(exec_db_id)
             elif what == "next_in_queue":
-                db_request = session.query(Exec).filter(Exec.status == "queued").order_by(Exec.id.asc()).first()
+                db_request = session.query(Exec).filter(Exec.status == "queued").filter(Exec.exec_profile_name == exec_profile_name).order_by(Exec.id.asc()).first()
             elif what == "running_exec":
-                db_request = session.query(Exec).filter(Exec.time_finished == None).filter(Exec.status != "queued")
+                db_request = session.query(Exec).filter(Exec.time_finished == None).filter(Exec.status != "queued").filter(Exec.exec_profile_name == exec_profile_name)
             break
         except:
             if db_retry_delay == db_retry_delays[-1]:
@@ -87,7 +90,32 @@ log = exec_db_entry.log
 time_started = exec_db_entry.time_started
 exec_profile = exec_db_entry.exec_profile
 exec_profile_name = exec_db_entry.exec_profile_name
+add_exec_info = exec_db_entry.add_exec_info
+user_id = exec_db_entry.user_id
+user_email = exec_db_entry.user_email
 
+# send mail:
+def send_mail(subj, text):
+    if user_email is None:
+        print(">>> skipping email: no email address provided")
+    elif platform_system() != "Linux":
+        print(">>> skipping email: only available on Linux")
+    else:
+        print(">>> sending email")
+        msg = MIMEText("""
+        <html>
+            <h1>CW<span style=\"color: green\">Lab</span></h1>
+            <h3>{}</h3>
+            <span>{}</span>
+        </html>
+        """.format(subj, text))
+        msg["To"] = user_email
+        msg["Subject"] = subj 
+        msg["Content-Type"] = "text/html"
+        p = Popen(["sendmail", "-t", "-oi"], stdin=PIPE, universal_newlines=True)
+        p.communicate(msg.as_string())
+        exit_code = p.wait()
+        print("Email exit code was: {}".format(str(exit_code)))
 
 
 # retry on commit:
@@ -155,19 +183,22 @@ if not os.path.exists(out_dir):
     
 # run steps:
 def prepare_shell():
-    var_cmdls = [
-        "JOB_ID=\"" +  job_id + "\"",
-        "RUN_ID=\"" +  run_id + "\"",
-        "CWL=\"" +  cwl + "\"",
-        "RUN_YAML=\"" +  yaml + "\"",
-        "OUTPUT_DIR=\"" +  out_dir + "\"",
-        "GLOBAL_TEMP_DIR=\"" +  global_temp_dir + "\"",
-        "LOG_FILE=\"" +  log + "\"",
-        "SUCCESS=\"True\"",
-        "ERR_MESSAGE=\"None\"",
-        "FINISH_TAG=\"DONE\"",
-        "PYTHON_PATH=\"" + python_interpreter + "\""
-    ]
+    var_dict = {
+        "JOB_ID": job_id,
+        "RUN_ID": run_id,
+        "CWL": cwl,
+        "RUN_YAML": yaml,
+        "OUTPUT_DIR": out_dir,
+        "GLOBAL_TEMP_DIR": global_temp_dir,
+        "LOG_FILE": log,
+        "SUCCESS": "True",
+        "ERR_MESSAGE": "None",
+        "FINISH_TAG": "DONE",
+        "PYTHON_PATH":python_interpreter
+    }
+    var_dict.update(add_exec_info)
+
+    var_cmdls = [key + "=\"" + var_dict[key] + "\"" for key in var_dict.keys()]
 
     if exec_profile["shell"] == "bash":
         init_pref = ""
@@ -277,6 +308,32 @@ for retry_count in range(0, exec_profile["max_retries"]+1):
         terminate_shell(p) 
         break
 
-# set finish time     
+# set finish time
 exec_db_entry.time_finished = datetime.now()
 commit()
+
+# send mail
+if exec_db_entry.status == "finished":
+    subj = "The run \"{}\" of job \"{}\" successfully finished.".format(run_id, job_id)
+    text = """
+    Time started: {}<br/>
+    Time finished: {}<br/><br/>
+    Output can be found at: {}
+    """.format(
+            str(exec_db_entry.time_started), str(exec_db_entry.time_finished), out_dir
+        )
+else:
+    subj = "The run \"{}\" of job \"{}\" failed.".format(run_id, job_id)
+    text = """
+    Final status: {}<br/>
+    The error message was: {}<br/><br/>
+    Time started: {}<br/>
+    Time failed: {}<br/><br/>
+    There might be intermediate output at: {}
+    """.format(
+            exec_db_entry.status, exec_db_entry.err_message,
+            str(exec_db_entry.time_started), str(exec_db_entry.time_finished), out_dir
+        )
+send_mail(subj, text)
+
+

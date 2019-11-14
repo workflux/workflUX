@@ -5,12 +5,40 @@ from time import sleep
 from . import app
 from cwlab.xls2cwl_job.web_interface import read_template_attributes as read_template_attributes_from_xls
 from cwlab.xls2cwl_job.web_interface import get_param_config_info as get_param_config_info_from_xls
+from cwlab.xls2cwl_job import generate_xls_from_cwl as generate_job_template_from_cwl
 from cwlab import db
-from random import random
+from random import random, choice as random_choice
 from pathlib import Path
 import zipfile
+from cwltool.load_tool import fetch_document
+from cwltool.main import print_pack
+import json
+from string import ascii_letters, digits
+from pkg_resources import get_distribution
+from urllib import request as url_request
+from shutil import copyfileobj
+from werkzeug import secure_filename
+from urllib.request import urlopen
+cwltool_version = get_distribution("cwltool").version
+from distutils.version import StrictVersion
+if StrictVersion(cwltool_version) > StrictVersion("1.0.20181201184214"):
+    from cwltool.load_tool import resolve_and_validate_document
+else:
+    from cwltool.load_tool import validate_document
 basedir = os.path.abspath(os.path.dirname(__file__))
 
+def normalize_path(path):
+    if app.config["CORRECT_SYMLINKS"]:
+        return os.path.realpath(path)
+    else:
+        return os.path.abspath(path)
+
+def vaidate_url(url):
+    try:
+        test = urlopen(url)
+    except Exception:
+        sys.exit("Cannot open the provided url: {}".format(url))
+        
 def browse_dir(path,
     ignore_files=False,
     file_exts=[],
@@ -94,8 +122,9 @@ def read_file_content(
     return str(content), end_pos
 
 allowed_extensions_by_type = {
-    "CWL": ["cwl", "yaml"],
-    "spreadsheet": ["xlsx", "ods", "xls"]
+    "CWL": ["cwl", "yaml", "yml", "CWL"],
+    "spreadsheet": ["xlsx", "ods", "xls"],
+    "zip": ["zip"]
 }
 
 def zip_dir(dir_path):
@@ -116,6 +145,27 @@ def zip_dir(dir_path):
     zip_file.close()
     return(zip_path)
     
+def unzip_dir(zip_path, target_dir):
+    zip_path=os.path.abspath(zip_path)
+    if not zipfile.is_zipfile(zip_path):
+        sys.exit("The provided file is not a zip.")
+    if not os.path.isdir(target_dir):
+        sys.exit("The provided target dir does not exist or is not a dir.")
+    with zipfile.ZipFile(zip_path,"r") as zip_ref:
+        zip_ref.extractall(target_dir)
+
+def download_file(url, fallback_filename=None):
+    temp_dir = make_temp_dir()
+    try:
+        file_name = secure_filename(url.rsplit('/', 1)[-1])
+    except Exception:
+        
+        file_name = fallback_filename if not fallback_filename is None else "download"
+    file_path = os.path.join(temp_dir, file_name)
+    with url_request.urlopen(url) as url_response, open(file_path, 'wb') as download_file:
+        copyfileobj(url_response, download_file)
+
+    return file_path
 
 def is_allowed_file(filename, type="CWL"):
     # validates uploaded files
@@ -155,6 +205,8 @@ def get_path(which, job_id=None, run_id=None, param_sheet_format=None, cwl_targe
             if len(hits) == 0:
                 sys.exit("No spreadsheet found for job " + job_id)
             path = os.path.join(path, hits[0]["file_name"])
+    elif which == "job_cwl":
+        path = os.path.join(app.config["EXEC_DIR"], job_id, "main.cwl")
     elif which == "job_param_sheet_temp":
         if param_sheet_format:
             path = os.path.join(app.config["EXEC_DIR"], job_id, "job_templ." + param_sheet_format)
@@ -180,7 +232,60 @@ def get_path(which, job_id=None, run_id=None, param_sheet_format=None, cwl_targe
         path = os.path.join(app.config['EXEC_DIR'], job_id, "runs_log", run_id + ".debug.log")
     elif which == "runs_input_dir":
         path = os.path.join(app.config['EXEC_DIR'], job_id, "runs_inputs")
-    return os.path.realpath(path)
+
+
+    return normalize_path(path)
+
+def make_temp_dir():
+    for try_ in range(0,10):
+        random_string = "".join([random_choice(ascii_letters + digits) for c in range(0,14)])
+        temp_dir = os.path.join(app.config["TEMP_DIR"], random_string)
+        if not os.path.exists(temp_dir):
+            break
+    try:
+        os.mkdir(temp_dir)
+    except Exception as e:
+        sys.exit("Could not create temporary directory.")
+    return temp_dir
+
+def pack_cwl(cwl_path):
+    if StrictVersion(cwltool_version) > StrictVersion("1.0.20181201184214"):
+        loadingContext, workflowobj, uri = fetch_document(cwl_path)
+        loadingContext.do_update = False
+        loadingContext, uri = resolve_and_validate_document(loadingContext, workflowobj, uri)
+        processobj = loadingContext.loader.resolve_ref(uri)[0]
+        packed_cwl = json.loads(print_pack(loadingContext.loader, processobj, uri, loadingContext.metadata))
+    else:
+        document_loader, workflowobj, uri = fetch_document(cwl_path)
+        document_loader, _, processobj, metadata, uri = validate_document(document_loader, workflowobj, uri, [], {})
+        packed_cwl = json.loads(print_pack(document_loader, processobj, uri, metadata))
+    return packed_cwl
+
+def import_cwl(cwl_path, name=None):
+    if name is None:
+        name = os.path.splitext(os.path.basename(cwl_path))[0]
+    if os.path.splitext(name)[1] in allowed_extensions_by_type["CWL"]:
+        name = os.path.splitext(name)[0]
+    cwl_target_name = name + ".cwl"
+    packed_cwl = pack_cwl(cwl_path)
+    cwl_target_path = get_path("cwl", cwl_target=cwl_target_name)
+    if os.path.exists(cwl_target_path):
+        try:
+            os.remove(cwl_target_path)
+        except Exception as e:
+            sys.exit("Could not remove existing cwl file.")
+    try:
+        with open(cwl_target_path, 'w') as cwl_file:
+            json.dump(packed_cwl, cwl_file)
+    except Exception as e:
+        sys.exit("Could not write CWL file.")
+    job_templ_filepath = get_path("job_templ", cwl_target=cwl_target_name)
+    generate_job_template_from_cwl(
+        cwl_file=cwl_target_path, 
+        output_file=job_templ_filepath, 
+        show_please_fill=True
+    )
+    
 
 def get_run_ids(job_id):
     exec_dir = app.config["EXEC_DIR"]
@@ -235,8 +340,13 @@ def db_commit(retry_delays=[1,4]):
             else:
                 sleep(retry_delay + retry_delay*random())
     
-def get_allowed_base_dirs(job_id=None, run_id=None, allow_input=True, allow_upload=True, allow_download=False):
+def get_allowed_base_dirs(job_id=None, run_id=None, allow_input=True, allow_upload=True, allow_download=False, include_tmp_dir=False):
     allowed_dirs = {}
+    if allow_input and (not allow_download) and include_tmp_dir:
+        allowed_dirs["OUTPUT_DIR_CURRENT_JOB"] = {
+            "path": app.config["TEMP_DIR"],
+            "mode": "input"
+        }
     if (app.config["DOWNLOAD_ALLOWED"] and allow_download) or (allow_input and not allow_download):
         mode = "download" if (app.config["DOWNLOAD_ALLOWED"] and allow_download) else "input"
         if not job_id is None:
@@ -284,9 +394,9 @@ def get_allowed_base_dirs(job_id=None, run_id=None, allow_input=True, allow_uplo
 def check_if_path_in_dirs(path, dir_dict):
     hit = ""
     hit_key = None
-    path = os.path.realpath(path)
+    path = normalize_path(path)
     for dir_ in dir_dict.keys():
-        dir_path = os.path.realpath(dir_dict[dir_]["path"])
+        dir_path = normalize_path(dir_dict[dir_]["path"])
         if path.startswith(dir_path) and len(hit) < len(dir_path):
             hit=dir_path
             hit_key = dir_
