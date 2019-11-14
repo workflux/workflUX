@@ -2,8 +2,6 @@ WEB_SERVER_HOST: localhost
 
 WEB_SERVER_PORT: 5000
 
-DEBUG: False 
-
 EXEC_PROFILES:
   cwltool_local: 
     shell: bash
