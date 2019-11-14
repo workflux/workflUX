@@ -53,7 +53,7 @@ def browse_dir(path,
         dir_content_ = list(Path(abs_path).iterdir())
     except Exception as e:
         raise AssertionError("Path does not exist or you have no permission to enter it.")
-    dir_content = []
+    dir_content_dict = {}
     for item in dir_content_:
         is_dir = item.is_dir()
         if is_dir or not ignore_files:
@@ -62,13 +62,14 @@ def browse_dir(path,
             file_ext = None if is_dir else os.path.splitext(abs_path)[1]
             hit = True if not is_dir and (len(file_exts) == 0 or file_ext in file_exts) else False
             if not show_only_hits or hit:
-                dir_content.append({
+                dir_content_dict[name] = {
                     "name": name,
                     "abs_path": abs_path,
                     "is_dir": is_dir,
                     "file_ext": file_ext,
                     "hit": hit
-                })
+                }
+    dir_content = [dir_content_dict[name] for name in sorted(dir_content_dict.keys())]
     return(dir_content)
 
 def fetch_files_in_dir(dir_path, # searches for files in dir_path
