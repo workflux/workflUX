@@ -57,7 +57,12 @@ def read_inp_rec_type_field(inp_rec_type):
 def read_config_from_cwl_file(cwl_file):
     print_pref = "[read_cwl_file]:"
     configs = {}
-    metadata = {"doc": ""}
+    metadata = {
+        "doc": "",
+        "workflow_name": os.path.basename(cwl_file),
+        "workflow_path": os.path.abspath(cwl_file),
+        "workflow_type": "CWL"
+    }
     loadingContext = LoadingContext({"construct_tool_object": default_make_tool, "disable_js_validation": True})
     try:
         cwl_document = load_tool(cwl_file, loadingContext)

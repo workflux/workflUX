@@ -90,7 +90,10 @@ def read_config_from_janis_file(janis_file):
     configs = {}
     metadata = {
         "doc": workflow.metadata.documentation \
-            if workflow.metadata.documentation is not None else ""
+            if workflow.metadata.documentation is not None else "",
+        "workflow_type": "janis",
+        "workflow_name": os.path.basename(cwl_file),
+        "workflow_path": os.path.abspath(cwl_file),
     }
     inp_records = workflow.inputs()
     for inp_rec in inp_records:
