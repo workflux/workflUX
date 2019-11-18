@@ -1,6 +1,10 @@
 // contains general utilities important for multiple modules
 // import styled from "styled-components"
 
+function get_time_str(){
+    date = new Date()
+    return(date.toLocaleTimeString())
+}
 
 function ajaxRequest({
     // in a component bind this function: this.ajaxRequest = ajaxRequest.bind(this)
@@ -68,7 +72,11 @@ function ajaxRequest({
         },
         (error) => {
             // server could not be reached
-            const messages = [{type: "error", text: serverNotReachableError}];
+            const messages = [{
+                time: get_time_str(),
+                type: "error", 
+                text: serverNotReachableError
+            }];
             let stateUpdate = {
                 [statusVar]: statusValueAfterRequest,
                 [messageVar]: messages
@@ -161,12 +169,14 @@ class TabPanel extends React.Component { // controlled by Root Component
                     className="w3-card w3-metro-darken"
                     style={ {width:"100%"} }
                 >
-                    <div 
-                        className="w3-padding-small"
-                        style={ {display: "inline-block"} }
-                    >
-                        {this.props.title}
-                    </div>
+                    {this.props.title && (
+                        <div 
+                            className="w3-padding-small"
+                            style={ {display: "inline-block"} }
+                        >
+                            {this.props.title}
+                        </div>
+                    )}
                     {
                         this.props.tabs.map( (tab) => (
                                 <a
@@ -398,7 +408,7 @@ class Tooltip extends React.Component {
                     ) : (
                         <span 
                             className="tooltiptext w3-metro-darken"
-                            style={ {width: width.toString().concat("px"), whiteSpace: "no-wrap"} }
+                            style={ {width: width.toString().concat("px"), whiteSpace: "no-wrap", zIndex: "100"} }
                         >
                             {preview}
                         </span>   
@@ -739,7 +749,12 @@ class DisplayServerMessages extends React.Component {
                 {
                     this.props.messages.map( (message, index) => (
                         <div key={index}>
-                            <Message type={message.type}>{message.text}</Message>
+                            <Message type={message.type}>
+                                {message.hasOwnProperty("time") &&(
+                                    <span>{message.time} - </span>
+                                )}
+                                {message.text}
+                            </Message>
                         </div>
                     ))
                 }
@@ -893,6 +908,9 @@ class BrowseDir extends React.Component {
         // props.defaultBaseDir
         // props.showCancelButton
         // props.terminateBrowseDialog
+        // props.fixedBaseDir
+        // props.fixedBaseDirName
+        // props.includeTmpDir
         // props.disableOnTop
 
         this.baseDirInfo = {
@@ -965,7 +983,10 @@ class BrowseDir extends React.Component {
                 job_id: this.props.jobId ? this.props.jobId : null,
                 run_id: this.props.runId ? this.props.runId : null,
                 on_error_return_base_dir_items: init ? true : false,
-                default_base_dir: this.props.defaultBaseDir ? this.props.defaultBaseDir : null
+                default_base_dir: this.props.defaultBaseDir ? this.props.defaultBaseDir : null,
+                fixed_base_dir: this.props.fixedBaseDir ? this.props.fixedBaseDir : null,
+                fixed_base_dir_name: this.props.fixedBaseDirName ? this.props.fixedBaseDirName: "FIXED_BASE_DIR",
+                include_tmp_dir: this.props.includeTmpDir ? true : false
             },
             route: routeBrowseDir,
             onSuccess: (data, messages) => {
@@ -1043,13 +1064,14 @@ class BrowseDir extends React.Component {
             changes = true
             selectedItem = this.state.dirPath
         }
-        this.props.terminateBrowseDialg(changes, selectedItem)
+        this.props.terminateBrowseDialog(changes, selectedItem)
     }
     
     downloadFileOrFolder(event){
         if (event.currentTarget.name == "download_dir"){
             this.setState({
                 downloadMessages: {
+                    time: get_time_str(),
                     type: "warning",
                     text: "Creating zip. This might take several minutes. Please wait."
                 }
@@ -1333,7 +1355,7 @@ class BrowseDirTextField extends React.Component {
         };  
 
         this.browse = this.browse.bind(this);
-        this.terminateBrowseDialg = this.terminateBrowseDialg.bind(this);
+        this.terminateBrowseDialog = this.terminateBrowseDialog.bind(this);
     }
 
     browse(){
@@ -1342,7 +1364,7 @@ class BrowseDirTextField extends React.Component {
         })
     }
 
-    terminateBrowseDialg(changes, selectedItem){
+    terminateBrowseDialog(changes, selectedItem){
         this.setState({
             actionStatus: "none"
         })
@@ -1405,7 +1427,7 @@ class BrowseDirTextField extends React.Component {
                         prevPath={this.props.prevPath}
                         changePrevPath={this.props.changePrevPath}
                         showCancelButton={true}
-                        terminateBrowseDialg={this.terminateBrowseDialg}
+                        terminateBrowseDialog={this.terminateBrowseDialog}
                     />
                 )}
             </span>
@@ -1424,8 +1446,7 @@ class FileUploadComponent extends React.Component {
         // props.oneLine if true, everything will be in one line
         // props.diabled if true, upload button disabled
         // props.meta_data meta data send together with the file
-        // props.onUploadCompletion function to exectute on completion, 
-        //  takes one argument: true (on success)/ false (on error)
+        // props.onUploadCompletion function to exectute on completion
         // props.buttonLabel
         // props.showProgress
 
@@ -1465,15 +1486,14 @@ class FileUploadComponent extends React.Component {
             this.setState({status:"uploading"})
             let formData = new FormData()
             formData.append("file", fileToUpload)
-            if (this.props.meta_data){
-                formData.append("meta", JSON.stringify(this.props.meta_data))
-            }
+            formData.append("meta", JSON.stringify(this.props.metaData ? this.props.metaData : {}))
 
             if (this.props.showProgress){let request = new XMLHttpRequest()
                 request.upload.addEventListener("progress", event => {
                     if (event.lengthComputable) {
                         this.setState({
                             serverMessages: [{
+                                time: get_time_str(),
                                 type: "warning",
                                 text: (
                                     "Uploading file: " + 
@@ -1512,7 +1532,11 @@ class FileUploadComponent extends React.Component {
                         } 
                         else {
                             // server could not be reached
-                            var messages = [{type: "error", text: serverNotReachableError}];
+                            var messages = [{
+                                time: get_time_str(),
+                                type: "error", 
+                                text: serverNotReachableError
+                            }];
                             this.handleCompletion(false, {})
                             this.setState({status: "wait_for_upload", error: true, serverMessages: messages});
                         }
@@ -1549,7 +1573,11 @@ class FileUploadComponent extends React.Component {
                     },
                     (error) => {
                         // server could not be reached
-                        var messages = [{type: "error", text: serverNotReachableError}];
+                        var messages = [{
+                            time: get_time_str(),
+                            type: "error", 
+                            text: serverNotReachableError
+                        }];
                         this.handleCompletion(false, {})
                         this.setState({status: "wait_for_upload", error: true, serverMessages: messages});
                     }
@@ -1586,9 +1614,11 @@ class FileUploadComponent extends React.Component {
                 <table>
                     <tbody>
                         <tr>
-                            <td>
-                                {instruction}
-                            </td>
+                            {this.props.instruction && (
+                                <td>
+                                    {this.props.instruction}
+                                </td>
+                            )}
                             <td>
                                 {upload_selector}
                             </td>
@@ -1607,13 +1637,12 @@ class FileUploadComponent extends React.Component {
             return (
                 <div>
                     <div>
-                        <p>
-                            {instruction}<br/>
-                            {upload_selector}
-                        </p>
-                    </div>
-                    <div>
-                        {action_button}
+                        {this.props.instruction && (
+                            <span>
+                                {this.props.instruction}<br/>
+                            </span>
+                        )}
+                        {upload_selector}{action_button}
                     </div>
                     <div>
                         {messages}

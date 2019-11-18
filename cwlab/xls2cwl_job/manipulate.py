@@ -23,14 +23,14 @@ def manipulate_value(parameter_name, all_parameters, instruction):
                         # parameter reference
                         try:
                             ref_param_name = validate.get_parameter_reference(inst, all_parameters)
-                        except SystemExit as e:
-                            sys.exit( print_pref + "E: for parameter \"" + parameter_name + "\":" + str(e))
+                        except AssertionError as e:
+                            raise AssertionError( print_pref + "E: for parameter \"" + parameter_name + "\":" + str(e))
                         if len(all_parameters[ref_param_name]) > 1:
                             # reference parameter is array ==> need to be aligned:
                             try:
                                 validate.aligned_to(parameter_name, all_parameters, inst)
-                            except SystemExit as e:
-                                sys.exit( print_pref + "E: for parameter \"" + parameter_name + "\":" + str(e))
+                            except AssertionError as e:
+                                raise AssertionError( print_pref + "E: for parameter \"" + parameter_name + "\":" + str(e))
                             # add referenced value from array:
                             man_val += all_parameters[ref_param_name][idx]
                         else: 
@@ -53,8 +53,8 @@ def all( all_parameters, configs ):
             if config_key in manipulate_function.keys():
                 try:
                     all_parameters[param] = manipulate_function[config_key](param, all_parameters, configs[param][config_key])
-                except SystemExit as e:
-                    sys.exit(print_pref + str(e))
+                except AssertionError as e:
+                    raise AssertionError(print_pref + str(e))
             else:
                 continue # for this config_key no manipulate function was specified
     return all_parameters

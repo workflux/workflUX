@@ -7,7 +7,7 @@ README = os.path.join(SETUP_DIR, 'README.rst')
 
 setup(
     name='cwlab',
-    version='0.1.3',    
+    version='0.2.0',    
     description='A platform-agnostic, cloud-ready framework for simplified deployment of the Common Workflow Language using a graphical web interface',
     long_description=open(README).read(),
     long_description_content_type="text/x-rst",
@@ -35,11 +35,13 @@ setup(
                       'pyexcel-xlsx',
                       'PyYAML',
                       'pexpect',
-                      'cwltool==1.0.20181201184214',
+                      'janis-pipelines>=0.7.0'
+                      'cwltool==1.0.20181201184214; platform_system=="Windows"',
+                      'cwltool>=1.0.20180809224403; platform_system!="Windows"',
                       'psutil'               
                       ],
     classifiers=[
-        'Development Status :: 3 - Alpha',
+        'Development Status :: 4 - Beta',
         'Intended Audience :: Developers',
         'Intended Audience :: Science/Research',
         'License :: OSI Approved :: Apache Software License',

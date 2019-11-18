@@ -26,7 +26,7 @@ for inp_rec in inp_records:
             inp_rec.type.remove("null")
             inp_rec.type = inp_rec.type[0]
         else:
-            sys.exit( print_pref + "E: unkown type for parameter " + name + 
+            raise AssertionError( "E: unkown type for parameter " + name + 
                 ": lists of type are only supported when one of two elements is \"null\"")
     # test if array:
     if isinstance(inp_records[0].type, parser_v1_0.InputArraySchema):
@@ -35,9 +35,9 @@ for inp_rec in inp_records:
                 is_array = True
                 inp_rec.type = inp_rec.type.items
             else:
-                sys.exit( print_pref + "E: unkown type for parameter " + name )
+                raise AssertionError( "E: unkown type for parameter " + name )
         else:
-            sys.exit( print_pref + "E: unkown type for parameter " + name )
+            raise AssertionError( "E: unkown type for parameter " + name )
         # test if "null" is allowed as array item:
         if isinstance(inp_rec.type, list):
             if len(inp_rec.type) == 2 and "null" in inp_rec.type:
@@ -45,12 +45,12 @@ for inp_rec in inp_records:
                 inp_rec.type.remove("null")
                 inp_rec.type = inp_rec.type[0]
             else:
-                sys.exit( print_pref + "E: unkown type for parameter " + name + 
+                raise AssertionError( "E: unkown type for parameter " + name + 
                     ": lists of type are only supported when one of two elements is \"null\"")
     if isinstance(inp_rec.type, str):
         type_ = inp_rec.type
     else:
-        sys.exit( print_pref + "E: unkown type for parameter " + name )
+        raise AssertionError( "E: unkown type for parameter " + name )
     # get the default:
     if hasattr(inp_rec, "default"):
         if is_basic_type_instance(inp_rec.default):
@@ -62,15 +62,15 @@ for inp_rec in inp_records:
                     if is_basic_type_instance(inp_rec.default):
                         default_value.append(clean_string(entry))
                     else:
-                        print(print_pref + "W: invalid default value for parameter " + name + 
+                        print("W: invalid default value for parameter " + name + 
                             ": will be ignored", file=sys.stderr)
                         default_value = [""]
             elif type_ == "File" and isinstance(inp_rec.default, dict):
-                print(print_pref + "W: invalid default value for parameter " + name + 
+                print("W: invalid default value for parameter " + name + 
                     ": defaults for File class are not supported yet; will be ignored", file=sys.stderr)
                 default_value = [""]
             else:
-                print(print_pref + "W: invalid default value for parameter " + name + 
+                print("W: invalid default value for parameter " + name + 
                     ": will be ignored", file=sys.stderr)
                 default_value = [""]
     else:
@@ -82,7 +82,7 @@ for inp_rec in inp_records:
         elif isinstance(inp_rec.secondaryFiles, list):
             secondary_files = inp_rec.secondaryFiles
         else:
-            sys.exit( print_pref + "E: invalid secondaryFiles field for parameter " + name )
+            raise AssertionError( "E: invalid secondaryFiles field for parameter " + name )
     else:
         secondary_files = [ "" ]
     # assemble config parameters:

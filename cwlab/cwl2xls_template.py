@@ -18,13 +18,10 @@ parser.add_argument('--no_please_fill', action="store_false",
 args = parser.parse_args()
 
 if args.output_file != "":
-    if str(os.path.splitext(args.output_file)[1]) != ".xlsx":
-        sys.exit("E: If an outputfile is specified, it must end with \".xlsx\"")
-    if not os.path.exists( str(os.path.isdir(args.output_file)) ):
-        sys.exit("E: Directory \"" + str(os.path.dirname(args.output_file)) + "\" does not exist.")
+    assert str(os.path.splitext(args.output_file)[1]) == ".xlsx", "E: If an outputfile is specified, it must end with \".xlsx\""
+    assert os.path.exists( str(os.path.isdir(args.output_file)) ), "E: Directory \"" + str(os.path.dirname(args.output_file)) + "\" does not exist."
 
-if not os.path.isfile( args.cwl ):
-    sys.exit("E: The specified CWL file does not exist.")
+assert os.path.isfile( args.cwl ), "E: The specified CWL file does not exist."
 
 xls2cwl_job.generate_xls_from_cwl( cwl_file=args.cwl, output_file=args.output_file, 
     show_please_fill=args.no_please_fill)

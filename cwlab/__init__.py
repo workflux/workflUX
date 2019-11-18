@@ -1,7 +1,7 @@
 
 from __future__ import absolute_import
 
-__version__ = "0.1.3"
+__version__ = "0.2.0"
 
 import os
 from flask import Flask
@@ -22,6 +22,7 @@ db = SQLAlchemy(app)
 login = LoginManager(app)
 
 from .web_app import main, import_cwl, create_job, job_exec, users, browse
+from . import log
 
 def setup_db():
     global app
@@ -47,10 +48,12 @@ def setup_working_dirs():
         'TEMP_DIR',
         'CWL_DIR',
         'EXEC_DIR',
-        'DB_DIR'
+        'DB_DIR',
+        'LOG_DIR'
     ]:
         if not os.path.isdir(app.config[param]):
             os.makedirs(app.config[param])
+    log.attach_file_handler()
 
 
 def up(config_file=None, webapp=True):

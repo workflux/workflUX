@@ -1,5 +1,5 @@
 from cwlab import db, login, app
-from cwlab.general_use import db_commit
+from cwlab.utils import db_commit
 from .db import User, allowed_levels
 from getpass import getpass
 from time import sleep
@@ -7,7 +7,6 @@ from random import random
 import sys
 from re import match
 from datetime import datetime
-from flask_login import login_required
 from flask_login import current_user
 
 @login.user_loader
@@ -16,11 +15,9 @@ def load_user(id, return_username_only=False):
     for retry_delay in retry_delays:
         try:
             user = User.query.get(int(id))
-        except:
-            if retry_delay == retry_delays[-1]:
-                sys.exit("Could not connect to database.")
-            else:
-                sleep(retry_delay + retry_delay*random())
+        except Exception as e:
+            assert retry_delay != retry_delays[-1], "Could not connect to database."
+            sleep(retry_delay + retry_delay*random())
     if return_username_only:
         return user.username
     else:
@@ -34,19 +31,15 @@ def get_user_by_username(username):
             if db_request.count() == 0:
                 return None
             user = db_request.first()
-        except:
-            if retry_delay == retry_delays[-1]:
-                sys.exit("Could not connect to database.")
-            else:
-                sleep(retry_delay + retry_delay*random())
+        except Exception as e:
+            assert retry_delay != retry_delays[-1], "Could not connect to database."
+            sleep(retry_delay + retry_delay*random())
     return user
 
 def login_required(admin=False):
     if app.config["ENABLE_USERS"]:
-        if not current_user.is_authenticated:
-            sys.exit("Login required.")
-        if admin and load_user(current_user.get_id()).level != "admin":
-            sys.exit("Admin required.")
+        assert current_user.is_authenticated, "Login required."
+        assert not (admin and load_user(current_user.get_id()).level != "admin"), "Admin required."
 
 def check_if_username_exists(username):
         return not get_user_by_username(username) is None
@@ -59,11 +52,9 @@ def get_users(only_admins=False, return_usernames=False):
             if only_admins:
                 db_user_request = db_user_request.filter(User.level=="admin")
             users = db_user_request.all()
-        except:
-            if retry_delay == retry_delays[-1]:
-                sys.exit("Could not connect to database.")
-            else:
-                sleep(retry_delay + retry_delay*random())
+        except Exception as e:
+            assert retry_delay != retry_delays[-1], "Could not connect to database."
+            sleep(retry_delay + retry_delay*random())
     if return_usernames:
         usernames = [user.username for user in users]
         return usernames
@@ -79,8 +70,7 @@ def get_user_info(id):
     }
 
 def add_user(username, email, level, password, status="active"):
-    if check_if_username_exists(username):
-        sys.exit("Username already exists.")
+    assert not check_if_username_exists(username), "Username already exists."
     user = User(
         username=username, 
         email=email,
@@ -155,26 +145,20 @@ def check_all_format_conformance(username, email, password, rep_password):
 
 def change_password(id, old_password, new_password, new_rep_password):
     user = load_user(id)
-    if not user.check_password(old_password):
-        sys.exit("Old password is not valid.")
-    elif new_password != new_rep_password:
-        sys.exit("New passwords do not match.")
-    elif not check_format_conformance("password", new_password):
-        sys.exit(format_errors["password"])
-    else:
-        user.set_password(new_password)
-        db_commit()
+    assert user.check_password(old_password), "Old password is not valid."
+    assert new_password == new_rep_password, "New passwords do not match."
+    assert check_format_conformance("password", new_password), format_errors["password"]
+    user.set_password(new_password)
+    db_commit()
 
 def get_all_users_info():
     retry_delays = [1, 4]
     for retry_delay in retry_delays:
         try:
             users = db.session.query(User).all()
-        except:
-            if retry_delay == retry_delays[-1]:
-                sys.exit("Could not connect to database.")
-            else:
-                sleep(retry_delay + retry_delay*random())
+        except Exception as e:
+            assert retry_delay != retry_delays[-1], "Could not connect to database."
+            sleep(retry_delay + retry_delay*random())
     info = []
     for user in users:
         info.append({
@@ -194,19 +178,6 @@ def change_user_status_or_level(id, new_status=None, new_level=None):
     if not new_level is None:
         user.level = new_level
     db_commit()
-
-def change_password(id, old_password, new_password, new_rep_password):
-    user = load_user(id)
-    if not user.check_password(old_password):
-        sys.exit("Old password is not valid.")
-    elif new_password != new_rep_password:
-        sys.exit("New passwords do not match.")
-    elif not check_format_conformance("password", new_password):
-        sys.exit(format_errors["password"])
-    else:
-        user.set_password(new_password)
-        db_commit()
-
 
 def interactively_add_user(level="", instruction="Please set the credentials of the user to be added."):
     success = False

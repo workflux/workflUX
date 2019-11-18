@@ -496,7 +496,6 @@ class JobContent extends React.Component {
             statusValueDuringRequest: "starting",
             messageVar: "actionRunExecMessages",
             sendData: {
-                cwl_target: this.props.cwlTarget,
                 job_id: this.props.jobId,
                 run_ids: this.state.runSelection,
                 exec_profile: this.state.execProfile,
@@ -509,7 +508,7 @@ class JobContent extends React.Component {
     terminateRuns(mode="terminate"){
         this.ajaxRequest({
             statusVar: "actionStatus",
-            statusValueDuringRequest: "terminating",
+            statusValueDuringRequest: mode,
             messageVar: "actionRunDangerMessages",
             sendData: {
                 job_id: this.props.jobId,
@@ -519,11 +518,11 @@ class JobContent extends React.Component {
             route: routeTerminateRuns,
             onSuccess: (data, messages) => {
                 this.getRunList()       
-                return({})
+                return({runDangerZoneUnlocked: false})
             },
             onError: (data, messages) => {
                 this.getRunList()       
-                return({})
+                return({runDangerZoneUnlocked: false})
             }
         })
     }
@@ -531,7 +530,7 @@ class JobContent extends React.Component {
     deleteJob(){
         this.ajaxRequest({
             statusVar: "actionStatus",
-            statusValueDuringRequest: "deleting_job",
+            statusValueDuringRequest: "delete_job",
             messageVar: "actionGlobalDangerMessages",
             sendData: {
                 job_id: this.props.jobId
@@ -665,7 +664,7 @@ class JobContent extends React.Component {
                                                     onAction={this.terminateRuns}
                                                     label={<span><i className="fas fa-stop-circle w3-text-red"/>&nbsp;terminate</span>}
                                                     disabled={disable_danger_run_actions}
-                                                    loading={this.state.actionStatus == "terminating"} 
+                                                    loading={this.state.actionStatus == "terminate"} 
                                                 />
                                             </td>
                                             <td>
@@ -681,7 +680,7 @@ class JobContent extends React.Component {
                                                     onAction={this.terminateRuns}
                                                     label={<span><i className="fas fa-undo w3-text-red"/>&nbsp;reset</span>}
                                                     disabled={disable_danger_run_actions}
-                                                    loading={this.state.actionStatus == "resetting"} 
+                                                    loading={this.state.actionStatus == "reset"} 
                                                 />
                                             </td>
                                             <td>
@@ -739,12 +738,12 @@ class JobContent extends React.Component {
                                         <tr>
                                             <td>
                                                 <ActionButton
-                                                    name="delete entire job"
-                                                    value="delete entire job"
+                                                    name="delete_job"
+                                                    value="delete_job"
                                                     onAction={this.deleteJob}
                                                     label={<span><i className="fas fa-trash-alt w3-text-red"/>&nbsp;delete job</span>}
                                                     disabled={!this.state.globalDangerZoneUnlocked}
-                                                    loading={this.state.actionStatus == "delete"} 
+                                                    loading={this.state.actionStatus == "delete_job"} 
                                                 />
                                             </td>
                                             <td>
