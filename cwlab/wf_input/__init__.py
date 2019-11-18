@@ -14,7 +14,7 @@ from . import validate
 from . import manipulate
 from . import write_xls
 from . import split_by_run
-from . import read_cwl
+from . import read_wf
 from . import fill_in_defaults
 from . import match_types 
 from . import web_interface 
@@ -65,7 +65,7 @@ def import_from_xls(sheet_file,
     return type_matched_params_by_run_id, params_by_run_id, configs, metadata
 
 
-def only_validate_xls(sheet_file="",
+def only_validate_xls(sheet_file,
     validate_paths=True, search_paths=True, search_subdirs=True, input_dir=""):
     try:
         type_matched_params_by_run_id, params_by_run_id, configs, metadata = import_from_xls(sheet_file, validate_paths, search_paths, search_subdirs, input_dir)
@@ -75,7 +75,7 @@ def only_validate_xls(sheet_file="",
 
 
 # main function of this module:
-def transcode( wf_type, sheet_file="", output_basename="",  default_run_id="global", 
+def transcode(sheet_file, output_basename="",  default_run_id="global", 
     always_include_run_in_output_name=False, # if False, run_id will be hidden in the names of the output yaml files
     output_suffix=".cwl_run.yaml", output_dir=".", verbose_level=2, validate_paths=True, search_paths=True, search_subdirs=True, input_dir=""):
     try:
@@ -86,10 +86,10 @@ def transcode( wf_type, sheet_file="", output_basename="",  default_run_id="glob
     if verbose_level == 2:
         print( "Translation successful.", file=sys.stderr)
 
-def generate_xls_from_cwl(cwl_file, output_file="", show_please_fill=False):
+def generate_xls_from_cwl(workflow_file, wf_type=None, output_file="", show_please_fill=False):
     if output_file == "":
         output_file = os.path.basename(cwl_file) + ".xlsx"
-    configs, metadata = read_cwl.read_config_from_cwl_file(cwl_file)
+    configs, metadata = read_wf.read_config_from_workflow(workflow_file, wf_type)
     param_values, configs = fill_in_defaults.fill_in_defaults({}, configs, show_please_fill) # fill in defaults 
     write_xls.write_xls(param_values, configs, output_file, metadata=metadata)
 
