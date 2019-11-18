@@ -56,34 +56,30 @@ def validate_manipulate_split_type_match( param_values, configs,
             raise AssertionError(print_pref + "E: type matching failed for run \"" + run_id + "\": " + str(e))
     return type_matched_params_by_run_id, params_by_run_id, configs
 
-def import_from_xls(sheet_file="", sheet_files=[],
+def import_from_xls(sheet_file,
     validate_paths=True, search_paths=True, search_subdirs=True, input_dir="", default_run_id="global"):
     # read spread sheets
-    if sheet_file == "":
-        assert len(sheet_files) != 0, "E: please specify a file or a list of file to read from"
-        param_values, configs, metadata = read_xls.sheet_files(sheet_files, verbose_level=0)
-    else:
-        param_values, configs, metadata = read_xls.sheet_file(sheet_file, verbose_level=0)
+    param_values, configs, metadata = read_xls.sheet_file(sheet_file, verbose_level=0)
     # split into runs, validate parameters, and manipulate them:
     type_matched_params_by_run_id, params_by_run_id, configs = validate_manipulate_split_type_match( param_values, configs, validate_paths, search_paths, search_subdirs, input_dir, default_run_id)
     return type_matched_params_by_run_id, params_by_run_id, configs, metadata
 
 
-def only_validate_xls(sheet_file="", sheet_files=[],
+def only_validate_xls(sheet_file="",
     validate_paths=True, search_paths=True, search_subdirs=True, input_dir=""):
     try:
-        type_matched_params_by_run_id, params_by_run_id, configs, metadata = import_from_xls(sheet_file, sheet_files, validate_paths, search_paths, search_subdirs, input_dir)
+        type_matched_params_by_run_id, params_by_run_id, configs, metadata = import_from_xls(sheet_file, validate_paths, search_paths, search_subdirs, input_dir)
     except AssertionError as e:
         return 'INVALID:' + str(e)
     return "VALID"
 
 
 # main function of this module:
-def transcode( sheet_file="", sheet_files=[], output_basename="",  default_run_id="global", 
+def transcode( wf_type, sheet_file="", output_basename="",  default_run_id="global", 
     always_include_run_in_output_name=False, # if False, run_id will be hidden in the names of the output yaml files
     output_suffix=".cwl_run.yaml", output_dir=".", verbose_level=2, validate_paths=True, search_paths=True, search_subdirs=True, input_dir=""):
     try:
-        type_matched_params_by_run_id, params_by_run_id, configs, metadata = import_from_xls(sheet_file, sheet_files, validate_paths, search_paths, search_subdirs, input_dir, default_run_id)
+        type_matched_params_by_run_id, params_by_run_id, configs, metadata = import_from_xls(sheet_file, validate_paths, search_paths, search_subdirs, input_dir, default_run_id)
         make_runs.write_multiple_runs(type_matched_params_by_run_id, output_dir, output_basename, output_suffix, always_include_run_in_output_name)
     except AssertionError as e:
         raise AssertionError( 'Failed to translate - the error was:' + str(e))
