@@ -45,7 +45,7 @@ def create_job(job_id, job_param_sheet=None, run_yamls=None, cwl=None,
         assert not (search_paths and search_dir is None), "search_paths was set to True but no search dir has been defined."
         job_param_sheet_dest_path = get_path("job_param_sheet", job_id=job_id, param_sheet_format=sheet_format)
         move(job_param_sheet, job_param_sheet_dest_path)
-        make_yaml_runs(
+        make_runs_runs(
             sheet_file=job_param_sheet_dest_path,
             output_basename="",
             default_run_id=get_job_name_from_job_id(job_id),

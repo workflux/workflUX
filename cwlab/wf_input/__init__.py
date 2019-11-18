@@ -9,7 +9,7 @@ import yaml
 
 # import custom modules:
 from . import read_xls
-from . import make_yaml
+from . import make_runs
 from . import validate
 from . import manipulate
 from . import write_xls
@@ -84,7 +84,7 @@ def transcode( sheet_file="", sheet_files=[], output_basename="",  default_run_i
     output_suffix=".cwl_run.yaml", output_dir=".", verbose_level=2, validate_paths=True, search_paths=True, search_subdirs=True, input_dir=""):
     try:
         type_matched_params_by_run_id, params_by_run_id, configs, metadata = import_from_xls(sheet_file, sheet_files, validate_paths, search_paths, search_subdirs, input_dir, default_run_id)
-        make_yaml.write_multiple_runs(type_matched_params_by_run_id, output_dir, output_basename, output_suffix, always_include_run_in_output_name)
+        make_runs.write_multiple_runs(type_matched_params_by_run_id, output_dir, output_basename, output_suffix, always_include_run_in_output_name)
     except AssertionError as e:
         raise AssertionError( 'Failed to translate - the error was:' + str(e))
     if verbose_level == 2:

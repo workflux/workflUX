@@ -8,7 +8,7 @@ import wf_input as xc
 
 
 #param_values, configs = xc.read_xls.sheet_file( "job_templates/ATAC/all_in_one.xlsx" )
-#xc.make_yaml.write_job(param_values, configs, "test_job.yaml")
+#xc.make_runs.write_job(param_values, configs, "test_job.yaml")
 
 xc.transcode(sheet_file="job_templates/ATAC/all_in_one.xlsx")
 
