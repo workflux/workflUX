@@ -5,13 +5,7 @@ from cwltool.workflow import default_make_tool
 from .read_xls import clean_string
 
 def is_basic_type_instance(value):
-    if sys.version_info.major == 2:
-        return (isinstance(value, int) or 
-            isinstance(value, float) or 
-            isinstance(value, str) or 
-            isinstance(value, bool))
-    else:
-        return (isinstance(value, int) or 
+    return (isinstance(value, int) or 
             isinstance(value, float) or 
             isinstance(value, str) or 
             isinstance(value, bool))
