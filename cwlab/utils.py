@@ -3,9 +3,9 @@ from re import sub, match
 from datetime import datetime
 from time import sleep
 from . import app
-from cwlab.xls2cwl_job.web_interface import read_template_attributes as read_template_attributes_from_xls
-from cwlab.xls2cwl_job.web_interface import get_param_config_info as get_param_config_info_from_xls
-from cwlab.xls2cwl_job import generate_xls_from_cwl as generate_job_template_from_cwl
+from cwlab.wf_input.web_interface import read_template_attributes as read_template_attributes_from_xls
+from cwlab.wf_input.web_interface import get_param_config_info as get_param_config_info_from_xls
+from cwlab.wf_input import generate_xls_from_cwl as generate_job_template_from_cwl
 from cwlab import db
 from random import random, choice as random_choice
 from pathlib import Path

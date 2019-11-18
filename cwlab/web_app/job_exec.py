@@ -8,8 +8,8 @@ from cwlab.utils import fetch_files_in_dir, allowed_extensions_by_type, \
     get_duration, get_job_ids, get_path, get_run_ids, get_job_templ_info, get_time_string
 import requests
 from re import sub, match
-from cwlab.xls2cwl_job.web_interface import gen_form_sheet as gen_job_param_sheet
-from cwlab.xls2cwl_job import only_validate_xls, transcode as make_yaml_runs
+from cwlab.wf_input.web_interface import gen_form_sheet as gen_job_param_sheet
+from cwlab.wf_input import only_validate_xls, transcode as make_yaml_runs
 from cwlab.exec.exec import exec_runs, get_run_info, read_run_log, read_run_yaml, \
     terminate_runs as terminate_runs_by_id, delete_job as delete_job_by_id
 from cwlab import db

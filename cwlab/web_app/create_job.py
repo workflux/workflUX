@@ -9,9 +9,9 @@ from cwlab.utils import fetch_files_in_dir, is_allowed_file, allowed_extensions_
 import requests
 from cwlab.exec.exec import make_job_dir_tree, create_job as create_job_
 from re import match
-from cwlab.xls2cwl_job.web_interface import gen_form_sheet, generate_xls_from_param_values
-from cwlab.xls2cwl_job import only_validate_xls
-from cwlab.xls2cwl_job.read_xls import remove_non_printable_characters
+from cwlab.wf_input.web_interface import gen_form_sheet, generate_xls_from_param_values
+from cwlab.wf_input import only_validate_xls
+from cwlab.wf_input.read_xls import remove_non_printable_characters
 from time import sleep
 from shutil import move, copyfile
 from json import loads as json_loads

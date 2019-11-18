@@ -1,7 +1,7 @@
 #!/usr/bin/env python
 import sys
 import os
-import xls2cwl_job
+import wf_input
 import argparse
 
 parser = argparse.ArgumentParser(description='Generates a XLSX template sheet from a CWL document. ' + 
@@ -23,5 +23,5 @@ if args.output_file != "":
 
 assert os.path.isfile( args.cwl ), "E: The specified CWL file does not exist."
 
-xls2cwl_job.generate_xls_from_cwl( cwl_file=args.cwl, output_file=args.output_file, 
+wf_input.generate_xls_from_cwl( cwl_file=args.cwl, output_file=args.output_file, 
     show_please_fill=args.no_please_fill)

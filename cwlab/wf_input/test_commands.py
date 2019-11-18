@@ -1,7 +1,7 @@
 import sys
 sys.path.insert(1,"./xls_handling")
 import web_interface
-import xls2cwl_job as xc
+import wf_input as xc
 
 #book = pe.get_book(file_name="job_templates/ATAC/all_in_one.xlsx")
 #param_values, configs = xc.read_xls.sheet(book[2])
