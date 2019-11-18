@@ -30,10 +30,15 @@ def read_inp_rec_type_field(inp_rec_type):
             if inp_rec_type["type"] == "array":
                 is_array = True
                 inp_rec_type = inp_rec_type["items"]
+                if isinstance(inp_rec_type, dict):
+                    if "type" in inp_rec_type.keys() and inp_rec_type["type"] == "array":
+                        raise AssertionError( print_pref + " arrays of arrays are not supported.")
+                    else:
+                        raise AssertionError( print_pref + " unkown type")
             else:
-                raise AssertionError( print_pref + "unkown type")
+                raise AssertionError( print_pref + " unkown type")
         else:
-            raise AssertionError( print_pref + "unkown type")
+            raise AssertionError( print_pref + " unkown type")
         # test if "null" is allowed as array item:
         if isinstance(inp_rec_type, list):
             if len(inp_rec_type) == 2 and "null" in inp_rec_type:
@@ -41,12 +46,12 @@ def read_inp_rec_type_field(inp_rec_type):
                 inp_rec_type.remove("null")
                 inp_rec_type = inp_rec_type[0]
             else:
-                raise AssertionError( print_pref + "unkown type"+ 
+                raise AssertionError( print_pref + " unkown type"+ 
                     ": lists of type are only supported when one of two elements is \"null\"")
     if isinstance(inp_rec_type, str):
         type_ = inp_rec_type
     else:
-        raise AssertionError( print_pref + "unkown type")
+        raise AssertionError( print_pref + " unkown type")
     return type_, null_allowed, is_array, null_items_allowed
 
 def read_config_from_cwl_file(cwl_file):
