@@ -7,6 +7,7 @@ On the workflow object, to get the inputs you can call get_inputs_from_workflow
 from typing import List, Tuple
 from inspect import isclass, isabstract
 from janis_core import Workflow, CommandTool, Logger
+from .read_cwl import read_inp_rec_type_field
 
 def get_workflow_from_file(file, name=None, include_commandtools=False):
     # How to import a module given the full path
@@ -82,3 +83,40 @@ def get_inputs_from_tool(tool):
     # ins are a ToolInput which have a .id(), .input_type, .default
     # (not all properties are set on the ToolInput, especially for workflows)
     # Documentation here: https://janis.readthedocs.io/en/latest/references/commandtool.html#tool-input
+
+
+def read_config_from_janis_file(janis_file):
+    workflow = get_workflow_from_file(file=janis_file)
+    configs = {}
+    metadata = {
+        "doc": workflow.metadata.documentation \
+            if workflow.metadata.documentation is not None else ""
+    }
+    inp_records = workflow.inputs()
+    for inp_rec in inp_records:
+        name = inp_rec.id()
+        default_value = inp_rec.default
+        doc = inp_rec.doc
+        secondary_files = inp_rec.input_type.secondary_files() \
+            if inp_rec.input_type.secondary_files() is not None else []
+        try:
+            inp_rec_type = inp_rec.input_type.cwl_type()
+            if not isinstance(inp_rec_type, (str, list)):
+                inp_rec_type = inp_rec_type.get_dict()
+            type_, null_allowed, is_array, null_items_allowed = \
+                read_inp_rec_type_field(inp_rec_type)
+        except Exception as e:
+            raise AssertionError("E: reading type of param \"{}\": {}".format(name, str(e)))
+        # assemble config parameters:
+        inp_configs = {
+            "type": type_,
+            "is_array": is_array,
+            "null_allowed": null_allowed,
+            "null_items_allowed": null_items_allowed,
+            "secondary_files": secondary_files,
+            "default_value": default_value,
+            "doc": doc
+        }
+        # add to configs dict:
+        configs[ name ] = inp_configs
+    return configs, metadata
