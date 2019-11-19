@@ -56,10 +56,7 @@ def class_file(value_string, secondary_files, validate_paths=True, search_paths=
         path = get_file_or_dir_path(value_string, False, search_paths, validate_paths, input_dir)
     except AssertionError as e:
         raise AssertionError( str(e) )
-    if secondary_files[0] == "":
-        value_type_matched = {"class": "File", "path": path}
-    else:
-        cwl_sec_file_array = []
+    if secondary_files[0] != "":
         for sec_ext in secondary_files:
             if sec_ext[0] == "^":
                 capture_sec_ext = re.search('^(\^+)(.*)', sec_ext)
@@ -74,9 +71,7 @@ def class_file(value_string, secondary_files, validate_paths=True, search_paths=
                 sec_file_item_path = get_file_or_dir_path(sec_file_item_path, False, False, validate_paths)
             except AssertionError as e:
                 raise AssertionError("invalid secondary file for \"" + value_string + "\": " + str(e) )
-            cwl_sec_file_array.append( {"class": "File", "path": sec_file_item_path } )
-        value_type_matched = {"class": "File", "path": path, "secondaryFiles": cwl_sec_file_array }
-    return value_type_matched
+    return path
 
 
 def class_directory(value_string, validate_paths=True, search_paths=True, input_dir=""):
@@ -84,8 +79,7 @@ def class_directory(value_string, validate_paths=True, search_paths=True, input_
         path = get_file_or_dir_path(value_string, True, search_paths, validate_paths, input_dir)
     except AssertionError as e:
         raise AssertionError( str(e) )
-    value_type_matched = {"class": "Directory", "path":path}
-    return value_type_matched
+    return path
 
 
 def boolean(value_string ):
