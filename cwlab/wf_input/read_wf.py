@@ -1,5 +1,5 @@
-from read_cwl import read_config_from_cwl_file
-from read_janis import read_config_from_janis_file
+from .read_cwl import read_config_from_cwl_file
+from .read_janis import read_config_from_janis_file
 
 def read_config_from_workflow(workflow_file, wf_type):
     if wf_type is None:
