@@ -1,4 +1,4 @@
-import sys
+import sys, os
 from cwltool.context import LoadingContext
 from cwltool.load_tool import load_tool
 from cwltool.workflow import default_make_tool
