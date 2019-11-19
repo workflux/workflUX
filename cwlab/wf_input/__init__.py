@@ -20,7 +20,7 @@ from . import match_types
 from . import web_interface 
 
 def validate_manipulate_split_type_match( param_values, configs,
-    validate_paths=True, search_paths=True, search_subdirs=True, input_dir="", default_run_id="global"):
+    validate_paths=True, search_paths=True, search_subdirs=True, input_dir="", default_run_id="run"):
     print_pref = "[validate_manipulate_split_type_match]:"
     # fill in config defaults:
     try:
@@ -57,7 +57,7 @@ def validate_manipulate_split_type_match( param_values, configs,
     return type_matched_params_by_run_id, params_by_run_id, configs
 
 def import_from_xls(sheet_file,
-    validate_paths=True, search_paths=True, search_subdirs=True, input_dir="", default_run_id="global"):
+    validate_paths=True, search_paths=True, search_subdirs=True, input_dir="", default_run_id="run"):
     # read spread sheets
     param_values, configs, metadata = read_xls.sheet_file(sheet_file, verbose_level=0)
     # split into runs, validate parameters, and manipulate them:
@@ -75,8 +75,7 @@ def only_validate_xls(sheet_file,
 
 
 # main function of this module:
-def transcode(sheet_file, output_basename="",  default_run_id="global", 
-    always_include_run_in_output_name=False, # if False, run_id will be hidden in the names of the output yaml files
+def transcode(sheet_file, output_basename="",  default_run_id="run", 
     output_suffix=".cwl_run.yaml", output_dir=".", verbose_level=2, validate_paths=True, search_paths=True, search_subdirs=True, input_dir=""):
     try:
         type_matched_params_by_run_id, params_by_run_id, configs, metadata = import_from_xls(sheet_file, validate_paths, search_paths, search_subdirs, input_dir, default_run_id)

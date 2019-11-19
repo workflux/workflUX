@@ -3,7 +3,7 @@ import re
 # import custom modules:
 from . import validate 
 
-def split_parameter_by_run_id( parameter_name, all_parameters, instruction, default_run_id="global" ):
+def split_parameter_by_run_id( parameter_name, all_parameters, instruction, default_run_id="run" ):
     print_pref = "[split_parameter_by_run_id]:"
     parameter_values = all_parameters[parameter_name]
     parameter_by_run_id = {}
@@ -39,7 +39,7 @@ def split_parameter_by_run_id( parameter_name, all_parameters, instruction, defa
     return parameter_by_run_id
 
 
-def split_all_parameters_by_run_id( all_parameters, configs, default_run_id="global" ):
+def split_all_parameters_by_run_id( all_parameters, configs, default_run_id="run" ):
     print_pref = "[split_all_parameters_by_run_id]:"
     parameters_by_run_id = {} # nested dict:
                               # 1st level: runs (run ids as key)
