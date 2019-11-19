@@ -284,7 +284,8 @@ def import_cwl(cwl_path, name=None):
         raise AssertionError("Could not write CWL file.")
     job_templ_filepath = get_path("job_templ", cwl_target=cwl_target_name)
     generate_job_template_from_cwl(
-        cwl_file=cwl_target_path, 
+        workflow_file=cwl_target_path, 
+        wf_type="CWL",
         output_file=job_templ_filepath, 
         show_please_fill=True
     )
