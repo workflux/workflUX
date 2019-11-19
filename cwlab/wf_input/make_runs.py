@@ -5,7 +5,7 @@ from .read_wf import supported_workflow_exts
 
 supported_workflow_types = supported_workflow_exts.keys()
 
-def write_run( type_mached_params, configs, wf_type=None, metadata=None, output_dir=".", output_basename="" ):
+def write_run( type_matched_params, configs, wf_type=None, metadata=None, output_dir=".", output_basename="" ):
     if output_basename == "":
         output_basename = "run"
     if wf_type is None:
@@ -22,7 +22,7 @@ def write_run( type_mached_params, configs, wf_type=None, metadata=None, output_
             if configs[param]["type"] in ["File", "Directory"]:
                 output[param] = {
                     "class": configs[param]["type"],
-                    "path": type_mached_params[param]
+                    "path": type_matched_params[param]
                 }
                 if configs[param]["type"] == "File" and configs[param_name]["secondary_files"][0] != "":
                     cwl_sec_file_array = []
@@ -39,17 +39,18 @@ def write_run( type_mached_params, configs, wf_type=None, metadata=None, output_
                         cwl_sec_file_array.append( {"class": "File", "path": sec_file_item_path } )
                     output[param]["secondaryFiles"] = cwl_sec_file_array
             else:
-                output[param] = type_mached_params[param]
+                output[param] = type_matched_params[param]
     else:
-        output = type_mached_params
+        output = type_matched_params
     file_path = os.path.join(output_dir, output_basename + ".yaml")
-    with open(file_name, 'w') as outfile:
+    with open(file_path, 'w') as outfile:
         yaml.dump(output, outfile)
 
 def write_multiple_runs(type_matched_params_by_run_id, configs, wf_type=None, metadata=None, output_dir=".", output_basename=""):
     assert os.path.isdir(output_dir), "Output directory \"" + output_dir + "\" does not exist."
     for run_id in type_matched_params_by_run_id.keys():
+        output_basename_ = output_basename + "_" + run_id if output_basename != "" else run_id
         write_run(
-            type_matched_params_by_run_id[run_id],  
-            configs, wf_type, metadata, output_dir, output_basename + "_" + run_id,
+            type_matched_params_by_run_id[run_id],
+            configs, wf_type, metadata, output_dir, output_basename_
         )

@@ -10,6 +10,7 @@ from subprocess import Popen, PIPE
 from time import sleep
 from random import random
 from psutil import pid_exists, Process, STATUS_ZOMBIE, wait_procs
+from cwlab.wf_input import transcode as make_runs
 from platform import system as platform_system
 from shutil import rmtree, copy, copyfile, move
 basedir = os.path.abspath(os.path.dirname(__file__))
@@ -45,12 +46,10 @@ def create_job(job_id, job_param_sheet=None, run_yamls=None, cwl=None,
         assert not (search_paths and search_dir is None), "search_paths was set to True but no search dir has been defined."
         job_param_sheet_dest_path = get_path("job_param_sheet", job_id=job_id, param_sheet_format=sheet_format)
         move(job_param_sheet, job_param_sheet_dest_path)
-        make_runs_runs(
+        make_runs(
             sheet_file=job_param_sheet_dest_path,
+            wf_type="CWL",
             output_basename="",
-            default_run_id=get_job_name_from_job_id(job_id),
-            always_include_run_in_output_name=True,
-            output_suffix=".yaml",
             output_dir=runs_yaml_dir,
             validate_paths=validate_paths, 
             search_paths=search_paths, 
