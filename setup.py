@@ -38,7 +38,8 @@ setup(
                       'janis-pipelines>=0.7.0'
                       'cwltool==1.0.20181201184214; platform_system=="Windows"',
                       'cwltool>=1.0.20180809224403; platform_system!="Windows"',
-                      'psutil'               
+                      'psutil',
+                      'miniwdl>=0.0.5'               
                       ],
     classifiers=[
         'Development Status :: 4 - Beta',
