@@ -1,10 +1,21 @@
 import yaml
 import os
 import sys
+from .read_wf import supported_workflow_exts
 
-def write_run( type_mached_params, configs, wf_type, output_dir=".", output_basename="" ):
+supported_workflow_types = supported_workflow_exts.keys()
+
+def write_run( type_mached_params, configs, wf_type=None, metadata=None, output_dir=".", output_basename="" ):
     if output_basename == "":
         output_basename = "run"
+    if wf_type is None:
+        assert metadata is not None, "Please specify either wf_type or metadata."
+        assert "workflow_type" in metadata.keys(), "No workflow type specified in the metadata."
+        wf_type = metadata["workflow_type"]
+    assert wf_type in supported_workflow_types, "Unkown workflow type \"{}\" specified, only following types are supported: ".format(
+        wf_type,
+        ", ".join(supported_workflow_types)
+    )
     if wf_type == "CWL":
         output = {}
         for param in type_matched_params.keys():
@@ -35,10 +46,10 @@ def write_run( type_mached_params, configs, wf_type, output_dir=".", output_base
     with open(file_name, 'w') as outfile:
         yaml.dump(output, outfile)
 
-def write_multiple_runs(type_matched_params_by_run_id, configs, wf_type, output_dir=".", output_basename=""):
+def write_multiple_runs(type_matched_params_by_run_id, configs, wf_type=None, metadata=None, output_dir=".", output_basename=""):
     assert os.path.isdir(output_dir), "Output directory \"" + output_dir + "\" does not exist."
     for run_id in type_matched_params_by_run_id.keys():
         write_run(
             type_matched_params_by_run_id[run_id],  
-            configs, wf_type, output_dir, output_basename + "_" + run_id
+            configs, wf_type, metadata, output_dir, output_basename + "_" + run_id,
         )

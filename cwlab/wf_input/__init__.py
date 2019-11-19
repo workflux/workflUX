@@ -75,11 +75,12 @@ def only_validate_xls(sheet_file,
 
 
 # main function of this module:
-def transcode(sheet_file, output_basename="",  default_run_id="run", 
-    output_suffix=".cwl_run.yaml", output_dir=".", verbose_level=2, validate_paths=True, search_paths=True, search_subdirs=True, input_dir=""):
+def transcode(sheet_file, wf_type=None, # only needed if workflow_type is not specified in the metadata sheet
+    output_basename="",  default_run_id="run", 
+    output_dir=".", verbose_level=2, validate_paths=True, search_paths=True, search_subdirs=True, input_dir=""):
     try:
         type_matched_params_by_run_id, params_by_run_id, configs, metadata = import_from_xls(sheet_file, validate_paths, search_paths, search_subdirs, input_dir, default_run_id)
-        make_runs.write_multiple_runs(type_matched_params_by_run_id, output_dir, output_basename, output_suffix, always_include_run_in_output_name)
+        make_runs.write_multiple_runs(type_matched_params_by_run_id, configs, wf_type, metadata, output_dir, output_basename)
     except AssertionError as e:
         raise AssertionError( 'Failed to translate - the error was:' + str(e))
     if verbose_level == 2:
