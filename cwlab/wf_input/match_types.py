@@ -99,7 +99,7 @@ def boolean(value_string ):
 
 def match_type( param_name, all_param_values, configs, validate_paths=True, search_paths=True, search_subdirs=True, input_dir=""):
     type_matching_functions = { 
-        "boolean":boolean,
+        "boolean":bool,
         "int":int,
         "string":str,
         "long":int, # currently there is a problem with printing long in python2
