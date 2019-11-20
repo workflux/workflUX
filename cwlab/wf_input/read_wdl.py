@@ -14,7 +14,7 @@ def read_config_from_wdl_file(wdl_file):
     workflow_name = document.workflow.name
     for inp_rec in inp_records:
         name = f"{workflow_name}.{inp_rec.name}"
-        wdl_type = inp_rec.value.Type
+        wdl_type = inp_rec.value.type
         null_allowed = wdl_type.optional
         if isinstance(wdl_type, Type.Array):
             is_array = True
