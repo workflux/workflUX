@@ -30,6 +30,16 @@ else:
     from cwltool.load_tool import validate_document
 basedir = os.path.abspath(os.path.dirname(__file__))
 
+allowed_extensions_by_type = {
+    "spreadsheet": ["xlsx", "ods", "xls"],
+    "zip": ["zip"]
+}
+allowed_extensions_by_type.update(
+    supported_workflow_exts
+)
+supported_workflow_types = supported_workflow_exts.keys()
+
+
 def get_time_string():
     return datetime.now().strftime("%H:%M:%S")
 
@@ -127,14 +137,6 @@ def read_file_content(
         content = f.read()
         end_pos = f.tell()
     return str(content), end_pos
-
-allowed_extensions_by_type = {
-    "spreadsheet": ["xlsx", "ods", "xls"],
-    "zip": ["zip"]
-}.update(
-    supported_workflow_exts
-)
-supported_workflow_types = supported_workflow_exts.keys()
 
 def zip_dir(dir_path):
     zip_path = dir_path + ".cwlab.zip"
@@ -275,11 +277,11 @@ def import_wf(wf_path, wf_type=None, name=None):
         assert wf_type in supported_workflow_types, "Provided workflow type \"{wf_type}\" is not supported."
     if name is None:
         name = os.path.splitext(os.path.basename(wf_path))[0]
-    if os.path.splitext(name)[1] in allowed_extensions_by_type[wf_type]:
+    if os.path.splitext(name)[1] in supported_workflow_exts[wf_type]:
         name = os.path.splitext(name)[0]
     wf_target_name = f"{name}.{supported_workflow_exts[wf_type][0]}"
     wf_target_path = get_path("wf", wf_target=wf_target_name)
-    if wf_type == "cwl":
+    if wf_type == "CWL":
         try:
             packed_cwl = pack_cwl(wf_path)
         except Exception as e:
