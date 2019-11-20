@@ -193,7 +193,7 @@ def get_job_ids():
 def get_job_name_from_job_id(job_id):
     return match('(\d+)_(\d+)_(.+)', job_id).group(3)
 
-def get_path(which, job_id=None, run_id=None, param_sheet_format=None, wf_target=None):
+def get_path(which, job_id=None, run_id=None, param_sheet_format=None, wf_target=None, wf_type=None):
     if which == "job_dir":
         path = os.path.join(app.config["EXEC_DIR"], job_id)
     elif which == "runs_out_dir":
@@ -209,7 +209,7 @@ def get_path(which, job_id=None, run_id=None, param_sheet_format=None, wf_target
             assert len(hits) != 0, "No spreadsheet found for job " + job_id
             path = os.path.join(path, hits[0]["file_name"])
     elif which == "job_wf":
-        path = os.path.join(app.config["EXEC_DIR"], job_id, "main.cwl")
+        path = os.path.join(app.config["EXEC_DIR"], job_id, f"main.{supported_workflow_exts[wf_type][0]}")
     elif which == "job_param_sheet_temp":
         if param_sheet_format:
             path = os.path.join(app.config["EXEC_DIR"], job_id, "job_templ." + param_sheet_format)
@@ -224,7 +224,7 @@ def get_path(which, job_id=None, run_id=None, param_sheet_format=None, wf_target
         path = os.path.join(app.config["EXEC_DIR"], job_id, "runs_params", run_id + ".yaml")
     elif which == "job_templ":
         path = os.path.join(app.config['WF_DIR'], wf_target + ".job_templ.xlsx")
-    elif which == "cwl":
+    elif which == "wf":
         path = os.path.join(app.config['WF_DIR'], wf_target)
     elif which == "runs_log_dir":
         path = os.path.join(app.config['EXEC_DIR'], job_id, "runs_log")
@@ -266,13 +266,9 @@ def pack_cwl(cwl_path):
     return packed_cwl
 
 def import_cwl(cwl_path, name=None):
-    if name is None:
-        name = os.path.splitext(os.path.basename(cwl_path))[0]
-    if os.path.splitext(name)[1] in allowed_extensions_by_type["CWL"]:
-        name = os.path.splitext(name)[0]
     cwl_target_name = name + ".cwl"
     packed_cwl = pack_cwl(cwl_path)
-    cwl_target_path = get_path("cwl", cwl_target=cwl_target_name)
+    cwl_target_path = get_path("wf", cwl_target=cwl_target_name)
     if os.path.exists(cwl_target_path):
         try:
             os.remove(cwl_target_path)

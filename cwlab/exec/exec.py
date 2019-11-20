@@ -72,7 +72,7 @@ def create_job(job_id, job_param_sheet=None, run_yamls=None, cwl=None,
         )
         assert not check_if_path_in_dirs(cwl, allowed_dirs) is None, "The provided CWL file does not exit or you have no permission to access it."
     else:
-        cwl = get_path("cwl", wf_target=cwl)
+        cwl = get_path("wf", wf_target=cwl)
     # copy cwl document:
     copyfile(cwl, get_path("job_wf", job_id=job_id))
 
