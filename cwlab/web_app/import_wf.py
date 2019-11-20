@@ -25,10 +25,8 @@ def upload_wf():
 
         assert import_file.filename != '', "No file specified."
 
-        
         # save the file to the CWL directory:
         metadata = json_loads(request.form.get("meta"))
-        wf_type = metadata["wf_type"]
         import_filename = secure_filename(import_file.filename) 
         
         temp_dir = make_temp_dir()

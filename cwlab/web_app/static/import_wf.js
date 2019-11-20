@@ -151,7 +151,7 @@ class ImportCwlZip extends React.Component{
 
 }
 
-class ImportCwlFile extends React.Component{
+class ImportWfFile extends React.Component{
     constructor(props){
         super(props);
         this.state = {
@@ -193,7 +193,7 @@ class ImportCwlFile extends React.Component{
                     </a> for details on how to pack a workflow.
                 </Message>
                 <FileUploadComponent
-                    requestRoute={routeUploadCwl}
+                    requestRoute={routeUploadWf}
                     metaData={ {"import_name": this.state.importName} }
                 />
             </div>
@@ -295,22 +295,22 @@ class ImportCWLRoot extends React.Component {
     constructor(props){
         super(props);
         this.state = {
-            importMethod: "cwlUrl"
+            importMethod: "wfFile"
         }
 
         this.importMethods = {
-            cwlUrl: {
-                descr: "URL to public CWL document (e.g. from github)",
-                component: <ImportCwlUrl />
+            // cwlUrl: {
+            //     descr: "URL to public CWL document (e.g. from github)",
+            //     component: <ImportCwlUrl />
+            // },
+            wfFile: {
+                descr: "from file",
+                component: <ImportWfFile />
             },
-            cwlFile: {
-                descr: "from file (CWL-wrapped tool or a packed CWL Workflow)",
-                component: <ImportCwlFile />
-            },
-            cwlZip: {
-                descr: "from ZIP file (e.g. a CWL workflow with its dependencies)",
-                component: <ImportCwlZip />
-            }
+            // cwlZip: {
+            //     descr: "from ZIP file (e.g. a CWL workflow with its dependencies)",
+            //     component: <ImportCwlZip />
+            // }
         }
 
         this.changeInputField = this.changeInputField.bind(this);
