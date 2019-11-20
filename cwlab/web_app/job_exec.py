@@ -30,7 +30,7 @@ def get_job_list():
         # for each dir:
         #   - check if form sheet present
         #   - if yes:
-        #       - read in form sheet attributes
+        #       - read in form sheet metadata
         #       - get list of runs
         for job_id in job_ids:
             job_dir = get_path("job_dir", job_id=job_id)
@@ -39,16 +39,16 @@ def get_job_list():
             except AssertionError as e:
                 continue
                 
-            job_param_sheet_attributes = get_job_templ_info("attributes", job_templ_filepath=job_param_sheet)
-            if "CWL" not in job_param_sheet_attributes.keys() or job_param_sheet_attributes["CWL"] == "":
+            job_param_sheet_metadata = get_job_templ_info("metadata", job_templ_filepath=job_param_sheet)
+            if "workflow_name" not in job_param_sheet_metadata.keys() or job_param_sheet_metadata["workflow_name"] == "":
                 messages.append( { 
                     "time": get_time_string(),
                     "type":"warning", 
-                    "text":"No CWL target was specified in the job_param_sheet of job \"" + 
+                    "text":"No workflow name was specified in the job_param_sheet of job \"" + 
                         job_id + "\". Ignoring."
                 } )
                 continue
-            wf_target = job_param_sheet_attributes["CWL"]
+            wf_target = job_param_sheet_metadata["workflow_name"]
             jobs.append({
                 "job_id": job_id,
                 "job_abs_path": job_dir,

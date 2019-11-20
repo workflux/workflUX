@@ -56,8 +56,8 @@ def create_job(job_id, job_param_sheet=None, run_yamls=None, cwl=None,
             search_subdirs=search_subdirs, 
             input_dir=search_dir
         )
-        if cwl is None:
-            cwl = get_job_templ_info("attributes", job_templ_filepath=job_param_sheet_dest_path)["CWL"]
+        if wf_target is None:
+            wf_target = get_job_templ_info("metadata", job_templ_filepath=job_param_sheet_dest_path)["workflow_name"]
     else:
         [copy(run_yaml, runs_yaml_dir) for run_yaml in run_yamls]
 

@@ -9,29 +9,26 @@ from itertools import chain, repeat
 from .write_xls import write_xls
 from .__init__ import validate_manipulate_split_type_match
 
-def read_template_attributes(sheet_file):
-    metadata = {}
+def get_param_config(file_path):
+    _, configs, _ = sheet_file(file_path, verbose_level=0)
+    return configs
+
+def get_metadata(file_path):
+    _, _, metadata = sheet_file(file_path, verbose_level=0)
+    return metadata
+
+def read_template_metadata(sheet_file):
+    metadata = {
+        "doc": "",
+        "workflow_type": "",
+        "workflow_name": "",
+        "workflow_path": ""
+    }
     try:
-        config_sheet = pe.get_book(file_name=sheet_file)["config"]
+        metadata.update(get_metadata(sheet_file))
     except Exception as e:
-        raise AssertionError("Error reading the job template \"" + sheet_file + "\": does the template have a \"config\" sheet?")
-    _, attributes = read_and_remove_sheet_attributes(config_sheet)
-    try:
-        metadata_sheet, _ = read_and_remove_sheet_attributes(pe.get_book(file_name=sheet_file)["metadata"])
-        metadata = read_metadata_sheet(metadata_sheet)
-        if "doc" in metadata.keys():
-            attributes["doc"] = metadata["doc"]
-    except Exception as e:
-        pass
-    del(attributes["type"])
-    # add cwl attribute if missing:
-    if not "CWL" in attributes.keys():
-        attributes["CWL"] = ""
-    if not "desc" in attributes.keys():
-        attributes["desc"] = ""
-    if not "doc" in attributes.keys():
-        attributes["doc"] = ""
-    return attributes
+        raise AssertionError(f"Could not read metadata from sheet: {sheet_file}")
+    return metadata
 
 def get_param_config_info(file_path):
     _, configs, _ = sheet_file(file_path, verbose_level=0)
@@ -51,11 +48,6 @@ def get_param_config_info(file_path):
         })
     return param_config_info
 
-
-def get_param_config(file_path):
-    _, configs, _ = sheet_file(file_path, verbose_level=0)
-    return configs
-
 def gen_form_sheet(
     template_config_file_path, # basic information on params and their defaults
     output_file_path=None, # if None return configs and param_values
@@ -65,7 +57,7 @@ def gen_form_sheet(
                     # dict with param names as keys, and true (run specific) or false (global)
                     # as values
     show_please_fill=False,
-    config_attributes={}   # attributes copied to the header of
+    metadata={}   # attributes copied to the header of
                                                             # the config file
 ):
     # read configs from template
@@ -98,11 +90,11 @@ def gen_form_sheet(
     if output_file_path is None:
         return param_values, configs
     # write to file
-    write_xls(param_values, configs, output_file_path, config_attributes)
+    write_xls(param_values, configs, output_file_path, metadata=metadata)
 
 def generate_xls_from_param_values(param_values, configs, output_file="",
-    validate_paths=True, search_paths=True, search_subdirs=True, input_dir="", config_attributes={}):
+    validate_paths=True, search_paths=True, search_subdirs=True, input_dir="", metadata={}):
     type_matched_params_by_run_id, params_by_run_id, configs = validate_manipulate_split_type_match( 
         param_values, configs, validate_paths, search_paths, search_subdirs, input_dir
     )
-    write_xls(param_values, configs, output_file, config_attributes)
+    write_xls(param_values, configs, output_file, metadata=metadata)

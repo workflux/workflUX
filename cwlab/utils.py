@@ -3,7 +3,7 @@ from re import sub, match
 from datetime import datetime
 from time import sleep
 from . import app
-from cwlab.wf_input.web_interface import read_template_attributes as read_template_attributes_from_xls
+from cwlab.wf_input.web_interface import read_template_metadata as read_template_metadata_from_xls
 from cwlab.wf_input.web_interface import get_param_config_info as get_param_config_info_from_xls
 from cwlab.wf_input import generate_xls_from_cwl as generate_job_template_from_cwl
 from cwlab.wf_input.read_wf import supported_workflow_exts, get_workflow_type_from_file_ext

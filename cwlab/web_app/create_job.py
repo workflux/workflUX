@@ -44,12 +44,12 @@ def get_job_templ_config_info():    # returns all parmeter and its default mode 
                                     # for a given xls config
     messages = []
     param_config_info = []
-    template_attributes = []
+    template_metadata = []
     try:
         login_required()
         wf_target = request.get_json()["wf_target"]
         param_config_info = get_job_templ_info("config", wf_target)
-        template_attributes = get_job_templ_info("attributes", wf_target)
+        template_metadata = get_job_templ_info("metadata", wf_target)
     except AssertionError as e:
         messages.append( handle_known_error(e, return_front_end_message=True))
     except Exception as e:
@@ -57,7 +57,7 @@ def get_job_templ_config_info():    # returns all parmeter and its default mode 
     return jsonify({
         "data":{
             "params":param_config_info,
-            "templ_attr": template_attributes,
+            "templ_meta": template_metadata,
         },
         "messages":messages
     })
@@ -92,7 +92,7 @@ def generate_param_form_sheet():    # generate param form sheet with data sent
             run_names=run_names,
             param_is_run_specific=param_modes,
             show_please_fill=True,
-            config_attributes={"CWL": wf_target}
+            metadata={"workflow_name": wf_target}
         )
         data["get_form_sheet_href"] = url_for("get_param_form_sheet", job_id=job_id)
     except AssertionError as e:
@@ -233,7 +233,7 @@ def send_filled_param_values():
             search_paths=search_paths, 
             search_subdirs=include_subdirs_for_searching, 
             input_dir=search_dir,
-            config_attributes={"CWL": wf_target}
+            metadata={"workflow_name": wf_target}
         )
     except AssertionError as e:
         messages.append(handle_known_error(
@@ -349,7 +349,7 @@ def get_param_values():
             run_names=request_json["run_names"],
             param_is_run_specific=request_json["param_modes"],
             show_please_fill=True,
-            config_attributes={"CWL": request_json["wf_target"]}
+            metadata={"workflow_name": request_json["wf_target"]}
         )
         data = {
             "param_values": param_values,
