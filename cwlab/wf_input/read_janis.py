@@ -8,6 +8,7 @@ from typing import List, Tuple
 from inspect import isclass, isabstract
 from janis_core import Workflow, CommandTool, Logger
 from .read_cwl import read_inp_rec_type_field
+import os
 
 def get_workflow_from_file(file, name=None, include_commandtools=False):
     # How to import a module given the full path
