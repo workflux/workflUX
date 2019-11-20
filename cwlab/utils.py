@@ -176,7 +176,7 @@ def download_file(url, fallback_filename=None):
 
     return file_path
 
-def is_allowed_file(filename, type="CWL"):
+def is_allowed_file(filename, type=None):
     # validates uploaded files
     return '.' in filename and \
            os.path.splitext(filename)[1].strip(".").lower() in allowed_extensions_by_type[type]
@@ -214,7 +214,17 @@ def get_path(which, job_id=None, run_id=None, param_sheet_format=None, wf_target
             assert len(hits) != 0, "No spreadsheet found for job " + job_id
             path = os.path.join(path, hits[0]["file_name"])
     elif which == "job_wf":
-        path = os.path.join(app.config["EXEC_DIR"], job_id, f"main.{supported_workflow_exts[wf_type][0]}")
+        if wf_type is None:
+            try:
+                exts = [supported_workflow_exts["supported_workflow_exts"][0] for wf_type in supported_workflow_exts.key()]
+                path = fetch_files_in_dir(
+                    os.path.join(app.config["EXEC_DIR"], job_id), 
+                    ext, "main"
+                )[0]
+            except Exception as e:
+                raise AssertionError(f"No workflow found in exec dir of job \"{job_id}\"")
+        else:
+            path = os.path.join(app.config["EXEC_DIR"], job_id, f"main.{supported_workflow_exts[wf_type][0]}")
     elif which == "job_param_sheet_temp":
         if param_sheet_format:
             path = os.path.join(app.config["EXEC_DIR"], job_id, "job_templ." + param_sheet_format)
@@ -352,8 +362,8 @@ def get_job_templ_info(which, wf_target=None, job_templ_filepath=None):
         job_templ_filepath = get_path("job_templ", wf_target=wf_target)
     if which =="config":
         info = get_param_config_info_from_xls(job_templ_filepath)
-    elif which =="attributes":
-        info = read_template_attributes_from_xls(job_templ_filepath)
+    elif which =="metadata":
+        info = read_template_metadata_from_xls(job_templ_filepath)
     return info
 
 def output_example_config():

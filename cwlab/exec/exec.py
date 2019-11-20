@@ -13,6 +13,7 @@ from psutil import pid_exists, Process, STATUS_ZOMBIE, wait_procs
 from cwlab.wf_input import transcode as make_runs
 from platform import system as platform_system
 from shutil import rmtree, copy, copyfile, move
+from cwlab.wf_input.read_wf import get_workflow_type_from_file_ext
 basedir = os.path.abspath(os.path.dirname(__file__))
 python_interpreter = sys.executable
 
@@ -33,10 +34,16 @@ def make_job_dir_tree(job_id):
     if not os.path.exists(runs_input_dir):
         os.mkdir(runs_input_dir)
 
-def create_job(job_id, job_param_sheet=None, run_yamls=None, cwl=None,
+def create_job(job_id, job_param_sheet=None, run_yamls=None, wf_target=None,
     validate_paths=True, search_paths=False, search_subdirs=False, search_dir=None, sheet_format="xlsx"):
-    assert not (job_param_sheet is None and (run_yamls is None or cwl is None)), "You have to either provide a job_param_sheet or a list of run_yamls plus a cwl document"
+    assert not (job_param_sheet is None and (run_yamls is None or wf_target is None)), "You have to either provide a job_param_sheet or a list of run_yamls plus a wf_target document"
+
     runs_yaml_dir = get_path("runs_yaml_dir", job_id=job_id)
+    if wf_target is None:
+        job_param_sheet_dest_path = get_path("job_param_sheet", job_id=job_id, param_sheet_format=sheet_format)
+        move(job_param_sheet, job_param_sheet_dest_path)
+        wf_target = get_job_templ_info("metadata", job_templ_filepath=job_param_sheet_dest_path)["workflow_name"]
+    wf_type = get_workflow_type_from_file_ext(wf_target)
 
     # make directories:
     make_job_dir_tree(job_id)
@@ -44,11 +51,9 @@ def create_job(job_id, job_param_sheet=None, run_yamls=None, cwl=None,
     # make run yamls:
     if not job_param_sheet is None:
         assert not (search_paths and search_dir is None), "search_paths was set to True but no search dir has been defined."
-        job_param_sheet_dest_path = get_path("job_param_sheet", job_id=job_id, param_sheet_format=sheet_format)
-        move(job_param_sheet, job_param_sheet_dest_path)
         make_runs(
             sheet_file=job_param_sheet_dest_path,
-            wf_type="CWL",
+            wf_type=wf_type,
             output_basename="",
             output_dir=runs_yaml_dir,
             validate_paths=validate_paths, 
@@ -56,25 +61,23 @@ def create_job(job_id, job_param_sheet=None, run_yamls=None, cwl=None,
             search_subdirs=search_subdirs, 
             input_dir=search_dir
         )
-        if wf_target is None:
-            wf_target = get_job_templ_info("metadata", job_templ_filepath=job_param_sheet_dest_path)["workflow_name"]
     else:
         [copy(run_yaml, runs_yaml_dir) for run_yaml in run_yamls]
 
-    # check if cwl is absolute path and exists, else search for it in the CWL dir:
-    if os.path.exists(cwl):
-        cwl = os.path.abspath(cwl)
+    # check if wf_target is absolute path and exists, else search for it in the wf_target dir:
+    if os.path.exists(wf_target):
+        wf_target = os.path.abspath(wf_target)
         allowed_dirs = get_allowed_base_dirs(
             job_id=job_id,
             allow_input=True,
             allow_upload=False,
             allow_download=False
         )
-        assert not check_if_path_in_dirs(cwl, allowed_dirs) is None, "The provided CWL file does not exit or you have no permission to access it."
+        assert not check_if_path_in_dirs(wf_target, allowed_dirs) is None, "The provided wf_target file does not exit or you have no permission to access it."
     else:
-        cwl = get_path("wf", wf_target=cwl)
-    # copy cwl document:
-    copyfile(cwl, get_path("job_wf", job_id=job_id))
+        wf_target = get_path("wf", wf_target=wf_target)
+    # copy wf_target document:
+    copyfile(wf_target, get_path("job_wf", job_id=job_id, wf_type=wf_type))
 
     # make output directories:
     run_ids = get_run_ids(job_id)
@@ -156,7 +159,7 @@ def exec_runs(job_id, run_ids, exec_profile_name, user_id=None, max_parrallel_ex
         exec_db_entry[run_id] = Exec(
             job_id=job_id,
             run_id=run_id,
-            cwl=get_path("job_wf", job_id=job_id),
+            wf_target=get_path("job_wf", job_id=job_id),
             yaml=get_path("run_yaml", job_id=job_id, run_id=run_id),
             out_dir=get_path("run_out_dir", job_id=job_id, run_id=run_id),
             global_temp_dir=app.config["TEMP_DIR"],
