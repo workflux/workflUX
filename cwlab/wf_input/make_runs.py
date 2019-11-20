@@ -2,6 +2,7 @@ import yaml
 import json
 import os
 import sys
+import re
 from .read_wf import supported_workflow_exts
 
 supported_workflow_types = supported_workflow_exts.keys()
