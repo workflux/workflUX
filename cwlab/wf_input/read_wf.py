@@ -1,3 +1,4 @@
+import os
 from .read_cwl import read_config_from_cwl_file
 from .read_janis import read_config_from_janis_file
 from .read_wdl import read_config_from_wdl_file
@@ -8,19 +9,21 @@ supported_workflow_exts = {
     "WDL": ["wdl", "WDL"]
 }
 
+def get_workflow_type_from_file_ext(workflow_file):
+    ext = os.path.splitext(workflow_file)[1].strip(".")
+    if ext in supported_workflow_exts["CWL"]:
+        wf_type = "CWL"
+    elif ext in supported_workflow_exts["janis"]:
+        wf_type = "janis"
+    elif ext in supported_workflow_exts["WDL"]:
+        wf_type = "WDL"
+    else:
+        raise AssertionError("Could not determine workflow type from file name.")
+    return wf_type
+
 def read_config_from_workflow(workflow_file, wf_type):
     if wf_type is None:
-        # get workflow type from file extention:
-        ext = os.path.splitext(workflow_file)[1]
-
-        if ext in supported_workflow_exts["CWL"]:
-            wf_type = "CWL"
-        elif ext in supported_workflow_exts["janis"]:
-            wf_type = "janis"
-        elif ext in supported_workflow_exts["WDL"]:
-            wf_type = "WDL"
-        else:
-            raise AssertionError("Could not determine workflow type from file name, please specify the workflow type manually.")
+        wf_type = get_workflow_type_from_file_ext(wf_type)
     if wf_type == "CWL":
         configs, metadata = read_config_from_cwl_file(workflow_file)
     elif wf_type == "janis":

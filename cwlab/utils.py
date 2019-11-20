@@ -6,7 +6,7 @@ from . import app
 from cwlab.wf_input.web_interface import read_template_attributes as read_template_attributes_from_xls
 from cwlab.wf_input.web_interface import get_param_config_info as get_param_config_info_from_xls
 from cwlab.wf_input import generate_xls_from_cwl as generate_job_template_from_cwl
-from cwlab.wf_input.read_wf import supported_workflow_exts
+from cwlab.wf_input.read_wf import supported_workflow_exts, get_workflow_type_from_file_ext
 from cwlab.wf_input.read_janis import get_workflow_from_file as load_and_validate_janis
 from cwlab import db
 from random import random, choice as random_choice
@@ -268,8 +268,11 @@ def pack_cwl(cwl_path):
         packed_cwl = json.loads(print_pack(document_loader, processobj, uri, metadata))
     return packed_cwl
 
-def import_wf(wf_path, wf_type, name=None):
-    assert wf_type in supported_workflow_types, "Provided workflow type \"{wf_type}\" is not supported."
+def import_wf(wf_path, wf_type=None, name=None):
+    if wf_type is None:
+        wf_type = get_workflow_type_from_file_ext(wf_path)
+    else:
+        assert wf_type in supported_workflow_types, "Provided workflow type \"{wf_type}\" is not supported."
     if name is None:
         name = os.path.splitext(os.path.basename(wf_path))[0]
     if os.path.splitext(name)[1] in allowed_extensions_by_type[wf_type]:
