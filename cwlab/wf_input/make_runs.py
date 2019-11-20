@@ -25,18 +25,18 @@ def write_run( type_matched_params, configs, wf_type=None, metadata=None, output
                     "class": configs[param]["type"],
                     "path": type_matched_params[param]
                 }
-                if configs[param]["type"] == "File" and configs[param_name]["secondary_files"][0] != "":
+                if configs[param]["type"] == "File" and configs[param]["secondary_files"][0] != "":
                     cwl_sec_file_array = []
-                    for sec_ext in configs[param_name]["secondary_files"]:
+                    for sec_ext in configs[param]["secondary_files"]:
                         if sec_ext[0] == "^":
                             capture_sec_ext = re.search('^(\^+)(.*)', sec_ext)
                             n_exts_to_rm = len(capture_sec_ext.group(1))
-                            value_root = path 
+                            value_root = type_matched_params[param] 
                             for idx in range(0,n_exts_to_rm):
                                 value_root = os.path.splitext(value_root)[0]
                             sec_file_item_path =value_root + capture_sec_ext.group(2)
                         else:
-                            sec_file_item_path = path + sec_ext
+                            sec_file_item_path = type_matched_params[param] + sec_ext
                         cwl_sec_file_array.append( {"class": "File", "path": sec_file_item_path } )
                     output[param]["secondaryFiles"] = cwl_sec_file_array
             else:
