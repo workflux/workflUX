@@ -63,7 +63,7 @@ class ImportCwlZip extends React.Component{
             statusValueDuringRequest: "import",
             messageVar: "importMessages",
             sendData: {
-                cwl_path: this.state.cwlPath,
+                wf_path: this.state.cwlPath,
                 import_name: this.state.importName
             },
             route: routeImportCwlByPathOrUrl
@@ -228,7 +228,7 @@ class ImportCwlUrl extends React.Component{
             statusValueDuringRequest: "import",
             messageVar: "importMessages",
             sendData: {
-                cwl_path: this.state.cwlUrl,
+                wf_path: this.state.cwlUrl,
                 is_url: true,
                 import_name: this.state.importName
             },

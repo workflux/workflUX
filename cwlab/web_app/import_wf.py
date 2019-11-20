@@ -29,10 +29,6 @@ def upload_wf():
         # save the file to the CWL directory:
         metadata = json_loads(request.form.get("meta"))
         wf_type = metadata["wf_type"]
-        assert is_allowed_file(import_file.filename, type=wf_type), ( 
-            "Wrong file type. Only files with following extensions are allowed: " + 
-            ", ".join(allowed_extensions_by_type[wf_type])
-        )
         import_filename = secure_filename(import_file.filename) 
         
         temp_dir = make_temp_dir()
@@ -42,7 +38,7 @@ def upload_wf():
         import_name = secure_filename(metadata["import_name"]) \
             if "import_name" in metadata.keys() and metadata["import_name"] != "" \
             else import_filename
-        import_wf_(cwl_path=imported_filepath, name=import_name)
+        import_wf_(wf_path=imported_filepath, name=import_name)
         
         try:
             rmtree(temp_dir)
@@ -153,23 +149,23 @@ def import_wf_by_path_or_url():
     try:
         login_required()
         data_req = request.get_json()
-        cwl_path = data_req["cwl_path"]
+        wf_path = data_req["wf_path"]
         is_url = data_req["is_url"] if "is_url" in data_req.keys() else False
         import_name = data_req["import_name"]
 
         if is_url:
-            vaidate_url(cwl_path)
+            vaidate_url(wf_path)
         else:
             allowed_dirs = get_allowed_base_dirs(
                 allow_input=False,
                 allow_upload=True,
                 allow_download=False
             )
-            assert os.path.isfile(cwl_path) and \
-                check_if_path_in_dirs(cwl_path, allowed_dirs) is not None, \
+            assert os.path.isfile(wf_path) and \
+                check_if_path_in_dirs(wf_path, allowed_dirs) is not None, \
                 "Path does not exist or you have no permission to enter it."
 
-        import_wf_(cwl_path=cwl_path, name=import_name)
+        import_wf_(wf_path=wf_path, name=import_name)
 
         messages.append( { 
             "time": get_time_string(),

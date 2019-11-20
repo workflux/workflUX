@@ -278,7 +278,7 @@ def import_wf(wf_path, wf_type, name=None):
     wf_target_path = get_path("wf", wf_target=wf_target_name)
     if wf_type == "cwl":
         try:
-            packed_cwl = pack_cwl(cwl_path)
+            packed_cwl = pack_cwl(wf_path)
         except Exception as e:
             raise AssertionError(
                 "The provided CWL document is not valid, the error was: {}".format(str(e))
