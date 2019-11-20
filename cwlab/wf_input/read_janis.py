@@ -99,7 +99,7 @@ def read_config_from_janis_file(janis_file):
     inp_records = workflow.inputs()
     for inp_rec in inp_records:
         name = inp_rec.id()
-        default_value = inp_rec.default
+        default_value = inp_rec.default if inp_rec.default is not None else [""]
         doc = inp_rec.doc
         secondary_files = inp_rec.input_type.secondary_files() \
             if inp_rec.input_type.secondary_files() is not None else []
