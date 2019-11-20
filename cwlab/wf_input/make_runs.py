@@ -1,4 +1,5 @@
 import yaml
+import json
 import os
 import sys
 from .read_wf import supported_workflow_exts
@@ -42,9 +43,15 @@ def write_run( type_matched_params, configs, wf_type=None, metadata=None, output
                 output[param] = type_matched_params[param]
     else:
         output = type_matched_params
-    file_path = os.path.join(output_dir, output_basename + ".yaml")
-    with open(file_path, 'w') as outfile:
-        yaml.dump(output, outfile)
+    if wf_type in ["CWL", "janis"]:
+        file_path = os.path.join(output_dir, output_basename + ".yaml")
+        with open(file_path, 'w') as outfile:
+            yaml.dump(output, outfile)
+    else:
+        file_path = os.path.join(output_dir, output_basename + ".json")
+        with open(file_path, 'w') as outfile:
+            json.dump(output, outfile)
+
 
 def write_multiple_runs(type_matched_params_by_run_id, configs, wf_type=None, metadata=None, output_dir=".", output_basename=""):
     assert os.path.isdir(output_dir), "Output directory \"" + output_dir + "\" does not exist."
