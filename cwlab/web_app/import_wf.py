@@ -5,7 +5,7 @@ from werkzeug.urls import url_parse
 from werkzeug.utils import secure_filename
 from cwlab import app
 from cwlab.utils import is_allowed_file, allowed_extensions_by_type, get_path, \
-    make_temp_dir, import_cwl as import_cwl_, unzip_dir, get_allowed_base_dirs, \
+    make_temp_dir, import_wf as import_wf_, unzip_dir, get_allowed_base_dirs, \
     check_if_path_in_dirs, download_file, vaidate_url, get_time_string
 from cwlab.wf_input import generate_xls_from_cwl as generate_job_template_from_cwl
 from cwlab.users.manage import login_required
@@ -42,7 +42,7 @@ def upload_wf():
         import_name = secure_filename(metadata["import_name"]) \
             if "import_name" in metadata.keys() and metadata["import_name"] != "" \
             else import_filename
-        import_cwl_(cwl_path=imported_filepath, name=import_name)
+        import_wf_(cwl_path=imported_filepath, name=import_name)
         
         try:
             rmtree(temp_dir)
@@ -146,8 +146,8 @@ def download_zip_url():
     
     return jsonify({"data":data,"messages":messages})
 
-@app.route('/import_cwl_by_path_or_url/', methods=['POST'])
-def import_cwl_by_path_or_url():
+@app.route('/import_wf_by_path_or_url/', methods=['POST'])
+def import_wf_by_path_or_url():
     messages = []
     data = []
     try:
@@ -169,7 +169,7 @@ def import_cwl_by_path_or_url():
                 check_if_path_in_dirs(cwl_path, allowed_dirs) is not None, \
                 "Path does not exist or you have no permission to enter it."
 
-        import_cwl_(cwl_path=cwl_path, name=import_name)
+        import_wf_(cwl_path=cwl_path, name=import_name)
 
         messages.append( { 
             "time": get_time_string(),

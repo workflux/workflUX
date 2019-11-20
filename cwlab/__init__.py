@@ -21,7 +21,7 @@ app.config.from_object(Config())
 db = SQLAlchemy(app)
 login = LoginManager(app)
 
-from .web_app import main, import_cwl, create_job, job_exec, users, browse
+from .web_app import main, import_wf, create_job, job_exec, users, browse
 from . import log
 
 def setup_db():

@@ -23,7 +23,7 @@ const modules = {   // each entry corresponds to one wep app module,
         icon: "",
         content: (<Welcome />)
     },
-    import_cwl:  {
+    import_wf:  {
         text: "Import CWL Workflow/Tool",
         icon: "fas fa-file-import",
         content: (<ImportCWLRoot />),

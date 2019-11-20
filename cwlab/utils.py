@@ -7,17 +7,19 @@ from cwlab.wf_input.web_interface import read_template_attributes as read_templa
 from cwlab.wf_input.web_interface import get_param_config_info as get_param_config_info_from_xls
 from cwlab.wf_input import generate_xls_from_cwl as generate_job_template_from_cwl
 from cwlab.wf_input.read_wf import supported_workflow_exts
+from cwlab.wf_input.read_janis import get_workflow_from_file as load_and_validate_janis
 from cwlab import db
 from random import random, choice as random_choice
 from pathlib import Path
 import zipfile
 from cwltool.load_tool import fetch_document
 from cwltool.main import print_pack
+from WDL import load as load_and_validate_wdl
 import json
 from string import ascii_letters, digits
 from pkg_resources import get_distribution
 from urllib import request as url_request
-from shutil import copyfileobj
+from shutil import copyfileobj, copyfile
 from werkzeug import secure_filename
 from urllib.request import urlopen
 cwltool_version = get_distribution("cwltool").version
@@ -39,7 +41,7 @@ def normalize_path(path):
 
 def vaidate_url(url):
     try:
-        test = urlopen(url)
+        _ = urlopen(url)
     except Exception:
         raise AssertionError("Cannot open the provided url: {}".format(url))
         
@@ -132,6 +134,7 @@ allowed_extensions_by_type = {
 }.update(
     supported_workflow_exts
 )
+supported_workflow_types = supported_workflow_exts.keys()
 
 def zip_dir(dir_path):
     zip_path = dir_path + ".cwlab.zip"
@@ -265,34 +268,54 @@ def pack_cwl(cwl_path):
         packed_cwl = json.loads(print_pack(document_loader, processobj, uri, metadata))
     return packed_cwl
 
-def import_cwl(cwl_path, name=None):
-    cwl_target_name = name + ".cwl"
-    packed_cwl = pack_cwl(cwl_path)
-    cwl_target_path = get_path("wf", cwl_target=cwl_target_name)
-    if os.path.exists(cwl_target_path):
+def import_wf(wf_path, wf_type, name=None):
+    assert wf_type in supported_workflow_types, "Provided workflow type \"{wf_type}\" is not supported."
+    if name is None:
+        name = os.path.splitext(os.path.basename(wf_path))[0]
+    if os.path.splitext(name)[1] in allowed_extensions_by_type[wf_type]:
+        name = os.path.splitext(name)[0]
+    wf_target_name = f"{name}.{supported_workflow_exts[wf_type][0]}"
+    wf_target_path = get_path("wf", wf_target=wf_target_name)
+    if wf_type == "cwl":
         try:
-            os.remove(cwl_target_path)
+            packed_cwl = pack_cwl(cwl_path)
         except Exception as e:
-            raise AssertionError("Could not remove existing cwl file.")
-    try:
-        with open(cwl_target_path, 'w') as cwl_file:
-            json.dump(packed_cwl, cwl_file)
-    except Exception as e:
-        raise AssertionError("Could not write CWL file.")
-    job_templ_filepath = get_path("job_templ", cwl_target=cwl_target_name)
+            raise AssertionError(
+                "The provided CWL document is not valid, the error was: {}".format(str(e))
+            )
+        if os.path.exists(wf_target_path):
+            try:
+                os.remove(wf_target_path)
+            except Exception as e:
+                raise AssertionError("Could not remove existing cwl file.")
+        try:
+            with open(wf_target_path, 'w') as cwl_file:
+                json.dump(packed_cwl, cwl_file)
+        except Exception as e:
+            raise AssertionError("Could not write CWL file.")
+    elif wf_type == "janis":
+        try:
+            _ = load_and_validate_janis(wf_path)
+        except Exception as e:
+            raise AssertionError(
+                "The provided Janis document is not valid, the error was: {}".format(str(e))
+            )
+        copyfile(wf_path, wf_target_path)
+    else:
+        try:
+            _ = load_and_validate_wdl(wf_path)
+        except Exception as e:
+            raise AssertionError(
+                "The provided WDL document is not valid, the error was: {}".format(str(e))
+            )
+        copyfile(wf_path, wf_target_path)
+    job_templ_filepath = get_path("job_templ", wf_target=wf_target_name)
     generate_job_template_from_cwl(
-        workflow_file=cwl_target_path, 
-        wf_type="CWL",
+        workflow_file=wf_target_path, 
+        wf_type=wf_type,
         output_file=job_templ_filepath, 
         show_please_fill=True
     )
-    
-def import_janis(janis_script_path, name=None, name_in_janis_script=None):
-    if name is None:
-        name = name_in_janis_script if not name_in_janis_script is None \
-            else os.path.splitext(os.path.basename(janis_script_path))[0]
-    if os.path.splitext(name)[1] in allowed_extensions_by_type["janis"]:
-        name = os.path.splitext(name)[0]
     
 def get_run_ids(job_id):
     exec_dir = app.config["EXEC_DIR"]
