@@ -152,7 +152,7 @@ To get an example config file, run the following command:
 - **TEMP_DIR**:  
     Directory for temporary files.  
     *Default*: a subfolder "cwlab/temp" in the home directory
-- **CWL_DIR**:  
+- **WF_DIR**:  
     Directory for saving CWL documents.  
     *Default*: a subfolder "cwlab/temp" in the home directory
 - **EXEC_DIR**:  
@@ -232,7 +232,7 @@ WEB_SERVER_PORT: 5000
 DEBUG: False  
 
 TEMP_DIR: '/home/cwlab_user/cwlab/temp'
-CWL_DIR: '/home/cwlab_user/cwlab/cwl'
+WF_DIR: '/home/cwlab_user/cwlab/cwl'
 EXEC_DIR: '/home/cwlab_user/cwlab/exec'
 INPUT_DIR: '/home/cwlab_user/cwlab/input'
 DB_DIR: '/home/cwlab_user/cwlab/db'
@@ -269,7 +269,7 @@ WEB_SERVER_PORT: 5000
 DEBUG: False  
 
 TEMP_DIR: '/home/cwlab_user/cwlab/temp'
-CWL_DIR: '/home/cwlab_user/cwlab/cwl'
+WF_DIR: '/home/cwlab_user/cwlab/cwl'
 EXEC_DIR: '/home/cwlab_user/cwlab/exec'
 INPUT_DIR: '/home/cwlab_user/cwlab/input'
 DB_DIR: '/home/cwlab_user/cwlab/db'

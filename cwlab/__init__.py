@@ -46,7 +46,7 @@ def setup_working_dirs():
     global app
     for param in [
         'TEMP_DIR',
-        'CWL_DIR',
+        'WF_DIR',
         'EXEC_DIR',
         'DB_DIR',
         'LOG_DIR'

@@ -393,7 +393,7 @@ Linux / MacOs:
     DEBUG: False  
 
     TEMP_DIR: '/home/cwlab_user/cwlab/temp'
-    CWL_DIR: '/home/cwlab_user/cwlab/cwl'
+    WF_DIR: '/home/cwlab_user/cwlab/cwl'
     EXEC_DIR: '/home/cwlab_user/cwlab/exec'
     INPUT_DIR: '/home/cwlab_user/cwlab/input'
     DB_DIR: '/home/cwlab_user/cwlab/db'
@@ -431,7 +431,7 @@ Windows:
     DEBUG: False  
 
     TEMP_DIR: '/home/cwlab_user/cwlab/temp'
-    CWL_DIR: '/home/cwlab_user/cwlab/cwl'
+    WF_DIR: '/home/cwlab_user/cwlab/cwl'
     EXEC_DIR: '/home/cwlab_user/cwlab/exec'
     INPUT_DIR: '/home/cwlab_user/cwlab/input'
     DB_DIR: '/home/cwlab_user/cwlab/db'
