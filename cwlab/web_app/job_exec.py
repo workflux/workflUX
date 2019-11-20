@@ -48,11 +48,11 @@ def get_job_list():
                         job_id + "\". Ignoring."
                 } )
                 continue
-            cwl_target = job_param_sheet_attributes["CWL"]
+            wf_target = job_param_sheet_attributes["CWL"]
             jobs.append({
                 "job_id": job_id,
                 "job_abs_path": job_dir,
-                "cwl_target": cwl_target
+                "wf_target": wf_target
                 })
     except AssertionError as e:
         messages.append( handle_known_error(e, return_front_end_message=True))

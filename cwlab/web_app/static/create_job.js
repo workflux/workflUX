@@ -910,7 +910,7 @@ class JobParamFormHTML extends React.Component {
                 statusValueDuringRequest: "loading",
                 messageVar: "serverMessages",
                 sendData: {
-                    cwl_target: this.props.cwlTarget,
+                    wf_target: this.props.cwlTarget,
                     param_modes: this.props.param_modes,
                     run_mode: this.props.run_mode, 
                     run_names: this.props.run_names.filter((r) => r != "")
@@ -963,7 +963,7 @@ class JobParamFormHTML extends React.Component {
             sendData: {
                 param_values: paramValues,
                 param_configs: this.state.paramConfigs,
-                cwl_target: this.props.cwlTarget,
+                wf_target: this.props.cwlTarget,
                 job_id: this.props.jobId,
                 validate_paths: this.props.validatePaths,
                 search_paths: this.props.searchPaths,
@@ -1244,7 +1244,7 @@ class JobParamFormSpreadsheet extends React.Component {
             statusValueDuringRequest: "downloading",
             messageVar: "sheetFormMessages",
             sendData: {
-                cwl_target: this.props.cwlTarget,
+                wf_target: this.props.cwlTarget,
                 param_modes: this.props.param_modes,
                 run_mode: this.props.run_mode, 
                 run_names: this.props.run_names.filter((r) => r != ""),
@@ -1691,7 +1691,7 @@ class JobTemplConfigInfoAjax extends React.Component {
             <AjaxComponent
                 key={this.props.cwlTarget}
                 requestRoute={routeGetJobTemplConfigInfo}
-                sendData={ {cwl_target: this.props.cwlTarget} }
+                sendData={ {wf_target: this.props.cwlTarget} }
                 buildContentOnSuccess={this.buildContentOnSuccess}
                 loaderSize="large"
                 loaderMessage="Loading template infos."
@@ -1712,7 +1712,7 @@ class JobTemplList extends React.Component {
     }
 
     render() {
-        const itemValues = this.props.templFilesInfo.map( (tf) => tf.cwl_target);
+        const itemValues = this.props.templFilesInfo.map( (tf) => tf.wf_target);
         const itemNames = itemValues; // here no distinction between values and names neccessary
         let itemContent = (
             <div>

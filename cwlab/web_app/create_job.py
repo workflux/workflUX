@@ -47,9 +47,9 @@ def get_job_templ_config_info():    # returns all parmeter and its default mode 
     template_attributes = []
     try:
         login_required()
-        cwl_target = request.get_json()["cwl_target"]
-        param_config_info = get_job_templ_info("config", cwl_target)
-        template_attributes = get_job_templ_info("attributes", cwl_target)
+        wf_target = request.get_json()["wf_target"]
+        param_config_info = get_job_templ_info("config", wf_target)
+        template_attributes = get_job_templ_info("attributes", wf_target)
     except AssertionError as e:
         messages.append( handle_known_error(e, return_front_end_message=True))
     except Exception as e:
@@ -73,7 +73,7 @@ def generate_param_form_sheet():    # generate param form sheet with data sent
         request_json = request.get_json() 
         sheet_format = request_json["sheet_format"]
         job_id = request_json["job_id"]
-        cwl_target = request_json["cwl_target"]
+        wf_target = request_json["wf_target"]
         param_modes = request_json["param_modes"]
         run_names = request_json["run_names"]
         run_mode = request_json["run_mode"]
@@ -87,12 +87,12 @@ def generate_param_form_sheet():    # generate param form sheet with data sent
         print(output_file_path)
         gen_form_sheet(
             output_file_path = output_file_path,
-            template_config_file_path = get_path("job_templ", cwl_target=cwl_target),
+            template_config_file_path = get_path("job_templ", wf_target=wf_target),
             has_multiple_runs=run_mode,
             run_names=run_names,
             param_is_run_specific=param_modes,
             show_please_fill=True,
-            config_attributes={"CWL": cwl_target}
+            config_attributes={"CWL": wf_target}
         )
         data["get_form_sheet_href"] = url_for("get_param_form_sheet", job_id=job_id)
     except AssertionError as e:
@@ -207,7 +207,7 @@ def send_filled_param_values():
         request_json = request.get_json()
         param_values = request_json["param_values"]
         param_configs = request_json["param_configs"]
-        cwl_target = request_json["cwl_target"]
+        wf_target = request_json["wf_target"]
 
         job_id = request_json["job_id"]
         import_filepath = get_path("job_param_sheet_temp", job_id=job_id, param_sheet_format="xlsx")
@@ -233,7 +233,7 @@ def send_filled_param_values():
             search_paths=search_paths, 
             search_subdirs=include_subdirs_for_searching, 
             input_dir=search_dir,
-            config_attributes={"CWL": cwl_target}
+            config_attributes={"CWL": wf_target}
         )
     except AssertionError as e:
         messages.append(handle_known_error(
@@ -344,12 +344,12 @@ def get_param_values():
         request_json = request.get_json() 
         param_values, configs = gen_form_sheet(
             output_file_path = None,
-            template_config_file_path = get_path("job_templ", cwl_target=request_json["cwl_target"]),
+            template_config_file_path = get_path("job_templ", wf_target=request_json["wf_target"]),
             has_multiple_runs= request_json["run_mode"],
             run_names=request_json["run_names"],
             param_is_run_specific=request_json["param_modes"],
             show_please_fill=True,
-            config_attributes={"CWL": request_json["cwl_target"]}
+            config_attributes={"CWL": request_json["wf_target"]}
         )
         data = {
             "param_values": param_values,

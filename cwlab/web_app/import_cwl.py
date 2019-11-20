@@ -13,8 +13,8 @@ from shutil import rmtree
 from json import loads as json_loads
 from cwlab.log import handle_known_error, handle_unknown_error
 
-@app.route('/upload_cwl/', methods=['POST'])
-def upload_cwl():
+@app.route('/upload_wf/', methods=['POST'])
+def upload_wf():
     messages = []
     data = []
     try:
@@ -25,13 +25,14 @@ def upload_cwl():
 
         assert import_file.filename != '', "No file specified."
 
-        assert is_allowed_file(import_file.filename, type="CWL"), ( 
-            "Wrong file type. Only files with following extensions are allowed: " + 
-            ", ".join(allowed_extensions_by_type["CWL"])
-        )
         
         # save the file to the CWL directory:
         metadata = json_loads(request.form.get("meta"))
+        wf_type = metadata["wf_type"]
+        assert is_allowed_file(import_file.filename, type=wf_type), ( 
+            "Wrong file type. Only files with following extensions are allowed: " + 
+            ", ".join(allowed_extensions_by_type[wf_type])
+        )
         import_filename = secure_filename(import_file.filename) 
         
         temp_dir = make_temp_dir()

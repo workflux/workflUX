@@ -193,7 +193,7 @@ def get_job_ids():
 def get_job_name_from_job_id(job_id):
     return match('(\d+)_(\d+)_(.+)', job_id).group(3)
 
-def get_path(which, job_id=None, run_id=None, param_sheet_format=None, cwl_target=None):
+def get_path(which, job_id=None, run_id=None, param_sheet_format=None, wf_target=None):
     if which == "job_dir":
         path = os.path.join(app.config["EXEC_DIR"], job_id)
     elif which == "runs_out_dir":
@@ -223,9 +223,9 @@ def get_path(which, job_id=None, run_id=None, param_sheet_format=None, cwl_targe
     elif which == "run_yaml":
         path = os.path.join(app.config["EXEC_DIR"], job_id, "runs_params", run_id + ".yaml")
     elif which == "job_templ":
-        path = os.path.join(app.config['WF_DIR'], cwl_target + ".job_templ.xlsx")
+        path = os.path.join(app.config['WF_DIR'], wf_target + ".job_templ.xlsx")
     elif which == "cwl":
-        path = os.path.join(app.config['WF_DIR'], cwl_target)
+        path = os.path.join(app.config['WF_DIR'], wf_target)
     elif which == "runs_log_dir":
         path = os.path.join(app.config['EXEC_DIR'], job_id, "runs_log")
     elif which == "run_log":
@@ -317,15 +317,15 @@ def get_job_templates():
         search_string=".job_templ",
         ignore_subdirs=True
     )
-    # add field for cwl_target
+    # add field for wf_target
     for i, t  in enumerate(templates):
-        templates[i]["cwl_target"] = sub(r'\.job_templ$', '', t["file_nameroot"])
+        templates[i]["wf_target"] = sub(r'\.job_templ$', '', t["file_nameroot"])
     return templates
 
     
-def get_job_templ_info(which, cwl_target=None, job_templ_filepath=None):
+def get_job_templ_info(which, wf_target=None, job_templ_filepath=None):
     if job_templ_filepath is None:
-        job_templ_filepath = get_path("job_templ", cwl_target=cwl_target)
+        job_templ_filepath = get_path("job_templ", wf_target=wf_target)
     if which =="config":
         info = get_param_config_info_from_xls(job_templ_filepath)
     elif which =="attributes":
