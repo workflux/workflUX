@@ -7,6 +7,26 @@ from .read_wf import supported_workflow_exts
 
 supported_workflow_types = supported_workflow_exts.keys()
 
+def make_CWL_File_or_Directory(path, is_dir=False, secondary_files=[""]):
+    cwl_class = {
+        "class": "Directory" if is_dir else "File",
+        "path": path
+    }
+    if (not is_dir) and secondary_files[0] != "":
+        cwl_sec_file_array = []
+        for sec_ext in secondary_files:
+            if sec_ext[0] == "^":
+                capture_sec_ext = re.search('^(\^+)(.*)', sec_ext)
+                n_exts_to_rm = len(capture_sec_ext.group(1))
+                for idx in range(0,n_exts_to_rm):
+                    value_root = os.path.splitext(path)[0]
+                sec_file_item_path = path + capture_sec_ext.group(2)
+            else:
+                sec_file_item_path = path + sec_ext
+            cwl_sec_file_array.append( {"class": "File", "path": sec_file_item_path } )
+        cwl_class["secondaryFiles"] = cwl_sec_file_array
+    return cwl_class
+
 def write_run( type_matched_params, configs, wf_type=None, metadata=None, output_dir=".", output_basename="" ):
     if output_basename == "":
         output_basename = "run"
@@ -14,7 +34,7 @@ def write_run( type_matched_params, configs, wf_type=None, metadata=None, output
         assert metadata is not None, "Please specify either wf_type or metadata."
         assert "workflow_type" in metadata.keys(), "No workflow type specified in the metadata."
         wf_type = metadata["workflow_type"]
-    assert wf_type in supported_workflow_types, "Unkown workflow type \"{}\" specified, only following types are supported: ".format(
+    assert wf_type in supported_workflow_types, "Unkown workflow type \"{}\" specified, only following types are supported: {}".format(
         wf_type,
         ", ".join(supported_workflow_types)
     )
@@ -22,24 +42,22 @@ def write_run( type_matched_params, configs, wf_type=None, metadata=None, output
         output = {}
         for param in type_matched_params.keys():
             if configs[param]["type"] in ["File", "Directory"]:
-                output[param] = {
-                    "class": configs[param]["type"],
-                    "path": type_matched_params[param]
-                }
-                if configs[param]["type"] == "File" and configs[param]["secondary_files"][0] != "":
-                    cwl_sec_file_array = []
-                    for sec_ext in configs[param]["secondary_files"]:
-                        if sec_ext[0] == "^":
-                            capture_sec_ext = re.search('^(\^+)(.*)', sec_ext)
-                            n_exts_to_rm = len(capture_sec_ext.group(1))
-                            value_root = type_matched_params[param] 
-                            for idx in range(0,n_exts_to_rm):
-                                value_root = os.path.splitext(value_root)[0]
-                            sec_file_item_path =value_root + capture_sec_ext.group(2)
-                        else:
-                            sec_file_item_path = type_matched_params[param] + sec_ext
-                        cwl_sec_file_array.append( {"class": "File", "path": sec_file_item_path } )
-                    output[param]["secondaryFiles"] = cwl_sec_file_array
+                if isinstance(type_matched_params[param], list):
+                    output[param] = []
+                    for item in type_matched_params[param]:
+                        output[param].append(
+                            make_CWL_File_or_Directory(
+                                item,
+                                configs[param]["type"] == "Directory",
+                                configs[param]["secondary_files"]
+                            )
+                        )
+                else:
+                    output[param] = make_CWL_File_or_Directory(
+                        type_matched_params[param],
+                        configs[param]["type"] == "Directory",
+                        configs[param]["secondary_files"]
+                    )
             else:
                 output[param] = type_matched_params[param]
     else:

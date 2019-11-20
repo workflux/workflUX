@@ -216,10 +216,10 @@ def get_path(which, job_id=None, run_id=None, param_sheet_format=None, wf_target
     elif which == "job_wf":
         if wf_type is None:
             try:
-                exts = [supported_workflow_exts["supported_workflow_exts"][0] for wf_type in supported_workflow_exts.key()]
+                exts = [supported_workflow_exts["supported_workflow_exts"][0] for wf_type in supported_workflow_exts.keys()]
                 path = fetch_files_in_dir(
                     os.path.join(app.config["EXEC_DIR"], job_id), 
-                    ext, "main"
+                    exts, "main"
                 )[0]
             except Exception as e:
                 raise AssertionError(f"No workflow found in exec dir of job \"{job_id}\"")
