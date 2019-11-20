@@ -74,7 +74,7 @@ def create_job(job_id, job_param_sheet=None, run_yamls=None, cwl=None,
     else:
         cwl = get_path("cwl", cwl_target=cwl)
     # copy cwl document:
-    copyfile(cwl, get_path("job_cwl", job_id=job_id))
+    copyfile(cwl, get_path("job_wf", job_id=job_id))
 
     # make output directories:
     run_ids = get_run_ids(job_id)
@@ -156,7 +156,7 @@ def exec_runs(job_id, run_ids, exec_profile_name, user_id=None, max_parrallel_ex
         exec_db_entry[run_id] = Exec(
             job_id=job_id,
             run_id=run_id,
-            cwl=get_path("job_cwl", job_id=job_id),
+            cwl=get_path("job_wf", job_id=job_id),
             yaml=get_path("run_yaml", job_id=job_id, run_id=run_id),
             out_dir=get_path("run_out_dir", job_id=job_id, run_id=run_id),
             global_temp_dir=app.config["TEMP_DIR"],

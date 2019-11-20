@@ -208,7 +208,7 @@ def get_path(which, job_id=None, run_id=None, param_sheet_format=None, cwl_targe
             hits = fetch_files_in_dir(path, allowed_extensions_by_type["spreadsheet"], "param_sheet")
             assert len(hits) != 0, "No spreadsheet found for job " + job_id
             path = os.path.join(path, hits[0]["file_name"])
-    elif which == "job_cwl":
+    elif which == "job_wf":
         path = os.path.join(app.config["EXEC_DIR"], job_id, "main.cwl")
     elif which == "job_param_sheet_temp":
         if param_sheet_format:
