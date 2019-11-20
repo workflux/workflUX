@@ -6,6 +6,7 @@ from . import app
 from cwlab.wf_input.web_interface import read_template_attributes as read_template_attributes_from_xls
 from cwlab.wf_input.web_interface import get_param_config_info as get_param_config_info_from_xls
 from cwlab.wf_input import generate_xls_from_cwl as generate_job_template_from_cwl
+from cwlab.wf_input.read_wf import supported_workflow_exts
 from cwlab import db
 from random import random, choice as random_choice
 from pathlib import Path
@@ -126,11 +127,11 @@ def read_file_content(
     return str(content), end_pos
 
 allowed_extensions_by_type = {
-    "CWL": ["cwl", "yaml", "yml", "CWL"],
     "spreadsheet": ["xlsx", "ods", "xls"],
-    "zip": ["zip"],
-    "janis": "py"
-}
+    "zip": ["zip"]
+}.update(
+    supported_workflow_exts
+)
 
 def zip_dir(dir_path):
     zip_path = dir_path + ".cwlab.zip"
