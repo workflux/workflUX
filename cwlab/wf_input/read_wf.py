@@ -3,7 +3,7 @@ from .read_janis import read_config_from_janis_file
 from .read_wdl import read_config_from_wdl_file
 
 supported_workflow_exts = {
-    "CWL": ["CWL", "cwl"],
+    "CWL": ["cwl", "CWL"],
     "janis": ["py"],
     "WDL": ["wdl", "WDL"]
 }
