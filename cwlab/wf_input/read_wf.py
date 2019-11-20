@@ -20,7 +20,7 @@ def get_workflow_type_from_file_ext(workflow_file):
     else:
         raise AssertionError("Could not determine workflow type from file name.")
     return wf_type
-
+    
 def read_config_from_workflow(workflow_file, wf_type):
     if wf_type is None:
         wf_type = get_workflow_type_from_file_ext(wf_type)
