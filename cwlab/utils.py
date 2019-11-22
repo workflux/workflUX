@@ -19,7 +19,7 @@ import json
 from string import ascii_letters, digits
 from pkg_resources import get_distribution
 from urllib import request as url_request
-from shutil import copyfileobj, copyfile
+from shutil import copyfileobj, copyfile, rmtree
 from werkzeug import secure_filename
 from urllib.request import urlopen
 cwltool_version = get_distribution("cwltool").version
@@ -241,6 +241,8 @@ def get_path(which, job_id=None, run_id=None, param_sheet_format=None, wf_target
         path = os.path.join(app.config['WF_DIR'], wf_target + ".job_templ.xlsx")
     elif which == "wf":
         path = os.path.join(app.config['WF_DIR'], wf_target)
+    elif which == "wf_imports_zip":
+        path = os.path.join(app.config['WF_DIR'], f"{wf_target}.imports.zip")
     elif which == "runs_log_dir":
         path = os.path.join(app.config['EXEC_DIR'], job_id, "runs_log")
     elif which == "run_log":
@@ -280,7 +282,118 @@ def pack_cwl(cwl_path):
         packed_cwl = json.loads(print_pack(document_loader, processobj, uri, metadata))
     return packed_cwl
 
-def import_wf(wf_path, wf_type=None, name=None):
+def import_cwl(wf_path, name):
+    wf_target_name = f"{name}.{supported_workflow_exts["CWL"][0]}"
+    wf_target_path = get_path("wf", wf_target=wf_target_name)
+    assert not os.path.exists(wf_target_path), "The workflow with name \"{wf_target_name}\" already exists."
+    try:
+        packed_cwl = pack_cwl(wf_path)
+    except Exception as e:
+        raise AssertionError(
+            "The provided CWL document is not valid, the error was: {}".format(str(e))
+        )
+    temp_dir = make_temp_dir()
+    job_templ_path = os.path.join(temp_dir, "job_templ.xlsx")
+    generate_job_template_from_cwl(
+        workflow_file=wf_path, 
+        wf_type="CWL",
+        output_file=job_templ_path, 
+        show_please_fill=True
+    )
+    try:
+        with open(wf_target_path, 'w') as cwl_file:
+            json.dump(packed_cwl, cwl_file)
+    except Exception as e:
+        raise AssertionError("Could not write CWL file.")
+    job_templ_target_path = get_path("job_templ", wf_target=wf_target_name)
+    copyfile(job_templ_path, job_templ_target_path)
+    rmtree(temp_dir)
+
+def import_wdl(wf_path, name, wf_imports_zip_path=None):
+    wf_target_name = f"{name}.{supported_workflow_exts["WDL"][0]}"
+    wf_target_path = get_path("wf", wf_target=wf_target_name)
+    assert not os.path.exists(wf_target_path), "The workflow with name \"{wf_target_name}\" already exists."
+    try:
+        _ = load_and_validate_wdl(wf_path)
+    except Exception as e:
+        raise AssertionError(
+            "The provided WDL document is not valid, the error was: {}".format(str(e))
+        )
+    temp_dir = make_temp_dir()
+    job_templ_path = os.path.join(temp_dir, "job_templ.xlsx")
+    generate_job_template_from_cwl(
+        workflow_file=wf_path, 
+        wf_type="WDL",
+        output_file=job_template_path, 
+        show_please_fill=True
+    )
+    copyfile(wf_path, wf_target_path)
+    job_templ_target_path = get_path("job_templ", wf_target=wf_target_name)
+    copyfile(job_templ_path, job_templ_target_path)
+    if wf_imports_zip_path is not None:
+        wf_imports_zip_target_path = get_path("wf_imports_zip", wf_target=wf_target_name)
+        copyfile(wf_imports_zip_path, wf_imports_zip_target_path)
+    rmtree(temp_dir)
+    
+
+def import_janis(wf_path, name, import_as_janis=True, translate_to_cwl=True, translate_to_wdl=True):
+    wf_target_name = f"{name}.{supported_workflow_exts["janis"][0]}"
+    wf_target_path = get_path("wf", wf_target=wf_target_name)
+    try:
+        _ = load_and_validate_janis(wf_path)
+    except Exception as e:
+        raise AssertionError(
+            "The provided Janis document is not valid, the error was: {}".format(str(e))
+        )
+    if import_as_janis:
+        assert not os.path.exists(wf_target_path), "The workflow with name \"{wf_target_name}\" already exists."
+        temp_dir = make_temp_dir()
+        job_templ_path = get_path("job_templ", wf_target=wf_target_name)
+        generate_job_template_from_cwl(
+            workflow_file=wf_path, 
+            wf_type="janis",
+            output_file=job_templ_path, 
+            show_please_fill=True
+        )
+        copyfile(wf_path, wf_target_path)
+        job_templ_target_path = get_path("job_templ", wf_target=wf_target_name)
+        copyfile(job_templ_path, job_templ_target_path)
+        rmtree(temp_dir)
+    if translate_to_cwl or translate_to_wdl:
+        temp_dir = make_temp_dir()
+        workflow = get_workflow_from_file(file=janis_script)
+        if translate_to_cwl:
+            cwl_dir=os.path.join(temp_dir, "cwl")
+            cwl_path=os.path.join(cwl_dir, f"{workflow.id()}.cwl")
+            try:
+                _ = workflow.translate("cwl", to_console=False, to_disk=True, should_zip=False, export_path=cwl_dir)
+                assert os.exists(cwl_path), "Could not find translated CWL file."
+            except Exception as e:
+                raise AssertionError(
+                    "Could not translate to cwl, the error was: {}".format(str(e))
+                )
+            import_cwl(cwl_path, name)
+        if translate_to_wdl:
+            wdl_dir=os.path.join(temp_dir, "wdl")
+            wdl_path=os.path.join(wdl_dir, f"{workflow.id()}.wdl")
+            wdl_import_path=os.path.join(wdl_dir, "tools.zip")
+            try:
+                _ = workflow.translate("wdl", to_console=False, to_disk=True, should_zip=False, export_path=wdl_dir)
+                assert os.exists(wdl_path), "Could not find translated wdl file."
+            except Exception as e:
+                raise AssertionError(
+                    "Could not translate to wdl, the error was: {}".format(str(e))
+                )
+            wdl_import_path = wdl_import_path if os.path.exists(wdl_import_path) else None
+            import_wdl(wdl_path, name, wf_imports_zip_path)
+
+def import_wf(
+    wf_path, wf_type=None, name=None,
+    import_as_janis=True, # only if wf_type == "janis"
+    translate_to_cwl=True, # only if wf_type == "janis"
+    translate_to_wdl=True, # only if wf_type == "janis"
+    wf_imports_zip_path=None # only if wf_type == "WDL"
+):
     if wf_type is None:
         wf_type = get_workflow_type_from_file_ext(wf_path)
     else:
@@ -289,51 +402,14 @@ def import_wf(wf_path, wf_type=None, name=None):
         name = os.path.splitext(os.path.basename(wf_path))[0]
     if os.path.splitext(name)[1] in supported_workflow_exts[wf_type]:
         name = os.path.splitext(name)[0]
-    wf_target_name = f"{name}.{supported_workflow_exts[wf_type][0]}"
-    wf_target_path = get_path("wf", wf_target=wf_target_name)
     if wf_type == "CWL":
-        try:
-            packed_cwl = pack_cwl(wf_path)
-        except Exception as e:
-            raise AssertionError(
-                "The provided CWL document is not valid, the error was: {}".format(str(e))
-            )
-        if os.path.exists(wf_target_path):
-            try:
-                os.remove(wf_target_path)
-            except Exception as e:
-                raise AssertionError("Could not remove existing cwl file.")
-        try:
-            with open(wf_target_path, 'w') as cwl_file:
-                json.dump(packed_cwl, cwl_file)
-        except Exception as e:
-            raise AssertionError("Could not write CWL file.")
+        import_cwl(wf_path, name)
     elif wf_type == "janis":
-        try:
-            _ = load_and_validate_janis(wf_path)
-        except Exception as e:
-            raise AssertionError(
-                "The provided Janis document is not valid, the error was: {}".format(str(e))
-            )
-        copyfile(wf_path, wf_target_path)
+        import_janis(wf_path, name, import_as_janis, translate_to_cwl, translate_to_wdl)
     else:
-        try:
-            _ = load_and_validate_wdl(wf_path)
-        except Exception as e:
-            raise AssertionError(
-                "The provided WDL document is not valid, the error was: {}".format(str(e))
-            )
-        copyfile(wf_path, wf_target_path)
-    job_templ_filepath = get_path("job_templ", wf_target=wf_target_name)
-    generate_job_template_from_cwl(
-        workflow_file=wf_target_path, 
-        wf_type=wf_type,
-        output_file=job_templ_filepath, 
-        show_please_fill=True
-    )
+        import_wdl(wf_path, name, wf_imports_zip_path)
     
 def get_run_ids(job_id):
-    exec_dir = app.config["EXEC_DIR"]
     runs_yaml_dir = get_path("runs_yaml_dir", job_id)
     run_yamls = fetch_files_in_dir(
         dir_path=runs_yaml_dir, 
@@ -357,13 +433,13 @@ def get_job_templates():
     return templates
 
     
-def get_job_templ_info(which, wf_target=None, job_templ_filepath=None):
-    if job_templ_filepath is None:
-        job_templ_filepath = get_path("job_templ", wf_target=wf_target)
+def get_job_templ_info(which, wf_target=None, job_templ_path=None):
+    if job_templ_path is None:
+        job_templ_path = get_path("job_templ", wf_target=wf_target)
     if which =="config":
-        info = get_param_config_info_from_xls(job_templ_filepath)
+        info = get_param_config_info_from_xls(job_templ_path)
     elif which =="metadata":
-        info = read_template_metadata_from_xls(job_templ_filepath)
+        info = read_template_metadata_from_xls(job_templ_path)
     return info
 
 def output_example_config():
