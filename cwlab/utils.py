@@ -295,18 +295,20 @@ def import_cwl(wf_path, name):
             "The provided CWL document is not valid, the error was: {}".format(str(e))
         )
     temp_dir = make_temp_dir()
+    wf_temp_path = os.path.join(temp_dir, "packed.cwl")
+    try:
+        with open(wf_temp_path, 'w') as cwl_file:
+            json.dump(packed_cwl, cwl_file)
+    except Exception as e:
+        raise AssertionError("Could not write CWL file.")
     job_templ_path = os.path.join(temp_dir, "job_templ.xlsx")
     generate_job_template_from_cwl(
-        workflow_file=wf_path, 
+        workflow_file=wf_temp_path, 
         wf_type="CWL",
         output_file=job_templ_path, 
         show_please_fill=True
     )
-    try:
-        with open(wf_target_path, 'w') as cwl_file:
-            json.dump(packed_cwl, cwl_file)
-    except Exception as e:
-        raise AssertionError("Could not write CWL file.")
+    copyfile(wf_temp_path, wf_target_path)
     job_templ_target_path = get_path("job_templ", wf_target=wf_target_name)
     copyfile(job_templ_path, job_templ_target_path)
     rmtree(temp_dir)
