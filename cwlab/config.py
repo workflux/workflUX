@@ -110,12 +110,12 @@ class Config(object):
         )
         self.ADD_INPUT_DIRS = normalize_path_dict(
             self.CONFIG_FILE_content.get('ADD_INPUT_DIRS') or 
-            {"ROOT": "/"},
+            {},
             correct_symlinks=self.CORRECT_SYMLINKS
         )
         self.ADD_INPUT_AND_UPLOAD_DIRS = normalize_path_dict(
             self.CONFIG_FILE_content.get('ADD_INPUT_AND_UPLOAD_DIRS') or 
-            {"ROOT": "/"},
+            {},
             correct_symlinks=self.CORRECT_SYMLINKS
         )
 
