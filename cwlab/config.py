@@ -96,6 +96,12 @@ class Config(object):
             os.path.join( cwlab_fallback_dir, "exec"),
             correct_symlinks=self.CORRECT_SYMLINKS
         )
+        self.DEFAULT_INPUT_DIR = normalize_path(
+            os.environ.get('CWLAB_DEFAULT_INPUT_DIR') or 
+            self.CONFIG_FILE_content.get('DEFAULT_INPUT_DIR') or  
+            os.path.join( cwlab_fallback_dir, "input"),
+            correct_symlinks=self.CORRECT_SYMLINKS
+        )
         self.DB_DIR = normalize_path(
             os.environ.get('CWLAB_DB_DIR') or 
             self.CONFIG_FILE_content.get('DB_DIR') or  
@@ -107,8 +113,8 @@ class Config(object):
             {"ROOT": "/"},
             correct_symlinks=self.CORRECT_SYMLINKS
         )
-        self.ADD_INPUT_UPLOAD_DIRS = normalize_path_dict(
-            self.CONFIG_FILE_content.get('ADD_INPUT_UPLOAD_DIRS') or 
+        self.ADD_INPUT_AND_UPLOAD_DIRS = normalize_path_dict(
+            self.CONFIG_FILE_content.get('ADD_INPUT_AND_UPLOAD_DIRS') or 
             {"ROOT": "/"},
             correct_symlinks=self.CORRECT_SYMLINKS
         )
