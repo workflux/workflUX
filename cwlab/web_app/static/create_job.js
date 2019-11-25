@@ -1311,7 +1311,7 @@ class JobParamFormSpreadsheet extends React.Component {
                             buttonLabel="import & validate"
                             oneLine={true}
                             disabled={this.state.file_transfer_status != "none"}
-                            meta_data={ 
+                    metaData={ 
                                 {
                                     job_id: this.props.jobId,
                                     validate_paths: this.props.validatePaths,

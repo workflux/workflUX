@@ -1231,7 +1231,7 @@ class BrowseDir extends React.Component {
                                         buttonLabel="upload"
                                         oneLine={true}
                                         disabled={this.state.actionStatus != "none"}
-                                        meta_data={ 
+                                        metaData={ 
                                             {
                                                 job_id: this.props.jobId,
                                                 dir_path: this.state.dirPath
@@ -1445,7 +1445,7 @@ class FileUploadComponent extends React.Component {
         // props.instruction short instructive statement
         // props.oneLine if true, everything will be in one line
         // props.diabled if true, upload button disabled
-        // props.meta_data meta data send together with the file
+        // props.metaData meta data send together with the file
         // props.onUploadCompletion function to exectute on completion
         // props.buttonLabel
         // props.showProgress
