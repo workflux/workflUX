@@ -2,7 +2,7 @@
 // import styled from "styled-components"
 
 function get_time_str(){
-    date = new Date()
+    const date = new Date()
     return(date.toLocaleTimeString())
 }
 
