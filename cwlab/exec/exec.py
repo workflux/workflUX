@@ -33,6 +33,9 @@ def make_job_dir_tree(job_id):
     runs_input_dir = get_path("runs_input_dir", job_id)
     if not os.path.exists(runs_input_dir):
         os.mkdir(runs_input_dir)
+    job_wf_dir = get_path("job_wf_dir", job_id)
+    if not os.path.exists(job_wf_dir):
+        os.mkdir(job_wf_dir)
 
 def create_job(job_id, job_param_sheet=None, run_yamls=None, wf_target=None,
     validate_paths=True, search_paths=False, search_subdirs=False, search_dir=None, sheet_format="xlsx"):

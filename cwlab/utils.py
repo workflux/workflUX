@@ -218,18 +218,19 @@ def get_path(which, job_id=None, run_id=None, param_sheet_format=None, wf_target
             hits = fetch_files_in_dir(path, allowed_extensions_by_type["spreadsheet"], "param_sheet")
             assert len(hits) != 0, "No spreadsheet found for job " + job_id
             path = os.path.join(path, hits[0]["file_name"])
+    elif which == "job_wf_dir":
+        path = os.path.join(app.config["EXEC_DIR"], job_id, "workflow")
     elif which == "job_wf":
         if wf_type is None:
-            try:
-                exts = [supported_workflow_exts["supported_workflow_exts"][0] for wf_type in supported_workflow_exts.keys()]
-                path = fetch_files_in_dir(
-                    os.path.join(app.config["EXEC_DIR"], job_id), 
-                    exts, "main"
-                )[0]
-            except Exception as e:
-                raise AssertionError(f"No workflow found in exec dir of job \"{job_id}\"")
+            exts = [supported_workflow_exts[wf_type][0] for wf_type in supported_workflow_exts.keys()]
+            hits = fetch_files_in_dir(
+                os.path.join(app.config["EXEC_DIR"], job_id, "workflow"), 
+                exts, "main", return_abspaths=True
+            )
+            assert len(hits) == 1, f"No workflow found in exec dir of job \"{job_id}\""
+            path = hits[0]["file_abspath"]
         else:
-            path = os.path.join(app.config["EXEC_DIR"], job_id, f"main.{supported_workflow_exts[wf_type][0]}")
+            path = os.path.join(app.config["EXEC_DIR"], job_id, "workflow", f"main.{supported_workflow_exts[wf_type][0]}")
     elif which == "job_param_sheet_temp":
         if param_sheet_format:
             path = os.path.join(app.config["EXEC_DIR"], job_id, "job_templ." + param_sheet_format)

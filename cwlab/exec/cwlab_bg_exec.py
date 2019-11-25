@@ -79,7 +79,7 @@ exec_db_entry = query_info_from_db("run_info")
 
 job_id = exec_db_entry.job_id
 run_id = exec_db_entry.run_id
-cwl = exec_db_entry.cwl
+wf_target = exec_db_entry.wf_target
 yaml = exec_db_entry.yaml
 out_dir = exec_db_entry.out_dir
 global_temp_dir = exec_db_entry.global_temp_dir
@@ -182,7 +182,7 @@ def prepare_shell():
     var_dict = {
         "JOB_ID": job_id,
         "RUN_ID": run_id,
-        "CWL": cwl,
+        "WORKFLOW": wf_target,
         "RUN_YAML": yaml,
         "OUTPUT_DIR": out_dir,
         "GLOBAL_TEMP_DIR": global_temp_dir,
