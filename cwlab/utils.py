@@ -290,7 +290,7 @@ def pack_cwl(cwl_path):
 def import_cwl(wf_path, name):
     wf_target_name = "{}.{}".format(name, supported_workflow_exts["CWL"][0])
     wf_target_path = get_path("wf", wf_target=wf_target_name)
-    assert not os.path.exists(wf_target_path), "The workflow with name \"{wf_target_name}\" already exists."
+    assert not os.path.exists(wf_target_path), f"The workflow with name \"{wf_target_name}\" already exists."
     try:
         packed_cwl = pack_cwl(wf_path)
     except Exception as e:
@@ -368,7 +368,7 @@ def import_janis(wf_path, name, import_as_janis=True, translate_to_cwl=True, tra
             "The provided Janis document is not valid, the error was: {}".format(str(e))
         )
     if import_as_janis:
-        assert not os.path.exists(wf_target_path), "The workflow with name \"{wf_target_name}\" already exists."
+        assert not os.path.exists(wf_target_path), f"The workflow with name \"{wf_target_name}\" already exists."
         temp_dir = make_temp_dir()
         job_templ_path = get_path("job_templ", wf_target=wf_target_name)
         generate_job_template_from_cwl(
