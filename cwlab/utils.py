@@ -13,6 +13,7 @@ from random import random, choice as random_choice
 from pathlib import Path
 import zipfile
 from WDL import load as load_and_validate_wdl
+from asyncio import set_event_loop, new_event_loop
 import json
 from string import ascii_letters, digits
 from pkg_resources import get_distribution
@@ -22,6 +23,8 @@ from werkzeug import secure_filename
 from urllib.request import urlopen
 from distutils.version import StrictVersion
 from importlib import reload
+import asyncio
+asyncio.set_event_loop(asyncio.new_event_loop())
 basedir = os.path.abspath(os.path.dirname(__file__))
 
 allowed_extensions_by_type = {
@@ -331,6 +334,7 @@ def import_wdl(wf_path, name, wf_imports_zip_path=None):
     else:
         wf_val_path = wf_path
     try:
+        set_event_loop(new_event_loop())
         _ = load_and_validate_wdl(wf_val_path)
     except Exception as e:
         raise AssertionError(
