@@ -39,7 +39,7 @@ def get_job_list():
             except AssertionError as e:
                 continue
                 
-            job_param_sheet_metadata = get_job_templ_info("metadata", job_templ_filepath=job_param_sheet)
+            job_param_sheet_metadata = get_job_templ_info("metadata", job_templ_path=job_param_sheet)
             if "workflow_name" not in job_param_sheet_metadata.keys() or job_param_sheet_metadata["workflow_name"] == "":
                 messages.append( { 
                     "time": get_time_string(),

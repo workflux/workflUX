@@ -42,7 +42,7 @@ def create_job(job_id, job_param_sheet=None, run_yamls=None, wf_target=None,
     if wf_target is None:
         job_param_sheet_dest_path = get_path("job_param_sheet", job_id=job_id, param_sheet_format=sheet_format)
         move(job_param_sheet, job_param_sheet_dest_path)
-        wf_target = get_job_templ_info("metadata", job_templ_filepath=job_param_sheet_dest_path)["workflow_name"]
+        wf_target = get_job_templ_info("metadata", job_templ_path=job_param_sheet_dest_path)["workflow_name"]
     wf_type = get_workflow_type_from_file_ext(wf_target)
 
     # make directories:
