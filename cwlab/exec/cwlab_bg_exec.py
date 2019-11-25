@@ -80,7 +80,7 @@ exec_db_entry = query_info_from_db("run_info")
 job_id = exec_db_entry.job_id
 run_id = exec_db_entry.run_id
 wf_target = exec_db_entry.wf_target
-yaml = exec_db_entry.yaml
+run_input = exec_db_entry.run_input
 out_dir = exec_db_entry.out_dir
 global_temp_dir = exec_db_entry.global_temp_dir
 log = exec_db_entry.log
@@ -183,7 +183,7 @@ def prepare_shell():
         "JOB_ID": job_id,
         "RUN_ID": run_id,
         "WORKFLOW": wf_target,
-        "RUN_INPUT": yaml,
+        "RUN_INPUT": run_input,
         "OUTPUT_DIR": out_dir,
         "GLOBAL_TEMP_DIR": global_temp_dir,
         "LOG_FILE": log,
