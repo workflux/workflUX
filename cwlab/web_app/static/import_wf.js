@@ -295,22 +295,22 @@ class ImportCWLRoot extends React.Component {
     constructor(props){
         super(props);
         this.state = {
-            importMethod: "wfFile"
+            importMethod: "cwlUrl"
         }
 
         this.importMethods = {
-            // cwlUrl: {
-            //     descr: "URL to public CWL document (e.g. from github)",
-            //     component: <ImportCwlUrl />
-            // },
+            cwlUrl: {
+                descr: "URL to public CWL document (e.g. from github)",
+                component: <ImportCwlUrl />
+            },
             wfFile: {
-                descr: "from file",
+                descr: "from CWL file",
                 component: <ImportWfFile />
             },
-            // cwlZip: {
-            //     descr: "from ZIP file (e.g. a CWL workflow with its dependencies)",
-            //     component: <ImportCwlZip />
-            // }
+            cwlZip: {
+                descr: "from ZIP file (e.g. a CWL workflow with its dependencies)",
+                component: <ImportCwlZip />
+            }
         }
 
         this.changeInputField = this.changeInputField.bind(this);
