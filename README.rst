@@ -44,7 +44,7 @@ Please see the section "Configuration" for a discussion of available
 options.
 
 | Start the webserver with your custom configuration (or leave out the
-  ``--config`` flag to use the default one):
+``--config`` flag to use the default one):
 | ``cwlab up --config config.yaml``
 
 If you like to make use of containers for dependency management, you
@@ -92,9 +92,9 @@ CWL runners, including:
 
 | \*\ **Please Note:**
 | Execution on Windows is only supported by cwltool which talks to
-  docker for windows. Therefore, CWL-wrapped tools and workflows which
-  where originally designed for Linux/MacOs can be executed on Windows
-  with a graphical interface provided by CWLab.
+docker for windows. Therefore, CWL-wrapped tools and workflows which
+where originally designed for Linux/MacOs can be executed on Windows
+with a graphical interface provided by CWLab.
 
 Usage:
 ------
@@ -122,23 +122,23 @@ Import a CWL workflow or tool:
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
 | CWLab can be used to run any workflow or tool that has been wrapped
-  using the Common Workflow Language. Of course, you can write workflows
-  or tool wrappers yourself (we recommend rabix-composer
-  https://rabix.io/), however, for many especially bioinformatic tasks,
-  existing CWL solutions are publicly available. Check the CWL website
-  as a starting point:
+using the Common Workflow Language. Of course, you can write workflows
+or tool wrappers yourself (we recommend rabix-composer
+https://rabix.io/), however, for many especially bioinformatic tasks,
+existing CWL solutions are publicly available. Check the CWL website as
+a starting point:
 | https://www.commonwl.org/#Repositories\_of\_CWL\_Tools\_and\_Workflows.
 
 | To import a CWL document:
 | - Click on the button "Import CWL Workflow/Tool" in the top bar -
-  Choose a CWL document (workflow or tool)\* - Press the import button
+Choose a CWL document (workflow or tool)\* - Press the import button
 
 | The workflow will be automatically validated:
 | |import screenshot|
 
 | *\*Please note: Currently, workflows can only be imported in the
-  "packed" format. We will add support for the unpacked format soon. To
-  pack a CWL workflow, use:*
+"packed" format. We will add support for the unpacked format soon. To
+pack a CWL workflow, use:*
 | ``cwltool --pack my_workflow.cwl > my_workflow_packed.cwl``
 
 Create a new Job:
@@ -198,7 +198,7 @@ default input directory (please see the **INPUT\_DIR** parameter in the
 config section).
 
 | This is an example screenshot for creating a job for an ATAC-seq
-  workflow:
+workflow:
 | |create job screenshot|
 
 Job execution:
@@ -238,12 +238,12 @@ available:
    -  paths of working directories
 
 -  Execution profiles:
-   This flexible API allows you to adapt CWLab to your local software
+    This flexible API allows you to adapt CWLab to your local software
    environment and to integrate a CWL runner of your choice (such as
    Cwltool, Toil, or Cromwell).
 
 | All configuration options can be specified in a single YAML file which
-  is provided to CWLab upon start:
+is provided to CWLab upon start:
 | ``cwlab up --config my_config.yaml``
 
 | To get an example config file, run the following command:
@@ -253,35 +253,53 @@ General Configs:
 ~~~~~~~~~~~~~~~~
 
 -  **WEB\_SERVER\_HOST**:
-   Specify the host or IP address on which the webserver shall run. Use
+    Specify the host or IP address on which the webserver shall run. Use
    ``localhost`` for local usage on your machine only. Use ``0.0.0.0``
    to allow remote accessibility by other machines in the same network.
-   *Default*: ``localhost``
+    *Default*: ``localhost``
 -  | **WEB\_SERVER\_PORT**:
-   | Specify the port used by the webserver.
-   | *Default*: 5000
+   |  Specify the port used by the webserver.
+   |  *Default*: 5000
 
 -  **TEMP\_DIR**:
-   Directory for temporary files.
-   *Default*: a subfolder "cwlab/temp" in the home directory
--  **CWL\_DIR**:
-   Directory for saving CWL documents.
-   *Default*: a subfolder "cwlab/temp" in the home directory
+    Directory for temporary files.
+    *Default*: a subfolder "cwlab/temp" in the home directory
+-  **WORKFLOW\_DIR**:
+    Directory for saving CWL documents.
+    *Default*: a subfolder "cwlab/temp" in the home directory
 -  **EXEC\_DIR**:
-   Directory for saving execution data including output files.
-   *Default*: a subfolder "cwlab/temp" in the home directory
--  **INPUT\_DIR**:
-   Directory where input files are expected by default (if the full path
-   is not specified).
-   *Default*: a subfolder "cwlab/temp" in the home directory
--  | **DB\_DIR**:
-   | Directory for databases.
-   | *Default*: a subfolder "cwlab/temp" in the home directory
+    Directory for saving execution data including output files.
+    *Default*: a subfolder "cwlab/temp" in the home directory
+-  **DEFAULT\_INPUT\_DIR**:
+    Default directory where users can search for input files. You may
+   specify additional input directories using the
+   "**ADD\_INPUT\_DIRS**\ " parameter. *Default*: a subfolder
+   "cwlab/temp" in the home directory
+-  **DB\_DIR**:
+    Directory for databases.
+    *Default*: a subfolder "cwlab/temp" in the home directory
+-  **ADD\_INPUT\_DIRS**:
+    In addition to "**DEFAULT\_INPUT\_DIR**\ ", these directories can be
+   searched by the user for input files.
+    Please specify them in the format "*name: path*\ " like shown in
+   this example:
+
+   ``ADD_INPUT_DIRS:         GENOMES_DIR: '/ngs_share/genomes'         PUBLIC_GEO_DATA: '/datasets/public/geo'``
+   *Default*: no additional input dirs.
+-  | **ADD\_INPUT\_AND\_UPLOAD\_DIRS**:
+   |  Users can search these directories for input files (in addition to
+   "**DEFAULT\_INPUT\_DIR**\ ") and they may also upload their one
+   files.
+   |  Please specify them in the format "*name: path*\ " like shown in
+   this example:
+   | 
+   ``ADD_INPUT_AND_UPLOAD_DIRS:         UPLOAD_SCRATCH: '/scratch/upload'         PERMANEN_UPLOAD_STORE: '/datasets/upload'``
+   *Default*: no additional input dirs.
 
 -  | **DEBUG**:
-   | If set to True, the debugging mode is turned on. Do not use on
-     production systems.
-   | *Default*: False
+   |  If set to True, the debugging mode is turned on. Do not use on
+   production systems.
+   |  *Default*: False
 
 Exec Profiles:
 ~~~~~~~~~~~~~~
@@ -300,39 +318,34 @@ profile, following configuration parameters are available (but only
 **shell** and **exec** is required):
 
 -  **shell**:
-   Specify which shell to use. For Linux or MacOS use ``bash``. For
+    Specify which shell to use. For Linux or MacOS use ``bash``. For
    Windows, use ``powershell``.
-   *Required*.
+    *Required*.
 -  **max\_retries**: Specify how many times the execution (all steps) is
    retried before marking a run as failed.
 -  | **timeout**:
-   | For each step in the execution profile, you can set a timeout
-     limit.
-   | *Default*:
-
-   .. code:: yaml
-
-       pre_exec: 120
-       exec: 86400
-       eval: 120
-       post_exec: 120
+   |  For each step in the execution profile, you can set a timeout
+   limit.
+   |  *Default*:
+   | 
+   ``yaml     pre_exec: 120     exec: 86400     eval: 120     post_exec: 120``
 
 -  **pre\_exec**\ \*:
-   Shell commands that are executed before the actual CWL execution. For
-   instance to load required python/conda environments.
-   *Optional*.
+    Shell commands that are executed before the actual CWL execution.
+   For instance to load required python/conda environments.
+    *Optional*.
 -  **exec**\ \*:
-   Shell commands to start the CWL execution. Usually, this is only the
+    Shell commands to start the CWL execution. Usually, this is only the
    command line to execute the CWL runner. The stdout and stderr of the
    CWL runner should be redirected to the predefined log file.
-   *Required*.
+    *Required*.
 -  **eval**\ \*:
-   The exit status at the end of the *exec* step is automatically
+    The exit status at the end of the *exec* step is automatically
    checked. Here you can specify shell commands to additionally evaluate
    the content of the execution log to determine if the execution
    succeeded. To communicate failure to CWLab, set the ``SUCCESS``
    variable to ``False``.
-   *Optional*.
+    *Optional*.
 -  **post\_exec**\ \*: Shell commands that are executed after *exec* and
    *eval*. For instance, this can be used to clean up temporary files.
 
@@ -342,8 +355,8 @@ profile, following configuration parameters are available (but only
 
    -  ``JOB_ID``
    -  ``RUN_ID`` (please note: is only unique within a job)
-   -  ``CWL`` (the path to the used CWL document)
-   -  ``RUN_YAML`` (the path to the YAML file containing input
+   -  ``WORKFLOW`` (the path to the used CWL document)
+   -  ``RUN_INPUT`` (the path to the YAML file containing input
       parameters)
    -  ``OUTPUT_DIR`` (the path of the run-specific output directory)
    -  ``LOG_FILE`` (the path of the log file that should receive the
@@ -393,10 +406,18 @@ Linux / MacOs:
     DEBUG: False  
 
     TEMP_DIR: '/home/cwlab_user/cwlab/temp'
-    WF_DIR: '/home/cwlab_user/cwlab/cwl'
-    EXEC_DIR: '/home/cwlab_user/cwlab/exec'
-    INPUT_DIR: '/home/cwlab_user/cwlab/input'
+    WORKFLOW_DIR: '/home/cwlab_user/cwlab/workflows'
+    EXEC_DIR: '/datasets/processing_out/'
+    DEFAULT_INPUT_DIR: '/home/cwlab_user/cwlab/input'
     DB_DIR: '/home/cwlab_user/cwlab/db'
+
+    ADD_INPUT_DIRS:
+        GENOMES_DIR: '/ngs_share/genomes'
+        PUBLIC_GEO_DATA: '/datasets/public/geo'
+
+    ADD_INPUT_AND_UPLOAD_DIRS:
+        UPLOAD_SCRATCH: '/scratch/upload'
+        PERMANEN_UPLOAD_STORE: '/datasets/upload'
 
     EXEC_PROFILES:
         cwltool_local:
@@ -408,7 +429,7 @@ Linux / MacOs:
                 eval: 120
                 post_exec: 120
             exec: |
-                cwltool --outdir "${OUTPUT_DIR}" "${CWL}" "${RUN_YAML}" \
+                cwltool --outdir "${OUTPUT_DIR}" "${WORKFLOW}" "${RUN_INPUT}" \
                     >> "${LOG_FILE}" 2>&1
             eval: | 
                 LAST_LINE=$(tail -n 1 ${LOG_FILE})
@@ -430,11 +451,19 @@ Windows:
 
     DEBUG: False  
 
-    TEMP_DIR: '/home/cwlab_user/cwlab/temp'
-    WF_DIR: '/home/cwlab_user/cwlab/cwl'
-    EXEC_DIR: '/home/cwlab_user/cwlab/exec'
-    INPUT_DIR: '/home/cwlab_user/cwlab/input'
-    DB_DIR: '/home/cwlab_user/cwlab/db'
+    TEMP_DIR: 'C:\Users\cwlab_user\cwlab\temp'
+    WORKFLOW_DIR: 'C:\Users\cwlab_user\cwlab\workflows'
+    EXEC_DIR: 'D:\processing_out\'
+    DEFAULT_INPUT_DIR: 'C:\Users\cwlab_user\cwlab\input'
+    DB_DIR: 'C:\Users\cwlab_user\cwlab\db'
+
+    ADD_INPUT_DIRS:
+        GENOMES_DIR: 'E:\genomes'
+        PUBLIC_GEO_DATA: 'D:\public\geo'
+        
+    ADD_INPUT_AND_UPLOAD_DIRS:
+        UPLOAD_SCRATCH: 'E:\upload'
+        PERMANEN_UPLOAD_STORE: '\D:\upload'
 
     EXEC_PROFILES:
         cwltool_windows:
@@ -446,7 +475,7 @@ Windows:
                 eval: 120
                 post_exec: 120
             exec: |
-                . "${PYTHON_PATH}" -m cwltool --debug --default-container ubuntu:16.04 --outdir "${OUTPUT_DIR}" "${CWL}" "${RUN_YAML}" > "${LOG_FILE}" 2>&1
+                . "${PYTHON_PATH}" -m cwltool --debug --default-container ubuntu:16.04 --outdir "${OUTPUT_DIR}" "${CWL}" "${RUN_INPUT}" > "${LOG_FILE}" 2>&1
 
             eval: |
                 $LAST_LINES = (Get-Content -Tail 2 "${LOG_FILE}")
@@ -482,7 +511,7 @@ scientists and bioinformaticians working closely together. Our DNA
 sequencing-driven methodologies produce challenging amounts of data.
 CWLab helps us by giving all members of our team the ability to perform
 common bioinformatic analyses autonomously without having to acquire
-programming skills. This allows our bioinformatic stuff to focus on
+programming skills. This allows our bioinformatic staff to focus on
 method development and interpretation of computationally complex data.
 
 If you like to know more about us, please visit our website
@@ -497,4 +526,3 @@ This package is free to use and modify under the Apache 2.0 Licence.
 .. |import screenshot| image:: https://github.com/CompEpigen/CWLab/blob/master/screenshots/import.png?raw=true
 .. |create job screenshot| image:: https://github.com/CompEpigen/CWLab/blob/master/screenshots/create_job.png?raw=true
 .. |execution screenshot| image:: https://github.com/CompEpigen/CWLab/blob/master/screenshots/execution.png?raw=true
-
