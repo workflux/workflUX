@@ -244,11 +244,11 @@ def get_path(which, job_id=None, run_id=None, param_sheet_format=None, wf_target
     elif which == "run_input":
         path = os.path.join(app.config["EXEC_DIR"], job_id, "runs_params", run_id + ".yaml")
     elif which == "job_templ":
-        path = os.path.join(app.config['WF_DIR'], wf_target + ".job_templ.xlsx")
+        path = os.path.join(app.config['WORKFLOW_DIR'], wf_target + ".job_templ.xlsx")
     elif which == "wf":
-        path = os.path.join(app.config['WF_DIR'], wf_target)
+        path = os.path.join(app.config['WORKFLOW_DIR'], wf_target)
     elif which == "wf_imports_zip":
-        path = os.path.join(app.config['WF_DIR'], f"{wf_target}.imports.zip")
+        path = os.path.join(app.config['WORKFLOW_DIR'], f"{wf_target}.imports.zip")
     elif which == "runs_log_dir":
         path = os.path.join(app.config['EXEC_DIR'], job_id, "runs_log")
     elif which == "run_log":
@@ -453,7 +453,7 @@ def get_run_ids(job_id):
 def get_job_templates():
     # read list of template files:
     templates = fetch_files_in_dir(
-        dir_path=app.config['WF_DIR'], 
+        dir_path=app.config['WORKFLOW_DIR'], 
         file_exts=["xlsx"],
         search_string=".job_templ",
         ignore_subdirs=True
