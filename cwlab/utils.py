@@ -144,19 +144,20 @@ def read_file_content(
     return str(content), end_pos
 
 def zip_dir(dir_path):
+    dir_path = os.path.abspath(dir_path)
     zip_path = dir_path + ".cwlab.zip"
     contents = os.walk(dir_path)
     zip_file = zipfile.ZipFile(zip_path, 'w', zipfile.ZIP_DEFLATED)
     for root, dirs, files in contents:
         for dir_ in dirs:
             absolute_path = os.path.join(root, dir_)
-            relative_path = absolute_path.replace(dir_path + '\\', '')
+            relative_path = os.path.relpath(absolute_path, dir_path)
             zip_file.write(absolute_path, relative_path)
         for file_ in files:
             if file_.endswith(".cwlab.zip"):
                 continue
             absolute_path = os.path.join(root, file_)
-            relative_path = absolute_path.replace(dir_path + '\\', '')
+            relative_path = os.path.relpath(absolute_path, dir_path)
             zip_file.write(absolute_path, relative_path)
     zip_file.close()
     return(zip_path)
