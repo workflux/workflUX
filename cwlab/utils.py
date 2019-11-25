@@ -65,7 +65,11 @@ def browse_dir(path,
         raise AssertionError("Path does not exist or you have no permission to enter it.")
     dir_content_dict = {}
     for item in dir_content_:
-        is_dir = item.is_dir()
+        try:
+            is_dir = item.is_dir()
+        except Exception as e:
+            # Most likely no permission to read that attribute.
+            is_dir = False
         if is_dir or not ignore_files:
             abs_path = str(item.absolute())
             name = os.path.basename(abs_path)
