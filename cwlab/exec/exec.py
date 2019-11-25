@@ -30,16 +30,13 @@ def make_job_dir_tree(job_id):
     runs_log_dir = get_path("runs_log_dir", job_id)
     if not os.path.exists(runs_log_dir):
         os.mkdir(runs_log_dir)
-    runs_input_dir = get_path("runs_input_dir", job_id)
-    if not os.path.exists(runs_input_dir):
-        os.mkdir(runs_input_dir)
     job_wf_dir = get_path("job_wf_dir", job_id)
     if not os.path.exists(job_wf_dir):
         os.mkdir(job_wf_dir)
 
-def create_job(job_id, job_param_sheet=None, run_yamls=None, wf_target=None,
+def create_job(job_id, job_param_sheet=None, run_inputs=None, wf_target=None,
     validate_paths=True, search_paths=False, search_subdirs=False, search_dir=None, sheet_format="xlsx"):
-    assert not (job_param_sheet is None and (run_yamls is None or wf_target is None)), "You have to either provide a job_param_sheet or a list of run_yamls plus a wf_target document"
+    assert not (job_param_sheet is None and (run_inputs is None or wf_target is None)), "You have to either provide a job_param_sheet or a list of run_inputs plus a wf_target document"
 
     runs_yaml_dir = get_path("runs_yaml_dir", job_id=job_id)
     if wf_target is None:
@@ -65,7 +62,7 @@ def create_job(job_id, job_param_sheet=None, run_yamls=None, wf_target=None,
             input_dir=search_dir
         )
     else:
-        [copy(run_yaml, runs_yaml_dir) for run_yaml in run_yamls]
+        [copy(run_input, runs_yaml_dir) for run_input in run_inputs]
 
     # check if wf_target is absolute path and exists, else search for it in the wf_target dir:
     if os.path.exists(wf_target):
@@ -163,7 +160,7 @@ def exec_runs(job_id, run_ids, exec_profile_name, user_id=None, max_parrallel_ex
             job_id=job_id,
             run_id=run_id,
             wf_target=get_path("job_wf", job_id=job_id),
-            yaml=get_path("run_yaml", job_id=job_id, run_id=run_id),
+            run_input=get_path("run_input", job_id=job_id, run_id=run_id),
             out_dir=get_path("run_out_dir", job_id=job_id, run_id=run_id),
             global_temp_dir=app.config["TEMP_DIR"],
             log=get_path("run_log", job_id=job_id, run_id=run_id),
@@ -327,7 +324,7 @@ def terminate_runs(
                 continue
         if mode == "delete":
             try:
-                yaml_path = get_path("run_yaml", job_id, run_id)
+                yaml_path = get_path("run_input", job_id, run_id)
                 if os.path.exists(yaml_path):
                     os.remove(yaml_path)
             except Exception as e:
@@ -345,8 +342,8 @@ def read_run_log(job_id, run_id):
     content, _ = read_file_content(log_path)
     return content
     
-def read_run_yaml(job_id, run_id):
-    yaml_path = get_path("run_yaml", job_id, run_id)
+def read_run_input(job_id, run_id):
+    yaml_path = get_path("run_input", job_id, run_id)
     content, _ = read_file_content(yaml_path)
     return content
     

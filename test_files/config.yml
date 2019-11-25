@@ -44,13 +44,13 @@ EXEC_PROFILES:
     #   - JOB_ID
     #   - RUN_ID (please note: is only unique within a job)
     #   - CWL
-    #   - RUN_YAML
+    #   - RUN_INPUT
     #   - OUTPUT_DIR
     #   - LOG_FILE
     pre_exec: |
       touch "${OUTPUT_DIR}/pre_exec"
     exec: |
-      cwltool --outdir "${OUTPUT_DIR}" "${WORKFLOW}" "${RUN_YAML}" >> "${LOG_FILE}" 2>&1
+      cwltool --outdir "${OUTPUT_DIR}" "${WORKFLOW}" "${RUN_INPUT}" >> "${LOG_FILE}" 2>&1
     eval: | 
       LAST_LINE=$(tail -n 1 ${LOG_FILE})
       if [[ "${LAST_LINE}" == *"Final process status is success"* ]]
@@ -90,13 +90,13 @@ EXEC_PROFILES:
     #   - JOB_ID
     #   - RUN_ID (please note: is only unique within a job)
     #   - CWL
-    #   - RUN_YAML
+    #   - RUN_INPUT
     #   - OUTPUT_DIR
     #   - LOG_FILE
     pre_exec: |
       touch "${OUTPUT_DIR}/pre_exec"
     exec: |
-      cwltool --debug --no-container --outdir "${OUTPUT_DIR}" "${WORKFLOW}" "${RUN_YAML}" >> "${LOG_FILE}" 2>&1
+      cwltool --debug --no-container --outdir "${OUTPUT_DIR}" "${WORKFLOW}" "${RUN_INPUT}" >> "${LOG_FILE}" 2>&1
     eval: | 
       LAST_LINE=$(tail -n 1 ${LOG_FILE})
       if [[ "${LAST_LINE}" == *"Final process status is success"* ]]
@@ -136,13 +136,13 @@ EXEC_PROFILES:
     #   - JOB_ID
     #   - RUN_ID (please note: is only unique within a job)
     #   - CWL
-    #   - RUN_YAML
+    #   - RUN_INPUT
     #   - OUTPUT_DIR
     #   - LOG_FILE
     pre_exec: |
       touch "${OUTPUT_DIR}/pre_exec"
     exec: |
-      cwltool --singularity --outdir "${OUTPUT_DIR}" "${WORKFLOW}" "${RUN_YAML}" >> "${LOG_FILE}" 2>&1
+      cwltool --singularity --outdir "${OUTPUT_DIR}" "${WORKFLOW}" "${RUN_INPUT}" >> "${LOG_FILE}" 2>&1
     eval: | 
       LAST_LINE=$(tail -n 1 ${LOG_FILE})
       if [[ "${LAST_LINE}" == *"Final process status is success"* ]]
@@ -194,11 +194,11 @@ EXEC_PROFILES:
     #   - JOB_ID
     #   - RUN_ID (please note: is only unique within a job)
     #   - CWL
-    #   - RUN_YAML
+    #   - RUN_INPUT
     #   - OUTPUT_DIR
     #   - LOG_FILE
     exec: |
-      cwltool --outdir "${OUTPUT_DIR}" "${WORKFLOW}" "${RUN_YAML}" >> "${LOG_FILE}" 2>&1
+      cwltool --outdir "${OUTPUT_DIR}" "${WORKFLOW}" "${RUN_INPUT}" >> "${LOG_FILE}" 2>&1
     eval: | 
       LAST_LINE=$(tail -n 1 ${LOG_FILE})
       if [[ "${LAST_LINE}" == *"Final process status is success"* ]]

@@ -241,7 +241,7 @@ def get_path(which, job_id=None, run_id=None, param_sheet_format=None, wf_target
             path = os.path.join(path, hits[0]["file_name"])
     elif which == "runs_yaml_dir":
         path = os.path.join(app.config["EXEC_DIR"], job_id, "runs_params")
-    elif which == "run_yaml":
+    elif which == "run_input":
         path = os.path.join(app.config["EXEC_DIR"], job_id, "runs_params", run_id + ".yaml")
     elif which == "job_templ":
         path = os.path.join(app.config['WF_DIR'], wf_target + ".job_templ.xlsx")
@@ -255,8 +255,8 @@ def get_path(which, job_id=None, run_id=None, param_sheet_format=None, wf_target
         path = os.path.join(app.config['EXEC_DIR'], job_id, "runs_log", run_id + ".log")
     elif which == "debug_run_log":
         path = os.path.join(app.config['EXEC_DIR'], job_id, "runs_log", run_id + ".debug.log")
-    elif which == "runs_input_dir":
-        path = os.path.join(app.config['EXEC_DIR'], job_id, "runs_inputs")
+    elif which == "job_input_dir":
+        path = os.path.join(app.config['INPUT_DIR'], job_id, "job")
     elif which == "error_log":
         path = os.path.join(app.config['LOG_DIR'], "error.log")
     elif which == "info_log":
@@ -442,12 +442,12 @@ def import_wf(
     
 def get_run_ids(job_id):
     runs_yaml_dir = get_path("runs_yaml_dir", job_id)
-    run_yamls = fetch_files_in_dir(
+    run_inputs = fetch_files_in_dir(
         dir_path=runs_yaml_dir, 
         file_exts=["yaml"],
         ignore_subdirs=True
     )
-    run_ids = [r["file_nameroot"] for r in run_yamls]
+    run_ids = [r["file_nameroot"] for r in run_inputs]
     return run_ids
     
 def get_job_templates():

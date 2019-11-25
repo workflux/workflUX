@@ -27,7 +27,7 @@ EXEC_PROFILES:
     wait_in_queue_period: 4
 
     exec: |
-      . "${PYTHON_PATH}" -m cwltool --default-container ubuntu:16.04 --outdir "${OUTPUT_DIR}" "${WORKFLOW}" "${RUN_YAML}" 2>&1 | %{ "$_" } | Out-File -Encoding "UTF8" "${LOG_FILE}"
+      . "${PYTHON_PATH}" -m cwltool --default-container ubuntu:16.04 --outdir "${OUTPUT_DIR}" "${WORKFLOW}" "${RUN_INPUT}" 2>&1 | %{ "$_" } | Out-File -Encoding "UTF8" "${LOG_FILE}"
       "PID:" >> "${LOG_FILE}"
       $pid >> "${LOG_FILE}"
 

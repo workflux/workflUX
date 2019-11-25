@@ -183,7 +183,7 @@ def prepare_shell():
         "JOB_ID": job_id,
         "RUN_ID": run_id,
         "WORKFLOW": wf_target,
-        "RUN_YAML": yaml,
+        "RUN_INPUT": yaml,
         "OUTPUT_DIR": out_dir,
         "GLOBAL_TEMP_DIR": global_temp_dir,
         "LOG_FILE": log,

@@ -5,7 +5,7 @@ class Exec(db.Model):
     run_id = db.Column(db.String(255), index=True)
     job_id = db.Column(db.String(255), index=True)
     wf_target = db.Column(db.String(4096))
-    yaml = db.Column(db.String(4096))
+    run_input = db.Column(db.String(4096))
     log = db.Column(db.String(4096))
     out_dir = db.Column(db.String(4096))
     global_temp_dir = db.Column(db.String(4096))
