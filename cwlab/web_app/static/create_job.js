@@ -1,38 +1,3 @@
-
-class CreateJobButton extends React.Component {
-    constructor(props){
-        super(props);
-        // props.jobId
-        // props.sheetFormat
-        // props.disabled
-        // props.validatePaths
-        // props.searchPaths
-        // props.searchDir
-        // props.includeSubbDirsForSearching
-    }
-
-    render(){
-        return(
-            <AjaxButton
-                name="create job"
-                label="create job"
-                disabled={this.props.disabled}
-                sendData={
-                    {
-                        job_id: this.props.jobId,
-                        sheet_format: this.props.sheetFormat,
-                        validate_paths: this.props.validatePaths,
-                        search_paths: this.props.searchPaths,
-                        search_dir: this.props.searchDir,
-                        include_subdirs_for_searching: this.props.includeSubbDirsForSearching
-                    }
-                }
-                route={routeCreateJob}
-            />
-        )
-    }
-}
-
 class PathValAndSearch extends React.Component{
     constructor(props){
         super(props);
@@ -99,8 +64,7 @@ class PathValAndSearch extends React.Component{
                         allowInput={true}
                         allowUpload={false}
                         allowDownload={false}
-                        jobId={this.props.jobId}
-                        defaultBaseDir="INPUT_DIR_CURRENT_JOB"
+                        defaultBaseDir="DEFAULT_INPUT_DIR"
                         prevPath={this.props.prevPath}
                         changePrevPath={this.props.changePrevPath}
                     />
@@ -351,8 +315,7 @@ class ParamField extends React.Component{
                         allowInput={true}
                         allowUpload={true}
                         allowDownload={false}
-                        jobId={this.props.jobId}
-                        defaultBaseDir="INPUT_DIR_CURRENT_JOB"
+                        defaultBaseDir="DEFAULT_INPUT_DIR"
                         prevPath={this.props.prevPath}
                         changePrevPath={this.props.changePrevPath}
                         smallSize={true}
@@ -372,8 +335,7 @@ class ParamField extends React.Component{
                             allowInput={true}
                             allowUpload={true}
                             allowDownload={false}
-                            jobId={this.props.jobId}
-                            defaultBaseDir="INPUT_DIR_CURRENT_JOB"
+                            defaultBaseDir="DEFAULT_INPUT_DIR"
                             prevPath={this.props.prevPath}
                             changePrevPath={this.props.changePrevPath}
                             smallSize={true}
@@ -882,9 +844,8 @@ class JobParamFormHTML extends React.Component {
 
         this.state = {
             actionStatus: "loading",
-            form_passed_validation: false,
             serverMessages: [],
-            validationMessages: [],
+            createJobMessages: [],
             modeExists: {},
             paramConfigs: {},
             paramValuesByMode: {},
@@ -896,7 +857,7 @@ class JobParamFormHTML extends React.Component {
         this.toggleNull = this.toggleNull.bind(this);
         this.ajaxRequest = ajaxRequest.bind(this);
         this.addOrRemoveItem = this.addOrRemoveItem.bind(this);
-        this.validateParamValues = this.validateParamValues.bind(this);
+        this.createJob = this.createJob.bind(this);
     }
 
     componentDidMount(){
@@ -910,7 +871,7 @@ class JobParamFormHTML extends React.Component {
                 statusValueDuringRequest: "loading",
                 messageVar: "serverMessages",
                 sendData: {
-                    cwl_target: this.props.cwlTarget,
+                    wf_target: this.props.cwlTarget,
                     param_modes: this.props.param_modes,
                     run_mode: this.props.run_mode, 
                     run_names: this.props.run_names.filter((r) => r != "")
@@ -949,7 +910,7 @@ class JobParamFormHTML extends React.Component {
             })
     }
 
-    validateParamValues(){
+    createJob(){
         let paramValues = {}
         Object.keys(this.state.paramValuesByMode).forEach((mode) => {
             Object.assign(paramValues, this.state.paramValuesByMode[mode])
@@ -958,25 +919,19 @@ class JobParamFormHTML extends React.Component {
         
         this.ajaxRequest({
             statusVar: "status",
-            statusValueDuringRequest: "validating",
-            messageVar: "validationMessages",
+            statusValueDuringRequest: "create_job",
+            messageVar: "createJobMessages",
             sendData: {
                 param_values: paramValues,
                 param_configs: this.state.paramConfigs,
-                cwl_target: this.props.cwlTarget,
+                wf_target: this.props.cwlTarget,
                 job_id: this.props.jobId,
                 validate_paths: this.props.validatePaths,
                 search_paths: this.props.searchPaths,
                 search_dir: this.props.searchDir,
                 include_subdirs_for_searching: this.props.includeSubbDirsForSearching
             },
-            route: routeSendFilledParamValues,
-            onSuccess: (data, messages) => {
-                return({form_passed_validation: true})
-            },
-            onError: (messages) => {
-                return({form_passed_validation: false})
-            },
+            route: routeCreateJobFromParamValues
         })     
     }
     changeParamValue(mode, name, index, newValue){
@@ -1175,26 +1130,15 @@ class JobParamFormHTML extends React.Component {
                     }
 
                     <h3>Validate Selection and Create Job:</h3>
-
                     <ActionButton
-                        name="validate"
-                        value="validate"
-                        onAction={this.validateParamValues}
-                        label="validate"
-                        loading={this.state.actionStatus == "validating"}
+                        name="create_job"
+                        value="create_job"
+                        onAction={this.createJob}
+                        label="validate and create job"
+                        loading={this.state.actionStatus == "create_job"}
                         disabled={this.state.actionStatus != "none"}
                     />
-                    <DisplayServerMessages messages={this.state.validationMessages} />
-
-                    <CreateJobButton
-                        jobId={this.props.jobId}
-                        sheetFormat="xlsx"
-                        validatePaths={this.props.validatePaths}
-                        searchPaths={this.props.searchPaths}
-                        searchDir={this.props.searchDir}
-                        includeSubbDirsForSearching={this.props.includeSubbDirsForSearching}
-                        disabled={!this.state.form_passed_validation}
-                    />
+                    <DisplayServerMessages messages={this.state.createJobMessages} />
                 </div>
             )
         }
@@ -1224,13 +1168,11 @@ class JobParamFormSpreadsheet extends React.Component {
         this.state = {
             sheetFormat: "xlsx",
             file_transfer_status: "none",
-            form_passed_validation: false,
-            sheetFormMessages: []
+            createJobMessages: []
         }
 
         this.changeSheetFormat = this.changeSheetFormat.bind(this);
         this.genFormSheet = this.genFormSheet.bind(this);
-        this.handleFormSheetUpload = this.handleFormSheetUpload.bind(this)
         this.ajaxRequest = ajaxRequest.bind(this)
     }
 
@@ -1244,7 +1186,7 @@ class JobParamFormSpreadsheet extends React.Component {
             statusValueDuringRequest: "downloading",
             messageVar: "sheetFormMessages",
             sendData: {
-                cwl_target: this.props.cwlTarget,
+                wf_target: this.props.cwlTarget,
                 param_modes: this.props.param_modes,
                 run_mode: this.props.run_mode, 
                 run_names: this.props.run_names.filter((r) => r != ""),
@@ -1257,10 +1199,6 @@ class JobParamFormSpreadsheet extends React.Component {
                 return({sheetFormMessages: []})
             }
         })
-    }
-
-    handleFormSheetUpload(isSuccess){
-        this.setState({form_passed_validation: isSuccess})
     }
 
     render() {
@@ -1280,60 +1218,45 @@ class JobParamFormSpreadsheet extends React.Component {
                 />
                 <hr/>
                 <h3>Provide Parameters Using a Spreadsheet:</h3>
-                <ol>
-                    <li>
-                        export/download:
-                        <select className="w3-button w3-white w3-border" 
-                            name="sheet_format"
-                            onChange={this.changeSheetFormat}
-                            value={this.state.sheetFormat}
-                            >
-                            <option value="xlsx">excel format (xlsx)</option>
-                            <option value="xls">excel format (xls)</option>
-                            <option value="ods">open office format (ods)</option>
-                        </select> 
-                        <ActionButton
-                            name="export"
-                            value="export"
-                            label="export"
-                            onAction={this.genFormSheet}
-                            loading={this.state.file_transfer_status == "downloading"}
-                            disabled={this.state.file_transfer_status != "none"}
-                        />
-                    </li>
-                    <li>
-                        open in excel or open office and fill in the form
-                    </li>
-                    <li>
-                        <FileUploadComponent
-                            requestRoute={routeSendFilledParamFormSheet}
-                            instruction="import/upload"
-                            buttonLabel="import & validate"
-                            oneLine={true}
-                            disabled={this.state.file_transfer_status != "none"}
-                            meta_data={ 
-                                {
-                                    job_id: this.props.jobId,
-                                    validate_paths: this.props.validatePaths,
-                                    search_paths: this.props.searchPaths,
-                                    search_dir: this.props.searchDir,
-                                    include_subdirs_for_searching: this.props.includeSubbDirsForSearching
-                                }
-                            }
-                            onUploadCompletion={this.handleFormSheetUpload}
-                        />
-                    </li>
-                </ol>
-                <DisplayServerMessages messages={this.state.sheetFormMessages} />
-                <CreateJobButton
-                    jobId={this.props.jobId}
-                    sheetFormat={this.state.sheetFormat}
-                    validatePaths={this.props.validatePaths}
-                    searchPaths={this.props.searchPaths}
-                    searchDir={this.props.searchDir}
-                    includeSubbDirsForSearching={this.props.includeSubbDirsForSearching}
-                    disabled={!this.state.form_passed_validation}
+                <span className="w3-text-green">1. export/download:</span>
+                <br/>
+                <select className="w3-button w3-white w3-border" 
+                    name="sheet_format"
+                    onChange={this.changeSheetFormat}
+                    value={this.state.sheetFormat}
+                    >
+                    <option value="xlsx">excel format (xlsx)</option>
+                    <option value="xls">excel format (xls)</option>
+                    <option value="ods">open office format (ods)</option>
+                </select> 
+                <ActionButton
+                    name="export"
+                    value="export"
+                    label="export"
+                    onAction={this.genFormSheet}
+                    loading={this.state.file_transfer_status == "downloading"}
+                    disabled={this.state.file_transfer_status != "none"}
                 />
+                <br/><br/>
+                <span className="w3-text-green">2. open in excel or open office and fill out the form</span>
+                <br/><br/>
+                <span className="w3-text-green">3. Import and create job:</span>
+                <FileUploadComponent
+                    requestRoute={routeCreateJobFromParamFormSheet}
+                    buttonLabel="import & create job"
+                    oneLine={false}
+                    disabled={this.state.file_transfer_status != "none"}
+                    metaData={ 
+                        {
+                            job_id: this.props.jobId,
+                            validate_paths: this.props.validatePaths,
+                            search_paths: this.props.searchPaths,
+                            search_dir: this.props.searchDir,
+                            include_subdirs_for_searching: this.props.includeSubbDirsForSearching
+                        }
+                    }
+                />
+                <DisplayServerMessages messages={this.state.createJobMessages} />
             </div>
         )
     }
@@ -1391,7 +1314,6 @@ class JobCreationPrep extends React.Component {
         this.changeSearchDir = this.changeSearchDir.bind(this)
         this.changeIncludeSubDirsForSearching = this.changeIncludeSubDirsForSearching.bind(this)
         this.changePathValAndSearch = this.changePathValAndSearch.bind(this)
-        this.prepareJobEnv = this.prepareJobEnv.bind(this)
         this.changePrevPath = this.changePrevPath.bind(this)
         this.ajaxRequest = ajaxRequest.bind(this)
     }
@@ -1437,21 +1359,6 @@ class JobCreationPrep extends React.Component {
         this.setState({
             searchPaths: searchPaths,
             validatePaths: validatePaths
-        })
-    }
-
-    prepareJobEnv(value){
-        this.ajaxRequest({
-            statusVar: "actionStatus",
-            statusValueDuringRequest: value,
-            messageVar: "serverMessages",
-            sendData: {
-                job_id: this.jobIdNum + "_" + this.state.job_name
-            },
-            route: routePrepareJobEnv,
-            onSuccess: (data, messages) => {
-                return({display: value})
-            }
         })
     }
 
@@ -1572,11 +1479,11 @@ class JobCreationPrep extends React.Component {
         if (this.state.display == "prep"){
             return(
                 <div>
-                    {this.props.configData.templ_attr.doc && (
+                    {this.props.configData.templ_meta.doc && (
                         <span>
                             <h3>Workflow info:</h3>
                             <p style={ {whiteSpace: "pre-line"} }>
-                                {this.props.configData.templ_attr.doc}
+                                {this.props.configData.templ_meta.doc}
                             </p>
                             <hr/>
                         </span>
@@ -1603,14 +1510,14 @@ class JobCreationPrep extends React.Component {
                             value="form_html"
                             label={<span><i className="fas fa-list-alt"></i>&nbsp;HTML form</span>}
                             loading={this.actionStatus == "form_html"}
-                            onAction={this.prepareJobEnv}
+                            onAction={this.toggleParamForm}
                         />&nbsp; or &nbsp;
                         <ActionButton
                             name="form_ssheet"
                             value="form_ssheet"
                             loading={this.actionStatus == "form_ssheet"}
                             label={<span><i className="fas fa-file-excel"></i>&nbsp;Spreadsheet</span>}
-                            onAction={this.prepareJobEnv}
+                            onAction={this.toggleParamForm}
                         />
                     </p>
                     <DisplayServerMessages messages={this.state.serverMessages} />
@@ -1691,7 +1598,7 @@ class JobTemplConfigInfoAjax extends React.Component {
             <AjaxComponent
                 key={this.props.cwlTarget}
                 requestRoute={routeGetJobTemplConfigInfo}
-                sendData={ {cwl_target: this.props.cwlTarget} }
+                sendData={ {wf_target: this.props.cwlTarget} }
                 buildContentOnSuccess={this.buildContentOnSuccess}
                 loaderSize="large"
                 loaderMessage="Loading template infos."
@@ -1712,7 +1619,7 @@ class JobTemplList extends React.Component {
     }
 
     render() {
-        const itemValues = this.props.templFilesInfo.map( (tf) => tf.cwl_target);
+        const itemValues = this.props.templFilesInfo.map( (tf) => tf.wf_target);
         const itemNames = itemValues; // here no distinction between values and names neccessary
         let itemContent = (
             <div>

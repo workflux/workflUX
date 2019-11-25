@@ -1,6 +1,6 @@
 from cwl_utils import parser_v1_0
 from re import sub
-from cwlab.xls2cwl_job.read_xls import clean_string
+from cwlab.wf_input.read_xls import clean_string
 
 configs = {}
 cwl_document = parser_v1_0.load_document("test_files/workflows/wf_fastqc.cwl")

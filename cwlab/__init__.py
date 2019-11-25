@@ -1,7 +1,7 @@
 
 from __future__ import absolute_import
 
-__version__ = "0.2.0"
+__version__ = "0.3.0"
 
 import os
 from flask import Flask
@@ -21,7 +21,7 @@ app.config.from_object(Config())
 db = SQLAlchemy(app)
 login = LoginManager(app)
 
-from .web_app import main, import_cwl, create_job, job_exec, users, browse
+from .web_app import main, import_wf, create_job, job_exec, users, browse
 from . import log
 
 def setup_db():
@@ -46,7 +46,7 @@ def setup_working_dirs():
     global app
     for param in [
         'TEMP_DIR',
-        'CWL_DIR',
+        'WORKFLOW_DIR',
         'EXEC_DIR',
         'DB_DIR',
         'LOG_DIR'

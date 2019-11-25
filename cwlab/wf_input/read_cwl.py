@@ -1,25 +1,71 @@
-import sys
-from cwltool.context import LoadingContext
-from cwltool.load_tool import load_tool
-from cwltool.workflow import default_make_tool
+import sys, os
 from .read_xls import clean_string
 
 def is_basic_type_instance(value):
-    if sys.version_info.major == 2:
-        return (isinstance(value, int) or 
+    return (isinstance(value, int) or 
             isinstance(value, float) or 
             isinstance(value, str) or 
             isinstance(value, bool))
+
+def read_inp_rec_type_field(inp_rec_type):
+    print_pref = "[read_inp_type]:"
+    is_array = False
+    null_allowed = False
+    null_items_allowed = False
+    # test if optional:
+    if isinstance(inp_rec_type, list):
+        if len(inp_rec_type) == 2 and "null" in inp_rec_type:
+            null_allowed = True
+            inp_rec_type.remove("null")
+            inp_rec_type = inp_rec_type[0]
+        else:
+            raise AssertionError( print_pref + "unkown type"+ 
+                ": lists of type are only supported when one of two elements is \"null\"")
+    # test if array:
+    if isinstance(inp_rec_type, dict):
+        if "type" in inp_rec_type.keys() and "items" in inp_rec_type.keys():
+            if inp_rec_type["type"] == "array":
+                is_array = True
+                inp_rec_type = inp_rec_type["items"]
+                if isinstance(inp_rec_type, dict):
+                    if "type" in inp_rec_type.keys() and inp_rec_type["type"] == "array":
+                        raise AssertionError( print_pref + " arrays of arrays are not supported.")
+                    else:
+                        raise AssertionError( print_pref + " unkown type")
+            else:
+                raise AssertionError( print_pref + " unkown type")
+        else:
+            raise AssertionError( print_pref + " unkown type")
+        # test if "null" is allowed as array item:
+        if isinstance(inp_rec_type, list):
+            if len(inp_rec_type) == 2 and "null" in inp_rec_type:
+                null_items_allowed = True
+                inp_rec_type.remove("null")
+                inp_rec_type = inp_rec_type[0]
+            else:
+                raise AssertionError( print_pref + " unkown type"+ 
+                    ": lists of type are only supported when one of two elements is \"null\"")
+    if isinstance(inp_rec_type, str):
+        type_ = inp_rec_type
     else:
-        return (isinstance(value, int) or 
-            isinstance(value, float) or 
-            isinstance(value, str) or 
-            isinstance(value, bool))
+        raise AssertionError( print_pref + " unkown type")
+    return type_, null_allowed, is_array, null_items_allowed
 
 def read_config_from_cwl_file(cwl_file):
     print_pref = "[read_cwl_file]:"
     configs = {}
-    metadata = {"doc": ""}
+    metadata = {
+        "doc": "",
+        "workflow_name": os.path.basename(cwl_file),
+        "workflow_path": os.path.abspath(cwl_file),
+        "workflow_type": "CWL"
+    }
+    # cwltool needs to be imported on demand since
+    # repeatedly calling functions on a document named 
+    # with same name caused errors.
+    from cwltool.context import LoadingContext
+    from cwltool.load_tool import load_tool
+    from cwltool.workflow import default_make_tool
     loadingContext = LoadingContext({"construct_tool_object": default_make_tool, "disable_js_validation": True})
     try:
         cwl_document = load_tool(cwl_file, loadingContext)
@@ -34,38 +80,11 @@ def read_config_from_cwl_file(cwl_file):
         null_allowed = False
         null_items_allowed = False
         default_value = [""]
-        # test if optional:
-        if isinstance(inp_rec["type"], list):
-            if len(inp_rec["type"]) == 2 and "null" in inp_rec["type"]:
-                null_allowed = True
-                inp_rec["type"].remove("null")
-                inp_rec["type"] = inp_rec["type"][0]
-            else:
-                raise AssertionError( print_pref + "E: unkown type for parameter " + name + 
-                    ": lists of type are only supported when one of two elements is \"null\"")
-        # test if array:
-        if isinstance(inp_rec["type"], dict):
-            if "type" in inp_rec["type"].keys() and "items" in inp_rec["type"].keys():
-                if inp_rec["type"]["type"] == "array":
-                    is_array = True
-                    inp_rec["type"] = inp_rec["type"]["items"]
-                else:
-                    raise AssertionError( print_pref + "E: unkown type for parameter " + name )
-            else:
-                raise AssertionError( print_pref + "E: unkown type for parameter " + name )
-            # test if "null" is allowed as array item:
-            if isinstance(inp_rec["type"], list):
-                if len(inp_rec["type"]) == 2 and "null" in inp_rec["type"]:
-                    null_items_allowed = True
-                    inp_rec["type"].remove("null")
-                    inp_rec["type"] = inp_rec["type"][0]
-                else:
-                    raise AssertionError( print_pref + "E: unkown type for parameter " + name + 
-                        ": lists of type are only supported when one of two elements is \"null\"")
-        if isinstance(inp_rec["type"], str):
-            type_ = inp_rec["type"]
-        else:
-            raise AssertionError( print_pref + "E: unkown type for parameter " + name )
+        # read type:
+        try:
+            type_, null_allowed, is_array, null_items_allowed = read_inp_rec_type_field(inp_rec["type"])
+        except Exception as e:
+            raise AssertionError( print_pref + "E: reading type of param \"{}\": {}".format(name, str(e)))
         # get the default:
         if "default" in inp_rec:
             if is_basic_type_instance(inp_rec["default"]):

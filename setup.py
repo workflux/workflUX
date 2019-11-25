@@ -7,7 +7,7 @@ README = os.path.join(SETUP_DIR, 'README.rst')
 
 setup(
     name='cwlab',
-    version='0.2.0',    
+    version='0.3.0',    
     description='A platform-agnostic, cloud-ready framework for simplified deployment of the Common Workflow Language using a graphical web interface',
     long_description=open(README).read(),
     long_description_content_type="text/x-rst",
@@ -38,7 +38,8 @@ setup(
                       'janis-pipelines>=0.7.0'
                       'cwltool==1.0.20181201184214; platform_system=="Windows"',
                       'cwltool>=1.0.20180809224403; platform_system!="Windows"',
-                      'psutil'               
+                      'psutil',
+                      'miniwdl>=0.0.5'               
                       ],
     classifiers=[
         'Development Status :: 4 - Beta',

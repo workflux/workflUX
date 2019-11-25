@@ -5,16 +5,16 @@ from werkzeug.urls import url_parse
 from werkzeug.utils import secure_filename
 from cwlab import app
 from cwlab.utils import is_allowed_file, allowed_extensions_by_type, get_path, \
-    make_temp_dir, import_cwl as import_cwl_, unzip_dir, get_allowed_base_dirs, \
+    make_temp_dir, import_wf as import_wf_, unzip_dir, get_allowed_base_dirs, \
     check_if_path_in_dirs, download_file, vaidate_url, get_time_string
-from cwlab.xls2cwl_job import generate_xls_from_cwl as generate_job_template_from_cwl
+from cwlab.wf_input import generate_xls_from_cwl as generate_job_template_from_cwl
 from cwlab.users.manage import login_required
 from shutil import rmtree
 from json import loads as json_loads
 from cwlab.log import handle_known_error, handle_unknown_error
 
-@app.route('/upload_cwl/', methods=['POST'])
-def upload_cwl():
+@app.route('/upload_wf/', methods=['POST'])
+def upload_wf():
     messages = []
     data = []
     try:
@@ -25,11 +25,6 @@ def upload_cwl():
 
         assert import_file.filename != '', "No file specified."
 
-        assert is_allowed_file(import_file.filename, type="CWL"), ( 
-            "Wrong file type. Only files with following extensions are allowed: " + 
-            ", ".join(allowed_extensions_by_type["CWL"])
-        )
-        
         # save the file to the CWL directory:
         metadata = json_loads(request.form.get("meta"))
         import_filename = secure_filename(import_file.filename) 
@@ -41,7 +36,7 @@ def upload_cwl():
         import_name = secure_filename(metadata["import_name"]) \
             if "import_name" in metadata.keys() and metadata["import_name"] != "" \
             else import_filename
-        import_cwl_(cwl_path=imported_filepath, name=import_name)
+        import_wf_(wf_path=imported_filepath, name=import_name)
         
         try:
             rmtree(temp_dir)
@@ -145,30 +140,30 @@ def download_zip_url():
     
     return jsonify({"data":data,"messages":messages})
 
-@app.route('/import_cwl_by_path_or_url/', methods=['POST'])
-def import_cwl_by_path_or_url():
+@app.route('/import_wf_by_path_or_url/', methods=['POST'])
+def import_wf_by_path_or_url():
     messages = []
     data = []
     try:
         login_required()
         data_req = request.get_json()
-        cwl_path = data_req["cwl_path"]
+        wf_path = data_req["wf_path"]
         is_url = data_req["is_url"] if "is_url" in data_req.keys() else False
         import_name = data_req["import_name"]
 
         if is_url:
-            vaidate_url(cwl_path)
+            vaidate_url(wf_path)
         else:
             allowed_dirs = get_allowed_base_dirs(
                 allow_input=False,
                 allow_upload=True,
                 allow_download=False
             )
-            assert os.path.isfile(cwl_path) and \
-                check_if_path_in_dirs(cwl_path, allowed_dirs) is not None, \
+            assert os.path.isfile(wf_path) and \
+                check_if_path_in_dirs(wf_path, allowed_dirs) is not None, \
                 "Path does not exist or you have no permission to enter it."
 
-        import_cwl_(cwl_path=cwl_path, name=import_name)
+        import_wf_(wf_path=wf_path, name=import_name)
 
         messages.append( { 
             "time": get_time_string(),

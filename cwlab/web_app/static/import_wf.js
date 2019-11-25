@@ -63,7 +63,7 @@ class ImportCwlZip extends React.Component{
             statusValueDuringRequest: "import",
             messageVar: "importMessages",
             sendData: {
-                cwl_path: this.state.cwlPath,
+                wf_path: this.state.cwlPath,
                 import_name: this.state.importName
             },
             route: routeImportCwlByPathOrUrl
@@ -151,7 +151,7 @@ class ImportCwlZip extends React.Component{
 
 }
 
-class ImportCwlFile extends React.Component{
+class ImportWfFile extends React.Component{
     constructor(props){
         super(props);
         this.state = {
@@ -193,7 +193,7 @@ class ImportCwlFile extends React.Component{
                     </a> for details on how to pack a workflow.
                 </Message>
                 <FileUploadComponent
-                    requestRoute={routeUploadCwl}
+                    requestRoute={routeUploadWf}
                     metaData={ {"import_name": this.state.importName} }
                 />
             </div>
@@ -228,7 +228,7 @@ class ImportCwlUrl extends React.Component{
             statusValueDuringRequest: "import",
             messageVar: "importMessages",
             sendData: {
-                cwl_path: this.state.cwlUrl,
+                wf_path: this.state.cwlUrl,
                 is_url: true,
                 import_name: this.state.importName
             },
@@ -303,9 +303,9 @@ class ImportCWLRoot extends React.Component {
                 descr: "URL to public CWL document (e.g. from github)",
                 component: <ImportCwlUrl />
             },
-            cwlFile: {
-                descr: "from file (CWL-wrapped tool or a packed CWL Workflow)",
-                component: <ImportCwlFile />
+            wfFile: {
+                descr: "from CWL file",
+                component: <ImportWfFile />
             },
             cwlZip: {
                 descr: "from ZIP file (e.g. a CWL workflow with its dependencies)",

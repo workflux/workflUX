@@ -14,7 +14,7 @@
         <script src="https://unpkg.com/react-dom@16/umd/react-dom.development.js" crossorigin></script>
         <script src="https://unpkg.com/babel-standalone/babel.min.js"></script>
         <script src="/static/utils.js" type="text/babel"></script>
-        <script src="/static/import_cwl.js" type="text/babel"></script>
+        <script src="/static/import_wf.js" type="text/babel"></script>
         <script src="/static/create_job.js" type="text/babel"></script>
         <script src="/static/job_exec.js" type="text/babel"></script>
         <script src="/static/users.js" type="text/babel"></script>
@@ -22,17 +22,15 @@
 
         <script > 
             // global params feeded by back end
-            const routeUploadCwl = "{{ url_for('upload_cwl') }}"
+            const routeUploadWf = "{{ url_for('upload_wf') }}"
             const routeUploadCwlZip = "{{ url_for('upload_cwl_zip') }}"
-            const routeImportCwlByPathOrUrl = "{{ url_for('import_cwl_by_path_or_url') }}"
+            const routeImportCwlByPathOrUrl = "{{ url_for('import_wf_by_path_or_url') }}"
             const routeGetJobTemplList = "{{ url_for('get_job_templ_list') }}"
             const routeGetJobTemplConfigInfo = "{{ url_for('get_job_templ_config_info') }}"
             const routeGetParamValues = "{{ url_for('get_param_values') }}"
-            const routePrepareJobEnv = "{{ url_for('prepare_job_env') }}"
             const routeGenParamFormSheet = "{{ url_for('generate_param_form_sheet') }}"
-            const routeSendFilledParamFormSheet = "{{ url_for('send_filled_param_form_sheet') }}"
-            const routeSendFilledParamValues = "{{ url_for('send_filled_param_values') }}"
-            const routeCreateJob = "{{ url_for('create_job') }}"
+            const routeCreateJobFromParamFormSheet = "{{ url_for('create_job_from_param_form_sheet') }}"
+            const routeCreateJobFromParamValues = "{{ url_for('create_job_from_param_values') }}"
             const routeGetJobList = "{{ url_for('get_job_list') }}"
             const routeGetRunList = "{{ url_for('get_run_list') }}"
             const routeStartExec = "{{ url_for('start_exec') }}"

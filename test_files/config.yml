@@ -7,13 +7,13 @@ WEB_SERVER_HOST: 0.0.0.0
 WEB_SERVER_PORT: 5000 # The default is 5000, if this port is blocked choose a different one
 
 TEMP_DIR: '/mnt/c/Users/kerst/OneDrive/home_dell/CWLab/scratch/temp'
-CWL_DIR: '/mnt/c/Users/kerst/OneDrive/home_dell/CWLab/scratch/CWL'
+WORKFLOW_DIR: '/mnt/c/Users/kerst/OneDrive/home_dell/CWLab/scratch/wf_dir'
 EXEC_DIR: '/mnt/c/Users/kerst/OneDrive/home_dell/CWLab/scratch/exec'
 INPUT_DIR: '/mnt/c/Users/kerst/OneDrive/home_dell/CWLab/scratch/input'
 DB_DIR: '/mnt/c/Users/kerst/OneDrive/home_dell/CWLab/scratch/database'
 
 # TEMP_DIR: '/home/epicwl/CWLab/scratch/temp'
-# CWL_DIR: '/home/epicwl/CWLab/scratch/CWL'
+# WORKFLOW_DIR: '/home/epicwl/CWLab/scratch/CWL'
 # EXEC_DIR: '/home/epicwl/CWLab/scratch/exec'
 # INPUT_DIR: '/home/epicwl/CWLab/scratch/input'
 # DB_DIR: '/home/epicwl/CWLab/scratch/database'
@@ -44,13 +44,13 @@ EXEC_PROFILES:
     #   - JOB_ID
     #   - RUN_ID (please note: is only unique within a job)
     #   - CWL
-    #   - RUN_YAML
+    #   - RUN_INPUT
     #   - OUTPUT_DIR
     #   - LOG_FILE
     pre_exec: |
       touch "${OUTPUT_DIR}/pre_exec"
     exec: |
-      cwltool --outdir "${OUTPUT_DIR}" "${CWL}" "${RUN_YAML}" >> "${LOG_FILE}" 2>&1
+      cwltool --outdir "${OUTPUT_DIR}" "${WORKFLOW}" "${RUN_INPUT}" >> "${LOG_FILE}" 2>&1
     eval: | 
       LAST_LINE=$(tail -n 1 ${LOG_FILE})
       if [[ "${LAST_LINE}" == *"Final process status is success"* ]]
@@ -90,13 +90,13 @@ EXEC_PROFILES:
     #   - JOB_ID
     #   - RUN_ID (please note: is only unique within a job)
     #   - CWL
-    #   - RUN_YAML
+    #   - RUN_INPUT
     #   - OUTPUT_DIR
     #   - LOG_FILE
     pre_exec: |
       touch "${OUTPUT_DIR}/pre_exec"
     exec: |
-      cwltool --debug --no-container --outdir "${OUTPUT_DIR}" "${CWL}" "${RUN_YAML}" >> "${LOG_FILE}" 2>&1
+      cwltool --debug --no-container --outdir "${OUTPUT_DIR}" "${WORKFLOW}" "${RUN_INPUT}" >> "${LOG_FILE}" 2>&1
     eval: | 
       LAST_LINE=$(tail -n 1 ${LOG_FILE})
       if [[ "${LAST_LINE}" == *"Final process status is success"* ]]
@@ -136,13 +136,13 @@ EXEC_PROFILES:
     #   - JOB_ID
     #   - RUN_ID (please note: is only unique within a job)
     #   - CWL
-    #   - RUN_YAML
+    #   - RUN_INPUT
     #   - OUTPUT_DIR
     #   - LOG_FILE
     pre_exec: |
       touch "${OUTPUT_DIR}/pre_exec"
     exec: |
-      cwltool --singularity --outdir "${OUTPUT_DIR}" "${CWL}" "${RUN_YAML}" >> "${LOG_FILE}" 2>&1
+      cwltool --singularity --outdir "${OUTPUT_DIR}" "${WORKFLOW}" "${RUN_INPUT}" >> "${LOG_FILE}" 2>&1
     eval: | 
       LAST_LINE=$(tail -n 1 ${LOG_FILE})
       if [[ "${LAST_LINE}" == *"Final process status is success"* ]]
@@ -194,11 +194,11 @@ EXEC_PROFILES:
     #   - JOB_ID
     #   - RUN_ID (please note: is only unique within a job)
     #   - CWL
-    #   - RUN_YAML
+    #   - RUN_INPUT
     #   - OUTPUT_DIR
     #   - LOG_FILE
     exec: |
-      cwltool --outdir "${OUTPUT_DIR}" "${CWL}" "${RUN_YAML}" >> "${LOG_FILE}" 2>&1
+      cwltool --outdir "${OUTPUT_DIR}" "${WORKFLOW}" "${RUN_INPUT}" >> "${LOG_FILE}" 2>&1
     eval: | 
       LAST_LINE=$(tail -n 1 ${LOG_FILE})
       if [[ "${LAST_LINE}" == *"Final process status is success"* ]]

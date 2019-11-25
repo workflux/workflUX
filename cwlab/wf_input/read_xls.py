@@ -370,7 +370,6 @@ def spread_sheet(sheet, verbose_level=2):
     
     return param_values, configs, metadata
 
-
 def sheet_file( sheet_file, verbose_level=2):
     sheets = pe.get_book(file_name=sheet_file)
     print_pref = "[sheet_file]:"
@@ -394,27 +393,4 @@ def sheet_file( sheet_file, verbose_level=2):
             param_values.update(param_values_tmp)
             configs.update(configs_tmp)
 
-    return param_values, configs, metadata
-
-def sheet_files( sheet_files, verbose_level=2):
-    print_pref = "[sheet_files]:"
-    param_values = {}
-    configs = {}
-    metadata = {}
-
-    for sfile in sheet_files:
-        try:
-            param_values_tmp, configs_tmp, metadata_ = sheet_file(sfile, verbose_level)
-            metadata.update(metadata_)
-        except AssertionError as e:
-            raise AssertionError( print_pref + "failed to read file \"" + sfile + "\":" + str(e))
-        
-        # merge with existing data, conflicting data not allowed:
-        if len(set(param_values_tmp.keys()).intersection(param_values.keys())) > 0:
-            raise AssertionError(print_pref + "E: conflicting parameter values, did you specify parameters muliple time?")
-        elif len(set(configs_tmp.keys()).intersection(configs.keys())) > 0:
-            raise AssertionError(print_pref + "E: conflicting config values, did you specify config parameters muliple time?")
-        else:
-            param_values.update(param_values_tmp)
-            configs.update(configs_tmp)
     return param_values, configs, metadata

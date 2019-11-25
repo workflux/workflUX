@@ -5,7 +5,7 @@ from cwlab import app
 from cwlab.users.manage import login_required
 from cwlab.utils import browse_dir as browse_dir_, get_allowed_base_dirs, check_if_path_in_dirs, \
     zip_dir, normalize_path, get_time_string
-from cwlab.xls2cwl_job.read_xls import remove_non_printable_characters
+from cwlab.wf_input.read_xls import remove_non_printable_characters
 from werkzeug import secure_filename
 from json import loads as json_loads
 from cwlab.log import handle_known_error, handle_unknown_error

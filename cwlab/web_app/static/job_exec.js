@@ -821,7 +821,7 @@ class JobList extends React.Component {
                 <IneditableValueField
                     backclassName="w3-theme"
                 >
-                    {job.cwl_target}
+                    {job.wf_target}
                 </IneditableValueField>
             </p>
         ))
@@ -834,7 +834,7 @@ class JobList extends React.Component {
             )
             itemContent = <JobContent 
                 jobId={this.state.whichFocus} 
-                cwlTarget={jobInfo.cwl_target} 
+                cwlTarget={jobInfo.wf_target} 
                 execProfiles={this.props.execProfiles}
                 execProfileParams={this.props.execProfileParams}
                 whichRunDetails={this.state.whichRunDetails}

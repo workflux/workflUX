@@ -56,10 +56,7 @@ def class_file(value_string, secondary_files, validate_paths=True, search_paths=
         path = get_file_or_dir_path(value_string, False, search_paths, validate_paths, input_dir)
     except AssertionError as e:
         raise AssertionError( str(e) )
-    if secondary_files[0] == "":
-        value_type_matched = {"class": "File", "path": path}
-    else:
-        cwl_sec_file_array = []
+    if secondary_files[0] != "":
         for sec_ext in secondary_files:
             if sec_ext[0] == "^":
                 capture_sec_ext = re.search('^(\^+)(.*)', sec_ext)
@@ -74,9 +71,7 @@ def class_file(value_string, secondary_files, validate_paths=True, search_paths=
                 sec_file_item_path = get_file_or_dir_path(sec_file_item_path, False, False, validate_paths)
             except AssertionError as e:
                 raise AssertionError("invalid secondary file for \"" + value_string + "\": " + str(e) )
-            cwl_sec_file_array.append( {"class": "File", "path": sec_file_item_path } )
-        value_type_matched = {"class": "File", "path": path, "secondaryFiles": cwl_sec_file_array }
-    return value_type_matched
+    return path
 
 
 def class_directory(value_string, validate_paths=True, search_paths=True, input_dir=""):
@@ -84,8 +79,7 @@ def class_directory(value_string, validate_paths=True, search_paths=True, input_
         path = get_file_or_dir_path(value_string, True, search_paths, validate_paths, input_dir)
     except AssertionError as e:
         raise AssertionError( str(e) )
-    value_type_matched = {"class": "Directory", "path":path}
-    return value_type_matched
+    return path
 
 
 def boolean(value_string ):
@@ -99,7 +93,7 @@ def boolean(value_string ):
 
 def match_type( param_name, all_param_values, configs, validate_paths=True, search_paths=True, search_subdirs=True, input_dir=""):
     type_matching_functions = { 
-        "boolean":boolean,
+        "boolean":bool,
         "int":int,
         "string":str,
         "long":int, # currently there is a problem with printing long in python2
@@ -110,20 +104,25 @@ def match_type( param_name, all_param_values, configs, validate_paths=True, sear
     # check if non-array paramaeters have at 1 field:
     assert not ( not configs[param_name]["is_array"] and len(value) > 1), "parameter is no array but has more than one value."
     # check if value containes not allowed null entries:
-    assert not (configs[param_name]["is_array"] and "null" in value and not configs[param_name]["null_items_allowed"]), \
-        "parameter contains \"null\" items but they are not allowed."
-    assert not (
-        not configs[param_name]["is_array"] and 
-        (value[0] == "null" or value[0] == "") and 
+    assert not ((value[0] == "null" or value[0] == "") and 
         not configs[param_name]["null_allowed"]
     ), "parameter is \"null\" but this is not allowed."
+    assert not (
+        not configs[param_name]["is_array"] and 
+        (value[0] == "itemNull")
+    ), "Parameter is set to \"itemNull\" but it is not an array/list."
+    assert not (
+        (value[0] == "itemNull") and 
+        not configs[param_name]["null_items_allowed"]
+    ), "The list parameter contains \"itemNull\", however, null items are not allowed."
+    
     # check if parameter contains empty values:
     assert not "" in value, "empty string detected \"\"."
     # check and translate each entry of value into the desired type:
     value_type_matched = []
     for value_string in value:
         try:
-            if value_string == "null":
+            if value_string in ["null", "itemNull"]:
                 value_type_matched.append( None )
             else:
                 if configs[param_name]["type"] == "File":
