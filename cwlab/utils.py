@@ -513,7 +513,7 @@ def get_allowed_base_dirs(job_id=None, run_id=None, allow_input=True, allow_uplo
         mode = "upload" if app.config["UPLOAD_ALLOWED"] and allow_upload else "input"
         if not job_id is None:
             allowed_dirs["DEFAULT_INPUT_DIR"] = {
-                "path": app.config["DEFAULT_INPUT_DIRs"],
+                "path": app.config["DEFAULT_INPUT_DIR"],
                 "mode": mode
             }
         for dir_ in app.config["ADD_INPUT_AND_UPLOAD_DIRS"].keys():
