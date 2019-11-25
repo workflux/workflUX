@@ -64,8 +64,7 @@ class PathValAndSearch extends React.Component{
                         allowInput={true}
                         allowUpload={false}
                         allowDownload={false}
-                        jobId={this.props.jobId}
-                        defaultBaseDir="INPUT_DIR_CURRENT_JOB"
+                        defaultBaseDir="DEFAULT_INPUT_DIR"
                         prevPath={this.props.prevPath}
                         changePrevPath={this.props.changePrevPath}
                     />
@@ -316,8 +315,7 @@ class ParamField extends React.Component{
                         allowInput={true}
                         allowUpload={true}
                         allowDownload={false}
-                        jobId={this.props.jobId}
-                        defaultBaseDir="INPUT_DIR_CURRENT_JOB"
+                        defaultBaseDir="DEFAULT_INPUT_DIR"
                         prevPath={this.props.prevPath}
                         changePrevPath={this.props.changePrevPath}
                         smallSize={true}
@@ -337,8 +335,7 @@ class ParamField extends React.Component{
                             allowInput={true}
                             allowUpload={true}
                             allowDownload={false}
-                            jobId={this.props.jobId}
-                            defaultBaseDir="INPUT_DIR_CURRENT_JOB"
+                            defaultBaseDir="DEFAULT_INPUT_DIR"
                             prevPath={this.props.prevPath}
                             changePrevPath={this.props.changePrevPath}
                             smallSize={true}
