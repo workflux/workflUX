@@ -12,9 +12,8 @@ from cwlab import db
 from random import random, choice as random_choice
 from pathlib import Path
 import zipfile
-from cwltool.load_tool import fetch_document
-from cwltool.main import print_pack
 from WDL import load as load_and_validate_wdl
+from asyncio import set_event_loop, new_event_loop
 import json
 from string import ascii_letters, digits
 from pkg_resources import get_distribution
@@ -22,12 +21,10 @@ from urllib import request as url_request
 from shutil import copyfileobj, copyfile, rmtree
 from werkzeug import secure_filename
 from urllib.request import urlopen
-cwltool_version = get_distribution("cwltool").version
 from distutils.version import StrictVersion
-if StrictVersion(cwltool_version) > StrictVersion("1.0.20181201184214"):
-    from cwltool.load_tool import resolve_and_validate_document
-else:
-    from cwltool.load_tool import validate_document
+from importlib import reload
+import asyncio
+asyncio.set_event_loop(asyncio.new_event_loop())
 basedir = os.path.abspath(os.path.dirname(__file__))
 
 allowed_extensions_by_type = {
@@ -270,13 +267,21 @@ def make_temp_dir():
     return temp_dir
 
 def pack_cwl(cwl_path):
+    # cwltool needs to be imported on demand since
+    # repeatedly calling functions on a document named 
+    # with same name caused errors.
+    from cwltool.load_tool import fetch_document
+    from cwltool.main import print_pack
+    cwltool_version = get_distribution("cwltool").version
     if StrictVersion(cwltool_version) > StrictVersion("1.0.20181201184214"):
+        from cwltool.load_tool import resolve_and_validate_document
         loadingContext, workflowobj, uri = fetch_document(cwl_path)
         loadingContext.do_update = False
         loadingContext, uri = resolve_and_validate_document(loadingContext, workflowobj, uri)
         processobj = loadingContext.loader.resolve_ref(uri)[0]
         packed_cwl = json.loads(print_pack(loadingContext.loader, processobj, uri, loadingContext.metadata))
     else:
+        from cwltool.load_tool import validate_document
         document_loader, workflowobj, uri = fetch_document(cwl_path)
         document_loader, _, processobj, metadata, uri = validate_document(document_loader, workflowobj, uri, [], {})
         packed_cwl = json.loads(print_pack(document_loader, processobj, uri, metadata))
@@ -293,18 +298,20 @@ def import_cwl(wf_path, name):
             "The provided CWL document is not valid, the error was: {}".format(str(e))
         )
     temp_dir = make_temp_dir()
+    wf_temp_path = os.path.join(temp_dir, "packed.cwl")
+    try:
+        with open(wf_temp_path, 'w') as cwl_file:
+            json.dump(packed_cwl, cwl_file)
+    except Exception as e:
+        raise AssertionError("Could not write CWL file.")
     job_templ_path = os.path.join(temp_dir, "job_templ.xlsx")
     generate_job_template_from_cwl(
-        workflow_file=wf_path, 
+        workflow_file=wf_temp_path, 
         wf_type="CWL",
         output_file=job_templ_path, 
         show_please_fill=True
     )
-    try:
-        with open(wf_target_path, 'w') as cwl_file:
-            json.dump(packed_cwl, cwl_file)
-    except Exception as e:
-        raise AssertionError("Could not write CWL file.")
+    copyfile(wf_temp_path, wf_target_path)
     job_templ_target_path = get_path("job_templ", wf_target=wf_target_name)
     copyfile(job_templ_path, job_templ_target_path)
     rmtree(temp_dir)
@@ -312,13 +319,13 @@ def import_cwl(wf_path, name):
 def import_wdl(wf_path, name, wf_imports_zip_path=None):
     wf_target_name = "{}.{}".format(name, supported_workflow_exts["WDL"][0])
     wf_target_path = get_path("wf", wf_target=wf_target_name)
-    assert not os.path.exists(wf_target_path), "The workflow with name \"{wf_target_name}\" already exists."
+    assert not os.path.exists(wf_target_path), f"The workflow with name \"{wf_target_name}\" already exists."
     if wf_imports_zip_path is not None:
         # move wf and wf_import_zip to another dir for save unzipping
         # this is needed as the WDL library cannot yet
         temp_val_dir = make_temp_dir()
         wf_val_path = os.path.join(temp_val_dir, "wf_to_validate.wdl")
-        wf_imports_zip_val_path = os.path.join(temp_val_dir, deps.zip)
+        wf_imports_zip_val_path = os.path.join(temp_val_dir, "deps.zip")
         try:
             with zipfile.ZipFile(wf_imports_zip_val_path,"r") as zip_ref:
                 zip_ref.extractall(temp_val_dir)
@@ -327,6 +334,7 @@ def import_wdl(wf_path, name, wf_imports_zip_path=None):
     else:
         wf_val_path = wf_path
     try:
+        set_event_loop(new_event_loop())
         _ = load_and_validate_wdl(wf_val_path)
     except Exception as e:
         raise AssertionError(

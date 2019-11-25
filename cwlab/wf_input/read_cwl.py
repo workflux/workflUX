@@ -1,7 +1,4 @@
 import sys, os
-from cwltool.context import LoadingContext
-from cwltool.load_tool import load_tool
-from cwltool.workflow import default_make_tool
 from .read_xls import clean_string
 
 def is_basic_type_instance(value):
@@ -63,6 +60,12 @@ def read_config_from_cwl_file(cwl_file):
         "workflow_path": os.path.abspath(cwl_file),
         "workflow_type": "CWL"
     }
+    # cwltool needs to be imported on demand since
+    # repeatedly calling functions on a document named 
+    # with same name caused errors.
+    from cwltool.context import LoadingContext
+    from cwltool.load_tool import load_tool
+    from cwltool.workflow import default_make_tool
     loadingContext = LoadingContext({"construct_tool_object": default_make_tool, "disable_js_validation": True})
     try:
         cwl_document = load_tool(cwl_file, loadingContext)
