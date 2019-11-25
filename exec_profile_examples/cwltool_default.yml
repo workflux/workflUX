@@ -1,0 +1,5 @@
+EXEC_PROFILES:
+  cwltool_default:
+    shell: bash
+    exec: |
+      "${PYTHON_PATH}" -m cwltool --outdir "${OUTPUT_DIR}" "${WORKFLOW}" "${RUN_YAML}" >> "${LOG_FILE}" 2>&1
