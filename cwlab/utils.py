@@ -91,7 +91,8 @@ def fetch_files_in_dir(dir_path, # searches for files in dir_path
     search_string="", # match files that contain this string in the name
                         # "" to disable
     regex_pattern="", # matches files by regex pattern
-    ignore_subdirs=True # if true, ignores subdirectories
+    ignore_subdirs=True, # if true, ignores subdirectories
+    return_abspaths=False
     ):
     # searches for files in dir_path
     # onyl hit that fullfill following criteria are return:
@@ -114,13 +115,16 @@ def fetch_files_in_dir(dir_path, # searches for files in dir_path
             file_reldir = os.path.relpath(root, abs_dir_path)
             file_relpath = os.path.join(file_reldir, file_) 
             file_nameroot = os.path.splitext(file_)[0]
-            hits.append({
+            file_dict = {
                 "file_name":file_, 
                 "file_nameroot":file_nameroot, 
                 "file_relpath":file_relpath, 
                 "file_reldir":file_reldir, 
                 "file_ext":file_ext
-            })
+            }
+            if return_abspaths:
+                file_dict["file_abspath"] = os.path.join(abs_dir_path, file_)
+            hits.append(file_dict)
     return hits
 
 
@@ -444,7 +448,7 @@ def get_run_ids(job_id):
     )
     run_ids = [r["file_nameroot"] for r in run_yamls]
     return run_ids
-
+    
 def get_job_templates():
     # read list of template files:
     templates = fetch_files_in_dir(
