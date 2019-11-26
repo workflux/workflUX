@@ -2,6 +2,7 @@ import os
 import fnmatch
 import sys
 import re
+from copy import copy
 
 def path_exists(path_str, is_dir=False):
     if is_dir:
@@ -61,7 +62,7 @@ def class_file(value_string, secondary_files, validate_paths=True, search_paths=
             if sec_ext[0] == "^":
                 capture_sec_ext = re.search('^(\^+)(.*)', sec_ext)
                 n_exts_to_rm = len(capture_sec_ext.group(1))
-                value_root = path 
+                value_root = copy(path) 
                 for idx in range(0,n_exts_to_rm):
                   value_root = os.path.splitext(value_root)[0]
                 sec_file_item_path =value_root + capture_sec_ext.group(2)
