@@ -1,5 +1,6 @@
 import sys, os
 from .read_xls import clean_string
+from ruamel.yaml.comments import CommentedMap, CommentedSeq
 
 def is_basic_type_instance(value):
     return (isinstance(value, int) or 
@@ -113,6 +114,15 @@ def read_config_from_cwl_file(cwl_file):
         if type_ == "File" and "secondaryFiles" in inp_rec:
             if isinstance(inp_rec["secondaryFiles"], str):
                 secondary_files = [ inp_rec["secondaryFiles"] ]
+            elif isinstance(inp_rec["secondaryFiles"], CommentedMap) and \
+                "pattern" in inp_rec["secondaryFiles"].keys():
+                secondary_files = [ inp_rec["secondaryFiles"]["pattern"] ]
+            elif isinstance(inp_rec["secondaryFiles"], CommentedSeq):
+                secondary_files = []
+                for sec_file in inp_rec["secondaryFiles"]:
+                    assert isinstance(sec_file, CommentedMap) and "pattern" in sec_file, \
+                        print_pref + "E: invalid secondaryFiles field for parameter " + name
+                    secondary_files.append(sec_file["pattern"])
             elif isinstance(inp_rec["secondaryFiles"], list):
                 secondary_files = inp_rec["secondaryFiles"]
             else:
