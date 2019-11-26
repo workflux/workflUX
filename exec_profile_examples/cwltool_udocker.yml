@@ -1,0 +1,19 @@
+EXEC_PROFILES:
+  cwltool_udocker: 
+    shell: bash
+    pre_exec: |
+      echo "Setting up udocker environment:" > "${LOG_FILE}"
+      cd ${OUTPUT_DIR}
+      wget https://raw.githubusercontent.com/indigo-dc/udocker/v1.1.3/udocker.py -O udocker
+      chmod u+rx ./udocker
+      wget https://download.ncg.ingrid.pt/webdav/udocker/udocker-1.1.3.tar.gz -O udocker_tar.tar.gz
+      export UDOCKER_TARBALL="$(pwd)/udocker_tar.tar.gz"
+      ./udocker install >> "${LOG_FILE}" 2>&1
+    exec: |
+      ${PYTHON_PATH} -m cwltool --debug  \
+        --user-space-docker-cmd "${OUTPUT_DIR}/udocker" \
+        --outdir "${OUTPUT_DIR}" \
+        "${WORKFLOW}" "${RUN_INPUT}" \
+        >> "${LOG_FILE}" 2>&1
+    post_exec: |
+      rm -rf "${UDOCKER_DIR}" "${OUTPUT_DIR}/udocker" "${UDOCKER_TARBALL}"
