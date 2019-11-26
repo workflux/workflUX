@@ -430,7 +430,7 @@ def import_wf(
         wf_type = get_workflow_type_from_file_ext(wf_path)
     else:
         assert wf_type in supported_workflow_types, "Provided workflow type \"{wf_type}\" is not supported."
-    if name is None:
+    if name is None or name == "":
         name = os.path.splitext(os.path.basename(wf_path))[0]
     if os.path.splitext(name)[1] in supported_workflow_exts[wf_type]:
         name = os.path.splitext(name)[0]
