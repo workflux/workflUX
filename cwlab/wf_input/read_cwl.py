@@ -117,14 +117,15 @@ def read_config_from_cwl_file(cwl_file):
             elif isinstance(inp_rec["secondaryFiles"], CommentedMap) and \
                 "pattern" in inp_rec["secondaryFiles"].keys():
                 secondary_files = [ inp_rec["secondaryFiles"]["pattern"] ]
-            elif isinstance(inp_rec["secondaryFiles"], CommentedSeq):
+            elif isinstance(inp_rec["secondaryFiles"], CommentedSeq) or isinstance(inp_rec["secondaryFiles"], list):
                 secondary_files = []
                 for sec_file in inp_rec["secondaryFiles"]:
-                    assert isinstance(sec_file, CommentedMap) and "pattern" in sec_file, \
-                        print_pref + "E: invalid secondaryFiles field for parameter " + name
-                    secondary_files.append(sec_file["pattern"])
-            elif isinstance(inp_rec["secondaryFiles"], list):
-                secondary_files = inp_rec["secondaryFiles"]
+                    if isinstance(sec_file, CommentedMap) and "pattern" in sec_file:
+                        secondary_files.append(sec_file["pattern"])
+                    elif isinstance(sec_file, str):
+                        secondary_files.append(sec_file)
+                    else:
+                        raise AssertionError(print_pref + "E: invalid secondaryFiles field for parameter " + name)
             else:
                 raise AssertionError( print_pref + "E: invalid secondaryFiles field for parameter " + name )
         else:
