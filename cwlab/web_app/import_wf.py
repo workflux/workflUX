@@ -103,42 +103,42 @@ def upload_cwl_zip():
     
     return jsonify({"data":data,"messages":messages})
 
-@app.route('/download_zip_url/', methods=['POST'])
-def download_zip_url():
-    messages = []
-    data = {}
-    try:
-        login_required()
-        data_req = request.get_json()
-        zip_url = data_req["zip_url"]
+# @app.route('/download_zip_url/', methods=['POST'])
+# def download_zip_url():
+#     messages = []
+#     data = {}
+#     try:
+#         login_required()
+#         data_req = request.get_json()
+#         zip_url = data_req["zip_url"]
 
-        try:
-            downloaded_zip = download_file(zip_url, "downloaded.zip")
-        except Exception:
-            raise AssertionError("Could not download the provided URL, is the URL valid; {}".format(zip_url))
+#         try:
+#             downloaded_zip = download_file(zip_url, "downloaded.zip")
+#         except Exception:
+#             raise AssertionError("Could not download the provided URL, is the URL valid; {}".format(zip_url))
 
-        temp_extract_dir = make_temp_dir()
-        unzip_dir(downloaded_zip, temp_extract_dir)
+#         temp_extract_dir = make_temp_dir()
+#         unzip_dir(downloaded_zip, temp_extract_dir)
 
-        try:
-            rmtree(os.path.dirname(downloaded_zip))
-        except Exception as e:
-            pass
+#         try:
+#             rmtree(os.path.dirname(downloaded_zip))
+#         except Exception as e:
+#             pass
 
-        data["temp_dir"] = temp_extract_dir
+#         data["temp_dir"] = temp_extract_dir
 
-        messages.append( { 
-            "time": get_time_string(),
-            "type":"success", 
-            "text": import_file.filename + " was successfully downloaded and extracted."
-        } )
+#         messages.append( { 
+#             "time": get_time_string(),
+#             "type":"success", 
+#             "text": import_file.filename + " was successfully downloaded and extracted."
+#         } )
 
-    except AssertionError as e:
-        messages.append( handle_known_error(e, return_front_end_message=True))
-    except Exception as e:
-        messages.append(handle_unknown_error(e, return_front_end_message=True))
+#     except AssertionError as e:
+#         messages.append( handle_known_error(e, return_front_end_message=True))
+#     except Exception as e:
+#         messages.append(handle_unknown_error(e, return_front_end_message=True))
     
-    return jsonify({"data":data,"messages":messages})
+#     return jsonify({"data":data,"messages":messages})
 
 @app.route('/import_wf_by_path_or_url/', methods=['POST'])
 def import_wf_by_path_or_url():
