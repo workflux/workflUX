@@ -4,6 +4,7 @@ import os
 import sys
 import re
 from .read_wf import supported_workflow_exts
+from copy import copy
 
 supported_workflow_types = supported_workflow_exts.keys()
 
@@ -18,9 +19,10 @@ def make_CWL_File_or_Directory(path, is_dir=False, secondary_files=[""]):
             if sec_ext[0] == "^":
                 capture_sec_ext = re.search('^(\^+)(.*)', sec_ext)
                 n_exts_to_rm = len(capture_sec_ext.group(1))
+                value_root = copy(path) 
                 for idx in range(0,n_exts_to_rm):
-                    value_root = os.path.splitext(path)[0]
-                sec_file_item_path = path + capture_sec_ext.group(2)
+                  value_root = os.path.splitext(value_root)[0]
+                sec_file_item_path =value_root + capture_sec_ext.group(2)
             else:
                 sec_file_item_path = path + sec_ext
             cwl_sec_file_array.append( {"class": "File", "path": sec_file_item_path } )

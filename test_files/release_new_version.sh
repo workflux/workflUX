@@ -1,7 +1,7 @@
 # update version in setup and init
 
 # convert Readme.md to Readme.rst
-pandoc -f markdown -t rst -o Readme.rst Readme.md
+pandoc -f markdown -t rst -o README.rst README.md
 
 # make dist:
 rm -rf dist/*

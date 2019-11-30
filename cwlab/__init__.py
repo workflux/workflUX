@@ -1,7 +1,7 @@
 
 from __future__ import absolute_import
 
-__version__ = "0.2.0"
+__version__ = "0.3.1"
 
 import os
 from flask import Flask
@@ -46,7 +46,7 @@ def setup_working_dirs():
     global app
     for param in [
         'TEMP_DIR',
-        'WF_DIR',
+        'WORKFLOW_DIR',
         'EXEC_DIR',
         'DB_DIR',
         'LOG_DIR'

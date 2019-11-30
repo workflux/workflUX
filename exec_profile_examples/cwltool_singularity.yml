@@ -1,0 +1,24 @@
+EXEC_PROFILES:
+  cwltool_singularity:
+    shell: bash
+    max_retries: 0
+    timeout:
+      pre_exec: 120
+      exec: 86400
+      eval: 120
+      post_exec: 120
+    pre_exec: |
+      {
+        echo "Setting up nodejs:"
+        rm -rf node*
+        wget --no-hsts -nv https://nodejs.org/dist/v12.13.1/node-v12.13.1-linux-x64.tar.xz -O nodejs.tar.xz
+        tar xf nodejs.tar.xz
+        rm nodejs.tar.xz
+        mv node* nodejs
+        export PATH="${PATH}:$(pwd)/nodejs/bin"
+      } > "${LOG_FILE}" 2>&1
+    exec: |
+      ${PYTHON_PATH} -m cwltool --singularity --outdir "${OUTPUT_DIR}" "${WORKFLOW}" "${RUN_INPUT}" \
+        >> "${LOG_FILE}" 2>&1
+    post_exec: |
+      rm -rf "${OUTPUT_DIR}/nodejs"

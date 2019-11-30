@@ -264,19 +264,46 @@ General Configs:
 -  **TEMP\_DIR**:
    Directory for temporary files.
    *Default*: a subfolder "cwlab/temp" in the home directory
--  **CWL\_DIR**:
+-  **WORKFLOW\_DIR**:
    Directory for saving CWL documents.
    *Default*: a subfolder "cwlab/temp" in the home directory
 -  **EXEC\_DIR**:
    Directory for saving execution data including output files.
    *Default*: a subfolder "cwlab/temp" in the home directory
--  **INPUT\_DIR**:
-   Directory where input files are expected by default (if the full path
-   is not specified).
+-  **DEFAULT\_INPUT\_DIR**:
+   Default directory where users can search for input files. You may
+   specify additional input directories using the "**ADD\_INPUT\_DIRS**"
+   parameter. *Default*: a subfolder "cwlab/temp" in the home directory
+-  **DB\_DIR**:
+   Directory for databases.
    *Default*: a subfolder "cwlab/temp" in the home directory
--  | **DB\_DIR**:
-   | Directory for databases.
-   | *Default*: a subfolder "cwlab/temp" in the home directory
+-  | **ADD\_INPUT\_DIRS**:
+   | In addition to "**DEFAULT\_INPUT\_DIR**", these directories can be
+     searched by the user for input files.
+   | Please specify them in the format "*name: path*" like shown in this
+     example:
+
+   ::
+
+       ADD_INPUT_DIRS:
+           GENOMES_DIR: '/ngs_share/genomes'
+           PUBLIC_GEO_DATA: '/datasets/public/geo'
+
+   *Default*: no additional input dirs.
+-  | **ADD\_INPUT\_AND\_UPLOAD\_DIRS**:
+   | Users can search these directories for input files (in addition to
+     "**DEFAULT\_INPUT\_DIR**") and they may also upload their one
+     files.
+   | Please specify them in the format "*name: path*" like shown in this
+     example:
+
+   ::
+
+       ADD_INPUT_AND_UPLOAD_DIRS:
+           UPLOAD_SCRATCH: '/scratch/upload'
+           PERMANEN_UPLOAD_STORE: '/datasets/upload'
+
+   *Default*: no additional input dirs.
 
 -  | **DEBUG**:
    | If set to True, the debugging mode is turned on. Do not use on
@@ -342,8 +369,8 @@ profile, following configuration parameters are available (but only
 
    -  ``JOB_ID``
    -  ``RUN_ID`` (please note: is only unique within a job)
-   -  ``CWL`` (the path to the used CWL document)
-   -  ``RUN_YAML`` (the path to the YAML file containing input
+   -  ``WORKFLOW`` (the path to the used CWL document)
+   -  ``RUN_INPUT`` (the path to the YAML file containing input
       parameters)
    -  ``OUTPUT_DIR`` (the path of the run-specific output directory)
    -  ``LOG_FILE`` (the path of the log file that should receive the
@@ -393,10 +420,18 @@ Linux / MacOs:
     DEBUG: False  
 
     TEMP_DIR: '/home/cwlab_user/cwlab/temp'
-    WF_DIR: '/home/cwlab_user/cwlab/cwl'
-    EXEC_DIR: '/home/cwlab_user/cwlab/exec'
-    INPUT_DIR: '/home/cwlab_user/cwlab/input'
+    WORKFLOW_DIR: '/home/cwlab_user/cwlab/workflows'
+    EXEC_DIR: '/datasets/processing_out/'
+    DEFAULT_INPUT_DIR: '/home/cwlab_user/cwlab/input'
     DB_DIR: '/home/cwlab_user/cwlab/db'
+
+    ADD_INPUT_DIRS:
+        GENOMES_DIR: '/ngs_share/genomes'
+        PUBLIC_GEO_DATA: '/datasets/public/geo'
+
+    ADD_INPUT_AND_UPLOAD_DIRS:
+        UPLOAD_SCRATCH: '/scratch/upload'
+        PERMANEN_UPLOAD_STORE: '/datasets/upload'
 
     EXEC_PROFILES:
         cwltool_local:
@@ -408,7 +443,7 @@ Linux / MacOs:
                 eval: 120
                 post_exec: 120
             exec: |
-                cwltool --outdir "${OUTPUT_DIR}" "${CWL}" "${RUN_YAML}" \
+                cwltool --outdir "${OUTPUT_DIR}" "${WORKFLOW}" "${RUN_INPUT}" \
                     >> "${LOG_FILE}" 2>&1
             eval: | 
                 LAST_LINE=$(tail -n 1 ${LOG_FILE})
@@ -430,11 +465,19 @@ Windows:
 
     DEBUG: False  
 
-    TEMP_DIR: '/home/cwlab_user/cwlab/temp'
-    WF_DIR: '/home/cwlab_user/cwlab/cwl'
-    EXEC_DIR: '/home/cwlab_user/cwlab/exec'
-    INPUT_DIR: '/home/cwlab_user/cwlab/input'
-    DB_DIR: '/home/cwlab_user/cwlab/db'
+    TEMP_DIR: 'C:\Users\cwlab_user\cwlab\temp'
+    WORKFLOW_DIR: 'C:\Users\cwlab_user\cwlab\workflows'
+    EXEC_DIR: 'D:\processing_out\'
+    DEFAULT_INPUT_DIR: 'C:\Users\cwlab_user\cwlab\input'
+    DB_DIR: 'C:\Users\cwlab_user\cwlab\db'
+
+    ADD_INPUT_DIRS:
+        GENOMES_DIR: 'E:\genomes'
+        PUBLIC_GEO_DATA: 'D:\public\geo'
+        
+    ADD_INPUT_AND_UPLOAD_DIRS:
+        UPLOAD_SCRATCH: 'E:\upload'
+        PERMANEN_UPLOAD_STORE: '\D:\upload'
 
     EXEC_PROFILES:
         cwltool_windows:
@@ -446,7 +489,7 @@ Windows:
                 eval: 120
                 post_exec: 120
             exec: |
-                . "${PYTHON_PATH}" -m cwltool --debug --default-container ubuntu:16.04 --outdir "${OUTPUT_DIR}" "${CWL}" "${RUN_YAML}" > "${LOG_FILE}" 2>&1
+                . "${PYTHON_PATH}" -m cwltool --debug --default-container ubuntu:16.04 --outdir "${OUTPUT_DIR}" "${CWL}" "${RUN_INPUT}" > "${LOG_FILE}" 2>&1
 
             eval: |
                 $LAST_LINES = (Get-Content -Tail 2 "${LOG_FILE}")
@@ -482,7 +525,7 @@ scientists and bioinformaticians working closely together. Our DNA
 sequencing-driven methodologies produce challenging amounts of data.
 CWLab helps us by giving all members of our team the ability to perform
 common bioinformatic analyses autonomously without having to acquire
-programming skills. This allows our bioinformatic stuff to focus on
+programming skills. This allows our bioinformatic staff to focus on
 method development and interpretation of computationally complex data.
 
 If you like to know more about us, please visit our website

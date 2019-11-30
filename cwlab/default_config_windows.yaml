@@ -8,7 +8,7 @@ EXEC_PROFILES:
     shell: powershell
 
     exec: |
-      . "${PYTHON_PATH}" -m cwltool --default-container ubuntu:16.04 --outdir "${OUTPUT_DIR}" "${CWL}" "${RUN_YAML}" > "${LOG_FILE}" 2>&1
+      . "${PYTHON_PATH}" -m cwltool --default-container ubuntu:16.04 --outdir "${OUTPUT_DIR}" "${WORKFLOW}" "${RUN_INPUT}" > "${LOG_FILE}" 2>&1
 
     eval: |
       $LAST_LINES = (Get-Content -Tail 2 "${LOG_FILE}")

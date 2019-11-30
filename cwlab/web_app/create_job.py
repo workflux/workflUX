@@ -5,7 +5,7 @@ from flask import render_template, jsonify, redirect, flash, url_for, request, s
 from werkzeug.urls import url_parse
 from cwlab import app 
 from cwlab.utils import fetch_files_in_dir, is_allowed_file, allowed_extensions_by_type, get_job_templates, \
-    get_job_templ_info, get_path, get_run_ids
+    get_job_templ_info, get_path, get_run_ids, make_temp_dir
 import requests
 from cwlab.exec.exec import make_job_dir_tree, create_job as create_job_
 from re import match
@@ -13,7 +13,7 @@ from cwlab.wf_input.web_interface import gen_form_sheet, generate_xls_from_param
 from cwlab.wf_input import only_validate_xls
 from cwlab.wf_input.read_xls import remove_non_printable_characters
 from time import sleep
-from shutil import move, copyfile
+from shutil import move, copyfile, rmtree
 from json import loads as json_loads
 from cwlab.users.manage import login_required
 from cwlab.log import handle_known_error, handle_unknown_error
@@ -77,14 +77,9 @@ def generate_param_form_sheet():    # generate param form sheet with data sent
         param_modes = request_json["param_modes"]
         run_names = request_json["run_names"]
         run_mode = request_json["run_mode"]
-        try:
-            param_form_sheet = get_path("job_param_sheet_temp", job_id=job_id)
-            os.remove(param_form_sheet)
-        except Exception as e:
-            pass
-
-        output_file_path = get_path("job_param_sheet_temp", job_id=job_id, param_sheet_format=sheet_format)
-        print(output_file_path)
+        temp_dir = make_temp_dir() # will stay, need to be cleaned up
+        temp_dir_name = os.path.basename(temp_dir)
+        output_file_path = os.path.join(temp_dir, f"{job_id}_inputs.{sheet_format}")
         gen_form_sheet(
             output_file_path = output_file_path,
             template_config_file_path = get_path("job_templ", wf_target=wf_target),
@@ -94,7 +89,11 @@ def generate_param_form_sheet():    # generate param form sheet with data sent
             show_please_fill=True,
             metadata={"workflow_name": wf_target}
         )
-        data["get_form_sheet_href"] = url_for("get_param_form_sheet", job_id=job_id)
+        data["get_form_sheet_href"] = url_for(
+            "get_param_form_sheet", 
+            job_id=job_id,
+            temp_dir_name=temp_dir_name
+        )
     except AssertionError as e:
         messages.append( handle_known_error(e, return_front_end_message=True))
     except Exception as e:
@@ -105,17 +104,32 @@ def generate_param_form_sheet():    # generate param form sheet with data sent
     })
 
 
-@app.route('/get_param_form_sheet/<job_id>', methods=['GET','POST'])
-def get_param_form_sheet(job_id):
+@app.route('/get_param_form_sheet/', methods=['GET','POST'])
+def get_param_form_sheet():
     messages = []
     data = {}
     try:
         login_required()
-        sheet_path = get_path("job_param_sheet_temp", job_id=job_id)
+        req_data = request.args.to_dict()
+        job_id = req_data["job_id"]
+        temp_dir_name = req_data["temp_dir_name"]
+        temp_dir = os.path.join(app.config["TEMP_DIR"], temp_dir_name)
+
+        hits = fetch_files_in_dir(
+            dir_path=temp_dir,
+            file_exts=allowed_extensions_by_type["spreadsheet"],
+            search_string=job_id,
+            return_abspaths=True
+        )
+
+        assert len(hits) == 1, \
+            "The requested file does not exist or you have no permission access it"
+
+        sheet_path = hits[0]["file_abspath"]
         return send_from_directory(
             os.path.dirname(sheet_path),
             os.path.basename(sheet_path),
-            attachment_filename=job_id + ".input_params" + os.path.splitext(sheet_path)[1],
+            attachment_filename=job_id + "_inputs" + os.path.splitext(sheet_path)[1],
             as_attachment=True
         )
     except AssertionError as e:
@@ -128,10 +142,11 @@ def get_param_form_sheet(job_id):
     })
 
 
-@app.route('/send_filled_param_form_sheet/', methods=['POST'])
-def send_filled_param_form_sheet():
+@app.route('/create_job_from_param_form_sheet/', methods=['POST'])
+def create_job_from_param_form_sheet():
     messages = []
     data = []
+    temp_dir = make_temp_dir()
     try:
         login_required()
         assert 'file' in request.files, 'No file received.'
@@ -142,12 +157,13 @@ def send_filled_param_form_sheet():
 
         assert is_allowed_file(import_file.filename, type="spreadsheet"), "Wrong file type. Only files with following extensions are allowed: " + \
                 ", ".join(allowed_extensions_by_type["spreadsheet"])
-        import_fileext = os.path.splitext(import_file.filename)[1].strip(".").lower()
+
+        sheet_format = os.path.splitext(import_file.filename)[1].strip(".").lower()
         
-        # save the file to the CWL directory:
         metadata = json_loads(request.form.get("meta"))
+        print(metadata)
         job_id = metadata["job_id"]
-        import_filepath = get_path("job_param_sheet_temp", job_id=job_id, param_sheet_format=import_fileext)
+        import_filepath = os.path.join(temp_dir, f"param_sheet.{sheet_format}")
         import_file.save(import_filepath)
 
         validate_paths = metadata["validate_paths"]
@@ -161,47 +177,54 @@ def send_filled_param_form_sheet():
                 search_dir + 
                 "\" does not exist or is not a directory."
             )
+            
+        # validate the uploaded form sheet:
+        validation_result = only_validate_xls(
+            sheet_file=import_filepath,
+            validate_paths=validate_paths, 
+            search_paths=search_paths, 
+            search_subdirs=include_subdirs_for_searching, 
+            input_dir=search_dir
+        )
+        assert validation_result == "VALID", "The provided form failed validation: {}".format(validation_result)
+
+        # create job:
+        make_job_dir_tree(job_id)
+        create_job_(
+            job_id=job_id,
+            job_param_sheet=import_filepath,
+            validate_paths=validate_paths,
+            search_paths=search_paths,
+            search_subdirs=include_subdirs_for_searching,
+            search_dir=search_dir,
+            sheet_format=sheet_format
+        )
+            
     except AssertionError as e:
         messages.append( handle_known_error(e, return_front_end_message=True))
     except Exception as e:
         messages.append(handle_unknown_error(e, return_front_end_message=True))
     
     if len(messages) == 0:
-        try:
-        # validate the uploaded form sheet:
-            validation_result = only_validate_xls(
-                sheet_file=import_filepath,
-                validate_paths=validate_paths, 
-                search_paths=search_paths, 
-                search_subdirs=include_subdirs_for_searching, 
-                input_dir=search_dir
-            )
-            if validation_result != "VALID":
-                os.remove(import_filepath)
-                raise AssertionError(validation_result)
-        except AssertionError as e:
-            messages.append(handle_known_error(
-                e, 
-                alt_err_message="The provided form failed validation: {}".format(str(e)),
-                return_front_end_message=True
-            ))
-        except Exception as e:
-            messages.append(handle_unknown_error(e, return_front_end_message=True))
-
-    if len(messages) == 0:
         messages.append( { 
             "type":"success", 
-            "text": "The filled form was successfully imported and validated."
+            "text": f"Job {job_id} was successfully created. Please head over to \"Job Execution and Results\""
         } )
     
+    try:
+        rmtree(temp_dir)
+    except Exception:
+        pass
+
     return jsonify({"data":data,"messages":messages})
 
 
 
-@app.route('/send_filled_param_values/', methods=['POST'])
-def send_filled_param_values():
+@app.route('/create_job_from_param_values/', methods=['POST'])
+def create_job_from_param_values():
     messages = []
     data = []
+    temp_dir = make_temp_dir()
     try:
         login_required()
         request_json = request.get_json()
@@ -210,7 +233,7 @@ def send_filled_param_values():
         wf_target = request_json["wf_target"]
 
         job_id = request_json["job_id"]
-        import_filepath = get_path("job_param_sheet_temp", job_id=job_id, param_sheet_format="xlsx")
+        import_filepath = os.path.join(temp_dir, "param_sheet.xlsx")
 
         validate_paths = request_json["validate_paths"]
         search_paths = request_json["search_paths"]
@@ -224,116 +247,49 @@ def send_filled_param_values():
                 search_dir + 
                 "\" does not exist or is not a directory."
             )
+        try:
+            generate_xls_from_param_values(
+                param_values=param_values,
+                configs=param_configs,
+                output_file=import_filepath,
+                validate_paths=validate_paths, 
+                search_paths=search_paths, 
+                search_subdirs=include_subdirs_for_searching, 
+                input_dir=search_dir,
+                metadata={"workflow_name": wf_target}
+            )
+        except AssertionError as e:
+            raise AssertionError("The provided form failed validation: {}".format(str(e)))
 
-        generate_xls_from_param_values(
-            param_values=param_values,
-            configs=param_configs,
-            output_file=import_filepath,
-            validate_paths=validate_paths, 
-            search_paths=search_paths, 
-            search_subdirs=include_subdirs_for_searching, 
-            input_dir=search_dir,
-            metadata={"workflow_name": wf_target}
+        # create job:
+        make_job_dir_tree(job_id)
+        create_job_(
+            job_id=job_id,
+            job_param_sheet=import_filepath,
+            validate_paths=validate_paths,
+            search_paths=search_paths,
+            search_subdirs=include_subdirs_for_searching,
+            search_dir=search_dir,
+            sheet_format="xlsx"
         )
+
     except AssertionError as e:
-        messages.append(handle_known_error(
-            e, 
-            alt_err_message="The provided form failed validation: {}".format(str(e)),
-            return_front_end_message=True
-        ))
+        messages.append( handle_known_error(e, return_front_end_message=True))
     except Exception as e:
         messages.append(handle_unknown_error(e, return_front_end_message=True))
 
     if len(messages) == 0:
         messages.append( { 
             "type":"success", 
-            "text": "The filled form was successfully imported and validated."
+            "text": f"Job {job_id} was successfully created. Please head over to \"Job Execution and Results\""
         } )
     
+    try:
+        rmtree(temp_dir)
+    except Exception:
+        pass
+
     return jsonify({"data":data,"messages":messages})
-
-@app.route('/prepare_job_env/', methods=['POST'])
-def prepare_job_env():    # generate param form sheet with data sent
-                                    # by the client
-    messages = []
-    data = {}
-    try:
-        login_required()
-        request_json = request.get_json()
-        job_id = request_json["job_id"]
-        make_job_dir_tree(job_id)        
-    except AssertionError as e:
-        messages.append( handle_known_error(e, return_front_end_message=True))
-    except Exception as e:
-        messages.append(handle_unknown_error(e, return_front_end_message=True))
-    return jsonify({
-        "data":data,
-        "messages":messages
-    })
-
-@app.route('/create_job/', methods=['POST'])
-def create_job():    # generate param form sheet with data sent
-                                    # by the client
-    messages = []
-    data = {}
-    try:
-        login_required()
-        request_json = request.get_json()
-        job_id = request_json["job_id"]
-        sheet_format = request_json["sheet_format"]
-        sheet_form_temp = get_path("job_param_sheet_temp", job_id=job_id, param_sheet_format=sheet_format)
-
-        assert os.path.isfile(sheet_form_temp), "Could not find the filled parameter sheet \"" + sheet_form_temp + "\"."
-
-        assert is_allowed_file(sheet_form_temp, type="spreadsheet"), ( 
-            "The filled parameter sheet \"" + sheet_form_temp + "\" has the wrong file type. " +
-                "Only files with following extensions are allowed: " + 
-                ", ".join(allowed_extensions_by_type["spreadsheet"])
-        )
-
-        validate_paths = request_json["validate_paths"]
-        search_paths = request_json["search_paths"]
-        search_dir = os.path.abspath(remove_non_printable_characters(request_json["search_dir"]))
-        include_subdirs_for_searching = request_json["include_subdirs_for_searching"] 
-
-        if search_paths:
-            # test if search dir exists:
-            assert os.path.isdir(search_dir), (
-                "The specified search dir \"" + 
-                search_dir + 
-                "\" does not exist or is not a directory."
-            )
-
-        # Move form sheet to job dir:
-        try:
-            sheet_form = get_path("job_param_sheet", job_id=job_id)
-            os.remove(sheet_form)
-        except Exception as e:
-            pass
-
-        create_job_(
-            job_id=job_id,
-            job_param_sheet=sheet_form_temp,
-            validate_paths=validate_paths,
-            search_paths=search_paths,
-            search_subdirs=include_subdirs_for_searching,
-            search_dir=search_dir,
-            sheet_format=sheet_format
-        )
-
-        messages.append( { 
-            "type":"success", 
-            "text":"Successfully created job \"" + job_id + "\"." 
-        } )
-    except AssertionError as e:
-        messages.append( handle_known_error(e, return_front_end_message=True))
-    except Exception as e:
-        messages.append(handle_unknown_error(e, return_front_end_message=True))
-    return jsonify({
-        "data":data,
-        "messages":messages
-    })
-
 
 @app.route('/get_param_values/', methods=['GET','POST'])
 def get_param_values():    

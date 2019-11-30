@@ -7,7 +7,7 @@ EXEC_PROFILES:
     shell: bash
     
     exec: |
-      "${PYTHON_PATH}" -m cwltool --outdir "${OUTPUT_DIR}" "${CWL}" "${RUN_YAML}" >> "${LOG_FILE}" 2>&1
+      "${PYTHON_PATH}" -m cwltool --outdir "${OUTPUT_DIR}" "${WORKFLOW}" "${RUN_INPUT}" >> "${LOG_FILE}" 2>&1
     eval: | 
       LAST_LINES=$(tail -n 2 ${LOG_FILE})
       if [[ "${LAST_LINES}" == *"Final process status is success"* ]]

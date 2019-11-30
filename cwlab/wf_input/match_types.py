@@ -2,6 +2,7 @@ import os
 import fnmatch
 import sys
 import re
+from copy import copy
 
 def path_exists(path_str, is_dir=False):
     if is_dir:
@@ -61,7 +62,7 @@ def class_file(value_string, secondary_files, validate_paths=True, search_paths=
             if sec_ext[0] == "^":
                 capture_sec_ext = re.search('^(\^+)(.*)', sec_ext)
                 n_exts_to_rm = len(capture_sec_ext.group(1))
-                value_root = path 
+                value_root = copy(path) 
                 for idx in range(0,n_exts_to_rm):
                   value_root = os.path.splitext(value_root)[0]
                 sec_file_item_path =value_root + capture_sec_ext.group(2)
@@ -104,20 +105,25 @@ def match_type( param_name, all_param_values, configs, validate_paths=True, sear
     # check if non-array paramaeters have at 1 field:
     assert not ( not configs[param_name]["is_array"] and len(value) > 1), "parameter is no array but has more than one value."
     # check if value containes not allowed null entries:
-    assert not (configs[param_name]["is_array"] and "null" in value and not configs[param_name]["null_items_allowed"]), \
-        "parameter contains \"null\" items but they are not allowed."
-    assert not (
-        not configs[param_name]["is_array"] and 
-        (value[0] == "null" or value[0] == "") and 
+    assert not ((value[0] == "null" or value[0] == "") and 
         not configs[param_name]["null_allowed"]
     ), "parameter is \"null\" but this is not allowed."
+    assert not (
+        not configs[param_name]["is_array"] and 
+        (value[0] == "itemNull")
+    ), "Parameter is set to \"itemNull\" but it is not an array/list."
+    assert not (
+        (value[0] == "itemNull") and 
+        not configs[param_name]["null_items_allowed"]
+    ), "The list parameter contains \"itemNull\", however, null items are not allowed."
+    
     # check if parameter contains empty values:
     assert not "" in value, "empty string detected \"\"."
     # check and translate each entry of value into the desired type:
     value_type_matched = []
     for value_string in value:
         try:
-            if value_string == "null":
+            if value_string in ["null", "itemNull"]:
                 value_type_matched.append( None )
             else:
                 if configs[param_name]["type"] == "File":

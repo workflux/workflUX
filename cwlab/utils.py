@@ -65,7 +65,11 @@ def browse_dir(path,
         raise AssertionError("Path does not exist or you have no permission to enter it.")
     dir_content_dict = {}
     for item in dir_content_:
-        is_dir = item.is_dir()
+        try:
+            is_dir = item.is_dir()
+        except Exception as e:
+            # Most likely no permission to read that attribute.
+            is_dir = False
         if is_dir or not ignore_files:
             abs_path = str(item.absolute())
             name = os.path.basename(abs_path)
@@ -87,7 +91,8 @@ def fetch_files_in_dir(dir_path, # searches for files in dir_path
     search_string="", # match files that contain this string in the name
                         # "" to disable
     regex_pattern="", # matches files by regex pattern
-    ignore_subdirs=True # if true, ignores subdirectories
+    ignore_subdirs=True, # if true, ignores subdirectories
+    return_abspaths=False
     ):
     # searches for files in dir_path
     # onyl hit that fullfill following criteria are return:
@@ -110,13 +115,16 @@ def fetch_files_in_dir(dir_path, # searches for files in dir_path
             file_reldir = os.path.relpath(root, abs_dir_path)
             file_relpath = os.path.join(file_reldir, file_) 
             file_nameroot = os.path.splitext(file_)[0]
-            hits.append({
+            file_dict = {
                 "file_name":file_, 
                 "file_nameroot":file_nameroot, 
                 "file_relpath":file_relpath, 
                 "file_reldir":file_reldir, 
                 "file_ext":file_ext
-            })
+            }
+            if return_abspaths:
+                file_dict["file_abspath"] = os.path.join(abs_dir_path, file_)
+            hits.append(file_dict)
     return hits
 
 
@@ -136,19 +144,20 @@ def read_file_content(
     return str(content), end_pos
 
 def zip_dir(dir_path):
+    dir_path = os.path.abspath(dir_path)
     zip_path = dir_path + ".cwlab.zip"
     contents = os.walk(dir_path)
     zip_file = zipfile.ZipFile(zip_path, 'w', zipfile.ZIP_DEFLATED)
     for root, dirs, files in contents:
         for dir_ in dirs:
             absolute_path = os.path.join(root, dir_)
-            relative_path = absolute_path.replace(dir_path + '\\', '')
+            relative_path = os.path.relpath(absolute_path, dir_path)
             zip_file.write(absolute_path, relative_path)
         for file_ in files:
             if file_.endswith(".cwlab.zip"):
                 continue
             absolute_path = os.path.join(root, file_)
-            relative_path = absolute_path.replace(dir_path + '\\', '')
+            relative_path = os.path.relpath(absolute_path, dir_path)
             zip_file.write(absolute_path, relative_path)
     zip_file.close()
     return(zip_path)
@@ -210,18 +219,19 @@ def get_path(which, job_id=None, run_id=None, param_sheet_format=None, wf_target
             hits = fetch_files_in_dir(path, allowed_extensions_by_type["spreadsheet"], "param_sheet")
             assert len(hits) != 0, "No spreadsheet found for job " + job_id
             path = os.path.join(path, hits[0]["file_name"])
+    elif which == "job_wf_dir":
+        path = os.path.join(app.config["EXEC_DIR"], job_id, "workflow")
     elif which == "job_wf":
         if wf_type is None:
-            try:
-                exts = [supported_workflow_exts["supported_workflow_exts"][0] for wf_type in supported_workflow_exts.keys()]
-                path = fetch_files_in_dir(
-                    os.path.join(app.config["EXEC_DIR"], job_id), 
-                    exts, "main"
-                )[0]
-            except Exception as e:
-                raise AssertionError(f"No workflow found in exec dir of job \"{job_id}\"")
+            exts = [supported_workflow_exts[wf_type][0] for wf_type in supported_workflow_exts.keys()]
+            hits = fetch_files_in_dir(
+                os.path.join(app.config["EXEC_DIR"], job_id, "workflow"), 
+                exts, "main", return_abspaths=True
+            )
+            assert len(hits) == 1, f"No workflow found in exec dir of job \"{job_id}\""
+            path = hits[0]["file_abspath"]
         else:
-            path = os.path.join(app.config["EXEC_DIR"], job_id, f"main.{supported_workflow_exts[wf_type][0]}")
+            path = os.path.join(app.config["EXEC_DIR"], job_id, "workflow", f"main.{supported_workflow_exts[wf_type][0]}")
     elif which == "job_param_sheet_temp":
         if param_sheet_format:
             path = os.path.join(app.config["EXEC_DIR"], job_id, "job_templ." + param_sheet_format)
@@ -232,22 +242,22 @@ def get_path(which, job_id=None, run_id=None, param_sheet_format=None, wf_target
             path = os.path.join(path, hits[0]["file_name"])
     elif which == "runs_yaml_dir":
         path = os.path.join(app.config["EXEC_DIR"], job_id, "runs_params")
-    elif which == "run_yaml":
+    elif which == "run_input":
         path = os.path.join(app.config["EXEC_DIR"], job_id, "runs_params", run_id + ".yaml")
     elif which == "job_templ":
-        path = os.path.join(app.config['WF_DIR'], wf_target + ".job_templ.xlsx")
+        path = os.path.join(app.config['WORKFLOW_DIR'], wf_target + ".job_templ.xlsx")
     elif which == "wf":
-        path = os.path.join(app.config['WF_DIR'], wf_target)
+        path = os.path.join(app.config['WORKFLOW_DIR'], wf_target)
     elif which == "wf_imports_zip":
-        path = os.path.join(app.config['WF_DIR'], f"{wf_target}.imports.zip")
+        path = os.path.join(app.config['WORKFLOW_DIR'], f"{wf_target}.imports.zip")
     elif which == "runs_log_dir":
         path = os.path.join(app.config['EXEC_DIR'], job_id, "runs_log")
     elif which == "run_log":
         path = os.path.join(app.config['EXEC_DIR'], job_id, "runs_log", run_id + ".log")
     elif which == "debug_run_log":
         path = os.path.join(app.config['EXEC_DIR'], job_id, "runs_log", run_id + ".debug.log")
-    elif which == "runs_input_dir":
-        path = os.path.join(app.config['EXEC_DIR'], job_id, "runs_inputs")
+    elif which == "job_input_dir":
+        path = os.path.join(app.config['INPUT_DIR'], job_id, "job")
     elif which == "error_log":
         path = os.path.join(app.config['LOG_DIR'], "error.log")
     elif which == "info_log":
@@ -290,7 +300,7 @@ def pack_cwl(cwl_path):
 def import_cwl(wf_path, name):
     wf_target_name = "{}.{}".format(name, supported_workflow_exts["CWL"][0])
     wf_target_path = get_path("wf", wf_target=wf_target_name)
-    assert not os.path.exists(wf_target_path), "The workflow with name \"{wf_target_name}\" already exists."
+    assert not os.path.exists(wf_target_path), f"The workflow with name \"{wf_target_name}\" already exists."
     try:
         packed_cwl = pack_cwl(wf_path)
     except Exception as e:
@@ -368,7 +378,7 @@ def import_janis(wf_path, name, import_as_janis=True, translate_to_cwl=True, tra
             "The provided Janis document is not valid, the error was: {}".format(str(e))
         )
     if import_as_janis:
-        assert not os.path.exists(wf_target_path), "The workflow with name \"{wf_target_name}\" already exists."
+        assert not os.path.exists(wf_target_path), f"The workflow with name \"{wf_target_name}\" already exists."
         temp_dir = make_temp_dir()
         job_templ_path = get_path("job_templ", wf_target=wf_target_name)
         generate_job_template_from_cwl(
@@ -420,7 +430,7 @@ def import_wf(
         wf_type = get_workflow_type_from_file_ext(wf_path)
     else:
         assert wf_type in supported_workflow_types, "Provided workflow type \"{wf_type}\" is not supported."
-    if name is None:
+    if name is None or name == "":
         name = os.path.splitext(os.path.basename(wf_path))[0]
     if os.path.splitext(name)[1] in supported_workflow_exts[wf_type]:
         name = os.path.splitext(name)[0]
@@ -433,18 +443,18 @@ def import_wf(
     
 def get_run_ids(job_id):
     runs_yaml_dir = get_path("runs_yaml_dir", job_id)
-    run_yamls = fetch_files_in_dir(
+    run_inputs = fetch_files_in_dir(
         dir_path=runs_yaml_dir, 
         file_exts=["yaml"],
         ignore_subdirs=True
     )
-    run_ids = [r["file_nameroot"] for r in run_yamls]
+    run_ids = [r["file_nameroot"] for r in run_inputs]
     return run_ids
-
+    
 def get_job_templates():
     # read list of template files:
     templates = fetch_files_in_dir(
-        dir_path=app.config['WF_DIR'], 
+        dir_path=app.config['WORKFLOW_DIR'], 
         file_exts=["xlsx"],
         search_string=".job_templ",
         ignore_subdirs=True
@@ -503,14 +513,14 @@ def get_allowed_base_dirs(job_id=None, run_id=None, allow_input=True, allow_uplo
     if (app.config["UPLOAD_ALLOWED"] and allow_upload) or (allow_input and not allow_download):
         mode = "upload" if app.config["UPLOAD_ALLOWED"] and allow_upload else "input"
         if not job_id is None:
-            allowed_dirs["INPUT_DIR_CURRENT_JOB"] = {
-                "path": get_path("runs_input_dir", job_id=job_id),
+            allowed_dirs["DEFAULT_INPUT_DIR"] = {
+                "path": app.config["DEFAULT_INPUT_DIR"],
                 "mode": mode
             }
-        for dir_ in app.config["ADD_INPUT_UPLOAD_DIRS"].keys():
+        for dir_ in app.config["ADD_INPUT_AND_UPLOAD_DIRS"].keys():
             if dir_ not in allowed_dirs.keys():
                 allowed_dirs[dir_] = {
-                    "path": app.config["ADD_INPUT_UPLOAD_DIRS"][dir_],
+                    "path": app.config["ADD_INPUT_AND_UPLOAD_DIRS"][dir_],
                     "mode": mode
                 }
     if not allow_download and allow_input:
