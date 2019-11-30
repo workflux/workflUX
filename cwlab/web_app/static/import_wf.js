@@ -154,6 +154,10 @@ class ImportCwlZip extends React.Component{
 class ImportWfFile extends React.Component{
     constructor(props){
         super(props);
+        // props.wfType
+        // props.mainIntruction
+        // props.fileInstruction
+
         this.state = {
             importName: "",
             actionStatus: "none",
@@ -173,7 +177,7 @@ class ImportWfFile extends React.Component{
         return(
             <div className="w3-panel">
                 <p>
-                    Import a CWL-wrapped tool or a packed CWL workflow.
+                    {this.props.mainInstruction}
                 </p>
                 <span className="w3-text-green">1. Choose a name:</span>&nbsp;
                 <input type="text"
@@ -185,16 +189,32 @@ class ImportWfFile extends React.Component{
                 />
                 <br/>
                 <span className="w3-text-green">2. Choose and import a CWL file:</span>&nbsp;
-                <Message type="hint">
-                    <b>Please Note: CWL workflows are only supported in packed format (workflow with all contained tools).</b>&nbsp;
-                    You may provide a ZIP file containing non-packed CWL workflows with all it's dependencies (see above "from ZIP file") or see&nbsp;
-                    <a href="https://github.com/common-workflow-language/cwltool#combining-parts-of-a-workflow-into-a-single-document">
-                        the documentation of cwltool
-                    </a> for details on how to pack a workflow.
-                </Message>
+                {this.props.fileInstruction}
                 <FileUploadComponent
                     requestRoute={routeUploadWf}
                     metaData={ {"import_name": this.state.importName} }
+                />
+            </div>
+        )
+    }
+}
+
+class ImportCWLFile extends React.Component{
+    render(){
+        return(
+            <div>
+                <ImportWfFile
+                    wfType="CWL"
+                    mainInstruction="Import a CWL-wrapped tool or a packed CWL workflow."
+                    fileInstruction={
+                        <Message type="hint">
+                            <b>Please Note: CWL workflows are only supported in packed format (workflow with all contained tools).</b>&nbsp;
+                            You may provide a ZIP file containing non-packed CWL workflows with all it's dependencies (see above "from ZIP file") or see&nbsp;
+                            <a href="https://github.com/common-workflow-language/cwltool#combining-parts-of-a-workflow-into-a-single-document">
+                                the documentation of cwltool
+                            </a> for details on how to pack a workflow.
+                        </Message>
+                    }
                 />
             </div>
         )
@@ -252,8 +272,8 @@ class ImportCwlUrl extends React.Component{
                                 </td>
                                 <td>
                                     You can directly use a URL from github. However, please make sure to provide the URL to the raw file, e.g.:<br/>
-                                    <a href="https://raw.githubusercontent.com/CompEpigen/ATACseq_workflows/1.1.1/CWL/workflows/ATACseq_pipeline.cwl">
-                                        https://raw.githubusercontent.com/CompEpigen/ATACseq_workflows/1.1.1/CWL/workflows/ATACseq_pipeline.cwl
+                                    <a href="https://raw.githubusercontent.com/CompEpigen/ATACseq_workflows/1.2.0/CWL/workflows/ATACseq.cwl">
+                                        https://raw.githubusercontent.com/CompEpigen/ATACseq_workflows/1.2.0/CWL/workflows/ATACseq.cwl
                                     </a>
                                 </td>
                             </tr>
@@ -305,7 +325,7 @@ class ImportCWLRoot extends React.Component {
             },
             wfFile: {
                 descr: "from CWL file",
-                component: <ImportWfFile />
+                component: <ImportCWLFile />
             },
             cwlZip: {
                 descr: "from ZIP file (e.g. a CWL workflow with its dependencies)",
