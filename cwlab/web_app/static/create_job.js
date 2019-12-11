@@ -154,7 +154,12 @@ class ParamName extends React.Component{
                         this.props.config.type + 
                         (this.props.config.null_allowed ? " [optional]" : "") +
                         (this.props.config.null_item_allowed ? " [items optional]" : "") +
-                        (this.props.config.doc ? ", help: ".concat(this.props.config.doc) : ", help: no info available")
+                        (this.props.config.doc ? (
+                            ", help: ".concat(this.props.config.doc.replaceAll("\\n", "\n").replaceAll("\\t", "\t")) 
+                            ) : (
+                             ", help: no info available"
+                             )
+                        )
                     }
                 >   
                     <span className="w3-text-green">Type:</span>&nbsp;
@@ -188,7 +193,7 @@ class ParamName extends React.Component{
                                 className="w3-container"
                                 style={ {whiteSpace: "pre-line"} }
                             >
-                                {this.props.config.doc}
+                                {this.props.config.doc.replaceAll("\\n", "\n").replaceAll("\\t", "\t")}
                             </div>
                         ) : (
                             "no info available"
@@ -1389,7 +1394,7 @@ class JobCreationPrep extends React.Component {
                                         title={"Info ".concat(p.param_name).concat(":")}
                                     >
                                         {p.doc ? (
-                                                p.doc
+                                                p.doc.replaceAll("\\n", "\n").replaceAll("\\t", "\t") 
                                             ) : (
                                                 "no info available"
                                             )
