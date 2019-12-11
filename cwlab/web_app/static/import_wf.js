@@ -192,7 +192,10 @@ class ImportWfFile extends React.Component{
                 {this.props.fileInstruction}
                 <FileUploadComponent
                     requestRoute={routeUploadWf}
-                    metaData={ {"import_name": this.state.importName} }
+                    metaData={ {
+                        "wf_type": this.props.wfType,
+                        "import_name": this.state.importName
+                    } }
                 />
             </div>
         )

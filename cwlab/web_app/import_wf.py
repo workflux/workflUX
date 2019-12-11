@@ -28,7 +28,7 @@ def upload_wf():
         # save the file to the CWL directory:
         metadata = json_loads(request.form.get("meta"))
         import_filename = secure_filename(import_file.filename) 
-        wf_type = data_req["wf_type"] if "wf_type" in data_req.keys() else None
+        wf_type = metadata["wf_type"] if "wf_type" in metadata.keys() else None
         
         temp_dir = make_temp_dir()
         imported_filepath = os.path.join(temp_dir, import_filename)
@@ -37,7 +37,7 @@ def upload_wf():
         import_name = secure_filename(metadata["import_name"]) \
             if "import_name" in metadata.keys() and metadata["import_name"] != "" \
             else import_filename
-        import_wf_(wf_path=wf_path, name=import_name, wf_type=wf_type)
+        import_wf_(wf_path=imported_filepath, name=import_name, wf_type=wf_type)
         
         try:
             rmtree(temp_dir)
