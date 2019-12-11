@@ -157,9 +157,10 @@ def import_wf_by_path_or_url():
             vaidate_url(wf_path)
         else:
             allowed_dirs = get_allowed_base_dirs(
-                allow_input=False,
+                allow_input=True,
                 allow_upload=True,
-                allow_download=False
+                allow_download=False,
+                include_tmp_dir=True
             )
             assert os.path.isfile(wf_path) and \
                 check_if_path_in_dirs(wf_path, allowed_dirs) is not None, \
