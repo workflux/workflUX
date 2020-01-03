@@ -1,15 +1,2 @@
-flask_wtf
-flask-sqlalchemy
-flask-login
-
-pyexcel-io
-pyexcel-ods
-pyexcel-ods3
-pyexcel-xls
-pyexcel-xlsx
-
-PyYAML
-pexpect
-
-cwltool
-psutil
+# installs required packages as declared in setup.py
+.
