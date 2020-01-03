@@ -19,24 +19,24 @@ def upload_wf():
     data = []
     try:
         login_required()
-        assert 'file' in request.files, 'No file received.'
+        assert 'workflow' in request.files, 'No file received.'
 
-        import_file = request.files['file']
+        import_wf_file = request.files['workflow']
 
-        assert import_file.filename != '', "No file specified."
+        assert import_wf_file.filename != '', "No file specified."
 
         # save the file to the CWL directory:
         metadata = json_loads(request.form.get("meta"))
-        import_filename = secure_filename(import_file.filename) 
+        import_wf_filename = secure_filename(import_wf_file.filename) 
         wf_type = metadata["wf_type"] if "wf_type" in metadata.keys() else None
         
         temp_dir = make_temp_dir()
-        imported_filepath = os.path.join(temp_dir, import_filename)
-        import_file.save(imported_filepath)
+        imported_filepath = os.path.join(temp_dir, import_wf_filename)
+        import_wf_file.save(imported_filepath)
 
         import_name = secure_filename(metadata["import_name"]) \
             if "import_name" in metadata.keys() and metadata["import_name"] != "" \
-            else import_filename
+            else import_wf_filename
         import_wf_(wf_path=imported_filepath, name=import_name, wf_type=wf_type)
         
         try:
@@ -47,7 +47,7 @@ def upload_wf():
         messages.append( { 
             "time": get_time_string(),
             "type":"success", 
-            "text": import_file.filename + " successfully imported."
+            "text": import_wf_file.filename + " successfully imported."
         } )
 
     except AssertionError as e:
@@ -65,21 +65,21 @@ def upload_cwl_zip():
         login_required()
         assert 'file' in request.files, 'No file received.'
 
-        import_file = request.files['file']
+        import_wf_file = request.files['file']
 
-        assert import_file.filename != '', "No file specified."
+        assert import_wf_file.filename != '', "No file specified."
 
-        assert is_allowed_file(import_file.filename, type="zip"), ( 
+        assert is_allowed_file(import_wf_file.filename, type="zip"), ( 
             "Wrong file type. Only files with following extensions are allowed: " + 
             ", ".join(allowed_extensions_by_type["CWL"])
         )
 
         # save the file to the CWL directory:
-        import_filename = secure_filename(import_file.filename) 
+        import_wf_filename = secure_filename(import_wf_file.filename) 
 
         temp_upload_dir = make_temp_dir()
-        imported_filepath = os.path.join(temp_upload_dir, import_filename)
-        import_file.save(imported_filepath)
+        imported_filepath = os.path.join(temp_upload_dir, import_wf_filename)
+        import_wf_file.save(imported_filepath)
 
         temp_extract_dir = make_temp_dir()
         unzip_dir(imported_filepath, temp_extract_dir)
@@ -94,7 +94,7 @@ def upload_cwl_zip():
         messages.append( { 
             "time": get_time_string(),
             "type":"success", 
-            "text": import_file.filename + " was successfully uploaded and extracted."
+            "text": import_wf_file.filename + " was successfully uploaded and extracted."
         } )
 
     except AssertionError as e:
@@ -131,7 +131,7 @@ def upload_cwl_zip():
 #         messages.append( { 
 #             "time": get_time_string(),
 #             "type":"success", 
-#             "text": import_file.filename + " was successfully downloaded and extracted."
+#             "text": import_wf_file.filename + " was successfully downloaded and extracted."
 #         } )
 
 #     except AssertionError as e:
