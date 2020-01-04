@@ -297,21 +297,34 @@ class ImportWfFile extends React.Component{
                     {this.props.wfType == "CWL" ? (
                         "Import a CWL-wrapped tool or a packed CWL workflow."
                         ):(
-                        "Import a WDL workflow."   
+                        <span>
+                            Import a WDL workflow.   
+                            <Message type="warning">
+                                <b>Please Note: This feature is experimental.</b><br/>
+                                If you experience any issues, 
+                                please report them to&nbsp;
+                                <a href="https://github.com/CompEpigen/CWLab/issues">
+                                    https://github.com/CompEpigen/CWLab/issues
+                                </a> or contact k.breuer@dkfz.de.
+                            </Message>
+                        </span>
                     )}
                 </p>
                 <span className="w3-text-green">
                     1. Choose a {this.props.wfType} file:
-                </span>&nbsp;                
-                <Message type="hint">
-                    <b>Please Note: CWL workflows are only supported in packed format (workflow with all contained tools).</b>&nbsp;
-                    You may provide a ZIP file containing non-packed CWL workflows with all it's dependencies (see above "from ZIP file") or see&nbsp;
-                    <a href="https://github.com/common-workflow-language/cwltool#combining-parts-of-a-workflow-into-a-single-document">
-                        the documentation of cwltool
-                    </a> for details on how to pack a workflow.
-                </Message>    
+                </span>&nbsp;   
+                {this.props.wfType == "CWL" && (             
+                    <Message type="hint">
+                        <b>Please Note: CWL workflows are only supported in packed format (workflow with all contained tools).</b>&nbsp;
+                        You may provide a ZIP file containing non-packed CWL workflows with all it's dependencies (see above "from ZIP file") or see&nbsp;
+                        <a href="https://github.com/common-workflow-language/cwltool#combining-parts-of-a-workflow-into-a-single-document">
+                            the documentation of cwltool
+                        </a> for details on how to pack a workflow.
+                    </Message>  
+                )}  
                 <input 
                     className="w3-button w3-border w3-border-grey"
+                    style={ {display: "block"} }
                     type="file" 
                     name="wfFile" 
                     onChange={this.handleFileChange}
@@ -447,6 +460,10 @@ class ImportCWLRoot extends React.Component {
             cwlFile: {
                 descr: "from CWL file",
                 component: <ImportWfFile wfType="CWL"/>
+            },
+            wdlFile: {
+                descr: "from WDL file",
+                component: <ImportWfFile wfType="WDL"/>
             },
             cwlZip: {
                 descr: "from ZIP file (e.g. a CWL workflow with its dependencies)",

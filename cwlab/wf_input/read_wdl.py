@@ -1,3 +1,4 @@
+import os
 from WDL import load, Type
 def read_config_from_wdl_file(wdl_file):
     # document = load('./scratch/alignment/alignment.wdl')
