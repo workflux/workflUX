@@ -153,7 +153,7 @@ class ParamName extends React.Component{
                         (this.props.config.is_array ? "List of " : "") +
                         this.props.config.type + 
                         (this.props.config.null_allowed ? " [optional]" : "") +
-                        (this.props.config.null_item_allowed ? " [items optional]" : "") +
+                        (this.props.config.null_items_allowed ? " [items optional]" : "") +
                         (this.props.config.doc ? ", help: ".concat(this.props.config.doc) : ", help: no info available")
                     }
                 >   
@@ -169,7 +169,7 @@ class ParamName extends React.Component{
                             "No. You have to fill in a value."
                         )
                     }<br/>
-                    {(this.props.config.null_item_allowed && this.props.is_array) && (
+                    {(this.props.config.null_items_allowed && this.props.is_array) && (
                         <span>
                             <span className="w3-text-green">Type:</span>&nbsp;
                             You may disable single items of the list.<br/>
