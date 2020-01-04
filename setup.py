@@ -32,7 +32,7 @@ setup(
                       'pyexcel-ods',
                       'pyexcel-ods3',
                       'pyexcel-xls',
-                      'pyexcel-xlsx',
+                      'pyexcel-xlsx<=0.5.7',
                       'PyYAML',
                       'pexpect',
                       'janis-pipelines>=0.7.0',

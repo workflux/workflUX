@@ -151,12 +151,9 @@ class ImportCwlZip extends React.Component{
 
 }
 
-class ImportWfFile extends React.Component{
+class ImportCwlFile extends React.Component{
     constructor(props){
         super(props);
-        // props.wfType
-        // props.mainIntruction
-        // props.fileInstruction
 
         this.state = {
             importName: "",
@@ -177,7 +174,7 @@ class ImportWfFile extends React.Component{
         return(
             <div className="w3-panel">
                 <p>
-                    {this.props.mainInstruction}
+                    Import a CWL-wrapped tool or a packed CWL workflow.
                 </p>
                 <span className="w3-text-green">1. Choose a name:</span>&nbsp;
                 <input type="text"
@@ -189,27 +186,6 @@ class ImportWfFile extends React.Component{
                 />
                 <br/>
                 <span className="w3-text-green">2. Choose and import a CWL file:</span>&nbsp;
-                {this.props.fileInstruction}
-                <FileUploadComponent
-                    requestRoute={routeUploadWf}
-                    metaData={ {
-                        "import_name": this.state.importName,
-                        "wf_type": this.props.wfType
-                    } }
-                />
-            </div>
-        )
-    }
-}
-
-class ImportCWLFile extends React.Component{
-    render(){
-        return(
-            <div>
-                <ImportWfFile
-                    wfType="CWL"
-                    mainInstruction="Import a CWL-wrapped tool or a packed CWL workflow."
-                    fileInstruction={
                         <Message type="hint">
                             <b>Please Note: CWL workflows are only supported in packed format (workflow with all contained tools).</b>&nbsp;
                             You may provide a ZIP file containing non-packed CWL workflows with all it's dependencies (see above "from ZIP file") or see&nbsp;
@@ -217,7 +193,12 @@ class ImportCWLFile extends React.Component{
                                 the documentation of cwltool
                             </a> for details on how to pack a workflow.
                         </Message>
-                    }
+                <FileUploadComponent
+                    requestRoute={routeUploadWf}
+                    metaData={ {
+                        "import_name": this.state.importName,
+                        "wf_type": "CWL"
+                    } }
                 />
             </div>
         )
