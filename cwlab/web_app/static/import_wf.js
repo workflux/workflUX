@@ -151,17 +151,23 @@ class ImportCwlZip extends React.Component{
 
 }
 
-class ImportCwlFile extends React.Component{
+class ImportWfFile extends React.Component{
     constructor(props){
         super(props);
+        // props.wfType cwl or wdl
 
         this.state = {
             importName: "",
             actionStatus: "none",
-            serverMessages: []
+            serverMessages: [],
+            wfFile: null,
+            wfImportsZip: null,
+            provideWfImportsZip: false
         }
 
         this.changeInputField = this.changeInputField.bind(this);
+        this.upload = this.upload.bind(this);
+        this.handleFileChange = this.handleFileChange.bind(this);
     }
 
     changeInputField(event){
@@ -170,13 +176,91 @@ class ImportCwlFile extends React.Component{
         })
     }
 
+    handleFileChange(event){
+        this.setState({
+            [event.currentTarget.name]: event.currentTarget.files[0],
+            serverMessages: []
+        })
+    }
+
+    upload(){ // ajax request to server
+        if (this.state.wfFile == ""){
+            this.state.serverMessages = [{type:"error", text:"No file selected."}]
+            this.setState({actionStatus: "none", error: true})
+        }
+        else{
+            this.setState({actionStatus:"uploading"})
+            let formData = new FormData()
+            formData.append("wf_file", this.state.wfFile)
+            formData.append("meta", JSON.stringify({
+                "import_name": this.state.importName,
+                "wf_type": this.props.wfType
+            }))
+            fetch(routeUploadWf, {
+                method: "POST",
+                body: formData,
+                cache: "no-cache"
+            }).then(res => res.json())
+            .then(
+                (result) => {
+                    var messages = result.messages;
+                    var data = result.data;
+                    let errorOccured = false;
+                    for( let i=0;  i<messages.length; i++){
+                        if(messages[i].type == "error"){
+                            errorOccured = true;
+                            break;
+                        }
+                    }
+                    if (errorOccured){
+                        this.setState({actionStatus: "none", error: true, serverMessages: messages})
+                    } 
+                    else {
+                        this.setState({actionStatus: "none", error: false, serverMessages: messages});
+                    }
+                },
+                (error) => {
+                    // server could not be reached
+                    var messages = [{
+                        time: get_time_str(),
+                        type: "error", 
+                        text: serverNotReachableError
+                    }];
+                    this.setState({actionStatus: "none", error: true, serverMessages: messages});
+                }
+            )
+        }
+    }
+
     render(){
         return(
             <div className="w3-panel">
                 <p>
-                    Import a CWL-wrapped tool or a packed CWL workflow.
+                    {this.props.wfType == "CWL" ? (
+                        "Import a CWL-wrapped tool or a packed CWL workflow."
+                        ):(
+                        "Import a WDL workflow."   
+                    )}
                 </p>
-                <span className="w3-text-green">1. Choose a name:</span>&nbsp;
+                <span className="w3-text-green">
+                    1. Choose a {this.props.wfType} file:
+                </span>&nbsp;                
+                <Message type="hint">
+                    <b>Please Note: CWL workflows are only supported in packed format (workflow with all contained tools).</b>&nbsp;
+                    You may provide a ZIP file containing non-packed CWL workflows with all it's dependencies (see above "from ZIP file") or see&nbsp;
+                    <a href="https://github.com/common-workflow-language/cwltool#combining-parts-of-a-workflow-into-a-single-document">
+                        the documentation of cwltool
+                    </a> for details on how to pack a workflow.
+                </Message>    
+                <input 
+                    className="w3-button w3-border w3-border-grey"
+                    type="file" 
+                    name="wfFile" 
+                    onChange={this.handleFileChange}
+                    disabled={this.state.actionStatus != "none"}
+                />
+                <br/>
+                <span className="w3-text-green">2. Choose a name:</span>&nbsp;
                 <input type="text"
                     className="w3-input w3-border"
                     name="importName"
@@ -184,22 +268,15 @@ class ImportCwlFile extends React.Component{
                     value={this.state.importName}
                     onChange={this.changeInputField}
                 />
-                <br/>
-                <span className="w3-text-green">2. Choose and import a CWL file:</span>&nbsp;
-                        <Message type="hint">
-                            <b>Please Note: CWL workflows are only supported in packed format (workflow with all contained tools).</b>&nbsp;
-                            You may provide a ZIP file containing non-packed CWL workflows with all it's dependencies (see above "from ZIP file") or see&nbsp;
-                            <a href="https://github.com/common-workflow-language/cwltool#combining-parts-of-a-workflow-into-a-single-document">
-                                the documentation of cwltool
-                            </a> for details on how to pack a workflow.
-                        </Message>
-                <FileUploadComponent
-                    requestRoute={routeUploadWf}
-                    metaData={ {
-                        "import_name": this.state.importName,
-                        "wf_type": "CWL"
-                    } }
+                <ActionButton 
+                    name="import"
+                    value="import"
+                    label="import"
+                    loading={this.state.actionStatus == "uploading"} 
+                    onAction={this.upload}
+                    disabled={this.state.actionStatus != "none"}
                 />
+                <DisplayServerMessages messages={this.state.serverMessages} />
             </div>
         )
     }
@@ -295,6 +372,8 @@ class ImportCwlUrl extends React.Component{
     }
 }
 
+
+
 class ImportCWLRoot extends React.Component {
     constructor(props){
         super(props);
@@ -307,9 +386,9 @@ class ImportCWLRoot extends React.Component {
                 descr: "URL to public CWL document (e.g. from github)",
                 component: <ImportCwlUrl />
             },
-            wfFile: {
+            cwlFile: {
                 descr: "from CWL file",
-                component: <ImportCWLFile />
+                component: <ImportWfFile wfType="CWL"/>
             },
             cwlZip: {
                 descr: "from ZIP file (e.g. a CWL workflow with its dependencies)",
