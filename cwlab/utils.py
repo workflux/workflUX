@@ -399,7 +399,7 @@ def import_janis(wf_path, name, import_as_janis=True, translate_to_cwl=True, tra
             cwl_path=os.path.join(cwl_dir, f"{workflow.id()}.cwl")
             try:
                 _ = workflow.translate("cwl", to_console=False, to_disk=True, should_zip=False, export_path=cwl_dir)
-                assert os.exists(cwl_path), "Could not find translated CWL file."
+                assert os.pathh.exists(cwl_path), "Could not find translated CWL file."
             except Exception as e:
                 raise AssertionError(
                     "Could not translate to cwl, the error was: {}".format(str(e))
@@ -411,7 +411,7 @@ def import_janis(wf_path, name, import_as_janis=True, translate_to_cwl=True, tra
             wdl_import_path=os.path.join(wdl_dir, "tools.zip")
             try:
                 _ = workflow.translate("wdl", to_console=False, to_disk=True, should_zip=False, export_path=wdl_dir)
-                assert os.exists(wdl_path), "Could not find translated wdl file."
+                assert os.path.exists(wdl_path), "Could not find translated wdl file."
             except Exception as e:
                 raise AssertionError(
                     "Could not translate to wdl, the error was: {}".format(str(e))
