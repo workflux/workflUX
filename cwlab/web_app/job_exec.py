@@ -67,11 +67,11 @@ def get_job_list():
     exec_profile_params = {}
     for exec_profile_name in exec_profile_names:
         exec_profile_params[exec_profile_name] = {
+            "workflow_type": app.config["EXEC_PROFILES"][exec_profile_name]["workflow_type"],
             "max_retries": app.config["EXEC_PROFILES"][exec_profile_name]["max_retries"],
             "max_parallel_exec": app.config["EXEC_PROFILES"][exec_profile_name]["max_parallel_exec"],
             "allow_user_decrease_max_parallel_exec": app.config["EXEC_PROFILES"][exec_profile_name]["allow_user_decrease_max_parallel_exec"],
         }
-
 
     return jsonify({
             "data": {

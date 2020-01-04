@@ -170,6 +170,7 @@ class Config(object):
             "post_exec": 120
         }
         general_defaults = {
+            "workflow_type": "CWL",
             "max_retries": 2,
             "max_parallel_exec": 4, # if exceeded, jobs will be queued
             "allow_user_decrease_max_parallel_exec": True,
