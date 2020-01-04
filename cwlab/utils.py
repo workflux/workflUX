@@ -393,7 +393,7 @@ def import_janis(wf_path, name, import_as_janis=True, translate_to_cwl=True, tra
         rmtree(temp_dir)
     if translate_to_cwl or translate_to_wdl:
         temp_dir = make_temp_dir()
-        workflow = get_workflow_from_file(file=janis_script)
+        workflow = load_and_validate_janis(file=wf_path)
         if translate_to_cwl:
             cwl_dir=os.path.join(temp_dir, "cwl")
             cwl_path=os.path.join(cwl_dir, f"{workflow.id()}.cwl")
@@ -416,7 +416,7 @@ def import_janis(wf_path, name, import_as_janis=True, translate_to_cwl=True, tra
                 raise AssertionError(
                     "Could not translate to wdl, the error was: {}".format(str(e))
                 )
-            wdl_import_path = wdl_import_path if os.path.exists(wdl_import_path) else None
+            wf_imports_zip_path = wdl_import_path if os.path.exists(wdl_import_path) else None
             import_wdl(wdl_path, name, wf_imports_zip_path)
 
 def import_wf(
