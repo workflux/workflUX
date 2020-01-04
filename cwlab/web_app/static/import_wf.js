@@ -1,3 +1,61 @@
+
+class ImportJanisFile extends React.Component{
+    constructor(props){
+        super(props);
+
+        this.state = {
+            importName: "",
+            actionStatus: "none",
+            serverMessages: []
+        }
+
+        this.changeInputField = this.changeInputField.bind(this);
+    }
+
+    changeInputField(event){
+        this.setState({
+            [event.currentTarget.name]: event.currentTarget.value
+        })
+    }
+
+    render(){
+        return(
+            <div className="w3-panel">
+                <p>
+                    Import a Janis workflow script.
+                </p>
+                <span className="w3-text-green">1. Choose a name:</span>&nbsp;
+                <input type="text"
+                    className="w3-input w3-border"
+                    name="importName"
+                    style={ {width: "50%"} }
+                    value={this.state.importName}
+                    onChange={this.changeInputField}
+                />
+                <br/>
+                <span className="w3-text-green">2. Select format of import:</span>&nbsp;
+                
+                <br/>
+                <span className="w3-text-green">2. Choose and import a CWL file:</span>&nbsp;
+                <Message type="hint">
+                    <b>Please Note: CWL workflows are only supported in packed format (workflow with all contained tools).</b>&nbsp;
+                    You may provide a ZIP file containing non-packed CWL workflows with all it's dependencies (see above "from ZIP file") or see&nbsp;
+                    <a href="https://github.com/common-workflow-language/cwltool#combining-parts-of-a-workflow-into-a-single-document">
+                        the documentation of cwltool
+                    </a> for details on how to pack a workflow.
+                </Message>
+                <FileUploadComponent
+                    requestRoute={routeUploadWf}
+                    metaData={ {
+                        "import_name": this.state.importName,
+                        "wf_type": "CWL"
+                    } }
+                />
+            </div>
+        )
+    }
+}
+
 class ImportCwlZip extends React.Component{
     constructor(props){
         super(props);
@@ -393,6 +451,10 @@ class ImportCWLRoot extends React.Component {
             cwlZip: {
                 descr: "from ZIP file (e.g. a CWL workflow with its dependencies)",
                 component: <ImportCwlZip />
+            },
+            janisFile: {
+                descr: "from Janis file",
+                component: <ImportJanisFile />
             }
         }
 
