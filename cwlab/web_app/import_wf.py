@@ -19,9 +19,9 @@ def upload_wf():
     data = []
     try:
         login_required()
-        assert 'workflow' in request.files, 'No file received.'
+        assert 'wf_file' in request.files, 'No file received.'
 
-        import_wf_file = request.files['workflow']
+        import_wf_file = request.files['wf_file']
 
         assert import_wf_file.filename != '', "No file specified."
 
@@ -31,13 +31,13 @@ def upload_wf():
         wf_type = metadata["wf_type"] if "wf_type" in metadata.keys() else None
         
         temp_dir = make_temp_dir()
-        imported_filepath = os.path.join(temp_dir, import_wf_filename)
-        import_wf_file.save(imported_filepath)
+        imported_wf_filepath = os.path.join(temp_dir, import_wf_filename)
+        import_wf_file.save(imported_wf_filepath)
 
         import_name = secure_filename(metadata["import_name"]) \
             if "import_name" in metadata.keys() and metadata["import_name"] != "" \
             else import_wf_filename
-        import_wf_(wf_path=imported_filepath, name=import_name, wf_type=wf_type)
+        import_wf_(wf_path=imported_wf_filepath, name=import_name, wf_type=wf_type)
         
         try:
             rmtree(temp_dir)
