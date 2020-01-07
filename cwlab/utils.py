@@ -1,29 +1,40 @@
-import os, sys
-from re import sub, match
-from datetime import datetime
-from time import sleep
-from . import app
-from cwlab.wf_input.web_interface import read_template_metadata as read_template_metadata_from_xls
-from cwlab.wf_input.web_interface import get_param_config_info as get_param_config_info_from_xls
-from cwlab.wf_input import generate_xls_from_cwl as generate_job_template_from_cwl
-from cwlab.wf_input.read_wf import supported_workflow_exts, get_workflow_type_from_file_ext
-from cwlab.wf_input.read_janis import get_workflow_from_file as load_and_validate_janis
-from cwlab import db
-from random import random, choice as random_choice
-from pathlib import Path
-import zipfile
-from WDL import load as load_and_validate_wdl
-from asyncio import set_event_loop, new_event_loop
+import asyncio
 import json
-from string import ascii_letters, digits
-from pkg_resources import get_distribution
-from urllib import request as url_request
-from shutil import copyfileobj, copyfile, rmtree
-from werkzeug import secure_filename
-from urllib.request import urlopen
+import os
+import sys
+import zipfile
+from asyncio import new_event_loop, set_event_loop
+from datetime import datetime
 from distutils.version import StrictVersion
 from importlib import reload
-import asyncio
+from pathlib import Path
+from random import choice as random_choice
+from random import random
+from re import match, sub
+from shutil import copyfile, copyfileobj, rmtree
+from string import ascii_letters, digits
+from time import sleep
+from urllib import request as url_request
+from urllib.request import urlopen
+
+from pkg_resources import get_distribution
+
+from cwlab import db
+from cwlab.wf_input import \
+    generate_xls_from_cwl as generate_job_template_from_cwl
+from cwlab.wf_input.read_janis import \
+    get_workflow_from_file as load_and_validate_janis
+from cwlab.wf_input.read_wf import (get_workflow_type_from_file_ext,
+                                    supported_workflow_exts)
+from cwlab.wf_input.web_interface import \
+    get_param_config_info as get_param_config_info_from_xls
+from cwlab.wf_input.web_interface import \
+    read_template_metadata as read_template_metadata_from_xls
+from WDL import load as load_and_validate_wdl
+from werkzeug import secure_filename
+
+from . import app
+
 asyncio.set_event_loop(asyncio.new_event_loop())
 basedir = os.path.abspath(os.path.dirname(__file__))
 
