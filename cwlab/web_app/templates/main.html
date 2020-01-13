@@ -20,6 +20,9 @@
         <script src="/static/users.js" type="text/babel"></script>
         <script src="/static/main.js" type="text/babel"></script>
 
+        <script src="/static/oidc-client.min.js"></script>
+
+
         <script > 
             // global params feeded by back end
             const routeUploadWf = "{{ url_for('upload_wf') }}"
@@ -57,11 +60,40 @@
             const userLevel = "{{ user_level }}"
             const loginInstruction = "{{ config.LOGIN_INSTRUCTION }}"
             const registrationInstruction = "{{ config.REGISTRATION_INSTRUCTION }}"
-
+            const useOIDC = "{{ config.USE_OIDC }}"
 
             // other global params:
             const serverNotReachableError = "The server could not be reached."
             const serverReachedWithError = "The server failed to work on your request."
+            
+            //TODO: Use config rather than hardcoded values in Oidc.UserManager
+            oidcConf = "{{ config.OIDC_CONF }}"
+            oidcConf['response_type'] = 'id_token token'
+            oidcConf['scope'] = 'openid profile'
+            
+
+            //TODO: Consule experts if this is a good idea
+            var oidcUserManager = new Oidc.UserManager({
+                response_type: 'id_token token',
+                scope: 'openid profile',
+                authority: 'http://192.168.122.123:8080/auth/realms/cwlab',
+                client_id: 'cwlab1',
+                redirect_uri: 'http://localhost:5000/loginoidc',
+                post_logout_redirect_uri: 'http://localhost:5000',
+                automaticSilentRenew: true,
+                metadata: {
+                    issuer: 'http://192.168.122.123:8080/auth/realms/cwlab',
+                    authorization_endpoint: 'http://192.168.122.123:8080/auth/realms/cwlab/protocol/openid-connect/auth',
+                    userinfo_endpoint: 'http://192.168.122.123:8080/auth/realms/cwlab/protocol/openid-connect/userinfo',
+                    end_session_endpoint: 'http://192.168.122.123:8080/auth/realms/cwlab/protocol/openid-connect/logout',
+                    jwks_uri: 'http://192.168.122.123:8080/auth/realms/cwlab/protocol/openid-connect/certs',
+                },
+                signingKeys: { "keys": [{ "kid": "vV7ZUJcgLS8a0p9rFXCqSsJ3DopI2LwOs2HUZvXjhS4", "kty": "RSA", "alg": "RS256", "use": "sig", "n": "iwpSicGDOCarEDTWOBEVsbAbZE_VWomYGNnWAncnjMnjZU33R9bnQji2ChhiLTGw0NgdUGhZLmp3hzew-mfKJLQ6l7D0_XM5vOiSLtl4Rdxv4XcPDx-ed4Kj3SBvDPmJwkdTairbQ3qEn1QVJynlGa51XPrtA9DIGsTZaXQP47_ChjdmHEldC6OcIWluDw5fqkZSiI_VR9bJFtsoS-UP6-Kt9OgyQVfqbdjJspAb_4Vpc17EJ4u6vIDsvmACOgixqFXU4DTYTnZRr0_nVbO7rSsk3Dn47sZlB8V35U2jaqv5R9_67g61VytoWxYHUeeNEKo1pnP3VzWULe2Y7TQ9ew", "e": "AQAB", "x5c": ["MIICmTCCAYECBgFveyimJjANBgkqhkiG9w0BAQsFADAQMQ4wDAYDVQQDDAVjd2xhYjAeFw0yMDAxMDYxMzU5MTlaFw0zMDAxMDYxNDAwNTlaMBAxDjAMBgNVBAMMBWN3bGFiMIIBIjANBgkqhkiG9w0BAQEFAAOCAQ8AMIIBCgKCAQEAiwpSicGDOCarEDTWOBEVsbAbZE/VWomYGNnWAncnjMnjZU33R9bnQji2ChhiLTGw0NgdUGhZLmp3hzew+mfKJLQ6l7D0/XM5vOiSLtl4Rdxv4XcPDx+ed4Kj3SBvDPmJwkdTairbQ3qEn1QVJynlGa51XPrtA9DIGsTZaXQP47/ChjdmHEldC6OcIWluDw5fqkZSiI/VR9bJFtsoS+UP6+Kt9OgyQVfqbdjJspAb/4Vpc17EJ4u6vIDsvmACOgixqFXU4DTYTnZRr0/nVbO7rSsk3Dn47sZlB8V35U2jaqv5R9/67g61VytoWxYHUeeNEKo1pnP3VzWULe2Y7TQ9ewIDAQABMA0GCSqGSIb3DQEBCwUAA4IBAQAsBdl7LHedl3HsHWaSUQwteZfwDx0IHFJ+qzooBzLV90GcEyXuJOmtQQ4hlagJw8EHkoxQcE353zkzI46iN+4iNTSccDSGwjGK6XC6M+uz13vvFhL5UJJA5iSWODdISFbkQA8cxBStOX5kTL8ljOpK0dIgXbty4AUonJgLTe72rxJY+gaFd6aCvNnG69Js56lP0RAdcIZNpBpMuZOl36kiN4fU9IaSTAgsXgMvTaPBVhkRgn3VMxxEmWz00gP9RKE7RYTjFnpZ688WAoZgYZCnKegITBb6mdJ6ueWS8+S4tf76jcV/zIrjN9HXVtLAMJgIk5GMe6if9Nz8cnRa7dJt"], "x5t": "7N-pF1QQGSr31uz8LS1fWKFzDww", "x5t#S256": "7q9ukcB9aMa1Y4zIPTrhMDahKgSZ1CPYfroZ8qt15Eg" }] }
+            });
+
+        </script>
+
+        <script>
 
         </script>
 

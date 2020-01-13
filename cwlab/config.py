@@ -1,5 +1,6 @@
 import os
 import sys
+import json
 from yaml import safe_load, YAMLError
 from time import strftime, gmtime
 from platform import system
@@ -55,7 +56,17 @@ class Config(object):
             self.CONFIG_FILE_content.get('ENABLE_USERS') or  
             False
         )
-           
+
+        self.USE_OIDC = (
+            os.environ.get('CWLAB_USE_OIDC') or
+            self.CONFIG_FILE_content.get('USE_OIDC') or  
+            False
+        )
+
+        if self.USE_OIDC:
+            json.dumps(self.CONFIG_FILE_content.get('OIDC_CONF'))
+            self.OIDC_CONF = json.dumps(self.CONFIG_FILE_content.get('OIDC_CONF'))
+
         self.DEFAULT_EMAIL = (
             os.environ.get('CWLAB_DEFAULT_EMAIL') or 
             self.CONFIG_FILE_content.get('DEFAULT_EMAIL') or  

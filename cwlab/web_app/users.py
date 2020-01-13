@@ -1,5 +1,7 @@
 import sys
 import os
+import pprint
+
 from flask import render_template, jsonify, redirect, flash, url_for, request
 from flask_login import current_user, login_user, logout_user
 from werkzeug.urls import url_parse
@@ -7,9 +9,24 @@ from cwlab import app
 from cwlab.users.manage import check_user_credentials, check_all_format_conformance, \
     add_user, get_user_info, change_password as change_password_, load_user, delete_user, \
     get_all_users_info as get_all_users_info_, change_user_status_or_level, get_user_by_username
-from cwlab.users.manage import login_required
+from cwlab.users.manage import login_required, check_oidc_token
 from cwlab.log import handle_known_error, handle_unknown_error
 from cwlab.utils import get_time_string
+
+@app.route('/loginoidc', methods=['GET'])
+def login_oidc():
+    """Redirect handler for oidc login"""
+    return render_template('callback.html')
+
+@app.route('/validateoidc', methods=['GET'])
+def validate_oidc():
+    """Demonstrates how an access token is validated"""
+    token = request.headers['Authorization'].split(' ')[1]
+    message = check_oidc_token(token)
+    pprint.pprint(message)
+    return jsonify({
+        'success': message['success']
+    })
 
 @app.route('/login/', methods=['POST'])
 def login():

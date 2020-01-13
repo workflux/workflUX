@@ -1,3 +1,7 @@
+import requests
+import pprint
+import json
+
 from cwlab import db, login, app
 from cwlab.utils import db_commit
 from .db import User, allowed_levels
@@ -35,11 +39,39 @@ def get_user_by_username(username):
             assert retry_delay != retry_delays[-1], "Could not connect to database."
             sleep(retry_delay + retry_delay*random())
     return user
+  
 
 def login_required(admin=False):
-    if app.config["ENABLE_USERS"]:
+    if app.config["ENABLE_USERS"] and app.config['USE_OIDC']:
+        pass
+    elif app.config["ENABLE_USERS"]:
         assert current_user.is_authenticated, "Login required."
         assert not (admin and load_user(current_user.get_id()).level != "admin"), "Admin required."
+
+#checks if a token is valid
+def check_oidc_token(token):
+    token_params = {
+        'Authorization': 'Bearer ' + token
+    }
+    response = requests.get(
+        "http://192.168.122.123:8080/auth/realms/cwlab/protocol/openid-connect/userinfo",
+        headers=token_params
+        )
+
+    parse_response = json.loads(response.text)
+
+    message = {}
+
+    if response.status_code == 200:
+        message['success'] = True
+        message['userinfo'] = parse_response
+    else:
+        message['success'] = False
+        message['error'] = parse_response
+        pprint.pprint(parse_response)
+
+    return message
+
 
 def check_if_username_exists(username):
         return not get_user_by_username(username) is None
