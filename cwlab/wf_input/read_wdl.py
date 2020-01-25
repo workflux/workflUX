@@ -31,7 +31,7 @@ def read_config_from_wdl_file(wdl_file):
         elif isinstance(wdl_type, Type.Float):
             type_ = "float"
         elif isinstance(wdl_type, Type.Int):
-            type_ = "Int"
+            type_ = "int"
         elif isinstance(wdl_type, Type.File):
             type_ = "File"
         else:
