@@ -60,7 +60,7 @@ def type_field( field_string ):
         type_string = "helper" # a helper variable which will not appear in the cwl job yaml
     elif not type_string in ["string", "null", "int", "float", 
         "double", "long", "boolean", "File", "Directory", "helper"]:
-        raise AssertionError( print_pref + "E: unknown CWL type \"" + type_string + "\"" )
+        raise AssertionError( print_pref + "E: unknown parameter type \"" + type_string + "\"" )
     return type_string
 
 
