@@ -1,7 +1,6 @@
 import sys, os
 from .read_xls import clean_string
 from ruamel.yaml.comments import CommentedMap, CommentedSeq
-
 def is_basic_type_instance(value):
     return (isinstance(value, int) or 
             isinstance(value, float) or 
@@ -13,6 +12,7 @@ def read_inp_rec_type_field(inp_rec_type):
     is_array = False
     null_allowed = False
     null_items_allowed = False
+    allowed_selection = [""]
     # test if optional:
     if isinstance(inp_rec_type, list):
         if len(inp_rec_type) == 2 and "null" in inp_rec_type:
@@ -22,9 +22,11 @@ def read_inp_rec_type_field(inp_rec_type):
         else:
             raise AssertionError( print_pref + "unkown type"+ 
                 ": lists of type are only supported when one of two elements is \"null\"")
-    # test if array:
+    # array or type enum:
     if isinstance(inp_rec_type, dict):
-        if "type" in inp_rec_type.keys() and "items" in inp_rec_type.keys():
+        assert "type" in inp_rec_type.keys(), print_pref + " unkown type"
+        # test if array:
+        if "items" in inp_rec_type.keys():
             if inp_rec_type["type"] == "array":
                 is_array = True
                 inp_rec_type = inp_rec_type["items"]
@@ -35,22 +37,26 @@ def read_inp_rec_type_field(inp_rec_type):
                         raise AssertionError( print_pref + " unkown type")
             else:
                 raise AssertionError( print_pref + " unkown type")
+            # test if "null" is allowed as array item:
+            if isinstance(inp_rec_type, list):
+                if len(inp_rec_type) == 2 and "null" in inp_rec_type:
+                    null_items_allowed = True
+                    inp_rec_type.remove("null")
+                    inp_rec_type = inp_rec_type[0]
+                else:
+                    raise AssertionError( print_pref + " unkown type"+ 
+                        ": lists of type are only supported when one of two elements is \"null\"")
+        # test if type enum
+        elif inp_rec_type["type"] == "enum":
+            allowed_selection = inp_rec_type["symbols"]
+            inp_rec_type = "string"
         else:
             raise AssertionError( print_pref + " unkown type")
-        # test if "null" is allowed as array item:
-        if isinstance(inp_rec_type, list):
-            if len(inp_rec_type) == 2 and "null" in inp_rec_type:
-                null_items_allowed = True
-                inp_rec_type.remove("null")
-                inp_rec_type = inp_rec_type[0]
-            else:
-                raise AssertionError( print_pref + " unkown type"+ 
-                    ": lists of type are only supported when one of two elements is \"null\"")
     if isinstance(inp_rec_type, str):
         type_ = inp_rec_type
     else:
         raise AssertionError( print_pref + " unkown type")
-    return type_, null_allowed, is_array, null_items_allowed
+    return type_, null_allowed, is_array, null_items_allowed, allowed_selection
 
 def read_config_from_cwl_file(cwl_file):
     print_pref = "[read_cwl_file]:"
@@ -81,9 +87,10 @@ def read_config_from_cwl_file(cwl_file):
         null_allowed = False
         null_items_allowed = False
         default_value = [""]
+        allowed_selection = [""]
         # read type:
         try:
-            type_, null_allowed, is_array, null_items_allowed = read_inp_rec_type_field(inp_rec["type"])
+            type_, null_allowed, is_array, null_items_allowed, allowed_selection = read_inp_rec_type_field(inp_rec["type"])
         except Exception as e:
             raise AssertionError( print_pref + "E: reading type of param \"{}\": {}".format(name, str(e)))
         # get the default:
@@ -143,6 +150,7 @@ def read_config_from_cwl_file(cwl_file):
             "null_items_allowed": null_items_allowed,
             "secondary_files": secondary_files,
             "default_value": default_value,
+            "allowed_selection": allowed_selection,
             "doc": doc
         }
         # add to configs dict:
