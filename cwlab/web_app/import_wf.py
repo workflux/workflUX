@@ -34,10 +34,22 @@ def upload_wf():
         imported_wf_filepath = os.path.join(temp_dir, import_wf_filename)
         import_wf_file.save(imported_wf_filepath)
 
+        # if existent, save imports.zip:
+        wf_imports_zip_path = None
+        if 'wf_imports_zip' in request.files.keys():
+            wf_imports_zip_file = request.files['wf_imports_zip']
+            wf_imports_zip_filepath = os.path.join(temp_dir, "imports.zip")
+            wf_imports_zip_file.save(wf_imports_zip_filepath)
+
         import_name = secure_filename(metadata["import_name"]) \
             if "import_name" in metadata.keys() and metadata["import_name"] != "" \
             else import_wf_filename
-        import_wf_(wf_path=imported_wf_filepath, name=import_name, wf_type=wf_type)
+        import_wf_(
+            wf_path=imported_wf_filepath, 
+            name=import_name,
+            wf_type=wf_type, 
+            wf_imports_zip_path=wf_imports_zip_filepath
+        )
         
         try:
             rmtree(temp_dir)

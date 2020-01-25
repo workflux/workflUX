@@ -226,6 +226,7 @@ class ImportWfFile extends React.Component{
         this.changeInputField = this.changeInputField.bind(this);
         this.upload = this.upload.bind(this);
         this.handleFileChange = this.handleFileChange.bind(this);
+        this.handleBooleanChange = this.handleBooleanChange.bind(this);
     }
 
     changeInputField(event){
@@ -241,6 +242,12 @@ class ImportWfFile extends React.Component{
         })
     }
 
+    handleBooleanChange(value, isSet){
+        this.setState({
+            [value]: isSet
+        })
+    }
+
     upload(){ // ajax request to server
         if (this.state.wfFile == ""){
             this.state.serverMessages = [{type:"error", text:"No file selected."}]
@@ -250,6 +257,9 @@ class ImportWfFile extends React.Component{
             this.setState({actionStatus:"uploading"})
             let formData = new FormData()
             formData.append("wf_file", this.state.wfFile)
+            if (this.state.provideWfImportsZip){
+                formData.append("wf_imports_zip", this.state.wfImportsZip)
+            }
             formData.append("meta", JSON.stringify({
                 "import_name": this.state.importName,
                 "wf_type": this.props.wfType
@@ -299,17 +309,19 @@ class ImportWfFile extends React.Component{
                         ):(
                         <span>
                             Import a WDL workflow.   
-                            <Message type="warning">
-                                <b>Please Note: This feature is experimental.</b><br/>
-                                If you experience any issues, 
-                                please report them to&nbsp;
-                                <a href="https://github.com/CompEpigen/CWLab/issues">
-                                    https://github.com/CompEpigen/CWLab/issues
-                                </a> or contact k.breuer@dkfz.de.
-                            </Message>
                         </span>
                     )}
                 </p>
+                {this.props.wfType == "WDL" && (
+                    <Message type="warning">
+                        <b>Please Note: This feature is experimental.</b><br/>
+                        If you experience any issues, 
+                        please report them to&nbsp;
+                        <a href="https://github.com/CompEpigen/CWLab/issues">
+                            https://github.com/CompEpigen/CWLab/issues
+                        </a> or contact k.breuer@dkfz.de.
+                    </Message>
+                )}
                 <span className="w3-text-green">
                     1. Choose a {this.props.wfType} file:
                 </span>&nbsp;   
@@ -330,7 +342,37 @@ class ImportWfFile extends React.Component{
                     onChange={this.handleFileChange}
                     disabled={this.state.actionStatus != "none"}
                 />
+                
+                {this.props.wfType == "WDL" && (
+                    <div className="w3-container">
+                        <br/>
+                        <Checkbox
+                            name="provideWfImportsZip"
+                            value="provideWfImportsZip"
+                            checked={this.state.provideWfImportsZip}
+                            onChange={this.handleBooleanChange}
+                        />
+                        &nbsp; include WDL imports via a zip file
+                        <br/>
+                        {this.state.provideWfImportsZip && (
+                            <span>
+                                <span className="w3-text-green">
+                                    Choose an imports.zip:
+                                </span>&nbsp;   
+                                <input 
+                                    className="w3-button w3-border w3-border-grey"
+                                    style={ {display: "block"} }
+                                    type="file" 
+                                    name="wfImportsZip" 
+                                    onChange={this.handleFileChange}
+                                    disabled={this.state.actionStatus != "none"}
+                                />
+                            </span>
+                        )}
+                    </div>
+                )}
                 <br/>
+                
                 <span className="w3-text-green">2. Choose a name:</span>&nbsp;
                 <input type="text"
                     className="w3-input w3-border"

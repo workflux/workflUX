@@ -18,7 +18,7 @@ import json
 from string import ascii_letters, digits
 from pkg_resources import get_distribution
 from urllib import request as url_request
-from shutil import copyfileobj, copyfile, rmtree
+from shutil import copyfileobj, copyfile, rmtree, move
 from werkzeug import secure_filename
 from urllib.request import urlopen
 from distutils.version import StrictVersion
@@ -335,7 +335,9 @@ def import_wdl(wf_path, name, wf_imports_zip_path=None):
         # this is needed as the WDL library cannot yet
         temp_val_dir = make_temp_dir()
         wf_val_path = os.path.join(temp_val_dir, "wf_to_validate.wdl")
-        wf_imports_zip_val_path = os.path.join(temp_val_dir, "deps.zip")
+        copyfile(wf_path, wf_val_path)
+        wf_imports_zip_val_path = os.path.join(temp_val_dir, "imports.zip")
+        copyfile(wf_imports_zip_path, wf_imports_zip_val_path)
         try:
             with zipfile.ZipFile(wf_imports_zip_val_path,"r") as zip_ref:
                 zip_ref.extractall(temp_val_dir)
