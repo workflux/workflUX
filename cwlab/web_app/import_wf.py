@@ -12,6 +12,7 @@ from cwlab.users.manage import login_required
 from shutil import rmtree
 from json import loads as json_loads
 from cwlab.log import handle_known_error, handle_unknown_error
+from cwlab.wf_input.read_janis import list_workflows_in_file as list_workflows_in_janis_file
 
 @app.route('/upload_wf/', methods=['POST'])
 def upload_wf():
@@ -73,6 +74,46 @@ def upload_wf():
             "type":"success", 
             "text": import_wf_file.filename + " successfully imported."
         } )
+
+    except AssertionError as e:
+        messages.append( handle_known_error(e, return_front_end_message=True))
+    except Exception as e:
+        messages.append(handle_unknown_error(e, return_front_end_message=True))
+    
+    return jsonify({"data":data,"messages":messages})
+
+@app.route('/list_avail_wfs_in_janis/', methods=['POST'])
+def list_avail_wfs_in_janis():
+    messages = []
+    data = []
+    try:
+        login_required()
+
+        # save the file to the CWL directory:
+        assert 'wf_file' in request.files, 'No file received.'
+        import_wf_file = request.files['wf_file']
+        assert import_wf_file.filename != '', "No file specified."
+        import_wf_filename = secure_filename(import_wf_file.filename) 
+        temp_dir = make_temp_dir()
+        imported_wf_filepath = os.path.join(temp_dir, import_wf_filename)
+        import_wf_file.save(imported_wf_filepath)
+
+        # import workflow:
+        avail_wfs = list_workflows_in_janis_file(
+            file=imported_wf_filepath,
+            only_return_name=True
+        )
+        
+        # cleanup temp:
+        try:
+            rmtree(temp_dir)
+        except Exception as e:
+            pass
+
+        assert len(avail_wfs) > 0, "No workflow definition could be found in the provided Janis file."
+        data = {
+            "avail_wfs": avail_wfs
+        }
 
     except AssertionError as e:
         messages.append( handle_known_error(e, return_front_end_message=True))
