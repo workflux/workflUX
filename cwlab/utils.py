@@ -379,20 +379,6 @@ def import_janis(wf_path, name, import_as_janis=True, translate_to_cwl=True, tra
         raise AssertionError(
             "The provided Janis document is not valid, the error was: {}".format(str(e))
         )
-    if import_as_janis:
-        assert not os.path.exists(wf_target_path), f"The workflow with name \"{wf_target_name}\" already exists."
-        temp_dir = make_temp_dir()
-        job_templ_path = get_path("job_templ", wf_target=wf_target_name)
-        generate_job_template_from_cwl(
-            workflow_file=wf_path, 
-            wf_type="janis",
-            output_file=job_templ_path, 
-            show_please_fill=True
-        )
-        copyfile(wf_path, wf_target_path)
-        job_templ_target_path = get_path("job_templ", wf_target=wf_target_name)
-        copyfile(job_templ_path, job_templ_target_path)
-        rmtree(temp_dir)
     if translate_to_cwl or translate_to_wdl:
         temp_dir = make_temp_dir()
         workflow = load_and_validate_janis(file=wf_path)
