@@ -370,7 +370,7 @@ def import_wdl(wf_path, name, wf_imports_zip_path=None):
     rmtree(temp_dir)
     
 
-def import_janis(wf_path, name, import_as_janis=True, translate_to_cwl=True, translate_to_wdl=True):
+def import_janis(wf_path, name, translate_to_cwl=True, translate_to_wdl=True, wf_name_in_script=None):
     wf_target_name = "{}.{}".format(name, supported_workflow_exts["janis"][0])
     wf_target_path = get_path("wf", wf_target=wf_target_name)
     try:
@@ -409,10 +409,10 @@ def import_janis(wf_path, name, import_as_janis=True, translate_to_cwl=True, tra
 
 def import_wf(
     wf_path, wf_type=None, name=None,
-    import_as_janis=True, # only if wf_type == "janis"
     translate_to_cwl=True, # only if wf_type == "janis"
     translate_to_wdl=True, # only if wf_type == "janis"
-    wf_imports_zip_path=None # only if wf_type == "WDL"
+    wf_imports_zip_path=None, # only if wf_type == "WDL"
+    wf_name_in_script=None # only if wf_type == "janis"
 ):
     if wf_type is None:
         wf_type = get_workflow_type_from_file_ext(wf_path)
@@ -425,7 +425,7 @@ def import_wf(
     if wf_type == "CWL":
         import_cwl(wf_path, name)
     elif wf_type == "janis":
-        import_janis(wf_path, name, import_as_janis, translate_to_cwl, translate_to_wdl)
+        import_janis(wf_path, name, translate_to_cwl, translate_to_wdl, wf_name_in_script)
     else:
         import_wdl(wf_path, name, wf_imports_zip_path)
     
