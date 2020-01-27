@@ -19,28 +19,36 @@ def upload_wf():
     data = []
     try:
         login_required()
-        assert 'wf_file' in request.files, 'No file received.'
 
-        import_wf_file = request.files['wf_file']
+        # load metadata:
+        metadata = json_loads(request.form.get("meta"))
+        wf_type = metadata["wf_type"] if "wf_type" in metadata.keys() else None
+        # only relavant for janis:
+        translate_to_cwl = metadata["translate_to_cwl"] \
+            if "translate_to_cwl" in metadata.keys() else True
+        translate_to_wdl = metadata["translate_to_wdl"] \
+            if "translate_to_wdl" in metadata.keys() else True
+        wf_name_in_script = metadata["wf_name_in_script"] \
+            if "wf_name_in_script" in metadata.keys() else None
 
-        assert import_wf_file.filename != '', "No file specified."
 
         # save the file to the CWL directory:
-        metadata = json_loads(request.form.get("meta"))
+        assert 'wf_file' in request.files, 'No file received.'
+        import_wf_file = request.files['wf_file']
+        assert import_wf_file.filename != '', "No file specified."
         import_wf_filename = secure_filename(import_wf_file.filename) 
-        wf_type = metadata["wf_type"] if "wf_type" in metadata.keys() else None
-        
         temp_dir = make_temp_dir()
         imported_wf_filepath = os.path.join(temp_dir, import_wf_filename)
         import_wf_file.save(imported_wf_filepath)
 
         # if existent, save imports.zip:
-        wf_imports_zip_path = None
+        wf_imports_zip_filepath = None
         if 'wf_imports_zip' in request.files.keys():
             wf_imports_zip_file = request.files['wf_imports_zip']
             wf_imports_zip_filepath = os.path.join(temp_dir, "imports.zip")
             wf_imports_zip_file.save(wf_imports_zip_filepath)
 
+        # import workflow:
         import_name = secure_filename(metadata["import_name"]) \
             if "import_name" in metadata.keys() and metadata["import_name"] != "" \
             else import_wf_filename
@@ -48,9 +56,13 @@ def upload_wf():
             wf_path=imported_wf_filepath, 
             name=import_name,
             wf_type=wf_type, 
-            wf_imports_zip_path=wf_imports_zip_filepath
+            wf_imports_zip_path=wf_imports_zip_filepath,
+            translate_to_cwl=translate_to_cwl,
+            translate_to_wdl=translate_to_wdl,
+            wf_name_in_script=wf_name_in_script
         )
         
+        # cleanup temp:
         try:
             rmtree(temp_dir)
         except Exception as e:
