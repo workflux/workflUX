@@ -10,7 +10,7 @@ from janis_core import Workflow, CommandTool, Logger
 from .read_cwl import read_inp_rec_type_field
 import os
 
-def get_workflow_from_file(file, name=None, include_commandtools=False):
+def list_workflows_in_file(file, include_commandtools=False, only_return_name=False):
     # How to import a module given the full path
     # https://stackoverflow.com/questions/67631/how-to-import-a-module-given-the-full-path
     import importlib.util
@@ -22,24 +22,28 @@ def get_workflow_from_file(file, name=None, include_commandtools=False):
         ptypes = get_janis_from_module_spec(foo, include_commandtools)
 
     except Exception as e:
-        raise Exception(
+        raise AssertionError(
             f"Unrecognised python file when getting workflow / command tool: {file} :: {e}"
         )
+    if only_return_name:
+        return [k for (k,v) in ptypes]
+    return ptypes
 
-    if name:
-        ptypes = [(k, v) for (k, v) in ptypes if k == name]
+def get_workflow_from_file(file, wf_name_in_script=None, include_commandtools=False):
+    ptypes = list_workflows_in_file(file, include_commandtools)
 
-    if len(ptypes) == 0:
-        return None
+    if wf_name_in_script:
+        ptypes = [(k, v) for (k, v) in ptypes if k == wf_name_in_script]
+
+    assert len(ptypes) > 0, "No workflows found in the provided script."
     if len(ptypes) > 1:
         action = (
-            "(please specify the workflow to use via the `--name` parameter, this name must be the name of "
-            "the variable or the class name and not the workflowId)."
+            "(please specify name of the workflow to use)."
         )
-        if name:
+        if wf_name_in_script:
             action = "(you might need to restructure your file to allow --name to uniquely identify your workflow"
 
-        raise Exception(
+        raise AssertionError(
             f"There was more than one workflow ({len(ptypes)}) detected in '{file}' {action}"
             + ",".join(str(x) for x in ptypes)
         )
