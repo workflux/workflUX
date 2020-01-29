@@ -35,7 +35,7 @@ setup(
                       'pyexcel-xlsx<=0.5.7',
                       'PyYAML',
                       'pexpect',
-                      'janis-pipelines>=0.7.0',
+                      'janis-pipelines',
                       'cwltool==1.0.20181201184214; platform_system=="Windows"',
                       'cwltool >=1.0.20180809224403, <=1.0.20191022103248; platform_system!="Windows"',
                       'psutil',
