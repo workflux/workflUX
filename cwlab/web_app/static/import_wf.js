@@ -203,7 +203,7 @@ class ImportJanisFile extends React.Component{
                         <ActionButton 
                             name="import_wf"
                             value="import_wf"
-                            label="import_wf"
+                            label="import"
                             loading={this.state.actionStatus == "import_wf"} 
                             onAction={this.upload}
                             forwardEvent={true}
