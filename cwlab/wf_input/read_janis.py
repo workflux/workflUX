@@ -50,46 +50,6 @@ def get_workflow_from_file(file, wf_name_in_script=None, include_commandtools=Fa
 
     return ptypes[0][1]
 
-
-def get_janis_from_module_spec(spec, include_commandtools=False):
-    """
-    Get all the Janis.Workflow's that are defined in the file (__module__ == 'module.name')
-    :return: List of all the subclasses of a workflow
-    """
-
-    if include_commandtools:
-        Logger.log("Expanded search to commandtools in " + str(spec))
-
-    potentials = []
-    for k, ptype in spec.__dict__.items():
-        if isinstance(ptype, Workflow):
-            potentials.append((k, ptype))
-            continue
-        if not callable(ptype):
-            continue
-        if isabstract(ptype):
-            continue
-        if not isclass(ptype):
-            continue
-        if ptype.__module__ != "module.name":
-            continue
-        if ptype == Workflow:
-            continue
-        if issubclass(ptype, Workflow):
-            potentials.append((k, ptype()))
-        if include_commandtools and issubclass(ptype, CommandTool):
-            potentials.append((k, ptype()))
-
-    return potentials
-
-  
-def get_inputs_from_tool(tool):
-    ins: List[ToolInput] = tool.inputs()
-    # ins are a ToolInput which have a .id(), .input_type, .default
-    # (not all properties are set on the ToolInput, especially for workflows)
-    # Documentation here: https://janis.readthedocs.io/en/latest/references/commandtool.html#tool-input
-
-
 def read_config_from_janis_file(janis_file):
     workflow = get_workflow_from_file(file=janis_file)
     configs = {}
