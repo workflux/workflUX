@@ -19,7 +19,7 @@ def normalize_path_dict(dict, correct_symlinks=True):
     return norm_dict
 
 class Config(object):
-    def __init__(self,CONFIG_FILE=None):
+    def __init__(self,CONFIG_FILE=None, verbose=True):
         if system() == "Windows":
             self.DEFAULT_CONFIG_FILE = os.path.join(basedir, "default_config_windows.yaml")
         else:
@@ -35,7 +35,8 @@ class Config(object):
             "\" does not exist."
         )
 
-        print(">>> Using config file: " + self.CONFIG_FILE, file=sys.stderr)
+        if verbose:
+            print(">>> Using config file: " + self.CONFIG_FILE, file=sys.stderr)
 
         with open(self.CONFIG_FILE, 'r') as stream:
             try:
