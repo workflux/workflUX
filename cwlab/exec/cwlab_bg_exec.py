@@ -212,10 +212,10 @@ def prepare_shell():
 
 def run_step(p, step_name, retry_count):
     status_message={
-        "pre_exec":"preparing for execution",
+        "prepare":"preparing for execution",
         "exec":"executing",
         "eval":"evaluating results",
-        "post_exec":"finishing",
+        "finalize":"finishing",
     }
     err_message = None
     timeout = int(exec_profile["timeout"][step_name])
@@ -281,7 +281,7 @@ def terminate_shell(p):
     except Exception as e:
         print(">>> could not terminate shell session: \n " + str(e))
 
-step_order = ["pre_exec", "exec", "eval", "post_exec"]
+step_order = ["prepare", "exec", "eval", "finalize"]
 for retry_count in range(0, exec_profile["max_retries"]+1):
     print(">>> retry count: " + str(retry_count))
     try:

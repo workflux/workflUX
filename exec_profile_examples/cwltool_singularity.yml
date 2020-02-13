@@ -3,11 +3,11 @@ EXEC_PROFILES:
     type: bash
     max_retries: 0
     timeout:
-      pre_exec: 120
+      prepare: 120
       exec: 86400
       eval: 120
-      post_exec: 120
-    pre_exec: |
+      finalize: 120
+    prepare: |
       {
         echo "Setting up nodejs:"
         rm -rf node*
@@ -20,5 +20,5 @@ EXEC_PROFILES:
     exec: |
       ${PYTHON_PATH} -m cwltool --singularity --outdir "${OUTPUT_DIR}" "${WORKFLOW}" "${RUN_INPUT}" \
         >> "${LOG_FILE}" 2>&1
-    post_exec: |
+    finalize: |
       rm -rf "${OUTPUT_DIR}/nodejs"

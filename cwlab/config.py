@@ -165,10 +165,10 @@ class Config(object):
         
         # set defaults:
         timeout_defaults = {
-            "pre_exec": 120,
+            "prepare": 120,
             "exec": 86400,
             "eval": 120,
-            "post_exec": 120
+            "finalize": 120
         }
         general_defaults = {
             "type": "bash",
