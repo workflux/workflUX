@@ -8,7 +8,7 @@ CWLab allows life-science researchers with all levels of computational proficien
 With CWLab, we would like to hide the complexity of workflow management so that scientific users can focus on their data analyses. This might promote the adoption of CWL in multi-professional life-science laboratories.
 
 ## Installation and Quick Start:
-**Attention: CWLab is in alpha state currently and not all features are available yet. However, the core functionalities are working and we are happy if you test it. We are working hard to push out a stable version in the coming weeks. Please press the watch button to not miss it.**
+**Attention: CWLab is in early beta state currently and not all features are available yet. However, the core functionalities are working and we are happy if you test it.**
 
 Installation can be done using pip:  
 `python3 -m pip install cwlab`
