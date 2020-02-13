@@ -324,7 +324,7 @@ options (e.g. using different CWL runners, different dependency
 management systems, or even choose a between multiple available batch
 execution infrastructures like lsf, pbs, ...). For each execution
 profile, following configuration parameters are available (but only
-**shell** and **exec** is required):
+**type** and **exec** is required):
 
 -  **shell**:
    Specify which shell to use. For Linux or MacOS use ``bash``. For

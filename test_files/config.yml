@@ -23,9 +23,9 @@ DEBUG: True
 EXEC_PROFILES:
   cwltool_local_test: # name of the exec profile
     
-    # Choose the shell to use:
+    # Choose the type to use:
     #   bash (Linux/MacOs), cmd (Windows)
-    shell: bash
+    type: bash
 
     # how many times execution should be retried (default 3):
     max_retries: 3
@@ -69,9 +69,9 @@ EXEC_PROFILES:
 
   cwltool_local_no_docker_test: # name of the exec profile
     
-    # Choose the shell to use:
+    # Choose the type to use:
     #   bash (Linux/MacOs), cmd (Windows)
-    shell: bash
+    type: bash
 
     # how many times execution should be retried (default 3):
     max_retries: 3
@@ -115,9 +115,9 @@ EXEC_PROFILES:
 
   cwltool_local_singularity_test: # name of the exec profile
     
-    # Choose the shell to use:
+    # Choose the type to use:
     #   bash (Linux/MacOs), cmd (Windows)
-    shell: bash
+    type: bash
 
     # how many times execution should be retried (default 3):
     max_retries: 3
@@ -161,7 +161,7 @@ EXEC_PROFILES:
 
 
   test:
-    shell: bash
+    type: bash
     timeout:
       pre_exec: 120
       exec: 86400
@@ -176,9 +176,9 @@ EXEC_PROFILES:
     post_exec: |
       touch "${OUTPUT_DIR}/post_execs"
   cwltool_local: # name of the exec profile
-    # Choose the shell to use:
+    # Choose the type to use:
     #   bash (Linux/MacOs), cmd (Windows)
-    shell: bash
+    type: bash
     
     # timeout for each step in seconds 
     # if not specified the defaults are used:

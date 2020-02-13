@@ -1,5 +1,5 @@
 EXEC_PROFILES:
   cwltool_no_container:
-    shell: bash
+    type: bash
     exec: |
       "${PYTHON_PATH}" -m cwltool --debug --no-container --outdir "${OUTPUT_DIR}" "${WORKFLOW}" "${RUN_INPUT}" >> "${LOG_FILE}" 2>&1

@@ -196,15 +196,15 @@ def prepare_shell():
 
     var_cmdls = [key + "=\"" + var_dict[key] + "\"" for key in var_dict.keys()]
 
-    if exec_profile["shell"] == "bash":
+    if exec_profile["type"] == "bash":
         init_pref = ""
-    elif exec_profile["shell"] == "powershell":
+    elif exec_profile["type"] == "powershell":
         init_pref = "$"
     else:
-        raise AssertionError("Error unkown shell \"" + exec_profile["shell"] + "\".")
+        raise AssertionError("Error unkown type \"" + exec_profile["type"] + "\".")
     
     var_cmdls = [(init_pref + c) for c in var_cmdls]
-    p = spawn(exec_profile["shell"], timeout=None)
+    p = spawn(exec_profile["type"], timeout=None)
     [p.sendline(cmdl) for cmdl in var_cmdls]
 
     return p
@@ -230,9 +230,9 @@ def run_step(p, step_name, retry_count):
     [p.sendline(cmdl) for cmdl in cmdls]
 
     # check final exit status:
-    if exec_profile["shell"]=="bash":
+    if exec_profile["type"]=="bash":
         p.sendline('echo "[${FINISH_TAG}:EXITCODE:$?:SUCCESS:${SUCCESS}:${FINISH_TAG}]"')
-    elif exec_profile["shell"]=="powershell":
+    elif exec_profile["type"]=="powershell":
         p.sendline('echo "[${FINISH_TAG}:EXITCODE:${lastexitcode}:SUCCESS:${SUCCESS}:${FINISH_TAG}]"')
 
     # wait for expected tag:
@@ -273,9 +273,9 @@ def run_step(p, step_name, retry_count):
     
 def terminate_shell(p):
     try:
-        if exec_profile["shell"] == "bash":
+        if exec_profile["type"] == "bash":
             p.terminate(force=True)
-        elif exec_profile["shell"] == "powershell":
+        elif exec_profile["type"] == "powershell":
             p.kill(CTRL_BREAK_EVENT)
             sleep(2)
     except Exception as e:

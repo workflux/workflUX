@@ -1,6 +1,6 @@
 EXEC_PROFILES:
   cwltool_singularity:
-    shell: bash
+    type: bash
     max_retries: 0
     timeout:
       pre_exec: 120

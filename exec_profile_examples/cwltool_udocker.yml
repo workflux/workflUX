@@ -1,6 +1,6 @@
 EXEC_PROFILES:
   cwltool_local_udocker: 
-    shell: bash
+    type: bash
     pre_exec: |
       {
         echo "Setting up udocker environment:"
