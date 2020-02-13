@@ -80,13 +80,18 @@ wf_target = exec_db_entry.wf_target
 run_input = exec_db_entry.run_input
 out_dir = exec_db_entry.out_dir
 global_temp_dir = exec_db_entry.global_temp_dir
-log = exec_db_entry.log
+log_file = exec_db_entry.log
 time_started = exec_db_entry.time_started
 exec_profile = exec_db_entry.exec_profile
-exec_profile_name = exec_db_entry.exec_profile_name
 add_exec_info = exec_db_entry.add_exec_info
-user_id = exec_db_entry.user_id
 user_email = exec_db_entry.user_email
+
+class ExecHandler():
+    def __init__(exec_profile, user_email,)
+        self
+    exec_profile = exec_profile,
+    user_email = None
+)
 
 # send mail:
 def send_mail(subj, text):
@@ -175,7 +180,7 @@ if not os.path.exists(out_dir):
     os.mkdir(out_dir)
     
 # run steps:
-def prepare_shell():
+def prepare_session():
     var_dict = {
         "JOB_ID": job_id,
         "RUN_ID": run_id,
@@ -183,7 +188,7 @@ def prepare_shell():
         "RUN_INPUT": run_input,
         "OUTPUT_DIR": out_dir,
         "GLOBAL_TEMP_DIR": global_temp_dir,
-        "LOG_FILE": log,
+        "LOG_FILE": log_file,
         "SUCCESS": "True",
         "ERR_MESSAGE": "None",
         "FINISH_TAG": "DONE",
@@ -250,15 +255,15 @@ def run_step(p, step_name, retry_count):
         err_message = "Unkown error checking for exit code."
 
     if debug:
-        log_text = "\n>>> " + step_name + ":\n" + \
+        debug_log_text = "\n>>> " + step_name + ":\n" + \
             '\n'.join(p.before.decode().splitlines()) + "\n"
         if err_message:
-            log_text = log_text + \
+            debug_log_text = debug_log_text + \
                 "Err_message: " + err_message + "\n"
-        log_text = log_text + \
+        debug_log_text = debug_log_text + \
             "Exit_code: " + str(exit_code) + "\n"\
             "Success: " + str(success) + "\n"
-        print(log_text)
+        print(debug_log_text)
     if exit_code != 0 or not success:
         exec_db_entry.status = status_message[step_name] + " failed"
         exec_db_entry.err_message = "Error occured while \"" + \
@@ -268,7 +273,7 @@ def run_step(p, step_name, retry_count):
                 ": " + err_message
         raise AssertionError(err_message)
     
-def terminate_shell(p):
+def terminate_shell_session(p):
     try:
         if exec_profile["type"] == "bash":
             p.terminate(force=True)
@@ -283,22 +288,22 @@ for retry_count in range(0, exec_profile["max_retries"]+1):
     print(">>> retry count: " + str(retry_count))
     try:
         # # create empty log file:
-        p = prepare_shell()
+        p = prepare_session()
 
         # run steps:
         [run_step(p, step, retry_count) for step in step_order if step in exec_profile.keys()]
         exec_db_entry.status = "finished" 
-        terminate_shell(p)
+        terminate_shell_session(p)
         break
     except AssertionError as e:
         print(">>> A step could not be finished sucessfully: \n" + str(e))
-        terminate_shell(p) 
+        terminate_shell_session(p) 
         # will retry
     except Exception as e:
         print(">>> System error occured: \n " + str(e))
         exec_db_entry.status = "system error"
         exec_db_entry.err_message = "System Error occured"
-        terminate_shell(p) 
+        terminate_shell_session(p) 
         break
 
 # set finish time
