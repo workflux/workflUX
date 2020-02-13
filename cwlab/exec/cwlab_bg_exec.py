@@ -31,12 +31,9 @@ print(">>> exec_db_id: " + str(exec_db_id))
 print(">>> debug: " + str(debug))
 
 if debug:
-    db_retry_delays = [1, 5, 20]
+    db_retry_delays = [1, 1, 5, 20]
 else:
-    db_retry_delays = [1, 5, 20, 60, 600]
-
-# wait random time:
-sleep(1 + 1*random())
+    db_retry_delays = [1, 1, 5, 20, 60, 600]
 
 # open connection to database
 exec_profile_name = ""
