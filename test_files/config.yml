@@ -6,11 +6,11 @@ WEB_SERVER_HOST: 0.0.0.0
 ## (2) choose the port:
 WEB_SERVER_PORT: 5000 # The default is 5000, if this port is blocked choose a different one
 
-TEMP_DIR: '/mnt/c/Users/kerst/OneDrive/home_dell/CWLab/scratch/temp'
-WORKFLOW_DIR: '/mnt/c/Users/kerst/OneDrive/home_dell/CWLab/scratch/wf_dir'
-EXEC_DIR: '/mnt/c/Users/kerst/OneDrive/home_dell/CWLab/scratch/exec'
-INPUT_DIR: '/mnt/c/Users/kerst/OneDrive/home_dell/CWLab/scratch/input'
-DB_DIR: '/mnt/c/Users/kerst/OneDrive/home_dell/CWLab/scratch/database'
+TEMP_DIR: '/mnt/c/Users/kerst/OneDrive/home/cwlab_test_env/scratch/temp'
+WORKFLOW_DIR: '/mnt/c/Users/kerst/OneDrive/home/cwlab_test_env/scratch/wf_dir'
+EXEC_DIR: '/mnt/c/Users/kerst/OneDrive/home/cwlab_test_env/scratch/exec'
+INPUT_DIR: '/mnt/c/Users/kerst/OneDrive/home/cwlab_test_env/scratch/input'
+DB_DIR: '/mnt/c/Users/kerst/OneDrive/home/cwlab_test_env/scratch/database'
 
 # TEMP_DIR: '/home/epicwl/CWLab/scratch/temp'
 # WORKFLOW_DIR: '/home/epicwl/CWLab/scratch/CWL'
@@ -27,8 +27,8 @@ EXEC_PROFILES:
     #   bash (Linux/MacOs), cmd (Windows)
     type: bash
 
-    # how many times execution should be retried (default 3):
-    max_retries: 3
+    # how many times execution should be retried (default 2):
+    max_retries: 2
     
     # timeout for each step in seconds 
     # if not specified the defaults are used:
@@ -74,7 +74,7 @@ EXEC_PROFILES:
     type: bash
 
     # how many times execution should be retried (default 3):
-    max_retries: 3
+    max_retries: 2
     
     # timeout for each step in seconds 
     # if not specified the defaults are used:
@@ -120,7 +120,7 @@ EXEC_PROFILES:
     type: bash
 
     # how many times execution should be retried (default 3):
-    max_retries: 3
+    max_retries: 2
     
     # timeout for each step in seconds 
     # if not specified the defaults are used:
