@@ -13,6 +13,7 @@ from random import random
 from re import sub
 from email.mime.text import MIMEText
 from subprocess import Popen, PIPE
+from typing import Union
 
 if platform_system() == 'Windows':
     from signal import CTRL_BREAK_EVENT
@@ -71,28 +72,6 @@ def query_info_from_db(what, db_retry_delays_=None, no_error=False):
                 sleep(db_retry_delay + db_retry_delay*random())
     return db_request
 
-# retrieve infos from database
-exec_db_entry = query_info_from_db("run_info")
-
-job_id = exec_db_entry.job_id
-run_id = exec_db_entry.run_id
-wf_target = exec_db_entry.wf_target
-run_input = exec_db_entry.run_input
-out_dir = exec_db_entry.out_dir
-global_temp_dir = exec_db_entry.global_temp_dir
-log_file = exec_db_entry.log
-time_started = exec_db_entry.time_started
-exec_profile = exec_db_entry.exec_profile
-add_exec_info = exec_db_entry.add_exec_info
-user_email = exec_db_entry.user_email
-
-class ExecHandler():
-    def __init__(exec_profile, user_email,)
-        self
-    exec_profile = exec_profile,
-    user_email = None
-)
-
 # send mail:
 def send_mail(subj, text):
     if user_email is None:
@@ -131,11 +110,191 @@ def commit(db_retry_delays_=None, no_error=False):
             else:
                 sleep(db_retry_delay + db_retry_delay*random())
 
+
+class ExecSessionBase():
+    # Template for and ExecHandler.
+    # The final ExecHandler should contain following functions:
+    # (if not needed specify pass)
+    #   - setup()
+    #   - exec()
+    #   - terminate()
+
+    def __init__(
+        self,
+        exec_profile:dict,
+        exec_db_entry,
+        session_vars:dict,
+        commit #commit function
+    ):
+        self.exec_profile = exec_profile
+        self.session_vars = session_vars
+        self.commit = commit
+        self.exec_db_entry = exec_db_entry
+        self.step_order = ["prepare", "exec", "eval", "finalize"]
+
+
+class ExecSessionShell(ExecSessionBase):
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+        self.pexpect_process = None
+
+    def send_commands(self, cmdls):
+        [self.pexpect_process.sendline(cmdl) for cmdl in cmdls]
+
+    def wait_for(self, pattern, timeout):
+        err_message = None
+        try:
+            self.pexpect_process.expect(pattern, timeout=timeout)
+            exit_code_str = self.pexpect_process.after.decode().split(":")[2].strip()
+            if exit_code_str == "":
+                exit_code_str = "0"
+            exit_code = int(exit_code_str)
+            success = str(self.pexpect_process.after.decode().split(":")[4].strip()) == "True"
+        except TIMEOUT:
+            exit_code = 1
+            success = False
+            err_message = "timeout waiting for expected pattern"
+        except:
+            exit_code = 1
+            success = False
+            err_message = "Unkown error checking for exit code."
+
+        # print info for debug log:
+        debug_log_text = '\n'.join(self.pexpect_process.before.decode().splitlines()) + "\n"
+        if err_message:
+            debug_log_text = debug_log_text + \
+                "Err_message: " + err_message + "\n"
+        debug_log_text = debug_log_text + \
+            "Exit_code: " + str(exit_code) + "\n"\
+            "Success: " + str(success) + "\n"
+        print(debug_log_text)
+
+        return success, exit_code, err_message
+
+    def setup(self):
+        # create out_dir:
+        if not os.path.exists(out_dir):
+            os.mkdir(out_dir)
+
+        cmdls = [key + "=\"" + self.session_vars[key] + "\"" for key in self.session_vars.keys()]
+
+        if self.exec_profile["type"] == "bash":
+            init_pref = ""
+        elif self.exec_profile["type"] == "powershell":
+            init_pref = "$"
+        else:
+            raise AssertionError("Error unkown type \"" + exec_profile["type"] + "\".")
+    
+        cmdls = [(init_pref + c) for c in cmdls]
+        self.pexpect_process = spawn(exec_profile["type"], timeout=None)
+        self.send_commands(cmdls)
+
+    def run_step(self, step_name):
+        for retry_count in range(0, self.exec_profile["max_retries"]+1):
+            print(">>> step {} - retry count {}".format(step_name, str(retry_count)))
+            status_message={
+                "prepare":"preparing for execution",
+                "exec":"executing",
+                "eval":"evaluating results",
+                "finalize":"finishing",
+            }
+            timeout = int(self.exec_profile["timeout"][step_name])
+            # update the state of the exec in the database:
+            self.exec_db_entry.timeout_limit = datetime.now() + timedelta(0, timeout)
+            self.exec_db_entry.status = status_message[step_name]
+            self.exec_db_entry.retry_count = retry_count
+            self.commit()
+            
+            # run commands specified in the exec profile
+            cmdls = self.exec_profile[step_name].splitlines()
+            self.send_commands(cmdls)
+
+            # check final exit status:
+            if self.exec_profile["type"]=="bash":
+                finish_cmdl = 'echo "[${FINISH_TAG}:EXITCODE:$?:SUCCESS:${SUCCESS}:${FINISH_TAG}]"'
+            elif self.exec_profile["type"]=="powershell":
+                finish_cmdl = 'echo "[${FINISH_TAG}:EXITCODE:${lastexitcode}:SUCCESS:${SUCCESS}:${FINISH_TAG}]"'
+            self.send_commands([finish_cmdl])
+            success, exit_code, err_message = self.wait_for(
+                "DONE:EXITCODE:.*:DONE", 
+                timeout=timeout
+            )
+
+            if exit_code == 0 and success:
+                break
+            else:
+                if retry_count < self.exec_profile["max_retries"]:
+                    continue
+                self.exec_db_entry.status = status_message[step_name] + " failed"
+                self.exec_db_entry.err_message = "Error occured while \"" + \
+                        status_message[step_name] + "\""
+                if err_message:
+                    self.exec_db_entry.err_message = self.exec_db_entry.err_message + \
+                        ": " + err_message
+                raise AssertionError(err_message)
+
+    def exec(self):
+        try:
+            [self.run_step(step) for step in self.step_order if step in exec_profile.keys()]
+            exec_db_entry.status = "finished" 
+        except AssertionError as e:
+            print(">>> A step could not be finished sucessfully: \n" + str(e))
+        except Exception as e:
+            print(">>> System error occured: \n " + str(e))
+            self.exec_db_entry.status = "system error"
+            self.exec_db_entry.err_message = "System Error occured"
+            self.commit()
+
+    def terminate(self):
+        try:
+            if exec_profile["type"] == "bash":
+                self.pexpect_process.terminate(force=True)
+            elif exec_profile["type"] == "powershell":
+                self.pexpect_process.kill(CTRL_BREAK_EVENT)
+                sleep(2)
+        except Exception as e:
+            print(">>> could not terminate shell session: \n " + str(e))
+
+
+# retrieve infos from database:
+exec_db_entry = query_info_from_db("run_info")
+job_id = exec_db_entry.job_id
+run_id = exec_db_entry.run_id
+wf_target = exec_db_entry.wf_target
+run_input = exec_db_entry.run_input
+out_dir = exec_db_entry.out_dir
+global_temp_dir = exec_db_entry.global_temp_dir
+log_file = exec_db_entry.log
+time_started = exec_db_entry.time_started
+exec_profile = exec_db_entry.exec_profile
+exec_profile_name = exec_db_entry.exec_profile_name
+add_exec_info = exec_db_entry.add_exec_info
+user_email = exec_db_entry.user_email
+
+
 # set pid:
 pid = os.getpid()
 print(">>> Run's pid: " + str(pid))
 exec_db_entry.pid = pid
 commit()
+
+
+# create dictionary of needed variables:
+var_dict = {
+    "JOB_ID": job_id,
+    "RUN_ID": run_id,
+    "WORKFLOW": wf_target,
+    "RUN_INPUT": run_input,
+    "OUTPUT_DIR": out_dir,
+    "GLOBAL_TEMP_DIR": global_temp_dir,
+    "LOG_FILE": log_file,
+    "SUCCESS": "True",
+    "ERR_MESSAGE": "None",
+    "FINISH_TAG": "DONE",
+    "PYTHON_PATH":python_interpreter
+}
+var_dict.update(add_exec_info)
+
 
 # wait until number of running jobs decreases below max_parallel_exec:
 db_retry_delay_queue = [1]
@@ -175,136 +334,16 @@ while wait:
 exec_db_entry.time_started = datetime.now()
 commit()
 
-# create out_dir:
-if not os.path.exists(out_dir):
-    os.mkdir(out_dir)
-    
-# run steps:
-def prepare_session():
-    var_dict = {
-        "JOB_ID": job_id,
-        "RUN_ID": run_id,
-        "WORKFLOW": wf_target,
-        "RUN_INPUT": run_input,
-        "OUTPUT_DIR": out_dir,
-        "GLOBAL_TEMP_DIR": global_temp_dir,
-        "LOG_FILE": log_file,
-        "SUCCESS": "True",
-        "ERR_MESSAGE": "None",
-        "FINISH_TAG": "DONE",
-        "PYTHON_PATH":python_interpreter
-    }
-    var_dict.update(add_exec_info)
+exec_session = ExecSessionShell(
+    exec_profile = exec_profile,
+    exec_db_entry = exec_db_entry,
+    session_vars = var_dict,
+    commit = commit
+)
 
-    var_cmdls = [key + "=\"" + var_dict[key] + "\"" for key in var_dict.keys()]
-
-    if exec_profile["type"] == "bash":
-        init_pref = ""
-    elif exec_profile["type"] == "powershell":
-        init_pref = "$"
-    else:
-        raise AssertionError("Error unkown type \"" + exec_profile["type"] + "\".")
-    
-    var_cmdls = [(init_pref + c) for c in var_cmdls]
-    p = spawn(exec_profile["type"], timeout=None)
-    [p.sendline(cmdl) for cmdl in var_cmdls]
-
-    return p
-
-
-def run_step(p, step_name, retry_count):
-    status_message={
-        "prepare":"preparing for execution",
-        "exec":"executing",
-        "eval":"evaluating results",
-        "finalize":"finishing",
-    }
-    err_message = None
-    timeout = int(exec_profile["timeout"][step_name])
-    # update the state of the exec in the database:
-    exec_db_entry.timeout_limit = datetime.now() + timedelta(0, timeout)
-    exec_db_entry.status = status_message[step_name]
-    exec_db_entry.retry_count = retry_count
-    commit()
-    
-    # run commands specified in the exec profile
-    cmdls = exec_profile[step_name].splitlines()
-    [p.sendline(cmdl) for cmdl in cmdls]
-
-    # check final exit status:
-    if exec_profile["type"]=="bash":
-        p.sendline('echo "[${FINISH_TAG}:EXITCODE:$?:SUCCESS:${SUCCESS}:${FINISH_TAG}]"')
-    elif exec_profile["type"]=="powershell":
-        p.sendline('echo "[${FINISH_TAG}:EXITCODE:${lastexitcode}:SUCCESS:${SUCCESS}:${FINISH_TAG}]"')
-
-    # wait for expected tag:
-    try:
-        p.expect("DONE:EXITCODE:.*:DONE", timeout=timeout)
-        exit_code_str = p.after.decode().split(":")[2].strip()
-        if exit_code_str == "":
-            exit_code_str = "0"
-        exit_code = int(exit_code_str)
-        success = str(p.after.decode().split(":")[4].strip()) == "True"
-    except TIMEOUT:
-        exit_code = 1
-        success = False
-        err_message = "timeout waiting for expected pattern"
-    except Exception as e:
-        exit_code = 1
-        success = False
-        err_message = "Unkown error checking for exit code."
-
-    if debug:
-        debug_log_text = "\n>>> " + step_name + ":\n" + \
-            '\n'.join(p.before.decode().splitlines()) + "\n"
-        if err_message:
-            debug_log_text = debug_log_text + \
-                "Err_message: " + err_message + "\n"
-        debug_log_text = debug_log_text + \
-            "Exit_code: " + str(exit_code) + "\n"\
-            "Success: " + str(success) + "\n"
-        print(debug_log_text)
-    if exit_code != 0 or not success:
-        exec_db_entry.status = status_message[step_name] + " failed"
-        exec_db_entry.err_message = "Error occured while \"" + \
-                status_message[step_name] + "\""
-        if err_message:
-            exec_db_entry.err_message = exec_db_entry.err_message + \
-                ": " + err_message
-        raise AssertionError(err_message)
-    
-def terminate_shell_session(p):
-    try:
-        if exec_profile["type"] == "bash":
-            p.terminate(force=True)
-        elif exec_profile["type"] == "powershell":
-            p.kill(CTRL_BREAK_EVENT)
-            sleep(2)
-    except Exception as e:
-        print(">>> could not terminate shell session: \n " + str(e))
-
-step_order = ["prepare", "exec", "eval", "finalize"]
-for retry_count in range(0, exec_profile["max_retries"]+1):
-    print(">>> retry count: " + str(retry_count))
-    try:
-        # # create empty log file:
-        p = prepare_session()
-
-        # run steps:
-        [run_step(p, step, retry_count) for step in step_order if step in exec_profile.keys()]
-        exec_db_entry.status = "finished" 
-        terminate_shell_session(p)
-        break
-    except AssertionError as e:
-        print(">>> A step could not be finished sucessfully: \n" + str(e))
-        terminate_shell_session(p) 
-        # will retry
-    except Exception as e:
-        print(">>> System error occured: \n " + str(e))
-        exec_db_entry.status = "system error"
-        exec_db_entry.err_message = "System Error occured"
-        terminate_shell_session(p) 
-        break
+exec_session.setup()
+exec_session.exec()
+exec_session.terminate()
 
 # set finish time
 exec_db_entry.time_finished = datetime.now()
