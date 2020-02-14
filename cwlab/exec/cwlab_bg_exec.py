@@ -183,6 +183,10 @@ while wait:
 exec_db_entry.time_started = datetime.now()
 commit()
 
+# create output dir:
+if not os.path.exists(out_dir):
+    os.mkdir(out_dir)
+
 # start exec session:
 exec_session = ExecSessionShell(
     exec_profile = exec_profile,
