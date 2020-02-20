@@ -345,7 +345,7 @@ class RunList extends React.Component {
                             {runInfo[r].status}
                             {
                                 runInfo[r].retry_count > 0 && 
-                                    '(retry: ' + runInfo[r].retry_count.toString() + ')'
+                                    ' (retry: ' + runInfo[r].retry_count.toString() + ')'
                             }
                         </span>
                     ),
