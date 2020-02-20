@@ -31,6 +31,12 @@ class ExecSessionBase():
         self.commit = commit
         self.exec_db_entry = exec_db_entry
         self.step_order = ["prepare", "exec", "eval", "finalize"]
+        self.status_message = {
+                "prepare":"preparing",
+                "exec":"executing",
+                "eval":"evaluating",
+                "finalize":"finishing",
+            }
 
 
 class ExecSessionShell(ExecSessionBase):
@@ -88,16 +94,10 @@ class ExecSessionShell(ExecSessionBase):
     def run_step(self, step_name):
         for retry_count in range(0, self.exec_profile["max_retries"]+1):
             print(">>> step {} - retry count {}".format(step_name, str(retry_count)))
-            status_message={
-                "prepare":"preparing for execution",
-                "exec":"executing",
-                "eval":"evaluating results",
-                "finalize":"finishing",
-            }
             timeout = int(self.exec_profile["timeout"][step_name])
             # update the state of the exec in the database:
             self.exec_db_entry.timeout_limit = datetime.now() + timedelta(0, timeout)
-            self.exec_db_entry.status = status_message[step_name]
+            self.exec_db_entry.status = self.status_message[step_name]
             self.exec_db_entry.retry_count = retry_count
             self.commit()
             
@@ -121,9 +121,9 @@ class ExecSessionShell(ExecSessionBase):
             else:
                 if retry_count < self.exec_profile["max_retries"]:
                     continue
-                self.exec_db_entry.status = status_message[step_name] + " failed"
+                self.exec_db_entry.status = self.status_message[step_name] + " failed"
                 self.exec_db_entry.err_message = "Error occured while \"" + \
-                        status_message[step_name] + "\""
+                        self.status_message[step_name] + "\""
                 if err_message:
                     self.exec_db_entry.err_message = self.exec_db_entry.err_message + \
                         ": " + err_message
