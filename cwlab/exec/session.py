@@ -72,10 +72,6 @@ class ExecSessionShell(ExecSessionBase):
         return success, exit_code, err_message
 
     def setup(self):
-        # create out_dir:
-        if not os.path.exists(self.session_vars["OUTPUT_DIR"]):
-            os.mkdir(self.session_vars["OUTPUT_DIR"])
-
         cmdls = [key + "=\"" + self.session_vars[key] + "\"" for key in self.session_vars.keys()]
 
         if self.exec_profile["type"] == "bash":
