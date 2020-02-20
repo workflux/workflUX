@@ -10,6 +10,8 @@ else:
 from pexpect import TIMEOUT, EOF
 from time import sleep
 from datetime import datetime, timedelta
+import importlib.util
+from contextlib import contextmanager
 
 class ExecSessionBase():
     # Template for and ExecHandler.
@@ -150,3 +152,75 @@ class ExecSessionShell(ExecSessionBase):
                 sleep(2)
         except Exception as e:
             print(">>> could not terminate shell session: \n " + str(e))
+
+
+class PyExecProfile():
+    def __init__(
+        self,
+        session_vars :dict
+    ):
+        [setattr(self, str(key), session_vars[key]) for key in session_vars.keys()]
+    
+    # steps prepare, eval, and finalize are optional:
+
+    def prepare(self):
+        pass
+
+    def eval(self):
+        pass
+    
+    def finalize(self):
+        pass
+
+class ExecSessionPython(ExecSessionBase):
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+        self.py_exec_profile = None
+
+    def setup(self):
+        spec = importlib.util.spec_from_file_location(
+            "py_exec_profile_module", 
+            self.exec_profile["py_module"]
+        )
+        py_exec_profile_module = importlib.util.module_from_spec(spec)
+        spec.loader.exec_module(py_exec_profile_module)
+        PyExecProfile = getattr(py_exec_profile_module, self.exec_profile["py_class"])
+        self.py_exec_profile = PyExecProfile(session_vars=self.session_vars)
+
+    def run(self):
+        try:
+            for step in self.step_order:
+                for retry_count in range(0, self.exec_profile["max_retries"]+1):
+                    self.exec_db_entry.status = self.status_message[step] 
+                    self.commit()
+                    run_step = getattr(self.py_exec_profile, step)
+                    run_step()
+                    if self.py_exec_profile.SUCCESS:
+                        break
+                    else:
+                        if retry_count < self.exec_profile["max_retries"]:
+                            continue
+                        self.exec_db_entry.status = step + " failed"
+                        self.exec_db_entry.err_message = "Error occured while \"" + \
+                                self.status_message[step] + "\""
+                        if self.py_exec_profile.ERR_MESSAGE:
+                            self.exec_db_entry.err_message = self.exec_db_entry.err_message + \
+                                ": " + self.py_exec_profile.ERR_MESSAGE
+                        raise AssertionError(self.py_exec_profile.ERR_MESSAGE)
+            self.exec_db_entry.status = "finished" 
+        except AssertionError as e:
+            print(">>> A step could not be finished sucessfully: \n" + str(e))
+        except Exception as e:
+            print(">>> System error occured: \n " + str(e))
+            self.exec_db_entry.status = "system error"
+            self.exec_db_entry.err_message = "System Error occured"
+        self.commit()
+
+    def terminate(self):
+        pass
+
+session_class_by_type = {
+    "bash": ExecSessionShell,
+    "powershell": ExecSessionShell,
+    "python": ExecSessionPython
+}

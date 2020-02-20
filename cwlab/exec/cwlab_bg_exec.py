@@ -14,7 +14,7 @@ from subprocess import Popen, PIPE
 
 dir_of_this_script = os.path.dirname(os.path.realpath(__file__))
 sys.path.append(dir_of_this_script)
-from session import ExecSessionShell
+from session import session_class_by_type
 
 python_interpreter = sys.executable
 
@@ -188,7 +188,8 @@ if not os.path.exists(out_dir):
     os.mkdir(out_dir)
 
 # start exec session:
-exec_session = ExecSessionShell(
+ExecSession = session_class_by_type[exec_profile["type"]]
+exec_session = ExecSession(
     exec_profile = exec_profile,
     exec_db_entry = exec_db_entry,
     session_vars = var_dict,
