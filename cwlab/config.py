@@ -20,10 +20,7 @@ def normalize_path_dict(dict, correct_symlinks=True):
 
 class Config(object):
     def __init__(self,CONFIG_FILE=None, verbose=True):
-        if system() == "Windows":
-            self.DEFAULT_CONFIG_FILE = os.path.join(basedir, "default_config_windows.yaml")
-        else:
-            self.DEFAULT_CONFIG_FILE = os.path.join(basedir, "default_config.yaml")
+        self.DEFAULT_CONFIG_FILE = os.path.join(basedir, "default_config.yaml")
 
         self.CONFIG_FILE = CONFIG_FILE or \
                 os.environ.get('CWLAB_CONFIG') or \
