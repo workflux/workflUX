@@ -217,6 +217,6 @@ EXEC_PROFILES:
     type: python
     # either path to a python file (can be relative to dir of this config yaml) or
     # name of python module that is in sys.path:
-    py_module: /mnt/c/Users/kerst/OneDrive/home/cwlab_pyexecprof/test_files/py_exec_profiles.py
+    py_module: ./py_exec_profiles.py
     # class in module describing the exec steps:
     py_class: CwltoolLocalNoContainer

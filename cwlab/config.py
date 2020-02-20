@@ -183,6 +183,19 @@ class Config(object):
             general = general_defaults.copy()
             general.update(self.EXEC_PROFILES[exec_profile])
             self.EXEC_PROFILES[exec_profile] = general
+            if self.EXEC_PROFILES[exec_profile]["type"] == "python" and \
+                (not os.path.exists(self.EXEC_PROFILES[exec_profile]["py_module"])):
+                # try whether the modules path is relative to the config file:
+                rel_path = normalize_path(
+                    os.path.join(
+                        os.path.dirname(self.CONFIG_FILE), 
+                        self.EXEC_PROFILES[exec_profile]["py_module"]
+                    ),
+                    self.CORRECT_SYMLINKS
+                )
+                if os.path.exists(rel_path):
+                    self.EXEC_PROFILES[exec_profile]["py_module"] = rel_path
+                # else do nothing and assume that py_module represents the name of the module
 
         # Configure web server:
         self.WEB_SERVER_HOST = (
