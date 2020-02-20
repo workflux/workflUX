@@ -13,6 +13,32 @@ from datetime import datetime, timedelta
 import importlib.util
 from contextlib import contextmanager
 
+def get_session_var_dict(
+    job_id,
+    run_id,
+    wf_target,
+    run_input,
+    out_dir,
+    global_temp_dir,
+    log_file,
+    add_exec_info
+):
+    session_vars = {
+        "JOB_ID": job_id,
+        "RUN_ID": run_id,
+        "WORKFLOW": wf_target,
+        "RUN_INPUT": run_input,
+        "OUTPUT_DIR": out_dir,
+        "GLOBAL_TEMP_DIR": global_temp_dir,
+        "LOG_FILE": log_file,
+        "SUCCESS": "True",
+        "ERR_MESSAGE": "None",
+        "FINISH_TAG": "DONE",
+        "PYTHON_PATH": sys.executable
+    }
+    session_vars.update(add_exec_info)
+    return session_vars
+
 class ExecSessionBase():
     # Template for and ExecHandler.
     # The final ExecHandler should contain following functions:
