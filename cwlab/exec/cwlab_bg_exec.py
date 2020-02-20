@@ -196,7 +196,7 @@ exec_session = ExecSessionShell(
 )
 
 exec_session.setup()
-exec_session.exec()
+exec_session.run()
 exec_session.terminate()
 
 

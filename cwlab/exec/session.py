@@ -16,7 +16,7 @@ class ExecSessionBase():
     # The final ExecHandler should contain following functions:
     # (if not needed specify pass)
     #   - setup()
-    #   - exec()
+    #   - run()
     #   - terminate()
 
     def __init__(
@@ -129,7 +129,7 @@ class ExecSessionShell(ExecSessionBase):
                         ": " + err_message
                 raise AssertionError(err_message)
 
-    def exec(self):
+    def run(self):
         try:
             [self.run_step(step) for step in self.step_order if step in self.exec_profile.keys()]
             self.exec_db_entry.status = "finished" 
