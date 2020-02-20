@@ -20,10 +20,7 @@ def normalize_path_dict(dict, correct_symlinks=True):
 
 class Config(object):
     def __init__(self,CONFIG_FILE=None, verbose=True):
-        if system() == "Windows":
-            self.DEFAULT_CONFIG_FILE = os.path.join(basedir, "default_config_windows.yaml")
-        else:
-            self.DEFAULT_CONFIG_FILE = os.path.join(basedir, "default_config.yaml")
+        self.DEFAULT_CONFIG_FILE = os.path.join(basedir, "default_config.yaml")
 
         self.CONFIG_FILE = CONFIG_FILE or \
                 os.environ.get('CWLAB_CONFIG') or \
@@ -165,12 +162,13 @@ class Config(object):
         
         # set defaults:
         timeout_defaults = {
-            "pre_exec": 120,
+            "prepare": 120,
             "exec": 86400,
             "eval": 120,
-            "post_exec": 120
+            "finalize": 120
         }
         general_defaults = {
+            "type": "bash",
             "max_retries": 2,
             "max_parallel_exec": 4, # if exceeded, jobs will be queued
             "allow_user_decrease_max_parallel_exec": True,
@@ -185,6 +183,19 @@ class Config(object):
             general = general_defaults.copy()
             general.update(self.EXEC_PROFILES[exec_profile])
             self.EXEC_PROFILES[exec_profile] = general
+            if self.EXEC_PROFILES[exec_profile]["type"] == "python" and \
+                (not os.path.exists(self.EXEC_PROFILES[exec_profile]["py_module"])):
+                # try whether the modules path is relative to the config file:
+                rel_path = normalize_path(
+                    os.path.join(
+                        os.path.dirname(self.CONFIG_FILE), 
+                        self.EXEC_PROFILES[exec_profile]["py_module"]
+                    ),
+                    self.CORRECT_SYMLINKS
+                )
+                if os.path.exists(rel_path):
+                    self.EXEC_PROFILES[exec_profile]["py_module"] = rel_path
+                # else do nothing and assume that py_module represents the name of the module
 
         # Configure web server:
         self.WEB_SERVER_HOST = (
