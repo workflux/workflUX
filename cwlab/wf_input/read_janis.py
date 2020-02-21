@@ -10,6 +10,38 @@ from janis_core import Workflow, CommandTool, Logger
 from .read_cwl import read_inp_rec_type_field
 import os
 
+
+def get_janis_from_module_spec(spec, include_commandtools=False):
+    """
+    Get all the Janis.Workflow's that are defined in the file (__module__ == 'module.name')
+    :return: List of all the subclasses of a workflow
+    """
+
+    if include_commandtools:
+        Logger.log("Expanded search to commandtools in " + str(spec))
+
+    potentials = []
+    for k, ptype in spec.__dict__.items():
+        if isinstance(ptype, Tool):
+            potentials.append((k, ptype))
+            continue
+        if not callable(ptype):
+            continue
+        if isabstract(ptype):
+            continue
+        if not isclass(ptype):
+            continue
+        if ptype.__module__ != "module.name":
+            continue
+        if ptype == Workflow:
+            continue
+        if issubclass(ptype, Workflow):
+            potentials.append((k, ptype()))
+        if include_commandtools and issubclass(ptype, Tool):
+            potentials.append((k, ptype()))
+
+    return potentials
+
 def list_workflows_in_file(file, include_commandtools=False, only_return_name=False):
     # How to import a module given the full path
     # https://stackoverflow.com/questions/67631/how-to-import-a-module-given-the-full-path
