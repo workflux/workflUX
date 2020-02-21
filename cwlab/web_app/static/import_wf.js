@@ -8,7 +8,7 @@ class ImportJanisFile extends React.Component{
             availableWfNames: [],
             wfNameSelectedForImport: null,
             translateToCWL: true,
-            translateToWDL: true,
+            translateToWDL: false,
             importName: "",
             actionStatus: "none",
             serverMessages: []
@@ -168,7 +168,7 @@ class ImportJanisFile extends React.Component{
                             }
                         </select>
                         <br/><br/>
-                        <span className="w3-text-green">3. Choose at least one target format:</span><br/>
+                        {/* <span className="w3-text-green">3. Choose at least one target format:</span><br/>
                         <Checkbox
                             name="translateToCWL"
                             value="translateToCWL"
@@ -191,8 +191,8 @@ class ImportJanisFile extends React.Component{
                             ) : (
                                 <span><br/><br/></span>
                             )
-                        }
-                        <span className="w3-text-green">4. Choose a name and import:</span><br/>
+                        } */}
+                        <span className="w3-text-green">3. Choose a name and import:</span><br/>
                         <input type="text"
                             className="w3-input w3-border"
                             name="importName"
@@ -660,10 +660,10 @@ class ImportCWLRoot extends React.Component {
                 descr: "from CWL file",
                 component: <ImportWfFile wfType="CWL"/>
             },
-            wdlFile: {
-                descr: "from WDL file",
-                component: <ImportWfFile wfType="WDL"/>
-            },
+            // wdlFile: {
+            //     descr: "from WDL file",
+            //     component: <ImportWfFile wfType="WDL"/>
+            // },
             cwlZip: {
                 descr: "from ZIP file (e.g. a CWL workflow with its dependencies)",
                 component: <ImportCwlZip />
