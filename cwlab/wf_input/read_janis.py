@@ -6,7 +6,7 @@ On the workflow object, to get the inputs you can call get_inputs_from_workflow
 """
 from typing import List, Tuple
 from inspect import isclass, isabstract
-from janis_core import Workflow, CommandTool, Logger
+from janis_core import Workflow, CommandTool, Logger, Tool
 from .read_cwl import read_inp_rec_type_field
 import os
 
