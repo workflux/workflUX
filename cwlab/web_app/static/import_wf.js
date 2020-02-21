@@ -657,7 +657,7 @@ class ImportCWLRoot extends React.Component {
                 component: <ImportCwlUrl />
             },
             cwlFile: {
-                descr: "from CWL file",
+                descr: "from (packed) CWL file",
                 component: <ImportWfFile wfType="CWL"/>
             },
             // wdlFile: {
@@ -665,7 +665,7 @@ class ImportCWLRoot extends React.Component {
             //     component: <ImportWfFile wfType="WDL"/>
             // },
             cwlZip: {
-                descr: "from ZIP file (e.g. a CWL workflow with its dependencies)",
+                descr: "from ZIP file (e.g. a CWL workflow + its dependencies)",
                 component: <ImportCwlZip />
             },
             janisFile: {
