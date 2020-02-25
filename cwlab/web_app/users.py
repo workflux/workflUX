@@ -1,9 +1,8 @@
 import sys
 import os
-from flask import render_template, jsonify, redirect, flash, url_for, request
+from flask import render_template, jsonify, redirect, flash, url_for, request, current_app as app
 from flask_login import current_user, login_user, logout_user
 from werkzeug.urls import url_parse
-from cwlab import app 
 from cwlab.users.manage import check_user_credentials, check_all_format_conformance, \
     add_user, get_user_info, change_password as change_password_, load_user, delete_user, \
     get_all_users_info as get_all_users_info_, change_user_status_or_level, get_user_by_username

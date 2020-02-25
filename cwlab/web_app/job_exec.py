@@ -3,7 +3,7 @@ import os
 from flask import render_template, jsonify, redirect, flash, url_for, request, send_from_directory
 from flask_login import current_user
 from werkzeug.urls import url_parse
-from cwlab import app 
+from flask import current_app as app 
 from cwlab.utils import fetch_files_in_dir, allowed_extensions_by_type, \
     get_duration, get_job_ids, get_path, get_run_ids, get_job_templ_info, get_time_string
 import requests
@@ -13,7 +13,7 @@ from cwlab.wf_input import only_validate_xls, transcode as make_runs
 from cwlab.exec.exec import exec_runs, get_run_info, read_run_log, read_run_input, \
     terminate_runs as terminate_runs_by_id, delete_job as delete_job_by_id
 from cwlab import db
-from cwlab.exec.db import Exec
+from cwlab.database.sqlalchemy.models import Exec
 from time import sleep
 from random import random
 from shutil import move

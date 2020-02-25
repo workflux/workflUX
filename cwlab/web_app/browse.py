@@ -1,7 +1,7 @@
 import sys
 import os
 from flask import render_template, jsonify, redirect, flash, url_for, request, send_from_directory
-from cwlab import app 
+from flask import current_app as app
 from cwlab.users.manage import login_required
 from cwlab.utils import browse_dir as browse_dir_, get_allowed_base_dirs, check_if_path_in_dirs, \
     zip_dir, normalize_path, get_time_string
