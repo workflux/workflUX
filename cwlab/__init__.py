@@ -62,9 +62,10 @@ def create_app(config_file=None, webapp=True):
         setup_db(app)
         login.init_app(app)
         
-        if webapp:
-            if app.config['ENABLE_USERS']:
-                login.login_view = 'login'
-            app.run(host=app.config["WEB_SERVER_HOST"], port=app.config["WEB_SERVER_PORT"])
+    if webapp:
+        if app.config['ENABLE_USERS']:
+            login.login_view = 'login'
+        app.run(host=app.config["WEB_SERVER_HOST"], port=app.config["WEB_SERVER_PORT"])
+    
     return app
 

@@ -1,7 +1,7 @@
 from cwlab import db, login
+from cwlab.database.sqlalchemy.user_manager import UserManager
 from flask import current_app as app
 from cwlab.utils import db_commit
-from cwlab.database.sqlalchemy.models import SqlalchemyUser as User, allowed_levels
 from getpass import getpass
 from time import sleep
 from random import random
@@ -10,31 +10,20 @@ from re import match
 from datetime import datetime
 from flask_login import current_user
 
+allowed_levels = ["admin", "user"]
+
+user_manager = UserManager()
+
 @login.user_loader
 def load_user(id, return_username_only=False):
-    retry_delays = [1, 4]
-    for retry_delay in retry_delays:
-        try:
-            user = User.query.get(int(id))
-        except Exception as e:
-            assert retry_delay != retry_delays[-1], "Could not connect to database."
-            sleep(retry_delay + retry_delay*random())
+    user = user_manager.load_user(id=id)
     if return_username_only:
         return user.username
     else:
         return user
 
 def get_user_by_username(username):
-    retry_delays = [1, 4]
-    for retry_delay in retry_delays:
-        try:
-            db_request = db.session.query(User).filter(User.username == username)
-            if db_request.count() == 0:
-                return None
-            user = db_request.first()
-        except Exception as e:
-            assert retry_delay != retry_delays[-1], "Could not connect to database."
-            sleep(retry_delay + retry_delay*random())
+    user = user_manager.load_user_by_name(username=username)
     return user
 
 def login_required(admin=False):
@@ -46,16 +35,7 @@ def check_if_username_exists(username):
         return not get_user_by_username(username) is None
 
 def get_users(only_admins=False, return_usernames=False):
-    retry_delays = [1, 4]
-    for retry_delay in retry_delays:
-        try:
-            db_user_request = db.session.query(User)
-            if only_admins:
-                db_user_request = db_user_request.filter(User.level=="admin")
-            users = db_user_request.all()
-        except Exception as e:
-            assert retry_delay != retry_delays[-1], "Could not connect to database."
-            sleep(retry_delay + retry_delay*random())
+    users = user_manager.load_users(only_admins)
     if return_usernames:
         usernames = [user.username for user in users]
         return usernames
@@ -72,7 +52,7 @@ def get_user_info(id):
 
 def add_user(username, email, level, password, status="active"):
     assert not check_if_username_exists(username), "Username already exists."
-    user = User(
+    user = user_manager.create(
         username=username, 
         email=email,
         level=level, 
@@ -81,13 +61,10 @@ def add_user(username, email, level, password, status="active"):
         date_last_login = None
     )
     user.set_password(password)
-    db.session.add(user)
-    db_commit()
+    user_manager.store(user)
 
 def delete_user(id):
-    user = load_user(id)
-    db.session.delete(user)
-    db_commit()
+    user_manager.delete_by_id(id)
 
 def check_user_credentials(username, password, return_user_if_valid):
     user = get_user_by_username(username)
@@ -156,7 +133,7 @@ def get_all_users_info():
     retry_delays = [1, 4]
     for retry_delay in retry_delays:
         try:
-            users = db.session.query(User).all()
+            users = user_manager.load_users()
         except Exception as e:
             assert retry_delay != retry_delays[-1], "Could not connect to database."
             sleep(retry_delay + retry_delay*random())
