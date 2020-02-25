@@ -8,7 +8,7 @@ import tempfile
 import os
 from datetime import datetime
 
-@pytest.fixture(scope='session')
+@pytest.fixture
 def test_app():
     app = create_app("tests/myconfig.yaml", webapp=False)
     app.config['TESTING'] = True   
@@ -17,7 +17,7 @@ def test_app():
         ctx.push()
         yield testing_client
 
-@pytest.fixture(scope='session')
+@pytest.fixture
 def test_database():
     db.create_all()
     #add user data to db
