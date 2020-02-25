@@ -39,8 +39,8 @@ def main():
         from . import __version__
         print(f"cwlab {__version__}")
     if args.subcommand == "up":
-        from . import up
-        up(config_file=args.config)
+        from . import create_app
+        create_app(config_file=args.config, webapp=True)
     elif args.subcommand == "print_config":
         from .utils import output_example_config
         output_example_config()

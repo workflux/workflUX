@@ -3,7 +3,7 @@ import os
 from flask import render_template, jsonify, redirect, flash, url_for, request
 from werkzeug.urls import url_parse
 from werkzeug.utils import secure_filename
-from cwlab import app
+from flask import current_app as app
 from cwlab.utils import is_allowed_file, allowed_extensions_by_type, get_path, \
     make_temp_dir, import_wf as import_wf_, unzip_dir, get_allowed_base_dirs, \
     check_if_path_in_dirs, download_file, vaidate_url, get_time_string

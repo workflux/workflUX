@@ -1,7 +1,7 @@
-from cwlab import app
+from flask import current_app as app
 from cwlab.utils import get_path, get_duration, db_commit, read_file_content, get_run_ids, \
     get_job_name_from_job_id, get_job_templ_info, get_allowed_base_dirs, check_if_path_in_dirs
-from .db import Exec
+from cwlab.database.sqlalchemy.models import Exec
 from cwlab import db
 from cwlab.users.manage import get_user_info
 from datetime import datetime

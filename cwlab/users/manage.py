@@ -1,6 +1,7 @@
-from cwlab import db, login, app
+from cwlab import db, login
+from flask import current_app as app
 from cwlab.utils import db_commit
-from .db import User, allowed_levels
+from cwlab.database.sqlalchemy.models import SqlalchemyUser as User, allowed_levels
 from getpass import getpass
 from time import sleep
 from random import random
