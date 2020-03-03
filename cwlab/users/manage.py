@@ -1,7 +1,6 @@
-from cwlab import db, login
-from cwlab.database.sqlalchemy.user_manager import UserManager
+from cwlab import login
+from cwlab import db_connector
 from flask import current_app as app
-from cwlab.utils import db_commit
 from getpass import getpass
 from time import sleep
 from random import random
@@ -12,7 +11,7 @@ from flask_login import current_user
 
 allowed_levels = ["admin", "user"]
 
-user_manager = UserManager()
+user_manager = db_connector.user_manager
 
 @login.user_loader
 def load_user(id, return_username_only=False):
@@ -75,7 +74,7 @@ def check_user_credentials(username, password, return_user_if_valid):
     if return_user_if_valid:
         if valid:
             user.date_last_login = datetime.now()
-            db_commit()
+            user_manager.update()
             return user
         else:
             return None
@@ -127,7 +126,7 @@ def change_password(id, old_password, new_password, new_rep_password):
     assert new_password == new_rep_password, "New passwords do not match."
     assert check_format_conformance("password", new_password), format_errors["password"]
     user.set_password(new_password)
-    db_commit()
+    user_manager.update()
 
 def get_all_users_info():
     retry_delays = [1, 4]
@@ -155,7 +154,8 @@ def change_user_status_or_level(id, new_status=None, new_level=None):
         user.status = new_status
     if not new_level is None:
         user.level = new_level
-    db_commit()
+
+    user_manager.update()
 
 def interactively_add_user(level="", instruction="Please set the credentials of the user to be added."):
     success = False

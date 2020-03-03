@@ -1,10 +1,11 @@
-from cwlab import db
-from cwlab.database.sqlalchemy.models import SqlalchemyUser as User
 from random import random
 from time import sleep
+from cwlab.database.connector import db
+from cwlab.database.sqlalchemy.models import SqlalchemyUser as User
 
 
 class UserManager():
+
     def create(
         self,
         username, 
@@ -22,17 +23,20 @@ class UserManager():
             date_last_login = date_last_login
         )
         return user
-    
+
+    def update(self):
+        db.session.commit()
+
     def store(self, user):
         db.session.add(user)
-        db.session.commit()
-    
+        self.update()
+        
     def delete(self, user):
         db.session.delete(user)
-        db.session.commit()
+        self.update()
     
     def delete_by_id(self, id):
-        user = self.load_user(id)
+        user = self.load(id)
         self.delete(user)
 
     def load(self, id):

@@ -12,8 +12,6 @@ from cwlab.wf_input.web_interface import gen_form_sheet as gen_job_param_sheet
 from cwlab.wf_input import only_validate_xls, transcode as make_runs
 from cwlab.exec.exec import exec_runs, get_run_info, read_run_log, read_run_input, \
     terminate_runs as terminate_runs_by_id, delete_job as delete_job_by_id
-from cwlab import db
-from cwlab.database.sqlalchemy.models import Exec
 from time import sleep
 from random import random
 from shutil import move

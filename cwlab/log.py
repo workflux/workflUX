@@ -1,4 +1,3 @@
-from . import db
 from logging.handlers import RotatingFileHandler
 from logging import Formatter
 from .utils import get_path, get_time_string
