@@ -1,31 +1,28 @@
 import pytest
 from datetime import datetime
-from cwlab import db
-from cwlab.database.sqlalchemy.models import SqlalchemyUser as User, Exec
-from cwlab.database.sqlalchemy.user_manager import UserManager
 
-user_manager = UserManager()
 
-def test_user_manager(test_app, test_database):
+
+
+def test_user_manager(test_app, test_user_manager):
     # 1) add new user to db
-    new_user = user_manager.create(
-        username="u2", 
+    new_user = test_user_manager.create(
+        username="u2cxyc", 
         email="m@i.l",
         level="user", 
         status="active",
         date_register = datetime.now(),
         date_last_login = datetime.now())
     new_user.set_password("geheim") 
-    user_manager.store(new_user)
+    test_user_manager.store(new_user)
     # 2) laod all user
-    db_users = user_manager.load_users()
     # 3) load by name/id
-    for user in db_users:
-        print(user_manager.load_user(id = user.id))
-        print(user_manager.load_user_by_name(username = user.username))
+    for user in test_user_manager.load_all():
+        print(test_user_manager.load(id = user.id))
+        print(test_user_manager.load_by_name(username = user.username))
     # 4) delete
-    for user in db_users:
-        user_manager.delete_by_id(user.id)
+    for user in test_user_manager.load_all():
+        test_user_manager.delete(user)
     # 5) load all
-    db_users = user_manager.load_users()
+    db_users = test_user_manager.load_all()
     print(db_users)
