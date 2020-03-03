@@ -35,7 +35,7 @@ class UserManager():
         user = self.load_user(id)
         self.delete(user)
 
-    def load_user(self, id):
+    def load(self, id):
         retry_delays = [1, 4]
         for retry_delay in retry_delays:
             try:
@@ -45,7 +45,7 @@ class UserManager():
                 sleep(retry_delay + retry_delay*random())
         return user
     
-    def load_user_by_name(self, username):
+    def load_by_name(self, username):
         retry_delays = [1, 4]
         for retry_delay in retry_delays:
             try:
@@ -58,7 +58,7 @@ class UserManager():
                 sleep(retry_delay + retry_delay*random())
         return user
     
-    def load_users(self, only_admins=False):
+    def load_all(self, only_admins=False):
         retry_delays = [1, 4]
         for retry_delay in retry_delays:
             try:

@@ -16,14 +16,14 @@ user_manager = UserManager()
 
 @login.user_loader
 def load_user(id, return_username_only=False):
-    user = user_manager.load_user(id=id)
+    user = user_manager.load(id=id)
     if return_username_only:
         return user.username
     else:
         return user
 
 def get_user_by_username(username):
-    user = user_manager.load_user_by_name(username=username)
+    user = user_manager.load_by_name(username=username)
     return user
 
 def login_required(admin=False):
@@ -35,7 +35,7 @@ def check_if_username_exists(username):
         return not get_user_by_username(username) is None
 
 def get_users(only_admins=False, return_usernames=False):
-    users = user_manager.load_users(only_admins)
+    users = user_manager.load_all(only_admins)
     if return_usernames:
         usernames = [user.username for user in users]
         return usernames
@@ -133,7 +133,7 @@ def get_all_users_info():
     retry_delays = [1, 4]
     for retry_delay in retry_delays:
         try:
-            users = user_manager.load_users()
+            users = user_manager.load_all()
         except Exception as e:
             assert retry_delay != retry_delays[-1], "Could not connect to database."
             sleep(retry_delay + retry_delay*random())
