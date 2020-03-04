@@ -1,5 +1,5 @@
 from cwlab.database.connector import db
-from cwlab.database.sqlalchemy.models import SqlalchemyUser as User, SqlalchemyExec as Exec
+from cwlab.database.sqlalchemy.models import User, Exec
 
 
 class ExecManager():
