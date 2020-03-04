@@ -5,6 +5,7 @@ from cwlab.database.sqlalchemy.models import SqlalchemyUser as User, SqlalchemyE
 class ExecManager():
 
     def create(
+        self,
         job_id,
         run_id,
         wf_target,
