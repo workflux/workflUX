@@ -243,7 +243,7 @@ def get_run_info(job_id, run_ids, return_pid=False, return_db_request=False):
             data[run_id]["exec_profile"] = run_info.exec_profile_name
             data[run_id]["retry_count"] = run_info.retry_count
     if return_db_request:
-        db_job_id_request = exec_manager.get_job_runs(job_id, run_ids,)
+        db_job_id_request = exec_manager.get_job_runs(job_id, run_ids)
         return data, db_job_id_request
     else:
         return data
@@ -285,9 +285,10 @@ def terminate_runs(
     could_not_be_terminated = []
     could_not_be_cleaned = []
     succeeded = []
-    run_info, db_request = get_run_info(job_id, run_ids, return_pid=True, return_db_request=True)
+    run_info = get_run_info(job_id, run_ids, return_pid=True)
     db_changed = False
     for run_id in run_info.keys():
+        db_run = exec_manager.get_job_run(job_id, run_id)[0]
         if isinstance(run_info[run_id]["time_started"], datetime) and \
             not isinstance(run_info[run_id]["time_finished"], datetime):
             if run_info[run_id]["pid"] != -1:
@@ -296,9 +297,9 @@ def terminate_runs(
                     could_not_be_terminated.append(run_id)
                     continue
                 cleanup_zombie_process(run_info[run_id]["pid"])
-            db_run_entry = db_request.filter(Exec.id==run_info[run_id]["db_id"])
-            db_run_entry.time_finished = datetime.now()
-            db_run_entry.status = "terminated by user"
+            #db_run_entry = db_request.filter(Exec.id==run_info[run_id]["db_id"])
+            db_run.time_finished = datetime.now()
+            db_run.status = "terminated by user"
             db_changed = True
         if mode in ["reset", "delete"]:
             try:
@@ -309,7 +310,7 @@ def terminate_runs(
                 if os.path.exists(run_out_dir):
                     rmtree(run_out_dir)
                 if isinstance(run_info[run_id]["time_started"], datetime):
-                    db_request.filter(Exec.run_id==run_id).delete(synchronize_session=False)
+                    db_run.delete(synchronize_session=False)
                     db_changed = True
             except Exception as e:
                 could_not_be_cleaned.append(run_id)
@@ -323,8 +324,9 @@ def terminate_runs(
                 could_not_be_cleaned.append(run_id)
                 continue
         succeeded.append(run_id)
-    #if db_changed:
-    #    #db_commit()
+    if db_changed:
+        exec_manager.update()
+        #db_commit()
     return succeeded, could_not_be_terminated, could_not_be_cleaned
             
 def read_run_log(job_id, run_id):
