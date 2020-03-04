@@ -1,8 +1,8 @@
 from cwlab.database.connector import db
-from cwlab.database.models import User
+from cwlab.database.models import BaseUser
 from werkzeug.security import generate_password_hash, check_password_hash
 
-class SqlalchemyUser(User, db.Model):
+class User(BaseUser, db.Model):
     id = db.Column(db.Integer, primary_key=True)
     username = db.Column(db.String(64), index=True, unique=True)
     email = db.Column(db.String(120), index=True)
@@ -12,7 +12,7 @@ class SqlalchemyUser(User, db.Model):
     date_register = db.Column(db.DateTime())
     date_last_login = db.Column(db.DateTime())
 
-class SqlalchemyExec(db.Model):
+class Exec(db.Model):
     id = db.Column(db.Integer(), primary_key=True)
     run_id = db.Column(db.String(255), index=True)
     job_id = db.Column(db.String(255), index=True)
