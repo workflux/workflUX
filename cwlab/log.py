@@ -1,9 +1,8 @@
-from . import app
-from . import db
 from logging.handlers import RotatingFileHandler
 from logging import Formatter
 from .utils import get_path, get_time_string
 from logging import INFO, ERROR
+from flask import current_app as app
 
 file_logging_formatter = Formatter('%(asctime)s %(levelname)s: %(message)s [in %(pathname)s:%(lineno)d]')
 

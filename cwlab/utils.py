@@ -19,7 +19,6 @@ from urllib.request import urlopen
 
 from pkg_resources import get_distribution
 
-from cwlab import db
 from cwlab.wf_input import \
     generate_xls_from_cwl as generate_job_template_from_cwl
 from cwlab.wf_input.read_janis import \
@@ -32,8 +31,7 @@ from cwlab.wf_input.web_interface import \
     read_template_metadata as read_template_metadata_from_xls
 from WDL import load as load_and_validate_wdl
 from werkzeug import secure_filename
-
-from . import app
+from flask import current_app as app
 
 asyncio.set_event_loop(asyncio.new_event_loop())
 basedir = os.path.abspath(os.path.dirname(__file__))
@@ -492,15 +490,6 @@ def output_example_config():
     print("# For help, please visit: " + 
         "https://github.com/CompEpigen/CWLab#configuration")
     print(example_config_content)
-    
-def db_commit(retry_delays=[1,4]):
-    for retry_delay in retry_delays:
-        try:
-            db.session.commit()
-            break
-        except Exception as e:
-            assert retry_delay != retry_delays[-1], "Could not connect to database."
-            sleep(retry_delay + retry_delay*random())
     
 def get_allowed_base_dirs(job_id=None, run_id=None, allow_input=True, allow_upload=True, allow_download=False, include_tmp_dir=False):
     allowed_dirs = {}

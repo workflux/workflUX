@@ -1,9 +1,8 @@
-from cwlab import app
-from cwlab.utils import get_path, get_duration, db_commit, read_file_content, get_run_ids, \
+from flask import current_app as app
+from cwlab.utils import get_path, get_duration, read_file_content, get_run_ids, \
     get_job_name_from_job_id, get_job_templ_info, get_allowed_base_dirs, check_if_path_in_dirs
-from .db import Exec
-from cwlab import db
 from cwlab.users.manage import get_user_info
+from cwlab import db_connector
 from datetime import datetime
 import os, sys, platform
 from subprocess import Popen, PIPE
@@ -16,6 +15,8 @@ from shutil import rmtree, copy, copyfile, move
 from cwlab.wf_input.read_wf import get_workflow_type_from_file_ext
 basedir = os.path.abspath(os.path.dirname(__file__))
 python_interpreter = sys.executable
+
+exec_manager = db_connector.exec_manager
 
 def make_job_dir_tree(job_id):
     job_dir = get_path("job_dir", job_id)
@@ -116,16 +117,16 @@ def cleanup_zombie_process(pid):
         pass
 
 
-def query_info_from_db(job_id):
-    retry_delays = [1, 4]
-    for retry_delay in retry_delays:
-        try:
-            db_job_id_request = db.session.query(Exec).filter(Exec.job_id==job_id)
-            break
-        except Exception as e:
-            assert retry_delay != retry_delays[-1], "Could not connect to database."
-            sleep(retry_delay + retry_delay*random())
-    return db_job_id_request
+#def query_info_from_db(job_id):
+#    retry_delays = [1, 4]
+#    for retry_delay in retry_delays:
+#        try:
+#            db_job_id_request = db.session.query(Exec).filter(Exec.job_id==job_id)
+#            break
+#        except Exception as e:
+#            assert retry_delay != retry_delays[-1], "Could not connect to database."
+#            sleep(retry_delay + retry_delay*random())
+#    return db_job_id_request
 
 def exec_runs(job_id, run_ids, exec_profile_name, user_id=None, max_parrallel_exec_user_def=None, add_exec_info={}, send_email=True):
     if send_email and app.config["SEND_EMAIL"]:
@@ -137,15 +138,8 @@ def exec_runs(job_id, run_ids, exec_profile_name, user_id=None, max_parrallel_ex
         user_email = None
 
     # check if runs are already running:
-    already_running_runs = []
-    db_job_id_request = query_info_from_db(job_id)
-    for run_id in run_ids:
-        db_run_id_request = db_job_id_request.filter(Exec.run_id==run_id).distinct()
-        if db_run_id_request.count() > 0:
-            # find latest:
-            run_info =  db_run_id_request.filter(Exec.id==max([r.id for r in db_run_id_request])).first()
-            if run_info.time_finished is None or run_info.status == "finished":
-                already_running_runs.append(run_id)
+    already_running_runs = exec_manager.get_running_runs_ids(job_id=job_id, run_ids=run_ids)
+    
     run_ids = sorted(list(set(run_ids) - set(already_running_runs)))
 
     # create new exec entry in database:
@@ -156,7 +150,7 @@ def exec_runs(job_id, run_ids, exec_profile_name, user_id=None, max_parrallel_ex
         exec_profile["max_parallel_exec"] = max_parrallel_exec_user_def
     exec_db_entry = {}
     for run_id in run_ids:
-        exec_db_entry[run_id] = Exec(
+        exec_db_entry[run_id] = exec_manager.create(
             job_id=job_id,
             run_id=run_id,
             wf_target=get_path("job_wf", job_id=job_id),
@@ -177,9 +171,7 @@ def exec_runs(job_id, run_ids, exec_profile_name, user_id=None, max_parrallel_ex
             add_exec_info=add_exec_info,
             user_email=user_email
         )
-        #* will be set by the background process itself
-        db.session.add(exec_db_entry[run_id])
-    db_commit()
+        exec_manager.store(exec_db_entry[run_id])
     
 
     # start the background process:
@@ -204,12 +196,11 @@ def exec_runs(job_id, run_ids, exec_profile_name, user_id=None, max_parrallel_ex
 
 def get_run_info(job_id, run_ids, return_pid=False, return_db_request=False):
     data = {}
-    db_job_id_request = query_info_from_db(job_id)
 
     for run_id in run_ids:
         data[run_id] = {}
-        db_run_id_request = db_job_id_request.filter(Exec.run_id==run_id).distinct()
-        if db_run_id_request.count() == 0:
+        db_run_execs = exec_manager.get_job_run(job_id, run_id)
+        if len(db_run_execs) == 0:
             if return_pid:
                 data[run_id]["pid"] = None
             if return_db_request:
@@ -223,7 +214,7 @@ def get_run_info(job_id, run_ids, return_pid=False, return_db_request=False):
 
         else:
             # find latest:
-            run_info =  db_run_id_request.filter(Exec.id==max([r.id for r in db_run_id_request])).first()
+            run_info = [exec for exec in db_run_execs if exec.id==max([temp_exec.id for temp_exec in db_run_execs])][0]
             
             # check if background process still running:
             cleanup_zombie_process(run_info.pid)
@@ -233,7 +224,7 @@ def get_run_info(job_id, run_ids, return_pid=False, return_db_request=False):
                 (not pid_exists(run_info.pid)):
                 run_info.status = "process ended unexpectedly"
                 run_info.time_finished = datetime.now()
-                db_commit()
+                #db_commit()
                     
             # if not ended, set end time to now for calc of duration
             if run_info.time_finished:
@@ -252,6 +243,7 @@ def get_run_info(job_id, run_ids, return_pid=False, return_db_request=False):
             data[run_id]["exec_profile"] = run_info.exec_profile_name
             data[run_id]["retry_count"] = run_info.retry_count
     if return_db_request:
+        db_job_id_request = exec_manager.get_job_runs(job_id, run_ids)
         return data, db_job_id_request
     else:
         return data
@@ -293,9 +285,10 @@ def terminate_runs(
     could_not_be_terminated = []
     could_not_be_cleaned = []
     succeeded = []
-    run_info, db_request = get_run_info(job_id, run_ids, return_pid=True, return_db_request=True)
+    run_info = get_run_info(job_id, run_ids, return_pid=True)
     db_changed = False
     for run_id in run_info.keys():
+        db_run = exec_manager.get_job_run(job_id, run_id)[0]
         if isinstance(run_info[run_id]["time_started"], datetime) and \
             not isinstance(run_info[run_id]["time_finished"], datetime):
             if run_info[run_id]["pid"] != -1:
@@ -304,9 +297,9 @@ def terminate_runs(
                     could_not_be_terminated.append(run_id)
                     continue
                 cleanup_zombie_process(run_info[run_id]["pid"])
-            db_run_entry = db_request.filter(Exec.id==run_info[run_id]["db_id"])
-            db_run_entry.time_finished = datetime.now()
-            db_run_entry.status = "terminated by user"
+            #db_run_entry = db_request.filter(Exec.id==run_info[run_id]["db_id"])
+            db_run.time_finished = datetime.now()
+            db_run.status = "terminated by user"
             db_changed = True
         if mode in ["reset", "delete"]:
             try:
@@ -317,7 +310,7 @@ def terminate_runs(
                 if os.path.exists(run_out_dir):
                     rmtree(run_out_dir)
                 if isinstance(run_info[run_id]["time_started"], datetime):
-                    db_request.filter(Exec.run_id==run_id).delete(synchronize_session=False)
+                    db_run.delete(synchronize_session=False)
                     db_changed = True
             except Exception as e:
                 could_not_be_cleaned.append(run_id)
@@ -332,7 +325,8 @@ def terminate_runs(
                 continue
         succeeded.append(run_id)
     if db_changed:
-        db_commit()
+        exec_manager.update()
+        #db_commit()
     return succeeded, could_not_be_terminated, could_not_be_cleaned
             
 def read_run_log(job_id, run_id):
