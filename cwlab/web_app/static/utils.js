@@ -401,7 +401,7 @@ class Tooltip extends React.Component {
                                     forwardEvent={true}
                                 />
                             </div>
-                            <div className="w3-container" style={ {overflowY: "auto", whiteSpace: "pre-line"} }>
+                            <div className="w3-container" style={ {overflowY: "auto", whiteSpace: "pre-wrap"} }>
                                 {this.props.children}
                             </div>
                         </TopPanel>

@@ -1,7 +1,7 @@
 
 from __future__ import absolute_import
 
-__version__ = "0.3.1"
+__version__ = "0.3.2"
 
 import os
 from flask import Flask
@@ -17,7 +17,7 @@ app = Flask(
     template_folder =os.path.join(basedir, "web_app", "templates")
 )
 
-app.config.from_object(Config())
+app.config.from_object(Config(verbose=False))
 db = SQLAlchemy(app)
 login = LoginManager(app)
 
@@ -58,7 +58,7 @@ def setup_working_dirs():
 
 def up(config_file=None, webapp=True):
     global app
-    app.config.from_object(Config(config_file))
+    app.config.from_object(Config(CONFIG_FILE=config_file))
 
     setup_working_dirs()
     setup_db()

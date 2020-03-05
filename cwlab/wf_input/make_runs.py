@@ -9,6 +9,8 @@ from copy import copy
 supported_workflow_types = supported_workflow_exts.keys()
 
 def make_CWL_File_or_Directory(path, is_dir=False, secondary_files=[""]):
+    if path is None:
+        return None
     cwl_class = {
         "class": "Directory" if is_dir else "File",
         "path": path

@@ -153,8 +153,13 @@ class ParamName extends React.Component{
                         (this.props.config.is_array ? "List of " : "") +
                         this.props.config.type + 
                         (this.props.config.null_allowed ? " [optional]" : "") +
-                        (this.props.config.null_items_allowed ? " [items optional]" : "") +
-                        (this.props.config.doc ? ", help: ".concat(this.props.config.doc) : ", help: no info available")
+                        (this.props.config.null_item_allowed ? " [items optional]" : "") +
+                        (this.props.config.doc ? (
+                            ", help: ".concat(this.props.config.doc.replaceAll("\\n", "\n").replaceAll("\\t", "\t")) 
+                            ) : (
+                             ", help: no info available"
+                             )
+                        )
                     }
                 >   
                     <span className="w3-text-green">Type:</span>&nbsp;
@@ -188,7 +193,7 @@ class ParamName extends React.Component{
                                 className="w3-container"
                                 style={ {whiteSpace: "pre-line"} }
                             >
-                                {this.props.config.doc}
+                                {this.props.config.doc.replaceAll("\\n", "\n").replaceAll("\\t", "\t")}
                             </div>
                         ) : (
                             "no info available"
@@ -212,6 +217,7 @@ class ParamField extends React.Component{
         // props.isNull
         // props.jobId
         // props.prevPath
+        // props.allowedSelection
         // props.changePrevPath
 
         this.key = this.props.index ? (
@@ -257,22 +263,30 @@ class ParamField extends React.Component{
         )
         
         let input_field
-        switch(inputType){
-            case "input_text":
-                return(
-                    <input
-                        className="param-input"
-                        type="text"
-                        name={"input_" + this.key}
-                        value={this.props.paramValue}
-                        onChange={this.handleChange}
-                        required={true}
-                        disabled={disableInput}
-                    />
-                )
-                break;
-            case "input_boolean":
-                if (disableInput){
+        if ( this.props.allowedSelection[0] != "" ){
+            return(
+                <select
+                    className="param-input"
+                    name={"input_" + this.key}
+                    value={this.props.paramValue}
+                    onChange={this.handleChange}
+                    required={true}
+                    disabled={disableInput}
+                >
+                    {this.props.allowedSelection.map((symbol) => (
+                        <option 
+                            key={symbol}
+                            value={symbol}
+                        >
+                            {symbol}
+                        </option>
+                    ))}
+                </select> 
+            )
+        }
+        else {
+            switch(inputType){
+                case "input_text":
                     return(
                         <input
                             className="param-input"
@@ -281,47 +295,61 @@ class ParamField extends React.Component{
                             value={this.props.paramValue}
                             onChange={this.handleChange}
                             required={true}
-                            disabled={true}
+                            disabled={disableInput}
                         />
                     )
-                }
-                else{
-                    return(
-                        <span style={ {whiteSpace: "nowrap"} }>
-                            false&nbsp;
-                            <BooleanSlider
+                    break;
+                case "input_boolean":
+                    if (disableInput){
+                        return(
+                            <input
+                                className="param-input"
+                                type="text"
                                 name={"input_" + this.key}
                                 value={this.props.paramValue}
                                 onChange={this.handleChange}
-                                checked={["Yes","yes", "True", "true", "1"].includes(this.props.paramValue)}
-                                forwardEvent={true}
+                                required={true}
+                                disabled={true}
                             />
-                            &nbsp;true
-                        </span>
+                        )
+                    }
+                    else{
+                        return(
+                            <span style={ {whiteSpace: "nowrap"} }>
+                                false&nbsp;
+                                <BooleanSlider
+                                    name={"input_" + this.key}
+                                    value={this.props.paramValue}
+                                    onChange={this.handleChange}
+                                    checked={["Yes","yes", "True", "true", "1"].includes(this.props.paramValue)}
+                                    forwardEvent={true}
+                                />
+                                &nbsp;true
+                            </span>
+                        )
+                    }
+                    break;
+                case "input_file":
+                    return(
+                        <BrowseDirTextField
+                            name={"input_" + this.key}
+                            value={this.props.paramValue}
+                            onChange={this.handleChange}
+                            disabled={disableInput}
+                            ignoreFiles={false}
+                            fileExts={[]}
+                            showOnlyHits={false}
+                            selectDir={false}
+                            allowInput={true}
+                            allowUpload={true}
+                            allowDownload={false}
+                            defaultBaseDir="DEFAULT_INPUT_DIR"
+                            prevPath={this.props.prevPath}
+                            changePrevPath={this.props.changePrevPath}
+                            smallSize={true}
+                        />
                     )
-                }
-                break;
-            case "input_file":
-                return(
-                    <BrowseDirTextField
-                        name={"input_" + this.key}
-                        value={this.props.paramValue}
-                        onChange={this.handleChange}
-                        disabled={disableInput}
-                        ignoreFiles={false}
-                        fileExts={[]}
-                        showOnlyHits={false}
-                        selectDir={false}
-                        allowInput={true}
-                        allowUpload={true}
-                        allowDownload={false}
-                        defaultBaseDir="DEFAULT_INPUT_DIR"
-                        prevPath={this.props.prevPath}
-                        changePrevPath={this.props.changePrevPath}
-                        smallSize={true}
-                    />
-                )
-                break;
+                    break;
                 case "input_dir":
                     return(
                         <BrowseDirTextField
@@ -342,7 +370,9 @@ class ParamField extends React.Component{
                         />
                     )
                     break;
+            }
         }
+        
     }
 }
 
@@ -538,6 +568,7 @@ class ParamFormGlobalSingle extends ParamForm{
                                         jobId={this.props.jobId}
                                         prevPath={this.props.prevPath}
                                         changePrevPath={this.props.changePrevPath}
+                                        allowedSelection={this.props.paramConfigs[p].allowed_selection}
                                     />
                                 </td>
                             </tr>
@@ -617,6 +648,7 @@ class ParamFormGlobalArray extends ParamForm{
                                                             jobId={this.props.jobId}
                                                             prevPath={this.props.prevPath}
                                                             changePrevPath={this.props.changePrevPath}
+                                                            allowedSelection={this.props.paramConfigs[p].allowed_selection}
                                                         />
                                                     </td>
                                                 </tr>
@@ -691,6 +723,7 @@ class ParamFormRunSingle extends ParamForm{
                                                         jobId={this.props.jobId}
                                                         prevPath={this.props.prevPath}
                                                         changePrevPath={this.props.changePrevPath}
+                                                        allowedSelection={this.props.paramConfigs[p].allowed_selection}
                                                     />
                                                 </td>
                                             </tr>
@@ -801,6 +834,7 @@ class ParamFormRunArray extends ParamForm{
                                                             jobId={this.props.jobId}
                                                             prevPath={this.props.prevPath}
                                                             changePrevPath={this.props.changePrevPath}
+                                                            allowedSelection={this.props.paramConfigs[p].allowed_selection}
                                                         />
                                                     </td>
                                                 </tr>
@@ -1389,7 +1423,7 @@ class JobCreationPrep extends React.Component {
                                         title={"Info ".concat(p.param_name).concat(":")}
                                     >
                                         {p.doc ? (
-                                                p.doc
+                                                p.doc.replaceAll("\\n", "\n").replaceAll("\\t", "\t") 
                                             ) : (
                                                 "no info available"
                                             )

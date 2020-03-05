@@ -19,7 +19,7 @@ DEBUG: True
 EXEC_PROFILES:
   cwltool_windows:
     
-    shell: powershell
+    type: powershell
 
     max_retries: 0
     max_parallel_exec: 2
