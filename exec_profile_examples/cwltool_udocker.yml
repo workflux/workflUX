@@ -1,7 +1,7 @@
 EXEC_PROFILES:
   cwltool_local_udocker: 
-    shell: bash
-    pre_exec: |
+    type: bash
+    prepare: |
       {
         echo "Setting up udocker environment:"
         cd ${OUTPUT_DIR}
@@ -24,5 +24,5 @@ EXEC_PROFILES:
         --outdir "${OUTPUT_DIR}" \
         "${WORKFLOW}" "${RUN_INPUT}" \
         >> "${LOG_FILE}" 2>&1
-    post_exec: |
+    finalize: |
       rm -rf "${OUTPUT_DIR}/udocker" "${UDOCKER_TARBALL}" "${OUTPUT_DIR}/nodejs"

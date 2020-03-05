@@ -296,10 +296,10 @@ class RunList extends React.Component {
             "not started yet": "w3-grey",
             "waiting to queue": "w3-grey",
             "queued": "w3-grey",
-            "preparing for execution": "w3-amber",
+            "preparing": "w3-amber",
             "executing": "w3-amber",
-            "evaluating results": "w3-amber",
-            "finishing": "w3-amber",
+            "evaluating": "w3-amber",
+            "finalizing": "w3-amber",
             "finished": "w3-green",
         }
         if (Object.keys(statusclassName).includes(status)){
@@ -345,7 +345,7 @@ class RunList extends React.Component {
                             {runInfo[r].status}
                             {
                                 runInfo[r].retry_count > 0 && 
-                                    "(retry: " + runInfo[r].retry_count.toString() + "\")"
+                                    ' (retry: ' + runInfo[r].retry_count.toString() + ')'
                             }
                         </span>
                     ),
