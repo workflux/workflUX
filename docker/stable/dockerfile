@@ -56,6 +56,7 @@ ENV PATH /usr/local/singularity/:${PATH}
 # Install cwlab:
 RUN python3 -m pip install \
     cwltool==${CWLTOOL_VERSION} \
+	werkzeug==0.16.1 \
     cwlab==${CWLAB_VERSION}
 
 # Configure cwlab:
