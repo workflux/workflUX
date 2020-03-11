@@ -30,7 +30,7 @@ from cwlab.wf_input.web_interface import \
 from cwlab.wf_input.web_interface import \
     read_template_metadata as read_template_metadata_from_xls
 from WDL import load as load_and_validate_wdl
-from werkzeug import secure_filename
+from werkzeug.utils import secure_filename
 from flask import current_app as app
 
 asyncio.set_event_loop(asyncio.new_event_loop())

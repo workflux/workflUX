@@ -23,7 +23,9 @@ setup(
             "cwlab=cwlab.__main__:main",
         ]
     },
-    install_requires=['flask',
+    install_requires=[
+                      'werkzeug>=0.15.2',
+                      'flask',
                       'flask_wtf',
                       'flask-login',
                       'flask-sqlalchemy',
