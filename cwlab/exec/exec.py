@@ -88,8 +88,6 @@ def create_job(job_id, job_param_sheet=None, run_inputs=None, wf_target=None,
                 os.mkdir(run_out_dir)
 
 
-
-
 def create_background_process(command_list, log_file):
     kwargs = {}
     if platform_system() == 'Windows': # on windows
@@ -107,6 +105,7 @@ def create_background_process(command_list, log_file):
     print(p.pid)
     assert not p.poll()
 
+
 def cleanup_zombie_process(pid):
     try:
         if pid_exists(pid):
@@ -116,17 +115,6 @@ def cleanup_zombie_process(pid):
     except Exception as e:
         pass
 
-
-#def query_info_from_db(job_id):
-#    retry_delays = [1, 4]
-#    for retry_delay in retry_delays:
-#        try:
-#            db_job_id_request = db.session.query(Exec).filter(Exec.job_id==job_id)
-#            break
-#        except Exception as e:
-#            assert retry_delay != retry_delays[-1], "Could not connect to database."
-#            sleep(retry_delay + retry_delay*random())
-#    return db_job_id_request
 
 def exec_runs(job_id, run_ids, exec_profile_name, user_id=None, max_parrallel_exec_user_def=None, add_exec_info={}, send_email=True):
     if send_email and app.config["SEND_EMAIL"]:
@@ -217,7 +205,6 @@ def get_run_info(job_id, run_ids, return_pid=False):
                 (not pid_exists(run.pid)):
                 run.status = "process ended unexpectedly"
                 run.time_finished = datetime.now()
-                #db_commit()
                     
             # if not ended, set end time to now for calc of duration
             if run.time_finished:
@@ -285,24 +272,23 @@ def terminate_runs(
                     could_not_be_terminated.append(run_id)
                     continue
                 cleanup_zombie_process(run_info[run_id]["pid"])
-            #db_run_entry = db_request.filter(Exec.id==run_info[run_id]["db_id"])
             db_run.time_finished = datetime.now()
             db_run.status = "terminated by user"
             db_changed = True
         if mode in ["reset", "delete"]:
-            # try:
-            log_path = get_path("run_log", job_id, run_id)
-            if os.path.exists(log_path):
-                os.remove(log_path)
-            run_out_dir = get_path("run_out_dir", job_id, run_id)
-            if os.path.exists(run_out_dir):
-                rmtree(run_out_dir)
-            if isinstance(run_info[run_id]["time_started"], datetime):
-                exec_manager.delete_run(job_id, run_id)
-                db_changed = True
-            # except Exception as e:
-                # could_not_be_cleaned.append(run_id)
-                # continue
+            try:
+                log_path = get_path("run_log", job_id, run_id)
+                if os.path.exists(log_path):
+                    os.remove(log_path)
+                run_out_dir = get_path("run_out_dir", job_id, run_id)
+                if os.path.exists(run_out_dir):
+                    rmtree(run_out_dir)
+                if isinstance(run_info[run_id]["time_started"], datetime):
+                    exec_manager.delete_run(job_id, run_id)
+                    db_changed = True
+            except Exception as e:
+                could_not_be_cleaned.append(run_id)
+                continue
         if mode == "delete":
             try:
                 yaml_path = get_path("run_input", job_id, run_id)
