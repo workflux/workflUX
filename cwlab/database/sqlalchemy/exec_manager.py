@@ -1,5 +1,6 @@
 from cwlab.database.connector import db
 from cwlab.database.sqlalchemy.models import User, Exec
+import sqlalchemy
 
 
 class ExecManager():
@@ -72,11 +73,18 @@ class ExecManager():
                     already_running_runs.append(run_id)
         return already_running_runs
     
-    def get_job_run(self, job_id, run_id):
-        info = {}
-        execs = db.session.query(Exec).filter(Exec.job_id==job_id, Exec.run_id==run_id).distinct().all()
-        return execs
+    def get_job_runs_db_query_(self, job_id, run_id):
+        # this is just an Manager Internal helper function
+        # it should not be used outside of this class
+        return db.session.query(Exec).filter(Exec.job_id==job_id, Exec.run_id==run_id)
     
-    def get_job_runs(self, job_id, run_ids):
-        execs = db.session.query(Exec).filter(Exec.job_id==job_id, Exec.run_id in run_ids).distinct().all()
-        return execs
+    def get_job_run(self, job_id, run_id):
+        execs = self.get_job_runs_db_query_(job_id, run_id).distinct().all()
+        if len(execs) == 0:
+            return None
+        else:
+            # find latest:
+            return [exec_ for exec_ in execs if exec_.id==max([temp_exec.id for temp_exec in execs])][0]
+
+    def delete_run(self, job_id, run_id):
+        self.get_job_runs_db_query_(job_id, run_id).delete(synchronize_session=False)

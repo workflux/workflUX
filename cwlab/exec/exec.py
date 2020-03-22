@@ -194,57 +194,45 @@ def exec_runs(job_id, run_ids, exec_profile_name, user_id=None, max_parrallel_ex
         started_runs.append(run_id)
     return started_runs, already_running_runs
 
-def get_run_info(job_id, run_ids, return_pid=False, return_db_request=False):
+def get_run_info(job_id, run_ids, return_pid=False):
     data = {}
 
     for run_id in run_ids:
         data[run_id] = {}
-        db_run_execs = exec_manager.get_job_run(job_id, run_id)
-        if len(db_run_execs) == 0:
-            if return_pid:
-                data[run_id]["pid"] = None
-            if return_db_request:
-                data[run_id]["db_id"] = None
+        run = exec_manager.get_job_run(job_id, run_id)
+        if run is None:
+            data[run_id]["pid"] = None
             data[run_id]["status"] = "not started yet"
             data[run_id]["time_started"] = "-"
             data[run_id]["time_finished"] = "-"
             data[run_id]["duration"] = "-"
             data[run_id]["exec_profile"] = "-"
             data[run_id]["retry_count"] = "0"
-
         else:
-            # find latest:
-            run_info = [exec for exec in db_run_execs if exec.id==max([temp_exec.id for temp_exec in db_run_execs])][0]
-            
             # check if background process still running:
-            cleanup_zombie_process(run_info.pid)
+            cleanup_zombie_process(run.pid)
             
-            if (not isinstance(run_info.time_finished, datetime)) and \
-                (not run_info.pid == -1) and \
-                (not pid_exists(run_info.pid)):
-                run_info.status = "process ended unexpectedly"
-                run_info.time_finished = datetime.now()
+            if (not isinstance(run.time_finished, datetime)) and \
+                (not run.pid == -1) and \
+                (not pid_exists(run.pid)):
+                run.status = "process ended unexpectedly"
+                run.time_finished = datetime.now()
                 #db_commit()
                     
             # if not ended, set end time to now for calc of duration
-            if run_info.time_finished:
-                time_finished = run_info.time_finished
+            if run.time_finished:
+                time_finished = run.time_finished
             else:
                 time_finished = datetime.now()
 
             if return_pid:
-                data[run_id]["pid"] = run_info.pid
-            if return_db_request:
-                data[run_id]["db_id"] = run_info.id
-            data[run_id]["status"] = run_info.status
-            data[run_id]["time_started"] = run_info.time_started
-            data[run_id]["time_finished"] = run_info.time_finished
-            data[run_id]["duration"] = get_duration(run_info.time_started, time_finished)
-            data[run_id]["exec_profile"] = run_info.exec_profile_name
-            data[run_id]["retry_count"] = run_info.retry_count
-    if return_db_request:
-        db_job_id_request = exec_manager.get_job_runs(job_id, run_ids)
-        return data, db_job_id_request
+                data[run_id]["pid"] = run.pid
+            data[run_id]["status"] = run.status
+            data[run_id]["time_started"] = run.time_started
+            data[run_id]["time_finished"] = run.time_finished
+            data[run_id]["duration"] = get_duration(run.time_started, time_finished)
+            data[run_id]["exec_profile"] = run.exec_profile_name
+            data[run_id]["retry_count"] = run.retry_count
     else:
         return data
     
@@ -288,7 +276,7 @@ def terminate_runs(
     run_info = get_run_info(job_id, run_ids, return_pid=True)
     db_changed = False
     for run_id in run_info.keys():
-        db_run = exec_manager.get_job_run(job_id, run_id)[0]
+        db_run = exec_manager.get_job_run(job_id, run_id)
         if isinstance(run_info[run_id]["time_started"], datetime) and \
             not isinstance(run_info[run_id]["time_finished"], datetime):
             if run_info[run_id]["pid"] != -1:
@@ -302,19 +290,19 @@ def terminate_runs(
             db_run.status = "terminated by user"
             db_changed = True
         if mode in ["reset", "delete"]:
-            try:
-                log_path = get_path("run_log", job_id, run_id)
-                if os.path.exists(log_path):
-                    os.remove(log_path)
-                run_out_dir = get_path("run_out_dir", job_id, run_id)
-                if os.path.exists(run_out_dir):
-                    rmtree(run_out_dir)
-                if isinstance(run_info[run_id]["time_started"], datetime):
-                    db_run.delete(synchronize_session=False)
-                    db_changed = True
-            except Exception as e:
-                could_not_be_cleaned.append(run_id)
-                continue
+            # try:
+            log_path = get_path("run_log", job_id, run_id)
+            if os.path.exists(log_path):
+                os.remove(log_path)
+            run_out_dir = get_path("run_out_dir", job_id, run_id)
+            if os.path.exists(run_out_dir):
+                rmtree(run_out_dir)
+            if isinstance(run_info[run_id]["time_started"], datetime):
+                exec_manager.delete_run(job_id, run_id)
+                db_changed = True
+            # except Exception as e:
+                # could_not_be_cleaned.append(run_id)
+                # continue
         if mode == "delete":
             try:
                 yaml_path = get_path("run_input", job_id, run_id)
@@ -326,7 +314,6 @@ def terminate_runs(
         succeeded.append(run_id)
     if db_changed:
         exec_manager.update()
-        #db_commit()
     return succeeded, could_not_be_terminated, could_not_be_cleaned
             
 def read_run_log(job_id, run_id):
