@@ -25,10 +25,16 @@ def get_user_by_username(username):
     user = user_manager.load_by_name(username=username)
     return user
 
+def has_user_been_activated(username):
+    return get_user_by_username(username).status == "active"
+
 def login_required(admin=False):
     if app.config["ENABLE_USERS"]:
         assert current_user.is_authenticated, "Login required."
-        assert not (admin and load_user(current_user.get_id()).level != "admin"), "Admin required."
+        user = load_user(current_user.get_id())
+        assert not (admin and user.level != "admin"), "Admin required."
+        assert user.status == "active", "Your account is currently not active." + \
+            " Please wait for an administrator to approve it."
 
 def check_if_username_exists(username):
         return not get_user_by_username(username) is None
