@@ -3,28 +3,36 @@ import os, sys
 from re import sub, match
 from datetime import datetime
 from time import sleep
-from . import app
-from cwlab.wf_input.web_interface import read_template_metadata as read_template_metadata_from_xls
-from cwlab.wf_input.web_interface import get_param_config_info as get_param_config_info_from_xls
-from cwlab.wf_input import generate_xls_from_cwl as generate_job_template_from_cwl
-from cwlab.wf_input.read_wf import supported_workflow_exts, get_workflow_type_from_file_ext
-from cwlab.wf_input.read_janis import get_workflow_from_file as load_and_validate_janis
-from cwlab import db
+from urllib import request as url_request
+from urllib.request import urlopen
+
+from pkg_resources import get_distribution
+
+from cwlab.wf_input import \
+    generate_xls_from_wf as generate_job_template_from_wf
+from cwlab.wf_input.read_janis import \
+    get_workflow_from_file as load_and_validate_janis
+from cwlab.wf_input.read_wf import (get_workflow_type_from_file_ext,
+                                    supported_workflow_exts)
+from cwlab.wf_input.web_interface import \
+    get_param_config_info as get_param_config_info_from_xls
+from cwlab.wf_input.web_interface import \
+    read_template_metadata as read_template_metadata_from_xls
+from WDL import load as load_and_validate_wdl
+from werkzeug.utils import secure_filename
+from flask import current_app as app
+
 from random import random, choice as random_choice
 from pathlib import Path
 import zipfile
-from WDL import load as load_and_validate_wdl
 from asyncio import set_event_loop, new_event_loop
 import json
 from string import ascii_letters, digits
-from pkg_resources import get_distribution
-from urllib import request as url_request
 from shutil import copyfileobj, copyfile, rmtree, move
-from werkzeug import secure_filename
-from urllib.request import urlopen
 from distutils.version import StrictVersion
 from importlib import reload
 import asyncio
+
 asyncio.set_event_loop(asyncio.new_event_loop())
 basedir = os.path.abspath(os.path.dirname(__file__))
 
@@ -316,7 +324,7 @@ def import_cwl(wf_path, name):
     except Exception as e:
         raise AssertionError("Could not write CWL file.")
     job_templ_path = os.path.join(temp_dir, "job_templ.xlsx")
-    generate_job_template_from_cwl(
+    generate_job_template_from_wf(
         workflow_file=wf_temp_path, 
         wf_type="CWL",
         output_file=job_templ_path, 
@@ -355,7 +363,7 @@ def import_wdl(wf_path, name, wf_imports_zip_path=None):
         )
     temp_dir = make_temp_dir()
     job_templ_path = os.path.join(temp_dir, "job_templ.xlsx")
-    generate_job_template_from_cwl(
+    generate_job_template_from_wf(
         workflow_file=wf_val_path, 
         wf_type="WDL",
         output_file=job_templ_path, 
@@ -470,15 +478,6 @@ def output_example_config():
     print("# For help, please visit: " + 
         "https://github.com/CompEpigen/CWLab#configuration")
     print(example_config_content)
-    
-def db_commit(retry_delays=[1,4]):
-    for retry_delay in retry_delays:
-        try:
-            db.session.commit()
-            break
-        except Exception as e:
-            assert retry_delay != retry_delays[-1], "Could not connect to database."
-            sleep(retry_delay + retry_delay*random())
     
 def get_allowed_base_dirs(job_id=None, run_id=None, allow_input=True, allow_upload=True, allow_download=False, include_tmp_dir=False):
     allowed_dirs = {}

@@ -3,7 +3,7 @@ import os
 from flask import render_template, jsonify, redirect, flash, url_for, request, send_from_directory
 # from flask_login import current_user, login_user, logout_user, login_required
 from werkzeug.urls import url_parse
-from cwlab import app 
+from flask import current_app as app
 from cwlab.utils import fetch_files_in_dir, is_allowed_file, allowed_extensions_by_type, get_job_templates, \
     get_job_templ_info, get_path, get_run_ids, make_temp_dir
 import requests

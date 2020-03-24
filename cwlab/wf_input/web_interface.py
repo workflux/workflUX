@@ -32,6 +32,7 @@ def read_template_metadata(sheet_file):
 
 def get_param_config_info(file_path):
     _, configs, _ = sheet_file(file_path, verbose_level=0)
+    configs = fill_in_config_defaults(configs)
     param_config_info = []
     for param in configs.keys():
         if configs[param]["split_into_runs_by"][0] == "job_id":

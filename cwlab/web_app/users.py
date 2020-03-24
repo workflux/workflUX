@@ -1,12 +1,12 @@
 import sys
 import os
-from flask import render_template, jsonify, redirect, flash, url_for, request
+from flask import render_template, jsonify, redirect, flash, url_for, request, current_app as app
 from flask_login import current_user, login_user, logout_user
 from werkzeug.urls import url_parse
-from cwlab import app 
 from cwlab.users.manage import check_user_credentials, check_all_format_conformance, \
     add_user, get_user_info, change_password as change_password_, load_user, delete_user, \
-    get_all_users_info as get_all_users_info_, change_user_status_or_level, get_user_by_username
+    get_all_users_info as get_all_users_info_, change_user_status_or_level, get_user_by_username, \
+    has_user_been_activated
 from cwlab.users.manage import login_required
 from cwlab.log import handle_known_error, handle_unknown_error
 from cwlab.utils import get_time_string
@@ -14,13 +14,14 @@ from cwlab.utils import get_time_string
 @app.route('/login/', methods=['POST'])
 def login():
     messages = []
-    data={}
+    data={ "success": False }
     try:
         data_req = request.get_json()
         username = data_req["username"]
         password = data_req["password"]
         remember_me = data_req["remember_me"]
         validated_user = check_user_credentials(username, password, return_user_if_valid=True)
+        
         if validated_user is None:
             messages.append( { 
                 "time": get_time_string(),
@@ -28,12 +29,20 @@ def login():
                 "text": "Username or password is not valid."
             } )
         else:
-            login_user(validated_user, remember=remember_me)
-            messages.append( { 
-                "time": get_time_string(),
-                "type":"success", 
-                "text": "Successfully validated."
-            } )
+            if has_user_been_activated(username):
+                login_user(validated_user, remember=remember_me)
+                messages.append( { 
+                    "time": get_time_string(),
+                    "type":"success", 
+                    "text": "Successfully validated."
+                } )
+            else:
+                messages.append( { 
+                    "time": get_time_string(),
+                    "type":"error", 
+                    "text": "Your account has not been approved by an administrator, yet."
+                } )
+
         data={ "success": True }
     except AssertionError as e:
         messages.append( handle_known_error(e, return_front_end_message=True))
