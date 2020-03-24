@@ -7,7 +7,7 @@ from flask import current_app as app
 from cwlab.utils import is_allowed_file, allowed_extensions_by_type, get_path, \
     make_temp_dir, import_wf as import_wf_, unzip_dir, get_allowed_base_dirs, \
     check_if_path_in_dirs, download_file, vaidate_url, get_time_string
-from cwlab.wf_input import generate_xls_from_cwl as generate_job_template_from_cwl
+from cwlab.wf_input import generate_xls_from_wf as generate_job_template_from_cwl
 from cwlab.users.manage import login_required
 from shutil import rmtree
 from json import loads as json_loads

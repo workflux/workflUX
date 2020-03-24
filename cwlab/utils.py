@@ -20,7 +20,7 @@ from urllib.request import urlopen
 from pkg_resources import get_distribution
 
 from cwlab.wf_input import \
-    generate_xls_from_cwl as generate_job_template_from_cwl
+    generate_xls_from_wf as generate_job_template_from_wf
 from cwlab.wf_input.read_janis import \
     get_workflow_from_file as load_and_validate_janis
 from cwlab.wf_input.read_wf import (get_workflow_type_from_file_ext,
@@ -324,7 +324,7 @@ def import_cwl(wf_path, name):
     except Exception as e:
         raise AssertionError("Could not write CWL file.")
     job_templ_path = os.path.join(temp_dir, "job_templ.xlsx")
-    generate_job_template_from_cwl(
+    generate_job_template_from_wf(
         workflow_file=wf_temp_path, 
         wf_type="CWL",
         output_file=job_templ_path, 
@@ -361,7 +361,7 @@ def import_wdl(wf_path, name, wf_imports_zip_path=None):
         )
     temp_dir = make_temp_dir()
     job_templ_path = os.path.join(temp_dir, "job_templ.xlsx")
-    generate_job_template_from_cwl(
+    generate_job_template_from_wf(
         workflow_file=wf_val_path, 
         wf_type="WDL",
         output_file=job_templ_path, 
@@ -390,7 +390,7 @@ def import_janis(wf_path, name, import_as_janis=True, translate_to_cwl=True, tra
         assert not os.path.exists(wf_target_path), f"The workflow with name \"{wf_target_name}\" already exists."
         temp_dir = make_temp_dir()
         job_templ_path = get_path("job_templ", wf_target=wf_target_name)
-        generate_job_template_from_cwl(
+        generate_job_template_from_wf(
             workflow_file=wf_path, 
             wf_type="janis",
             output_file=job_templ_path, 
