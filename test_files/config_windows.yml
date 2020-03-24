@@ -6,11 +6,11 @@ WEB_SERVER_HOST: localhost
 ## (2) choose the port:
 WEB_SERVER_PORT: 5000 # The default is 5000, if this port is blocked choose a different one
 
-TEMP_DIR: 'C:\Users\kerst\OneDrive\home\cwlab_test_env\scratch\temp'
-WORKFLOW_DIR: 'C:\Users\kerst\OneDrive\home\cwlab_test_env\scratch\wf_dir'
-EXEC_DIR: 'C:\Users\kerst\OneDrive\home\cwlab_test_env\scratch\exec'
-INPUT_DIR: 'C:\Users\kerst\OneDrive\home\cwlab_test_env\'
-DB_DIR: 'C:\Users\kerst\OneDrive\home\cwlab_test_env\scratch\database'
+TEMP_DIR: '.\scratch\temp'
+WORKFLOW_DIR: '.\scratch\wf_dir'
+EXEC_DIR: '.\scratch\exec'
+INPUT_DIR: '.\'
+DB_DIR: '.\scratch\database'
 
 DEBUG: True
 

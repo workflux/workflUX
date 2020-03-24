@@ -6,45 +6,9 @@ On the workflow object, to get the inputs you can call get_inputs_from_workflow
 """
 from typing import List, Tuple
 from inspect import isclass, isabstract
-from janis_core import Workflow, CommandTool, Logger
+from janis_core import Workflow, CommandTool, Logger, Tool
 from .read_cwl import read_inp_rec_type_field
 import os
-
-def get_workflow_from_file(file, name=None, include_commandtools=False):
-    # How to import a module given the full path
-    # https://stackoverflow.com/questions/67631/how-to-import-a-module-given-the-full-path
-    import importlib.util
-
-    try:
-        spec = importlib.util.spec_from_file_location("module.name", file)
-        foo = importlib.util.module_from_spec(spec)
-        spec.loader.exec_module(foo)
-        ptypes = get_janis_from_module_spec(foo, include_commandtools)
-
-    except Exception as e:
-        raise Exception(
-            f"Unrecognised python file when getting workflow / command tool: {file} :: {e}"
-        )
-
-    if name:
-        ptypes = [(k, v) for (k, v) in ptypes if k == name]
-
-    if len(ptypes) == 0:
-        return None
-    if len(ptypes) > 1:
-        action = (
-            "(please specify the workflow to use via the `--name` parameter, this name must be the name of "
-            "the variable or the class name and not the workflowId)."
-        )
-        if name:
-            action = "(you might need to restructure your file to allow --name to uniquely identify your workflow"
-
-        raise Exception(
-            f"There was more than one workflow ({len(ptypes)}) detected in '{file}' {action}"
-            + ",".join(str(x) for x in ptypes)
-        )
-
-    return ptypes[0][1]
 
 
 def get_janis_from_module_spec(spec, include_commandtools=False):
@@ -58,7 +22,7 @@ def get_janis_from_module_spec(spec, include_commandtools=False):
 
     potentials = []
     for k, ptype in spec.__dict__.items():
-        if isinstance(ptype, Workflow):
+        if isinstance(ptype, Tool):
             potentials.append((k, ptype))
             continue
         if not callable(ptype):
@@ -73,18 +37,50 @@ def get_janis_from_module_spec(spec, include_commandtools=False):
             continue
         if issubclass(ptype, Workflow):
             potentials.append((k, ptype()))
-        if include_commandtools and issubclass(ptype, CommandTool):
+        if include_commandtools and issubclass(ptype, Tool):
             potentials.append((k, ptype()))
 
     return potentials
 
-  
-def get_inputs_from_tool(tool):
-    ins: List[ToolInput] = tool.inputs()
-    # ins are a ToolInput which have a .id(), .input_type, .default
-    # (not all properties are set on the ToolInput, especially for workflows)
-    # Documentation here: https://janis.readthedocs.io/en/latest/references/commandtool.html#tool-input
+def list_workflows_in_file(file, include_commandtools=False, only_return_name=False):
+    # How to import a module given the full path
+    # https://stackoverflow.com/questions/67631/how-to-import-a-module-given-the-full-path
+    import importlib.util
 
+    try:
+        spec = importlib.util.spec_from_file_location("module.name", file)
+        foo = importlib.util.module_from_spec(spec)
+        spec.loader.exec_module(foo)
+        ptypes = get_janis_from_module_spec(foo, include_commandtools)
+
+    except Exception as e:
+        raise AssertionError(
+            f"Unrecognised python file when getting workflow / command tool: {file} :: {e}"
+        )
+    if only_return_name:
+        return [k for (k,v) in ptypes]
+    return ptypes
+
+def get_workflow_from_file(file, wf_name_in_script=None, include_commandtools=False):
+    ptypes = list_workflows_in_file(file, include_commandtools)
+
+    if wf_name_in_script:
+        ptypes = [(k, v) for (k, v) in ptypes if k == wf_name_in_script]
+
+    assert len(ptypes) > 0, "No workflows found in the provided script."
+    if len(ptypes) > 1:
+        action = (
+            "(please specify name of the workflow to use)."
+        )
+        if wf_name_in_script:
+            action = "(you might need to restructure your file to allow --name to uniquely identify your workflow"
+
+        raise AssertionError(
+            f"There was more than one workflow ({len(ptypes)}) detected in '{file}' {action}"
+            + ",".join(str(x) for x in ptypes)
+        )
+
+    return ptypes[0][1]
 
 def read_config_from_janis_file(janis_file):
     workflow = get_workflow_from_file(file=janis_file)

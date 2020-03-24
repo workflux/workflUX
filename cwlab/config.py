@@ -168,6 +168,7 @@ class Config(object):
             "finalize": 120
         }
         general_defaults = {
+            "workflow_type": "CWL",
             "type": "bash",
             "max_retries": 2,
             "max_parallel_exec": 4, # if exceeded, jobs will be queued

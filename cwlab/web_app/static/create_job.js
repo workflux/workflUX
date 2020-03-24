@@ -174,7 +174,7 @@ class ParamName extends React.Component{
                             "No. You have to fill in a value."
                         )
                     }<br/>
-                    {(this.props.config.null_item_allowed && this.props.is_array) && (
+                    {(this.props.config.null_items_allowed && this.props.is_array) && (
                         <span>
                             <span className="w3-text-green">Type:</span>&nbsp;
                             You may disable single items of the list.<br/>

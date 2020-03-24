@@ -1,18 +1,7 @@
-import asyncio
-import json
-import os
-import sys
-import zipfile
-from asyncio import new_event_loop, set_event_loop
+
+import os, sys
+from re import sub, match
 from datetime import datetime
-from distutils.version import StrictVersion
-from importlib import reload
-from pathlib import Path
-from random import choice as random_choice
-from random import random
-from re import match, sub
-from shutil import copyfile, copyfileobj, rmtree
-from string import ascii_letters, digits
 from time import sleep
 from urllib import request as url_request
 from urllib.request import urlopen
@@ -32,6 +21,17 @@ from cwlab.wf_input.web_interface import \
 from WDL import load as load_and_validate_wdl
 from werkzeug.utils import secure_filename
 from flask import current_app as app
+
+from random import random, choice as random_choice
+from pathlib import Path
+import zipfile
+from asyncio import set_event_loop, new_event_loop
+import json
+from string import ascii_letters, digits
+from shutil import copyfileobj, copyfile, rmtree, move
+from distutils.version import StrictVersion
+from importlib import reload
+import asyncio
 
 asyncio.set_event_loop(asyncio.new_event_loop())
 basedir = os.path.abspath(os.path.dirname(__file__))
@@ -344,7 +344,9 @@ def import_wdl(wf_path, name, wf_imports_zip_path=None):
         # this is needed as the WDL library cannot yet
         temp_val_dir = make_temp_dir()
         wf_val_path = os.path.join(temp_val_dir, "wf_to_validate.wdl")
-        wf_imports_zip_val_path = os.path.join(temp_val_dir, "deps.zip")
+        copyfile(wf_path, wf_val_path)
+        wf_imports_zip_val_path = os.path.join(temp_val_dir, "imports.zip")
+        copyfile(wf_imports_zip_path, wf_imports_zip_val_path)
         try:
             with zipfile.ZipFile(wf_imports_zip_val_path,"r") as zip_ref:
                 zip_ref.extractall(temp_val_dir)
@@ -377,7 +379,7 @@ def import_wdl(wf_path, name, wf_imports_zip_path=None):
     rmtree(temp_dir)
     
 
-def import_janis(wf_path, name, import_as_janis=True, translate_to_cwl=True, translate_to_wdl=True):
+def import_janis(wf_path, name, translate_to_cwl=True, translate_to_wdl=True, wf_name_in_script=None):
     wf_target_name = "{}.{}".format(name, supported_workflow_exts["janis"][0])
     wf_target_path = get_path("wf", wf_target=wf_target_name)
     try:
@@ -386,29 +388,15 @@ def import_janis(wf_path, name, import_as_janis=True, translate_to_cwl=True, tra
         raise AssertionError(
             "The provided Janis document is not valid, the error was: {}".format(str(e))
         )
-    if import_as_janis:
-        assert not os.path.exists(wf_target_path), f"The workflow with name \"{wf_target_name}\" already exists."
-        temp_dir = make_temp_dir()
-        job_templ_path = get_path("job_templ", wf_target=wf_target_name)
-        generate_job_template_from_wf(
-            workflow_file=wf_path, 
-            wf_type="janis",
-            output_file=job_templ_path, 
-            show_please_fill=True
-        )
-        copyfile(wf_path, wf_target_path)
-        job_templ_target_path = get_path("job_templ", wf_target=wf_target_name)
-        copyfile(job_templ_path, job_templ_target_path)
-        rmtree(temp_dir)
     if translate_to_cwl or translate_to_wdl:
         temp_dir = make_temp_dir()
-        workflow = get_workflow_from_file(file=janis_script)
+        workflow = load_and_validate_janis(file=wf_path)
         if translate_to_cwl:
             cwl_dir=os.path.join(temp_dir, "cwl")
             cwl_path=os.path.join(cwl_dir, f"{workflow.id()}.cwl")
             try:
                 _ = workflow.translate("cwl", to_console=False, to_disk=True, should_zip=False, export_path=cwl_dir)
-                assert os.exists(cwl_path), "Could not find translated CWL file."
+                assert os.path.exists(cwl_path), "Could not find translated CWL file."
             except Exception as e:
                 raise AssertionError(
                     "Could not translate to cwl, the error was: {}".format(str(e))
@@ -420,25 +408,25 @@ def import_janis(wf_path, name, import_as_janis=True, translate_to_cwl=True, tra
             wdl_import_path=os.path.join(wdl_dir, "tools.zip")
             try:
                 _ = workflow.translate("wdl", to_console=False, to_disk=True, should_zip=False, export_path=wdl_dir)
-                assert os.exists(wdl_path), "Could not find translated wdl file."
+                assert os.path.exists(wdl_path), "Could not find translated wdl file."
             except Exception as e:
                 raise AssertionError(
                     "Could not translate to wdl, the error was: {}".format(str(e))
                 )
-            wdl_import_path = wdl_import_path if os.path.exists(wdl_import_path) else None
+            wf_imports_zip_path = wdl_import_path if os.path.exists(wdl_import_path) else None
             import_wdl(wdl_path, name, wf_imports_zip_path)
 
 def import_wf(
     wf_path, wf_type=None, name=None,
-    import_as_janis=True, # only if wf_type == "janis"
     translate_to_cwl=True, # only if wf_type == "janis"
     translate_to_wdl=True, # only if wf_type == "janis"
-    wf_imports_zip_path=None # only if wf_type == "WDL"
+    wf_imports_zip_path=None, # only if wf_type == "WDL"
+    wf_name_in_script=None # only if wf_type == "janis"
 ):
     if wf_type is None:
         wf_type = get_workflow_type_from_file_ext(wf_path)
     else:
-        assert wf_type in supported_workflow_types, "Provided workflow type \"{wf_type}\" is not supported."
+        assert wf_type in supported_workflow_types, f"Provided workflow type \"{wf_type}\" is not supported."
     if name is None or name == "":
         name = os.path.splitext(os.path.basename(wf_path))[0]
     if os.path.splitext(name)[1] in supported_workflow_exts[wf_type]:
@@ -446,7 +434,7 @@ def import_wf(
     if wf_type == "CWL":
         import_cwl(wf_path, name)
     elif wf_type == "janis":
-        import_janis(wf_path, name, import_as_janis, translate_to_cwl, translate_to_wdl)
+        import_janis(wf_path, name, translate_to_cwl, translate_to_wdl, wf_name_in_script)
     else:
         import_wdl(wf_path, name, wf_imports_zip_path)
     
