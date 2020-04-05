@@ -23,6 +23,7 @@ def setup_working_dirs(app):
     ]:
         if not os.path.isdir(app.config[param]):
             os.makedirs(app.config[param])
+    from . import log
     log.attach_file_handler()
 
 
