@@ -1,0 +1,22 @@
+WEB_SERVER_HOST: localhost 
+WEB_SERVER_PORT: 5000
+ENABLE_USERS: True
+DEBUG: True  
+
+
+TEMP_DIR: '/c/cwlab/exec/'
+WORKFLOW_DIR: '/c/cwlab/exec/'
+EXEC_DIR: '/c/cwlab/exec/'
+DB_DIR: '/c/cwlab/database/'
+
+EXEC_PROFILES:
+    wes:
+        shell: bash
+        max_retries: 2
+        timeout:
+            pre_exec: 120
+            exec: 86400
+            eval: 120
+            post_exec: 120
+        exec: | 
+            python /home/twardzso/workspace/CWLab/cwl2wes/cwl2wes.py --host "http://127.0.0.1:8080" --workflow "${WORKFLOW}" --input "${RUN_INPUT}"
