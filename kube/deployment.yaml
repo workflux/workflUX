@@ -21,7 +21,7 @@ spec:
       - name: cwlab
         image: ${CICD_REGISTRY}/krini/cwlab:0.1-${CICD_EXECUTION_SEQUENCE}
         ports:
-        - containerPort: 8080
+        - containerPort: 5000
           
 ---
 apiVersion: v1
@@ -34,7 +34,7 @@ spec:
     app: cwlab
   ports:
     - protocol: TCP
-      port: 5000
+      port: 80
       targetPort: 5000
 ---
 apiVersion: extensions/v1beta1
