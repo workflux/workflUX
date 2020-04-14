@@ -21,48 +21,5 @@ EXEC_PROFILES:
       exec: 2592000
       post_exec: 600
 
-    pre_exec: |
-      export SINGULARITY_PULLFOLDER=/cwlab/.singularity/pull
-      export SINGULARITY_TMPDIR=/cwlab/.singularity/tmp
-      TMP_DIR="${OUTPUT_DIR}/tmp"
-      TMP_OUT_DIR="${OUTPUT_DIR}/tmp_out"
-      mkdir -p "${TMP_DIR}" "${TMP_OUT_DIR}"
-
     exec: |
-      ${PYTHON_PATH} -m cwltool --debug --singularity \
-        --outdir "${OUTPUT_DIR}" \
-        --tmpdir-prefix "${TMP_DIR}/tmp" \
-        --tmp-outdir-prefix "${TMP_OUT_DIR}/tmp" \
-        "${WORKFLOW}" "${RUN_INPUT}" \
-        > "${LOG_FILE}" 2>&1
-
-    post_exec: |
-      rm -rf "${TMP_DIR}" "${TMP_OUT_DIR}"
-
-  cwltool_singularity_with_caching: 
-    shell: bash
-    max_retries: 0
-    max_paralle_exec: 8
-
-    timeout:
-      pre_exec: 120
-      exec: 2592000
-      post_exec: 600
-
-    pre_exec: |
-      export SINGULARITY_PULLFOLDER=/cwlab/.singularity/pull
-      export SINGULARITY_TMPDIR=/cwlab/.singularity/tmp
-      TMP_DIR="${OUTPUT_DIR}/tmp"
-      CACHE_DIR="${OUTPUT_DIR}/cache"
-      mkdir -p "${TMP_DIR}" "${CACHE_DIR}"
-
-    exec: |
-      ${PYTHON_PATH} -m cwltool --debug --singularity \
-        --outdir "${OUTPUT_DIR}" \
-        --cachedir "${CACHE_DIR}/cache" \
-        --tmpdir-prefix "${TMP_DIR}/tmp" \
-        "${WORKFLOW}" "${RUN_INPUT}" \
-        > "${LOG_FILE}" 2>&1
-
-    post_exec: |
-      rm -rf "${TMP_DIR}" "${CACHE_DIR}"
+      "${PYTHON_PATH}" -m cwltool --debug --no-container --outdir "${OUTPUT_DIR}" "${WORKFLOW}" "${RUN_INPUT}" >> "${LOG_FILE}" 2>&1
