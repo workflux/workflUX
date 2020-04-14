@@ -12,7 +12,7 @@
 - name: deploy
   steps:
   - applyYamlConfig:
-      path: ./deployment.yaml
+      path: ./kube/deployment.yaml
   when:
     branch:
       include:
