@@ -2,7 +2,7 @@
 - name: build
   steps:
   - publishImageConfig:
-      dockerfilePath: ./Dockerfile
+      dockerfilePath: ./docker/dev_elixir/Dockerfile
       buildContext: .
       tag: krini/cwlab:0.1-${CICD_EXECUTION_SEQUENCE}
   when:
