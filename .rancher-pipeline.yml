@@ -8,7 +8,7 @@
   when:
     branch:
       include:
-      - develop
+      - development
 - name: deploy
   steps:
   - applyYamlConfig:
@@ -16,6 +16,6 @@
   when:
     branch:
       include:
-      - develop
+      - development
 timeout: 60
 notification: {}
