@@ -14,6 +14,7 @@ DB_DIR: '/mnt/c/Users/kerst/OneDrive/home_dell/CWLab/scratch/database'
 
 DEBUG: True
 
+ENABLE_USERS: True
 USE_OIDC: True
 OIDC_CONF: {
   response_type: 'id_token token',
