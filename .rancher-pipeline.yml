@@ -1,0 +1,21 @@
+﻿stages:
+- name: build
+  steps:
+  - publishImageConfig:
+      dockerfilePath: ./docker/dev_elixir/Dockerfile
+      buildContext: .
+      tag: krini/cwlab:0.1-${CICD_EXECUTION_SEQUENCE}
+  when:
+    branch:
+      include:
+      - development
+- name: deploy
+  steps:
+  - applyYamlConfig:
+      path: ./kube/deployment.yaml
+  when:
+    branch:
+      include:
+      - development
+timeout: 60
+notification: {}
