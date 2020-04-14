@@ -54,7 +54,7 @@ def check_oidc_token(token):
         'Authorization': 'Bearer ' + token
     }
     response = requests.get(
-        "http://192.168.122.123:8080/auth/realms/cwlab/protocol/openid-connect/userinfo",
+        app.config["OIDC_CONF"]["metadata"]["userinfo_endpoint"],
         headers=token_params
         )
 

@@ -63,9 +63,8 @@ class Config(object):
             False
         )
 
-        if self.USE_OIDC:
-            json.dumps(self.CONFIG_FILE_content.get('OIDC_CONF'))
-            self.OIDC_CONF = json.dumps(self.CONFIG_FILE_content.get('OIDC_CONF'))
+        self.OIDC_CONF = self.CONFIG_FILE_content.get('OIDC_CONF') if self.USE_OIDC \
+            else None
 
         self.DEFAULT_EMAIL = (
             os.environ.get('CWLAB_DEFAULT_EMAIL') or 
