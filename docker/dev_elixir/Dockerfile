@@ -5,7 +5,6 @@ LABEL author="Kersten Breuer, Cancer Epigenomics, Plass Team, DKFZ 2020" \
 
 # Package versions/links:
 ENV CWLTOOL_VERSION 1.0.20181012180214
-ENV SINGULARITY_VERSION 3.3.0
 
 # Install essential dependencies:
 RUN apt-get update -qq -y --fix-missing
@@ -34,28 +33,10 @@ RUN apt-get install -qq -y \
 	pkg-config \
 	git
 
-ENV GOPATH /usr/local/go_path
-ENV PATH /usr/local/go/bin:${PATH}:${GOPATH}/bin
-RUN wget https://dl.google.com/go/go1.12.7.linux-amd64.tar.gz && \
-	tar -C /usr/local -xzvf go1.12.7.linux-amd64.tar.gz && \
-    rm go1.12.7.linux-amd64.tar.gz && \
-	go get -u github.com/golang/dep/cmd/dep
-
-RUN cd /usr/local/ && \
-	wget -O singularity.tar.gz https://github.com/singularityware/singularity/releases/download/v${SINGULARITY_VERSION}/singularity-${SINGULARITY_VERSION}.tar.gz && \
-	tar xzvf singularity.tar.gz && \
-	rm singularity.tar.gz && \
-	cd singularity && \
-	./mconfig && \
-	make -C ./builddir && \
-	make -C ./builddir install
-
-ENV PATH /usr/local/singularity/:${PATH}
-
 # Install cwlab:
 RUN python3 -m pip install cwltool==${CWLTOOL_VERSION}  && \
 	mkdir /cwlab && \
-	git clone https://github.com/CompEpigen/CWLab.git /cwlab/src && \
+	git clone -b development https://github.com/CompEpigen/CWLab.git /cwlab/src && \
 	cd /cwlab/src && \
 	python3 -m pip install .
 
@@ -68,7 +49,7 @@ RUN mkdir -p \
         /cwlab/database && \
     chmod -R 777 /cwlab
 
-COPY config.yaml /cwlab/config.yaml
+COPY docker/dev_elixir/config.yaml /cwlab/config.yaml
 
 # Default command when starting:
 CMD ["cwlab", "up", "-c", "/cwlab/config.yaml"]

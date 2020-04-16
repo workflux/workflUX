@@ -1,0 +1,62 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: cwlabdeployment
+  namespace: cwlab-elixir-develop
+  labels:
+    app: cwlab
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: cwlab
+  template:
+    metadata:
+      labels:
+        app: cwlab
+    spec:
+      imagePullSecrets:
+        - name: pipeline-docker-registry
+      containers:
+      - name: cwlab
+        image: ${CICD_REGISTRY}/krini/cwlab:0.1-${CICD_EXECUTION_SEQUENCE}
+        ports:
+        - containerPort: 5000
+          
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: cwlabservice
+  namespace: cwlab-elixir-develop
+spec:
+  selector:
+    app: cwlab
+  ports:
+    - protocol: TCP
+      port: 80
+      targetPort: 5000
+---
+apiVersion: extensions/v1beta1
+kind: Ingress
+metadata:
+  name: cwlabingress
+  namespace: cwlab-elixir-develop
+  annotations:
+    cert-manager.io/issuer: letsencrypt-prod
+    nginx.ingress.kubernetes.io/auth-type: basic
+    nginx.ingress.kubernetes.io/auth-secret: projecthandlerendpoint
+    nginx.ingress.kubernetes.io/auth-realm: 'Authentication Required - foo'
+spec:
+  rules:
+  - host: cwlab.krini.ingress.rancher.computational.bio
+    http:
+      paths:
+      - backend:
+          serviceName: cwlabservice
+          servicePort: 80
+        path: /
+  tls: # < placing a host in the TLS config will indicate a certificate should be created
+  - hosts:
+    - cwlab.krini.ingress.rancher.computational.bio
+    secretName: cwlab-letsencrypt-prod-private-cert # < cert-manager will store the created certificate in this secret.
