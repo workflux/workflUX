@@ -20,6 +20,9 @@
         <script src="/static/users.js" type="text/babel"></script>
         <script src="/static/main.js" type="text/babel"></script>
 
+        <script src="/static/oidc-client.min.js"></script>
+
+
         <script > 
             // global params feeded by back end
             const routeUploadWf = "{{ url_for('upload_wf') }}"
@@ -58,11 +61,24 @@
             const userLevel = "{{ user_level }}"
             const loginInstruction = "{{ config.LOGIN_INSTRUCTION }}"
             const registrationInstruction = "{{ config.REGISTRATION_INSTRUCTION }}"
-
+            const useOIDC = "{{ config.USE_OIDC }}"
 
             // other global params:
             const serverNotReachableError = "The server could not be reached."
             const serverReachedWithError = "The server failed to work on your request."
+            
+            //TODO: Use config rather than hardcoded values in Oidc.UserManager
+            let oidcConf = JSON.parse('{{ config.OIDC_CONF | tojson | safe }}')
+            oidcConf['response_type'] = 'id_token token'
+            oidcConf['scope'] = 'openid profile'
+            
+
+            //TODO: Consule experts if this is a good idea
+            const oidcUserManager = new Oidc.UserManager(oidcConf);
+
+        </script>
+
+        <script>
 
         </script>
 

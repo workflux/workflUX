@@ -47,6 +47,7 @@ const modules = {   // each entry corresponds to one wep app module,
     //     icon: "fas fa-info-circle",
     //     content: "Under construction"
     // }
+    
     users: {
         text:  loggedIn ? username : "login / register",
         icon: "fas fa-user",
@@ -55,6 +56,8 @@ const modules = {   // each entry corresponds to one wep app module,
         disabled: ! loginEnabled
     }
 };
+
+
 
 class TopBar extends React.Component { // controlled by Root Component
     constructor(props){
