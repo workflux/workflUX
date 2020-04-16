@@ -748,18 +748,7 @@ class OIDCLogin extends React.Component{
         }
         
         oidcUserManager.getUser().then(function (user) {
-            if (user && !user.expired) {
-                const headers = new Headers({
-                    'Authorization': 'Bearer ' + user['access_token']
-                })
-                fetch('http://localhost:5000/validateoidc',{
-                    method: 'GET',
-                    headers: headers,
-                }).then()
-
-            } else {
-                oidcUserManager.signinRedirect();
-            }
+            oidcUserManager.signinRedirect();
         })
     }
 
