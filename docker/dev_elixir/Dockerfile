@@ -49,7 +49,7 @@ RUN mkdir -p \
         /cwlab/database && \
     chmod -R 777 /cwlab
 
-COPY docker/dev_elixir/config.yaml /cwlab/config.yaml
+COPY config.yaml /cwlab/config.yaml
 
 # Default command when starting:
 CMD ["cwlab", "up", "-c", "/cwlab/config.yaml"]
