@@ -3,6 +3,25 @@ import os
 import json
 import yaml
 
+class PyExecProfile():
+    def __init__(
+        self,
+        session_vars :dict
+    ):
+        [setattr(self, str(key), session_vars[key]) for key in session_vars.keys()]
+    
+    # steps prepare, eval, and finalize are optional:
+
+    def prepare(self):
+        pass
+
+    def eval(self):
+        pass
+    
+    def finalize(self):
+        pass
+
+
 class WES(PyExecProfile):
     def exec(self):
         host = "localhost:8080"
