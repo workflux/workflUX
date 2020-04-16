@@ -51,7 +51,7 @@ const modules = {   // each entry corresponds to one wep app module,
     users: {
         text:  useOIDC ? (
                 "login via OIDC" // has to be changed to display the username
-            ) : (
+        ) : (
             loggedIn ? username : "login / register"
         ),
         icon: "fas fa-user",

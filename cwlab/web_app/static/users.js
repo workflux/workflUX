@@ -591,37 +591,20 @@ class LoginForm extends React.Component {
     }
 
     login(){
-        if (useOIDC) {
-            oidcUserManager.getUser().then(function (user) {
-                if (user && !user.expired) {
-                    const headers = new Headers({
-                        'Authorization': 'Bearer ' + user['access_token']
-                    })
-                    fetch('http://localhost:5000/validateoidc',{
-                        method: 'GET',
-                        headers: headers,
-                    }).then()
-
-                } else {
-                    oidcUserManager.signinRedirect();
+        this.ajaxRequest({
+            sendData: {
+                username: this.state.username,
+                password: this.state.password,
+                remember_me: this.state.rememberMe
+            },
+            route: routeLogin,
+            onSuccess: (data, messages) => {
+                if (data.success){
+                    window.location.reload(true)
                 }
-            })
-        } else {
-            this.ajaxRequest({
-                sendData: {
-                    username: this.state.username,
-                    password: this.state.password,
-                    remember_me: this.state.rememberMe
-                },
-                route: routeLogin,
-                onSuccess: (data, messages) => {
-                    if (data.success){
-                        window.location.reload(true)
-                    }
 
-                }
-            })
-        }
+            }
+        })
     }
 
     register(){
@@ -755,12 +738,45 @@ class LoginForm extends React.Component {
     }
 }
 
+class OIDCLogin extends React.Component{
+    constructor(props){
+        super(props);
+        this.state = {
+            status: null,
+            username: null,
+            access_token: null
+        }
+        
+        oidcUserManager.getUser().then(function (user) {
+            if (user && !user.expired) {
+                const headers = new Headers({
+                    'Authorization': 'Bearer ' + user['access_token']
+                })
+                fetch('http://localhost:5000/validateoidc',{
+                    method: 'GET',
+                    headers: headers,
+                }).then()
+
+            } else {
+                oidcUserManager.signinRedirect();
+            }
+        })
+    }
+
+    render(){
+        return(<div>You are logged in</div>)
+    }
+}
+
 class UserRoot extends React.Component{
     constructor(props){
         super(props);
     }
 
     render(){
+        if (useOIDC){
+            return(<OIDCLogin />)
+        }
         if (loggedIn){
             return(<UserAccount />)
         }
