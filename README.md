@@ -3,12 +3,12 @@
 ## Background and Scope:
 The Common Workflow Language (CWL) allows to wrap and link up bioinformatic software in a standardized and portable way. However, setting up and operating a CWL-based workflow management system can be a labor-intensive challenge for many data-driven laboratories. To this end, we developed CWLab: a framework for simplified, graphical deployment of CWL.
 
-CWLab allows life-science researchers with all levels of computational proficiency to create, execute and monitor jobs for CWL-wrapped tools and workflows. Input parameters for large sample batches are specified using a simple HTML form or a spreadsheet and are automatically validated. The integrated webserver allows to remotely control the execution on clusters as well as single workstations. Moreover, automatic infrastructure provisioning and scaling for OpenStack-based clouds is being implemented. CWLab can also be used as a local desktop application that supports Linux, MacOS, and Windows by leveraging Docker containerization. Our Python-based framework is easy to set up and, via a flexible API, it can be integrated with any CWL runner and adapted to custom software environments.
+CWLab allows life-science researchers with all levels of computational proficiency to create, execute and monitor jobs for CWL-wrapped tools and workflows. Input parameters for large sample batches are specified using a simple HTML form or a spreadsheet and are automatically validated. The integrated webserver allows to remotely control the execution on clusters as well as single workstations. CWLab can also be used as a local desktop application that supports Linux, MacOS, and Windows by leveraging Docker containerization. Our Python-based framework is easy to set up and, via a flexible API, it can be integrated with any CWL runner and adapted to custom software environments.
 
 With CWLab, we would like to hide the complexity of workflow management so that scientific users can focus on their data analyses. This might promote the adoption of CWL in multi-professional life-science laboratories.
 
 ## Installation and Quick Start:
-**Attention: CWLab is in alpha state currently and not all features are available yet. However, the core functionalities are working and we are happy if you test it. We are working hard to push out a stable version in the coming weeks. Please press the watch button to not miss it.**
+**Attention: CWLab is in early beta state currently and not all features are available yet. However, the core functionalities are working and we are happy if you test it.**
 
 Installation can be done using pip:  
 `python3 -m pip install cwlab`
@@ -188,12 +188,12 @@ To get an example config file, run the following command:
     *Default*: False
     
 ### Exec Profiles:  
-This is where you configure how to execute cwl jobs on your system. A profile consists of four steps: pre_exec, exec, eval, and post_exec (only exec required, the rest is optional). For each step, you can specify commands that are executed in bash or cmd terminal.  
+This is where you configure how to execute cwl jobs on your system. A profile consists of four steps: prepare, exec, eval, and finalize (only exec required, the rest is optional). For each step, you can specify commands that are executed in bash or cmd terminal.  
 
-You can define multiple execution profile as shown in the config example below. This allows frontend users to choose between different execution options (e.g. using different CWL runners, different dependency management systems, or even choose a between multiple available batch execution infrastructures like lsf, pbs, ...). For each execution profile, following configuration parameters are available (but only **shell** and **exec** is required):  
+You can define multiple execution profile as shown in the config example below. This allows frontend users to choose between different execution options (e.g. using different CWL runners, different dependency management systems, or even choose a between multiple available batch execution infrastructures like lsf, pbs, ...). For each execution profile, following configuration parameters are available (but only **type** and **exec** is required):  
 
-- **shell**:  
-    Specify which shell to use. For Linux or MacOS use `bash`. For Windows, use `powershell`.  
+- **type**:  
+    Specify which shell/interpreter to use. For Linux or MacOS use `bash`. For Windows, use `powershell`.  
     *Required*.
 - **max_retries**:
     Specify how many times the execution (all steps) is retried before marking a run as failed.
@@ -201,23 +201,23 @@ You can define multiple execution profile as shown in the config example below. 
     For each step in the execution profile, you can set a timeout limit.  
     *Default*:  
     ```yaml
-    pre_exec: 120
+    prepare: 120
     exec: 86400
     eval: 120
-    post_exec: 120
+    finalize: 120
     ```
 
-- **pre_exec**\*:  
-    Shell commands that are executed before the actual CWL execution. For instance to load required python/conda environments.  
+- **prepare**\*:  
+    Commands that are executed before the actual CWL execution. For instance to load required python/conda environments.  
     *Optional*.
 - **exec**\*:  
-    Shell commands to start the CWL execution. Usually, this is only the command line to execute the CWL runner. The stdout and stderr of the CWL runner should be redirected to the predefined log file.  
+    Commands to start the CWL execution. Usually, this is only the command line to execute the CWL runner. The stdout and stderr of the CWL runner should be redirected to the predefined log file.  
     *Required*.
 - **eval**\*:  
-    The exit status at the end of the *exec* step is automatically checked. Here you can specify shell commands to additionally evaluate the content of the execution log to determine if the execution succeeded. To communicate failure to CWLab, set the `SUCCESS` variable to `False`.  
+    The exit status at the end of the *exec* step is automatically checked. Here you can specify commands to additionally evaluate the content of the execution log to determine if the execution succeeded. To communicate failure to CWLab, set the `SUCCESS` variable to `False`.  
     *Optional*.
-- **post_exec**\*:
-    Shell commands that are executed after *exec* and *eval*. For instance, this can be used to clean up temporary files.
+- **finalize**\*:
+    Commands that are executed after *exec* and *eval*. For instance, this can be used to clean up temporary files.
 
     
 \* **Additional notes regarding execution profile steps:**  
@@ -231,8 +231,8 @@ You can define multiple execution profile as shown in the config example below. 
     - ``LOG_FILE`` (the path of the log file that should receive the stdout and stderr of CWL runner)
     - ``SUCCESS`` (if set to `False` the run will be marked as failed and terminated)
     - ``PYTHON_PATH`` (the path to the python interpreter used to run CWLab)
-- The four steps will be executed in the same shell session and therefore can be treated as one connected script. (Between the steps, CWLab communicates the status to the database allowing the user to get status notifications via the front end).
-- Thus you may define your own variables that will also be available in all downstream steps.
+- The steps will be executed in the order: prepare, exec, eval, finalize.
+- You may define your own variables in one step and access them in the subsequent steps.
 - At the end of each step. The exit code is checked. If it is non-zero, the run will be marked as failed. Please note, if a step consists of multiple commands and an intermediate command fails, this will not be recognized by CWLab as long as the final command of the step will succeed. To manually communicate failure to CWLab, please set the `SUCCESS` variable to `False`.
 - The steps are executed using pexpect (https://pexpect.readthedocs.io/en/stable/overview.html), this allows you also connect to a remote infrastructure via ssh (recommended to use an ssh key). Please be aware that the path of files or directories specified in the input parameter YAML will not be adapted to the new host. We are working on solutions to achieve an automated path correction and/or upload functionality if the execution host is not the CWLab server host.
 - On Windows, please be aware that each code block (contained in ``{...}``) has to be in one line.
@@ -265,13 +265,13 @@ ADD_INPUT_AND_UPLOAD_DIRS:
 
 EXEC_PROFILES:
     cwltool_local:
-        shell: bash
+        type: bash
         max_retries: 2
         timeout:
-            pre_exec: 120
+            prepare: 120
             exec: 86400
             eval: 120
-            post_exec: 120
+            finalize: 120
         exec: |
             cwltool --outdir "${OUTPUT_DIR}" "${WORKFLOW}" "${RUN_INPUT}" \
                 >> "${LOG_FILE}" 2>&1
@@ -310,13 +310,13 @@ ADD_INPUT_AND_UPLOAD_DIRS:
 
 EXEC_PROFILES:
     cwltool_windows:
-        shell: powershell
+        type: powershell
         max_retries: 2
         timeout:
-            pre_exec: 120
+            prepare: 120
             exec: 86400
             eval: 120
-            post_exec: 120
+            finalize: 120
         exec: |
             . "${PYTHON_PATH}" -m cwltool --debug --default-container ubuntu:16.04 --outdir "${OUTPUT_DIR}" "${CWL}" "${RUN_INPUT}" > "${LOG_FILE}" 2>&1
 

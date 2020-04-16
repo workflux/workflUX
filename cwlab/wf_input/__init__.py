@@ -86,7 +86,7 @@ def transcode(sheet_file, wf_type=None, # only needed if workflow_type is not sp
     if verbose_level == 2:
         print( "Translation successful.", file=sys.stderr)
 
-def generate_xls_from_cwl(workflow_file, wf_type=None, output_file="", show_please_fill=False):
+def generate_xls_from_wf(workflow_file, wf_type=None, output_file="", show_please_fill=False):
     if output_file == "":
         output_file = os.path.basename(cwl_file) + ".xlsx"
     configs, metadata = read_wf.read_config_from_workflow(workflow_file, wf_type)

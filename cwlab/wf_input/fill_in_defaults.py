@@ -28,6 +28,8 @@ def fill_in_config_defaults(configs):
         for cfield in config_field_defaults.keys():
             if not cfield in configs[param_name]:
                 configs[param_name][cfield] = config_field_defaults[cfield]
+        if configs[param_name]["type"] == "boolean" and configs[param_name]["default_value"][0] == "":
+            configs[param_name]["default_value"] = ["False"]
     return configs
 
 def fill_in_param_defaults(param_values, configs, show_please_fill=False):

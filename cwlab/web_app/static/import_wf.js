@@ -1,3 +1,225 @@
+
+class ImportJanisFile extends React.Component{
+    constructor(props){
+        super(props);
+        
+        this.default_states = {
+            wfFile: null,
+            availableWfNames: [],
+            wfNameSelectedForImport: null,
+            translateToCWL: true,
+            translateToWDL: false,
+            importName: "",
+            actionStatus: "none",
+            serverMessages: []
+        }
+
+        this.state = this.default_states
+
+        this.changeInputField = this.changeInputField.bind(this);
+        this.upload = this.upload.bind(this);
+        this.handleFileChange = this.handleFileChange.bind(this);
+        this.handleBooleanChange = this.handleBooleanChange.bind(this);
+    }
+
+    changeInputField(event){
+        let newState = {
+            [event.currentTarget.name]: event.currentTarget.value,
+            serverMessages: []
+        }
+        if (event.currentTarget.name == "wfNameSelectedForImport"){
+            newState["importName"] = event.currentTarget.value
+        }
+        this.setState(newState)
+    }
+
+    handleFileChange(event){
+        let states = this.default_states
+        states[event.currentTarget.name] = event.currentTarget.files[0]
+        this.setState(states)
+    }
+
+    handleBooleanChange(value, isSet){
+        this.setState({
+            [value]: isSet
+        })
+    }
+
+    upload(event){ // ajax request to server
+        if (this.state.wfFile == null){
+            let newState = this.default_states
+            newState["serverMessages"] = [{type:"error", text:"No file selected."}]
+            this.setState(newState)
+        }
+        else{
+            let newState = event.currentTarget.value == "list_contained_workflows" ?
+                ( 
+                    this.default_states
+                ) : (
+                    {}
+                )
+            newState["actionStatus"] = event.currentTarget.value
+            this.setState(newState)
+            let formData = new FormData()
+            formData.append("wf_file", this.state.wfFile)
+            formData.append("meta", JSON.stringify({
+                "import_name": this.state.importName,
+                "wf_type": "janis",
+                "translate_to_cwl": this.state.translateToCWL,
+                "translate_to_wdl": this.state.translateToWDL,
+                "wf_name_in_script": this.state.wfNameSelectedForImport
+            }))
+            fetch(
+                event.currentTarget.value == "list_contained_workflows" ? (
+                    routeListAvailWfsInJanis
+                ) :(
+                    routeUploadWf
+                ), 
+                {
+                    method: "POST",
+                    body: formData,
+                    cache: "no-cache"
+                }
+            ).then(res => res.json())
+            .then(
+                (result) => {
+                    var messages = result.messages;
+                    var data = result.data;
+                    let errorOccured = false;
+                    for( let i=0;  i<messages.length; i++){
+                        if(messages[i].type == "error"){
+                            errorOccured = true;
+                            break;
+                        }
+                    }
+                    if (errorOccured){
+                        this.setState({actionStatus: "none", error: true, serverMessages: messages})
+                    } 
+                    else {
+                        let newState = {
+                            actionStatus: "none", 
+                            error: false, 
+                            serverMessages: messages
+                        }
+                        if (data.hasOwnProperty('avail_wfs')){
+                            newState["availableWfNames"] = data.avail_wfs
+                            newState["wfNameSelectedForImport"] = data.avail_wfs[0]
+                            newState["importName"] = data.avail_wfs[0]
+                        }
+                        this.setState(newState);
+                    }
+                },
+                (error) => {
+                    // server could not be reached
+                    var messages = [{
+                        time: get_time_str(),
+                        type: "error", 
+                        text: serverNotReachableError
+                    }];
+                    this.setState({actionStatus: "none", error: true, serverMessages: messages});
+                }
+            )
+        }
+    }
+
+    render(){
+        return(
+            <div className="w3-panel">
+                <p>
+                    Import a Janis workflow script.
+                </p>
+                <ExperimentalTag />
+                <span className="w3-text-green">1. Choose a Janis script:</span>&nbsp;
+                <input 
+                    className="w3-button w3-border w3-border-grey"
+                    style={ {display: "block"} }
+                    type="file" 
+                    name="wfFile" 
+                    onChange={this.handleFileChange}
+                    disabled={this.state.actionStatus != "none"}
+                />
+                <ActionButton 
+                    name="list_contained_workflows"
+                    value="list_contained_workflows"
+                    label="list contained workflows"
+                    loading={this.state.actionStatus == "list_contained_workflows"} 
+                    onAction={this.upload}
+                    forwardEvent={true}
+                    disabled={this.state.actionStatus != "none"}
+                />
+                {this.state.availableWfNames.length > 0 && (
+                    <div>
+                        <br/>
+                        <span className="w3-text-green">2. Choose the workflow to import:</span><br/>
+                        <select className="w3-button w3-white w3-border w3-padding-small" 
+                            name="wfNameSelectedForImport"
+                            onChange={this.changeInputField}
+                            value={this.state.wfNameSelectedForImport}
+                        >
+                            {
+                                this.state.availableWfNames.map((availWfName) => (
+                                    <option 
+                                        key={availWfName}
+                                        value={availWfName}
+                                    >
+                                        {availWfName}
+                                    </option>
+                                ))
+                            }
+                        </select>
+                        <br/><br/>
+                        {/* <span className="w3-text-green">3. Choose at least one target format:</span><br/>
+                        <Checkbox
+                            name="translateToCWL"
+                            value="translateToCWL"
+                            checked={this.state.translateToCWL}
+                            onChange={this.handleBooleanChange}
+                        />
+                        &nbsp; translate to CWL
+                        <br/>
+                        <Checkbox
+                            name="translateToWDL"
+                            value="translateToWDL"
+                            checked={this.state.translateToWDL}
+                            onChange={this.handleBooleanChange}
+                        />
+                        &nbsp; translate to WDL
+                        { (! this.state.translateToCWL) && (! this.state.translateToWDL) ? (
+                                <Message type="hint">
+                                    <b>Attention:</b> Please select at least one of the two formats.
+                                </Message>
+                            ) : (
+                                <span><br/><br/></span>
+                            )
+                        } */}
+                        <span className="w3-text-green">3. Choose a name and import:</span><br/>
+                        <input type="text"
+                            className="w3-input w3-border"
+                            name="importName"
+                            style={ {width: "50%"} }
+                            value={this.state.importName}
+                            onChange={this.changeInputField}
+                        />
+                        <ActionButton 
+                            name="import_wf"
+                            value="import_wf"
+                            label="import"
+                            loading={this.state.actionStatus == "import_wf"} 
+                            onAction={this.upload}
+                            forwardEvent={true}
+                            disabled={
+                                this.state.actionStatus != "none" ||
+                                ((! this.state.translateToCWL) && (! this.state.translateToWDL))
+                            }
+                        />
+                    </div>
+                )}
+                <DisplayServerMessages messages={this.state.serverMessages} />
+            </div>
+        )
+    }
+}
+
 class ImportCwlZip extends React.Component{
     constructor(props){
         super(props);
@@ -154,17 +376,21 @@ class ImportCwlZip extends React.Component{
 class ImportWfFile extends React.Component{
     constructor(props){
         super(props);
-        // props.wfType
-        // props.mainIntruction
-        // props.fileInstruction
+        // props.wfType cwl or wdl
 
         this.state = {
             importName: "",
             actionStatus: "none",
-            serverMessages: []
+            serverMessages: [],
+            wfFile: null,
+            wfImportsZip: null,
+            provideWfImportsZip: false
         }
 
         this.changeInputField = this.changeInputField.bind(this);
+        this.upload = this.upload.bind(this);
+        this.handleFileChange = this.handleFileChange.bind(this);
+        this.handleBooleanChange = this.handleBooleanChange.bind(this);
     }
 
     changeInputField(event){
@@ -173,13 +399,138 @@ class ImportWfFile extends React.Component{
         })
     }
 
+    handleFileChange(event){
+        this.setState({
+            [event.currentTarget.name]: event.currentTarget.files[0],
+            serverMessages: []
+        })
+    }
+
+    handleBooleanChange(value, isSet){
+        this.setState({
+            [value]: isSet
+        })
+    }
+
+    upload(){ // ajax request to server
+        if (this.state.wfFile == ""){
+            this.state.serverMessages = [{type:"error", text:"No file selected."}]
+            this.setState({actionStatus: "none", error: true})
+        }
+        else{
+            this.setState({actionStatus:"uploading"})
+            let formData = new FormData()
+            formData.append("wf_file", this.state.wfFile)
+            if (this.state.provideWfImportsZip){
+                formData.append("wf_imports_zip", this.state.wfImportsZip)
+            }
+            formData.append("meta", JSON.stringify({
+                "import_name": this.state.importName,
+                "wf_type": this.props.wfType
+            }))
+            fetch(routeUploadWf, {
+                method: "POST",
+                body: formData,
+                cache: "no-cache"
+            }).then(res => res.json())
+            .then(
+                (result) => {
+                    var messages = result.messages;
+                    var data = result.data;
+                    let errorOccured = false;
+                    for( let i=0;  i<messages.length; i++){
+                        if(messages[i].type == "error"){
+                            errorOccured = true;
+                            break;
+                        }
+                    }
+                    if (errorOccured){
+                        this.setState({actionStatus: "none", error: true, serverMessages: messages})
+                    } 
+                    else {
+                        this.setState({actionStatus: "none", error: false, serverMessages: messages});
+                    }
+                },
+                (error) => {
+                    // server could not be reached
+                    var messages = [{
+                        time: get_time_str(),
+                        type: "error", 
+                        text: serverNotReachableError
+                    }];
+                    this.setState({actionStatus: "none", error: true, serverMessages: messages});
+                }
+            )
+        }
+    }
+
     render(){
         return(
             <div className="w3-panel">
                 <p>
-                    {this.props.mainInstruction}
+                    {this.props.wfType == "CWL" ? (
+                        "Import a CWL-wrapped tool or a packed CWL workflow."
+                        ):(
+                        <span>
+                            Import a WDL workflow.   
+                        </span>
+                    )}
                 </p>
-                <span className="w3-text-green">1. Choose a name:</span>&nbsp;
+                {this.props.wfType == "WDL" && (
+                    <ExperimentalTag />
+                )}
+                <span className="w3-text-green">
+                    1. Choose a {this.props.wfType} file:
+                </span>&nbsp;   
+                {this.props.wfType == "CWL" && (             
+                    <Message type="hint">
+                        <b>Please Note: CWL workflows are only supported in packed format (workflow with all contained tools).</b>&nbsp;
+                        You may provide a ZIP file containing non-packed CWL workflows with all it's dependencies (see above "from ZIP file") or see&nbsp;
+                        <a href="https://github.com/common-workflow-language/cwltool#combining-parts-of-a-workflow-into-a-single-document">
+                            the documentation of cwltool
+                        </a> for details on how to pack a workflow.
+                    </Message>  
+                )}  
+                <input 
+                    className="w3-button w3-border w3-border-grey"
+                    style={ {display: "block"} }
+                    type="file" 
+                    name="wfFile" 
+                    onChange={this.handleFileChange}
+                    disabled={this.state.actionStatus != "none"}
+                />
+                
+                {this.props.wfType == "WDL" && (
+                    <div className="w3-container">
+                        <br/>
+                        <Checkbox
+                            name="provideWfImportsZip"
+                            value="provideWfImportsZip"
+                            checked={this.state.provideWfImportsZip}
+                            onChange={this.handleBooleanChange}
+                        />
+                        &nbsp; include WDL imports via a zip file
+                        <br/>
+                        {this.state.provideWfImportsZip && (
+                            <span>
+                                <span className="w3-text-green">
+                                    Choose an imports.zip:
+                                </span>&nbsp;   
+                                <input 
+                                    className="w3-button w3-border w3-border-grey"
+                                    style={ {display: "block"} }
+                                    type="file" 
+                                    name="wfImportsZip" 
+                                    onChange={this.handleFileChange}
+                                    disabled={this.state.actionStatus != "none"}
+                                />
+                            </span>
+                        )}
+                    </div>
+                )}
+                <br/>
+                
+                <span className="w3-text-green">2. Choose a name:</span>&nbsp;
                 <input type="text"
                     className="w3-input w3-border"
                     name="importName"
@@ -187,38 +538,15 @@ class ImportWfFile extends React.Component{
                     value={this.state.importName}
                     onChange={this.changeInputField}
                 />
-                <br/>
-                <span className="w3-text-green">2. Choose and import a CWL file:</span>&nbsp;
-                {this.props.fileInstruction}
-                <FileUploadComponent
-                    requestRoute={routeUploadWf}
-                    metaData={ {
-                        "wf_type": this.props.wfType,
-                        "import_name": this.state.importName
-                    } }
+                <ActionButton 
+                    name="import"
+                    value="import"
+                    label="import"
+                    loading={this.state.actionStatus == "uploading"} 
+                    onAction={this.upload}
+                    disabled={this.state.actionStatus != "none"}
                 />
-            </div>
-        )
-    }
-}
-
-class ImportCWLFile extends React.Component{
-    render(){
-        return(
-            <div>
-                <ImportWfFile
-                    wfType="CWL"
-                    mainInstruction="Import a CWL-wrapped tool or a packed CWL workflow."
-                    fileInstruction={
-                        <Message type="hint">
-                            <b>Please Note: CWL workflows are only supported in packed format (workflow with all contained tools).</b>&nbsp;
-                            You may provide a ZIP file containing non-packed CWL workflows with all it's dependencies (see above "from ZIP file") or see&nbsp;
-                            <a href="https://github.com/common-workflow-language/cwltool#combining-parts-of-a-workflow-into-a-single-document">
-                                the documentation of cwltool
-                            </a> for details on how to pack a workflow.
-                        </Message>
-                    }
-                />
+                <DisplayServerMessages messages={this.state.serverMessages} />
             </div>
         )
     }
@@ -314,6 +642,8 @@ class ImportCwlUrl extends React.Component{
     }
 }
 
+
+
 class ImportCWLRoot extends React.Component {
     constructor(props){
         super(props);
@@ -326,13 +656,21 @@ class ImportCWLRoot extends React.Component {
                 descr: "URL to public CWL document (e.g. from github)",
                 component: <ImportCwlUrl />
             },
-            wfFile: {
-                descr: "from CWL file",
-                component: <ImportCWLFile />
+            cwlFile: {
+                descr: "from (packed) CWL file",
+                component: <ImportWfFile wfType="CWL"/>
             },
+            // wdlFile: {
+            //     descr: "from WDL file",
+            //     component: <ImportWfFile wfType="WDL"/>
+            // },
             cwlZip: {
-                descr: "from ZIP file (e.g. a CWL workflow with its dependencies)",
+                descr: "from ZIP file (e.g. a CWL workflow + its dependencies)",
                 component: <ImportCwlZip />
+            },
+            janisFile: {
+                descr: "from Janis file",
+                component: <ImportJanisFile />
             }
         }
 

@@ -4,7 +4,7 @@ import os
 from flask import render_template, jsonify, redirect, flash, url_for, request
 from flask_login import current_user
 from werkzeug.urls import url_parse
-from cwlab import app 
+from flask import current_app as app
 from cwlab.users.manage import load_user, check_oidc_token
 from json import dumps
 from cwlab.log import handle_known_error, handle_unknown_error

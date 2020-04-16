@@ -6,16 +6,6 @@ ENABLE_USERS: True
 
 EXEC_PROFILES:
   cwltool_local: 
-    shell: bash
-    
-    exec: |
-      "${PYTHON_PATH}" -m cwltool --outdir "${OUTPUT_DIR}" "${WORKFLOW}" "${RUN_INPUT}" >> "${LOG_FILE}" 2>&1
-    eval: | 
-      LAST_LINES=$(tail -n 2 ${LOG_FILE})
-      if [[ "${LAST_LINES}" == *"Final process status is success"* ]]
-      then
-        SUCCESS=True
-      else
-        SUCCESS=False
-        ERR_MESSAGE="cwltool failed -  ${LAST_LINES}"
-      fi
+    type: python
+    py_module: cwlab.exec.default_exec_profile
+    py_class: CwltoolLocal

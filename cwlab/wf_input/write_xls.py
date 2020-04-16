@@ -2,7 +2,7 @@
 #import csv
 import sys
 import re
-import pyexcel as pe
+from pyexcel import get_book
 import pyexcel_xlsx, pyexcel_xls, pyexcel_ods, pyexcel_io
 from .split_by_run import split_parameter_by_run_id
 
@@ -302,6 +302,7 @@ def build_book(all_parameters, configs, config_attributes={}, metadata={"doc": "
 
 def write_xls(all_parameters, configs, output_file, config_attributes={}, metadata={"doc": ""}):
     print_pref = "[parameter_to_xls]:"
-    book = build_book(all_parameters, configs, config_attributes, metadata)
-    pyexcel_xlsx.save_data( afile= output_file, data=book )
+    book_data = build_book(all_parameters, configs, config_attributes, metadata)
+    book = get_book(bookdict=book_data)
+    book.save_as(output_file)
 

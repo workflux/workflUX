@@ -23,7 +23,9 @@ setup(
             "cwlab=cwlab.__main__:main",
         ]
     },
-    install_requires=['flask',
+    install_requires=[
+                      'werkzeug>=0.15.2',
+                      'flask',
                       'flask_wtf',
                       'flask-login',
                       'flask-sqlalchemy',
@@ -32,10 +34,10 @@ setup(
                       'pyexcel-ods',
                       'pyexcel-ods3',
                       'pyexcel-xls',
-                      'pyexcel-xlsx',
+                      'pyexcel-xlsx<=0.5.7',
                       'PyYAML',
                       'pexpect',
-                      'janis-pipelines>=0.7.0',
+                      'janis-pipelines',
                       'cwltool==1.0.20181201184214; platform_system=="Windows"',
                       'cwltool >=1.0.20180809224403, <=1.0.20191022103248; platform_system!="Windows"',
                       'psutil',

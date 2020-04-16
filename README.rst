@@ -324,7 +324,7 @@ options (e.g. using different CWL runners, different dependency
 management systems, or even choose a between multiple available batch
 execution infrastructures like lsf, pbs, ...). For each execution
 profile, following configuration parameters are available (but only
-**shell** and **exec** is required):
+**type** and **exec** is required):
 
 -  **shell**:
    Specify which shell to use. For Linux or MacOS use ``bash``. For
@@ -339,10 +339,10 @@ profile, following configuration parameters are available (but only
 
    .. code:: yaml
 
-       pre_exec: 120
+       prepare: 120
        exec: 86400
        eval: 120
-       post_exec: 120
+       finalize: 120
 
 -  **pre\_exec**\ \*:
    Shell commands that are executed before the actual CWL execution. For
@@ -438,10 +438,10 @@ Linux / MacOs:
             shell: bash
             max_retries: 2
             timeout:
-                pre_exec: 120
+                prepare: 120
                 exec: 86400
                 eval: 120
-                post_exec: 120
+                finalize: 120
             exec: |
                 cwltool --outdir "${OUTPUT_DIR}" "${WORKFLOW}" "${RUN_INPUT}" \
                     >> "${LOG_FILE}" 2>&1
@@ -484,10 +484,10 @@ Windows:
             shell: powershell
             max_retries: 2
             timeout:
-                pre_exec: 120
+                prepare: 120
                 exec: 86400
                 eval: 120
-                post_exec: 120
+                finalize: 120
             exec: |
                 . "${PYTHON_PATH}" -m cwltool --debug --default-container ubuntu:16.04 --outdir "${OUTPUT_DIR}" "${CWL}" "${RUN_INPUT}" > "${LOG_FILE}" 2>&1
 

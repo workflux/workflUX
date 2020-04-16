@@ -6,11 +6,11 @@ WEB_SERVER_HOST: localhost
 ## (2) choose the port:
 WEB_SERVER_PORT: 5000 # The default is 5000, if this port is blocked choose a different one
 
-TEMP_DIR: 'C:\Users\kerst\OneDrive\home_dell\CWLab\scratch\temp'
-WORKFLOW_DIR: 'C:\Users\kerst\OneDrive\home_dell\CWLab\scratch\wf_dir'
-EXEC_DIR: 'C:\Users\kerst\OneDrive\home_dell\CWLab\scratch\exec'
-INPUT_DIR: 'C:\Users\kerst\OneDrive\home_dell\CWLab\'
-DB_DIR: 'C:\Users\kerst\OneDrive\home_dell\CWLab\scratch\database'
+TEMP_DIR: '.\scratch\temp'
+WORKFLOW_DIR: '.\scratch\wf_dir'
+EXEC_DIR: '.\scratch\exec'
+INPUT_DIR: '.\'
+DB_DIR: '.\scratch\database'
 
 DEBUG: True
 
@@ -19,7 +19,7 @@ DEBUG: True
 EXEC_PROFILES:
   cwltool_windows:
     
-    shell: powershell
+    type: powershell
 
     max_retries: 0
     max_parallel_exec: 2

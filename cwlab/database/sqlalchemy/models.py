@@ -1,4 +1,16 @@
-from cwlab import db
+from cwlab.database.connector import db
+from cwlab.database.models import BaseUser
+from werkzeug.security import generate_password_hash, check_password_hash
+
+class User(BaseUser, db.Model):
+    id = db.Column(db.Integer, primary_key=True)
+    username = db.Column(db.String(64), index=True, unique=True)
+    email = db.Column(db.String(120), index=True)
+    level = db.Column(db.String(64), index=True)
+    status = db.Column(db.String(64), index=True)
+    password_hash = db.Column(db.String(128))
+    date_register = db.Column(db.DateTime())
+    date_last_login = db.Column(db.DateTime())
 
 class Exec(db.Model):
     id = db.Column(db.Integer(), primary_key=True)
@@ -23,4 +35,4 @@ class Exec(db.Model):
     user_email = db.Column(db.String(64))
 
     def __repr__(self):
-        return '<Exec {}>'.format({self.id, self.status, self.run_id, self.job_id})  
+        return '<Exec {}>'.format({self.id, self.status, self.run_id, self.job_id})

@@ -3,15 +3,16 @@ import os
 from flask import render_template, jsonify, redirect, flash, url_for, request
 from werkzeug.urls import url_parse
 from werkzeug.utils import secure_filename
-from cwlab import app
+from flask import current_app as app
 from cwlab.utils import is_allowed_file, allowed_extensions_by_type, get_path, \
     make_temp_dir, import_wf as import_wf_, unzip_dir, get_allowed_base_dirs, \
     check_if_path_in_dirs, download_file, vaidate_url, get_time_string
-from cwlab.wf_input import generate_xls_from_cwl as generate_job_template_from_cwl
+from cwlab.wf_input import generate_xls_from_wf as generate_job_template_from_cwl
 from cwlab.users.manage import login_required
 from shutil import rmtree
 from json import loads as json_loads
 from cwlab.log import handle_known_error, handle_unknown_error
+from cwlab.wf_input.read_janis import list_workflows_in_file as list_workflows_in_janis_file
 
 @app.route('/upload_wf/', methods=['POST'])
 def upload_wf():
@@ -19,26 +20,50 @@ def upload_wf():
     data = []
     try:
         login_required()
-        assert 'file' in request.files, 'No file received.'
 
-        import_file = request.files['file']
+        # load metadata:
+        metadata = json_loads(request.form.get("meta"))
+        wf_type = metadata["wf_type"] if "wf_type" in metadata.keys() else None
+        # only relavant for janis:
+        translate_to_cwl = metadata["translate_to_cwl"] \
+            if "translate_to_cwl" in metadata.keys() else True
+        translate_to_wdl = metadata["translate_to_wdl"] \
+            if "translate_to_wdl" in metadata.keys() else True
+        wf_name_in_script = metadata["wf_name_in_script"] \
+            if "wf_name_in_script" in metadata.keys() else None
 
-        assert import_file.filename != '', "No file specified."
 
         # save the file to the CWL directory:
-        metadata = json_loads(request.form.get("meta"))
-        import_filename = secure_filename(import_file.filename) 
-        wf_type = metadata["wf_type"] if "wf_type" in metadata.keys() else None
-        
+        assert 'wf_file' in request.files, 'No file received.'
+        import_wf_file = request.files['wf_file']
+        assert import_wf_file.filename != '', "No file specified."
+        import_wf_filename = secure_filename(import_wf_file.filename) 
         temp_dir = make_temp_dir()
-        imported_filepath = os.path.join(temp_dir, import_filename)
-        import_file.save(imported_filepath)
+        imported_wf_filepath = os.path.join(temp_dir, import_wf_filename)
+        import_wf_file.save(imported_wf_filepath)
 
+        # if existent, save imports.zip:
+        wf_imports_zip_filepath = None
+        if 'wf_imports_zip' in request.files.keys():
+            wf_imports_zip_file = request.files['wf_imports_zip']
+            wf_imports_zip_filepath = os.path.join(temp_dir, "imports.zip")
+            wf_imports_zip_file.save(wf_imports_zip_filepath)
+
+        # import workflow:
         import_name = secure_filename(metadata["import_name"]) \
             if "import_name" in metadata.keys() and metadata["import_name"] != "" \
-            else import_filename
-        import_wf_(wf_path=imported_filepath, name=import_name, wf_type=wf_type)
+            else import_wf_filename
+        import_wf_(
+            wf_path=imported_wf_filepath, 
+            name=import_name,
+            wf_type=wf_type, 
+            wf_imports_zip_path=wf_imports_zip_filepath,
+            translate_to_cwl=translate_to_cwl,
+            translate_to_wdl=translate_to_wdl,
+            wf_name_in_script=wf_name_in_script
+        )
         
+        # cleanup temp:
         try:
             rmtree(temp_dir)
         except Exception as e:
@@ -47,8 +72,48 @@ def upload_wf():
         messages.append( { 
             "time": get_time_string(),
             "type":"success", 
-            "text": import_file.filename + " successfully imported."
+            "text": import_wf_file.filename + " successfully imported."
         } )
+
+    except AssertionError as e:
+        messages.append( handle_known_error(e, return_front_end_message=True))
+    except Exception as e:
+        messages.append(handle_unknown_error(e, return_front_end_message=True))
+    
+    return jsonify({"data":data,"messages":messages})
+
+@app.route('/list_avail_wfs_in_janis/', methods=['POST'])
+def list_avail_wfs_in_janis():
+    messages = []
+    data = []
+    try:
+        login_required()
+
+        # save the file to the CWL directory:
+        assert 'wf_file' in request.files, 'No file received.'
+        import_wf_file = request.files['wf_file']
+        assert import_wf_file.filename != '', "No file specified."
+        import_wf_filename = secure_filename(import_wf_file.filename) 
+        temp_dir = make_temp_dir()
+        imported_wf_filepath = os.path.join(temp_dir, import_wf_filename)
+        import_wf_file.save(imported_wf_filepath)
+
+        # import workflow:
+        avail_wfs = list_workflows_in_janis_file(
+            file=imported_wf_filepath,
+            only_return_name=True
+        )
+        
+        # cleanup temp:
+        try:
+            rmtree(temp_dir)
+        except Exception as e:
+            pass
+
+        assert len(avail_wfs) > 0, "No workflow definition could be found in the provided Janis file."
+        data = {
+            "avail_wfs": avail_wfs
+        }
 
     except AssertionError as e:
         messages.append( handle_known_error(e, return_front_end_message=True))
@@ -65,21 +130,21 @@ def upload_cwl_zip():
         login_required()
         assert 'file' in request.files, 'No file received.'
 
-        import_file = request.files['file']
+        import_wf_file = request.files['file']
 
-        assert import_file.filename != '', "No file specified."
+        assert import_wf_file.filename != '', "No file specified."
 
-        assert is_allowed_file(import_file.filename, type="zip"), ( 
+        assert is_allowed_file(import_wf_file.filename, type="zip"), ( 
             "Wrong file type. Only files with following extensions are allowed: " + 
             ", ".join(allowed_extensions_by_type["CWL"])
         )
 
         # save the file to the CWL directory:
-        import_filename = secure_filename(import_file.filename) 
+        import_wf_filename = secure_filename(import_wf_file.filename) 
 
         temp_upload_dir = make_temp_dir()
-        imported_filepath = os.path.join(temp_upload_dir, import_filename)
-        import_file.save(imported_filepath)
+        imported_filepath = os.path.join(temp_upload_dir, import_wf_filename)
+        import_wf_file.save(imported_filepath)
 
         temp_extract_dir = make_temp_dir()
         unzip_dir(imported_filepath, temp_extract_dir)
@@ -94,7 +159,7 @@ def upload_cwl_zip():
         messages.append( { 
             "time": get_time_string(),
             "type":"success", 
-            "text": import_file.filename + " was successfully uploaded and extracted."
+            "text": import_wf_file.filename + " was successfully uploaded and extracted."
         } )
 
     except AssertionError as e:
@@ -131,7 +196,7 @@ def upload_cwl_zip():
 #         messages.append( { 
 #             "time": get_time_string(),
 #             "type":"success", 
-#             "text": import_file.filename + " was successfully downloaded and extracted."
+#             "text": import_wf_file.filename + " was successfully downloaded and extracted."
 #         } )
 
 #     except AssertionError as e:

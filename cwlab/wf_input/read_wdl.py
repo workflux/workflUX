@@ -1,3 +1,4 @@
+import os
 from WDL import load, Type
 def read_config_from_wdl_file(wdl_file):
     # document = load('./scratch/alignment/alignment.wdl')
@@ -19,10 +20,10 @@ def read_config_from_wdl_file(wdl_file):
         if isinstance(wdl_type, Type.Array):
             is_array = True
             wdl_type = wdl_type.item_type
-            null_item_allowed = wdl_type.optional
+            null_items_allowed = wdl_type.optional
         else:
             is_array = False
-            null_item_allowed = False
+            null_items_allowed = False
         if isinstance(wdl_type, Type.Boolean):
             type_ = "boolean"
         elif isinstance(wdl_type, Type.String):
@@ -30,7 +31,7 @@ def read_config_from_wdl_file(wdl_file):
         elif isinstance(wdl_type, Type.Float):
             type_ = "float"
         elif isinstance(wdl_type, Type.Int):
-            type_ = "Int"
+            type_ = "int"
         elif isinstance(wdl_type, Type.File):
             type_ = "File"
         else:

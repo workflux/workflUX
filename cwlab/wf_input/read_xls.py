@@ -60,7 +60,7 @@ def type_field( field_string ):
         type_string = "helper" # a helper variable which will not appear in the cwl job yaml
     elif not type_string in ["string", "null", "int", "float", 
         "double", "long", "boolean", "File", "Directory", "helper"]:
-        raise AssertionError( print_pref + "E: unknown CWL type \"" + type_string + "\"" )
+        raise AssertionError( print_pref + "E: unknown parameter type \"" + type_string + "\"" )
     return type_string
 
 
@@ -70,10 +70,10 @@ def name( field_string ):
         name_string = clean_string(field_string)
     except AssertionError as e:
         raise AssertionError( print_pref + "E: field string \"" + str(field_string) + "\":" + str(e) )
-    forbidden_pattern = "[^(A-Z)(a-z)\d_-]"
+    forbidden_pattern = "[^(A-Z)(a-z)\d_\-\.]"
     assert not re.search(forbidden_pattern, name_string), (
         print_pref + "E: field string \"" + name_string + " was invalid: only letter (A-Z/a-z)," +
-        "digits, and \"_\" or \"-\" are allowed"
+        "digits, and \"_\", \"-\", or \".\" are allowed"
     )
     return name_string
 

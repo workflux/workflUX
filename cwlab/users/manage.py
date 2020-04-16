@@ -2,9 +2,9 @@ import requests
 import pprint
 import json
 
-from cwlab import db, login, app
-from cwlab.utils import db_commit
-from .db import User, allowed_levels
+from cwlab import login
+from cwlab import db_connector
+from flask import current_app as app
 from getpass import getpass
 from time import sleep
 from random import random
@@ -13,40 +13,35 @@ from re import match
 from datetime import datetime
 from flask_login import current_user
 
+allowed_levels = ["admin", "user"]
+
+user_manager = db_connector.user_manager
+
 @login.user_loader
 def load_user(id, return_username_only=False):
-    retry_delays = [1, 4]
-    for retry_delay in retry_delays:
-        try:
-            user = User.query.get(int(id))
-        except Exception as e:
-            assert retry_delay != retry_delays[-1], "Could not connect to database."
-            sleep(retry_delay + retry_delay*random())
+    user = user_manager.load(id=id)
     if return_username_only:
         return user.username
     else:
         return user
 
 def get_user_by_username(username):
-    retry_delays = [1, 4]
-    for retry_delay in retry_delays:
-        try:
-            db_request = db.session.query(User).filter(User.username == username)
-            if db_request.count() == 0:
-                return None
-            user = db_request.first()
-        except Exception as e:
-            assert retry_delay != retry_delays[-1], "Could not connect to database."
-            sleep(retry_delay + retry_delay*random())
+    user = user_manager.load_by_name(username=username)
     return user
   
+
+def has_user_been_activated(username):
+    return get_user_by_username(username).status == "active"
 
 def login_required(admin=False):
     if app.config["ENABLE_USERS"] and app.config['USE_OIDC']:
         pass
     elif app.config["ENABLE_USERS"]:
         assert current_user.is_authenticated, "Login required."
-        assert not (admin and load_user(current_user.get_id()).level != "admin"), "Admin required."
+        user = load_user(current_user.get_id())
+        assert not (admin and user.level != "admin"), "Admin required."
+        assert user.status == "active", "Your account is currently not active." + \
+            " Please wait for an administrator to approve it."
 
 #checks if a token is valid
 def check_oidc_token(token):
@@ -77,16 +72,7 @@ def check_if_username_exists(username):
         return not get_user_by_username(username) is None
 
 def get_users(only_admins=False, return_usernames=False):
-    retry_delays = [1, 4]
-    for retry_delay in retry_delays:
-        try:
-            db_user_request = db.session.query(User)
-            if only_admins:
-                db_user_request = db_user_request.filter(User.level=="admin")
-            users = db_user_request.all()
-        except Exception as e:
-            assert retry_delay != retry_delays[-1], "Could not connect to database."
-            sleep(retry_delay + retry_delay*random())
+    users = user_manager.load_all(only_admins)
     if return_usernames:
         usernames = [user.username for user in users]
         return usernames
@@ -103,7 +89,7 @@ def get_user_info(id):
 
 def add_user(username, email, level, password, status="active"):
     assert not check_if_username_exists(username), "Username already exists."
-    user = User(
+    user = user_manager.create(
         username=username, 
         email=email,
         level=level, 
@@ -112,13 +98,10 @@ def add_user(username, email, level, password, status="active"):
         date_last_login = None
     )
     user.set_password(password)
-    db.session.add(user)
-    db_commit()
+    user_manager.store(user)
 
 def delete_user(id):
-    user = load_user(id)
-    db.session.delete(user)
-    db_commit()
+    user_manager.delete_by_id(id)
 
 def check_user_credentials(username, password, return_user_if_valid):
     user = get_user_by_username(username)
@@ -129,7 +112,7 @@ def check_user_credentials(username, password, return_user_if_valid):
     if return_user_if_valid:
         if valid:
             user.date_last_login = datetime.now()
-            db_commit()
+            user_manager.update()
             return user
         else:
             return None
@@ -181,13 +164,13 @@ def change_password(id, old_password, new_password, new_rep_password):
     assert new_password == new_rep_password, "New passwords do not match."
     assert check_format_conformance("password", new_password), format_errors["password"]
     user.set_password(new_password)
-    db_commit()
+    user_manager.update()
 
 def get_all_users_info():
     retry_delays = [1, 4]
     for retry_delay in retry_delays:
         try:
-            users = db.session.query(User).all()
+            users = user_manager.load_all()
         except Exception as e:
             assert retry_delay != retry_delays[-1], "Could not connect to database."
             sleep(retry_delay + retry_delay*random())
@@ -209,7 +192,8 @@ def change_user_status_or_level(id, new_status=None, new_level=None):
         user.status = new_status
     if not new_level is None:
         user.level = new_level
-    db_commit()
+
+    user_manager.update()
 
 def interactively_add_user(level="", instruction="Please set the credentials of the user to be added."):
     success = False

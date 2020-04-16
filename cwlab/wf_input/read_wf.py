@@ -2,6 +2,7 @@ import os
 from .read_cwl import read_config_from_cwl_file
 from .read_janis import read_config_from_janis_file
 from .read_wdl import read_config_from_wdl_file
+from .fill_in_defaults import fill_in_config_defaults
 
 supported_workflow_exts = {
     "CWL": ["cwl", "CWL"],
@@ -37,4 +38,5 @@ def read_config_from_workflow(workflow_file, wf_type):
                 ", ".join(supported_workflow_exts.keys())
             )
         )
+    configs = fill_in_config_defaults(configs)
     return configs, metadata
