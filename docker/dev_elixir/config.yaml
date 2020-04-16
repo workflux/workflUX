@@ -23,3 +23,9 @@ EXEC_PROFILES:
 
     exec: |
       "${PYTHON_PATH}" -m cwltool --debug --no-container --outdir "${OUTPUT_DIR}" "${WORKFLOW}" "${RUN_INPUT}" >> "${LOG_FILE}" 2>&1
+
+  WES: 
+    type: python
+    max_retries: 2
+    py_module: ./wes_exec_profile.py
+    py_class: WES
