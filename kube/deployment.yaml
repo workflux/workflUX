@@ -20,6 +20,9 @@ spec:
       containers:
       - name: cwlab-oidc
         image: ${CICD_REGISTRY}/krini/cwlab:oidc-${CICD_EXECUTION_SEQUENCE}
+        env:
+        - name: BUILD_NUMBER
+          value: oidc-${CICD_EXECUTION_SEQUENCE}
         ports:
         - containerPort: 5000
           
