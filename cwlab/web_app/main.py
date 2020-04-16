@@ -15,7 +15,11 @@ from cwlab.log import handle_known_error, handle_unknown_error
 @app.route('/home/', methods=['GET','POST'])
 @app.route('/main/', methods=['GET','POST'])
 def main():
-    if app.config["ENABLE_USERS"] and current_user.is_authenticated:
+    if app.config["USE_OIDC"]:
+        logged_in = True
+        username = None
+        user_level = None
+    elif app.config["ENABLE_USERS"] and current_user.is_authenticated:
         logged_in = True
         user = load_user(current_user.get_id())
         username = user.username
