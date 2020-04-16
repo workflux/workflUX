@@ -22,7 +22,7 @@ spec:
         image: ${CICD_REGISTRY}/krini/cwlab:oidc-${CICD_EXECUTION_SEQUENCE}
         env:
         - name: BUILD_NUMBER
-          value: ${CICD_EXECUTION_SEQUENCE}
+          value: oidc-${CICD_EXECUTION_SEQUENCE}
         ports:
         - containerPort: 5000
           
