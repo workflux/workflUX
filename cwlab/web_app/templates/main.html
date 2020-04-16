@@ -69,8 +69,8 @@
             
             //TODO: Use config rather than hardcoded values in Oidc.UserManager
             let oidcConf = JSON.parse('{{ config.OIDC_CONF | tojson | safe }}')
-            oidcConf['response_type'] = 'id_token token'
-            oidcConf['scope'] = 'openid profile'
+            oidcConf['response_type'] = 'access_token'
+            oidcConf['scope'] = 'openid profile email'
             
 
             //TODO: Consule experts if this is a good idea
