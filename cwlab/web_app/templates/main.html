@@ -61,21 +61,23 @@
             const userLevel = "{{ user_level }}"
             const loginInstruction = "{{ config.LOGIN_INSTRUCTION }}"
             const registrationInstruction = "{{ config.REGISTRATION_INSTRUCTION }}"
-            const useOIDC = "{{ config.USE_OIDC }}"
+            const useOIDC = "{{ config.USE_OIDC }}" == "True"
 
             // other global params:
             const serverNotReachableError = "The server could not be reached."
             const serverReachedWithError = "The server failed to work on your request."
             
             //TODO: Use config rather than hardcoded values in Oidc.UserManager
-            let oidcConf = JSON.parse('{{ config.OIDC_CONF | tojson | safe }}')
-            oidcConf['response_type'] = 'access_token'
-            oidcConf['scope'] = 'openid profile email'
+            if (useOIDC) {
+                let oidcConf = JSON.parse('{{ config.OIDC_CONF | tojson | safe }}')
+                oidcConf['response_type'] = 'access_token'
+                oidcConf['scope'] = 'openid profile email'
+                
+
+                //TODO: Consule experts if this is a good idea
+                const oidcUserManager = new Oidc.UserManager(oidcConf);
+            }
             
-
-            //TODO: Consule experts if this is a good idea
-            const oidcUserManager = new Oidc.UserManager(oidcConf);
-
         </script>
 
         <script>
