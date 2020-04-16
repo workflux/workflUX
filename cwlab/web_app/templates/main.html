@@ -69,8 +69,9 @@
             const serverReachedWithError = "The server failed to work on your request."
             
             //TODO: Use config rather than hardcoded values in Oidc.UserManager
+            let oidcConf;
             if (useOIDC) {
-                let oidcConf = JSON.parse('{{ config.OIDC_CONF | tojson | safe }}')
+                oidcConf = JSON.parse('{{ config.OIDC_CONF | tojson | safe }}')
                 oidcConf['response_type'] = 'access_token'
                 oidcConf['scope'] = 'openid profile email'
             }
