@@ -171,6 +171,7 @@ EXEC_PROFILES:
       touch "${OUTPUT_DIR}/prepare_test"
     exec: |
       touch "${OUTPUT_DIR}/exec_test"
+      echo ${ACCESS_TOKEN} > "${LOG_FILE}"
     eval: | 
       touch "${OUTPUT_DIR}/eval"
     finalize: |

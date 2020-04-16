@@ -136,8 +136,9 @@ def start_exec():    # returns all parmeter and its default mode (global/job spe
     messages = []
     try:
         login_required()
-        user_id = current_user.get_id() if app.config["ENABLE_USERS"] else None
+        user_id = current_user.get_id() if app.config["ENABLE_USERS"] and not app.config["USE_OIDC"] else None
         data = request.get_json()
+        access_token = data["access_token"]
         job_id = data["job_id"]
         run_ids = sorted(data["run_ids"])
         exec_profile_name = data["exec_profile"]
@@ -148,7 +149,8 @@ def start_exec():    # returns all parmeter and its default mode (global/job spe
             run_ids,
             exec_profile_name,
             user_id,
-            max_parrallel_exec_user_def
+            max_parrallel_exec_user_def,
+            access_token=access_token
         )
         
         if len(started_runs) > 0:

@@ -490,7 +490,7 @@ class JobContent extends React.Component {
         })
     }
 
-    execRuns(){
+    async execRuns(){
         this.ajaxRequest({
             statusVar: "actionStatus",
             statusValueDuringRequest: "starting",
@@ -499,10 +499,12 @@ class JobContent extends React.Component {
                 job_id: this.props.jobId,
                 run_ids: this.state.runSelection,
                 exec_profile: this.state.execProfile,
-                parallel_exec: this.state.parallelExec
+                parallel_exec: this.state.parallelExec,
+                access_token: await get_user_info("accessToken")
             },
             route: routeStartExec
         })
+
     }
 
     terminateRuns(mode="terminate"){

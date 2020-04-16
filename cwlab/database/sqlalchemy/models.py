@@ -33,6 +33,7 @@ class Exec(db.Model):
     exec_profile_name = db.Column(db.String(64))
     add_exec_info = db.Column(db.JSON(none_as_null=True))
     user_email = db.Column(db.String(64))
+    access_token = db.Column(db.String(64))
 
     def __repr__(self):
         return '<Exec {}>'.format({self.id, self.status, self.run_id, self.job_id})

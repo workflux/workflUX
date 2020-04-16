@@ -21,7 +21,8 @@ def get_session_var_dict(
     out_dir,
     global_temp_dir,
     log_file,
-    add_exec_info
+    add_exec_info,
+    access_token
 ):
     session_vars = {
         "JOB_ID": job_id,
@@ -34,7 +35,8 @@ def get_session_var_dict(
         "SUCCESS": "True",
         "ERR_MESSAGE": "None",
         "FINISH_TAG": "DONE",
-        "PYTHON_PATH": sys.executable
+        "PYTHON_PATH": sys.executable,
+        "ACCESS_TOKEN": access_token
     }
     session_vars.update(add_exec_info)
     return session_vars

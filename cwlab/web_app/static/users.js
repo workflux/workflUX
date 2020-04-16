@@ -5,6 +5,38 @@ function changeInputField(event){
     this.setState({[event.currentTarget.name]: event.currentTarget.value})
 }
 
+async function get_user_info(
+    what="all" // can be one of "all", "accessToken", or "userId"
+){
+    let userInfo;
+    if (useOIDC){
+        const user = await oidcUserManager.getUser()
+        const isLoggedIn = user.accessToken && !user.expired
+        userInfo = {
+            isLoggedIn: isLoggedIn,
+            accessToken: isLoggedIn ? user.accessToken : null,
+            userId: isLoggedIn ? user.id_token : null,
+        }
+    }
+    else {
+        userInfo = {
+            isLoggedIn: loggedIn,
+            accessToken: "none",
+            userId: loggedIn ? username : null,
+        }
+    }
+
+    if (what == "accessToken"){
+        return(userInfo.accessToken)
+    }
+    else if (what == "userId"){
+        return(userInfo.userId)
+    }
+    else {
+        return(userInfo)
+    }
+}
+
 class GeneralInfo extends React.Component {
     constructor(props){
         super(props);
@@ -744,7 +776,7 @@ class OIDCLogin extends React.Component{
         this.state = {
             status: null,
             username: null,
-            access_token: null
+            accessToken: null
         }
         
         oidcUserManager.getUser().then(function (user) {
