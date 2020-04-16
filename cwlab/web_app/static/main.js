@@ -19,7 +19,12 @@ const modules = {   // each entry corresponds to one wep app module,
                     // each module has a dedicated button in the top bar
                     // and specific content which is displayed on click of that button
     home: {
-        text: (<span>CW<span className="w3-text-green">Lab</span></span>),
+        text: (
+            <span>
+                CW<span className="w3-text-green">Lab</span>
+                {buildNumber != "none" && (<span class="w3-text-orange">&nbsp;build {buildNumber}</span>)}
+            </span>
+        ),
         icon: "",
         content: (<Welcome />)
     },
