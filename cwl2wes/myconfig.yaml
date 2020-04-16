@@ -7,5 +7,5 @@ EXEC_PROFILES:
     WES: 
         type: python
         max_retries: 2
-        py_module: ./cwl2wes.py
+        py_module: ./wes_exec_profile.py
         py_class: WES
