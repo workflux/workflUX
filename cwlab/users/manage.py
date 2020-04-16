@@ -34,9 +34,10 @@ def has_user_been_activated(username):
     return get_user_by_username(username).status == "active"
 
 def login_required(admin=False):
-    if app.config["ENABLE_USERS"] and app.config['USE_OIDC']:
-        pass
-    elif app.config["ENABLE_USERS"]:
+    # if app.config["ENABLE_USERS"] and app.config['USE_OIDC']:
+    #     pass
+    # elif app.config["ENABLE_USERS"]:
+    if app.config["ENABLE_USERS"]:
         assert current_user.is_authenticated, "Login required."
         user = load_user(current_user.get_id())
         assert not (admin and user.level != "admin"), "Admin required."
