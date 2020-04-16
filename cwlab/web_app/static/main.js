@@ -22,7 +22,7 @@ const modules = {   // each entry corresponds to one wep app module,
         text: (
             <span>
                 CW<span className="w3-text-green">Lab</span>
-                {buildNumber != "none" && (<span class="w3-text-orange">&nbsp;build {buildNumber}</span>)}
+                {buildNumber != "none" && (<span className="w3-text-orange">&nbsp;build {buildNumber}</span>)}
             </span>
         ),
         icon: "",
@@ -156,3 +156,4 @@ class Root extends React.Component {
         );
     }
 }
+
