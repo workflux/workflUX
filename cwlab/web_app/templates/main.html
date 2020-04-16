@@ -61,7 +61,7 @@
             const userLevel = "{{ user_level }}"
             const loginInstruction = "{{ config.LOGIN_INSTRUCTION }}"
             const registrationInstruction = "{{ config.REGISTRATION_INSTRUCTION }}"
-            const useOIDC = "{{ config.USE_OIDC }}" == "True"
+            const useOIDC = "{{ config.USE_OIDC }}" === "True"
             const buildNumber = "{{ config.BUILD_NUMBER }}"
 
             // other global params:
@@ -73,11 +73,10 @@
                 let oidcConf = JSON.parse('{{ config.OIDC_CONF | tojson | safe }}')
                 oidcConf['response_type'] = 'access_token'
                 oidcConf['scope'] = 'openid profile email'
-                
-
-                //TODO: Consule experts if this is a good idea
-                const oidcUserManager = new Oidc.UserManager(oidcConf);
             }
+
+            //TODO: Consule experts if this is a good idea
+            const oidcUserManager = useOIDC ? new Oidc.UserManager(oidcConf) : null
             
         </script>
 

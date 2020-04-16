@@ -6,7 +6,7 @@ function changeInputField(event){
 }
 
 async function get_user_info(
-    what="all" // can be one of "all", "accessToken", or "userId"
+    what // can be one of "all", "accessToken", or "userId"
 ){
     let userInfo;
     if (useOIDC){
@@ -804,5 +804,42 @@ class UserRoot extends React.Component{
         else{
             return(<LoginForm />)
         }
+    }
+}
+
+class UserTopBarButton extends React.Component {
+    constructor(props) {
+        super(props);
+        this.state = {
+            isLoggedIn: null,
+            access_token: null,
+            user_id: null
+        };
+    }
+
+    componentDidMount(){
+        this.mounted = true
+        this.getRunInfo()
+        // setup timer to automatically update
+        this.timerId = setInterval(
+            () => {
+                this.getRunInfo()
+            },
+            autoRefreshInterval
+          );
+    }
+
+    changeModule(target_module){
+        this.setState({module:target_module})
+    }
+
+    render() {
+        return (
+            <div className="w3-theme-d3 w3-medium">
+                <TopBar handleModuleChange={this.changeModule} whichFocus={this.state.module} />
+                <TopBar handleModuleChange={this.changeModule} whichFocus={this.state.module} fixed={true}/>
+                <MainContent> {modules[this.state.module].content} </MainContent>
+            </div>
+        );
     }
 }
