@@ -34,11 +34,8 @@ RUN apt-get install -qq -y \
 	git
 
 # Install cwlab:
-RUN python3 -m pip install cwltool==${CWLTOOL_VERSION}  && \
-	mkdir /cwlab && \
-	git clone -b development https://github.com/CompEpigen/CWLab.git /cwlab/src && \
-	cd /cwlab/src && \
-	python3 -m pip install .
+COPY . /src/cwltool
+RUN python3 -m pip install -e /src/cwltool
 
 # Configure cwlab:
 RUN mkdir -p \
@@ -49,7 +46,7 @@ RUN mkdir -p \
         /cwlab/database && \
     chmod -R 777 /cwlab
 
-COPY config.yaml /cwlab/config.yaml
+COPY docker/dev_elixir/config.yaml /cwlab/config.yaml
 
 # Default command when starting:
 CMD ["cwlab", "up", "-c", "/cwlab/config.yaml"]
