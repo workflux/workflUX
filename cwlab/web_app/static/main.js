@@ -139,7 +139,8 @@ class Root extends React.Component {
     constructor(props) {
         super(props);
         this.state = {module: "home"};  // determines which web app module is displayed 
-        this.changeModule = this.changeModule.bind(this)
+        this.changeModule = this.changeModule.bind(this);
+        get_user_info()
     }
 
     changeModule(target_module){

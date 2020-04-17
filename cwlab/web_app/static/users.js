@@ -11,12 +11,13 @@ async function get_user_info(
     let userInfo;
     if (useOIDC){
         const user = await oidcUserManager.getUser()
-        const isLoggedIn = user.accessToken && !user.expired
+        const isLoggedIn = (user && user.accessToken && !user.expired) ? true : false
         userInfo = {
             isLoggedIn: isLoggedIn,
-            accessToken: isLoggedIn ? user.accessToken : null,
+            accessToken: isLoggedIn ? user.accessToken : "none",
             userId: isLoggedIn ? user.id_token : null,
         }
+        console.log(user)
     }
     else {
         userInfo = {
