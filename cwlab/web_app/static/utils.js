@@ -6,7 +6,7 @@ function get_time_str(){
     return(date.toLocaleTimeString())
 }
 
-function ajaxRequest({
+async function ajaxRequest({
     // in a component bind this function: this.ajaxRequest = ajaxRequest.bind(this)
     statusVar="actionStatus",
     statusValueDuringRequest="action",
@@ -22,17 +22,19 @@ function ajaxRequest({
         return({})
     } 
 }){
+    let setDataAT = sendData
+    setDataAT["access_token"] = await get_user_info("accessToken")
     let formData
     if (sendViaFormData){
         formData = new FormData()
-        formData.append("meta", JSON.stringify(sendData))
+        formData.append("meta", JSON.stringify(setDataAT))
     }
     this.setState({
         [statusVar]: statusValueDuringRequest
     })
     fetch(route, {
         method: "POST",
-        body: sendViaFormData ? formData : JSON.stringify(sendData),
+        body: sendViaFormData ? formData : JSON.stringify(setDataAT),
         headers: new Headers(sendViaFormData ? (
                 {}
             ) : (
@@ -1002,8 +1004,7 @@ class BrowseDir extends React.Component {
                 default_base_dir: this.props.defaultBaseDir ? this.props.defaultBaseDir : null,
                 fixed_base_dir: this.props.fixedBaseDir ? this.props.fixedBaseDir : null,
                 fixed_base_dir_name: this.props.fixedBaseDirName ? this.props.fixedBaseDirName: "FIXED_BASE_DIR",
-                include_tmp_dir: this.props.includeTmpDir ? true : false,
-                access_token: await get_user_info("accessToken")
+                include_tmp_dir: this.props.includeTmpDir ? true : false
             },
             route: routeBrowseDir,
             onSuccess: (data, messages) => {
@@ -1103,8 +1104,7 @@ class BrowseDir extends React.Component {
                 path: path,
                 job_id: this.props.jobId ? this.props.jobId : null,
                 run_id: this.props.runId ? this.props.runId : null,
-                send_file: false,
-                access_token: await get_user_info("accessToken")
+                send_file: false
             },
             sendViaFormData: true,
             route: routeDownload,
@@ -1709,8 +1709,7 @@ class AjaxButton extends React.Component {
             sendData: this.props.sendData,
             route: this.props.route,
             onSuccess: this.props.onSuccess,
-            onError: this.props.onError,
-            access_token: await get_user_info("accessToken")
+            onError: this.props.onError
         })        
     }
 

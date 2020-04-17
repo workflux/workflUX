@@ -109,8 +109,7 @@ class RunDetails extends React.Component {
             messageVar: "serverMessages",
             sendData: {
                 job_id: this.props.jobId,
-                run_id: this.props.runId,
-                access_token: await get_user_info("accessToken")
+                run_id: this.props.runId
             },
             route: routeGetRunDetails,
             onSuccess: (data, messages) => {
@@ -254,8 +253,7 @@ class RunList extends React.Component {
             messageVar: "serverMessages",
             sendData: {
                 job_id: this.props.jobId,
-                run_ids: this.props.runIds,
-                access_token: await get_user_info("accessToken")
+                run_ids: this.props.runIds
             },
             route: routeGetRunStatus,
             onSuccess: (data, messages) => {
@@ -480,8 +478,7 @@ class JobContent extends React.Component {
             statusValueDuringRequest: "get_run_list",
             messageVar: "serverMessages",
             sendData: {
-                job_id: this.props.jobId,
-                access_token: await get_user_info("accessToken")
+                job_id: this.props.jobId
             },
             route: routeGetRunList,
             onSuccess: (data, messages) => {
@@ -502,8 +499,7 @@ class JobContent extends React.Component {
                 job_id: this.props.jobId,
                 run_ids: this.state.runSelection,
                 exec_profile: this.state.execProfile,
-                parallel_exec: this.state.parallelExec,
-                access_token: await get_user_info("accessToken")
+                parallel_exec: this.state.parallelExec
             },
             route: routeStartExec
         })
@@ -518,8 +514,7 @@ class JobContent extends React.Component {
             sendData: {
                 job_id: this.props.jobId,
                 run_ids: this.state.runSelection,
-                mode: mode,
-                access_token: await get_user_info("accessToken")
+                mode: mode
             },
             route: routeTerminateRuns,
             onSuccess: (data, messages) => {
@@ -539,8 +534,7 @@ class JobContent extends React.Component {
             statusValueDuringRequest: "delete_job",
             messageVar: "actionGlobalDangerMessages",
             sendData: {
-                job_id: this.props.jobId,
-                access_token: await get_user_info("accessToken")
+                job_id: this.props.jobId
             },
             route: routeDeleteJob,
             onSuccess: (data, messages) => {
