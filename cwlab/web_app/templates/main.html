@@ -65,6 +65,7 @@
             const buildNumber = "{{ config.BUILD_NUMBER }}"
 
             // other global params:
+            Oidc.Log.logger = console;
             const serverNotReachableError = "The server could not be reached."
             const serverReachedWithError = "The server failed to work on your request."
             
