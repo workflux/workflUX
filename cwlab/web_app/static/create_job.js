@@ -899,7 +899,7 @@ class JobParamFormHTML extends React.Component {
         this.getParamValues()
     }
 
-    getParamValues(){
+    async getParamValues(){
             this.ajaxRequest({
                 statusVar: "actionStatus",
                 statusValueDuringRequest: "loading",
@@ -908,7 +908,8 @@ class JobParamFormHTML extends React.Component {
                     wf_target: this.props.cwlTarget,
                     param_modes: this.props.param_modes,
                     run_mode: this.props.run_mode, 
-                    run_names: this.props.run_names.filter((r) => r != "")
+                    run_names: this.props.run_names.filter((r) => r != ""),
+                    access_token: await get_user_info("accessToken")
                 },
                 route: routeGetParamValues,
                 onSuccess: (data, messages) => {
@@ -944,7 +945,7 @@ class JobParamFormHTML extends React.Component {
             })
     }
 
-    createJob(){
+    async createJob(){
         let paramValues = {}
         Object.keys(this.state.paramValuesByMode).forEach((mode) => {
             Object.assign(paramValues, this.state.paramValuesByMode[mode])
@@ -963,7 +964,8 @@ class JobParamFormHTML extends React.Component {
                 validate_paths: this.props.validatePaths,
                 search_paths: this.props.searchPaths,
                 search_dir: this.props.searchDir,
-                include_subdirs_for_searching: this.props.includeSubbDirsForSearching
+                include_subdirs_for_searching: this.props.includeSubbDirsForSearching,
+                access_token: await get_user_info("accessToken")
             },
             route: routeCreateJobFromParamValues
         })     
@@ -1214,7 +1216,7 @@ class JobParamFormSpreadsheet extends React.Component {
         this.setState({"sheetFormat": event.currentTarget.value})
     }
 
-    genFormSheet(){
+    async genFormSheet(){
         this.ajaxRequest({
             statusVar: "file_transfer_status",
             statusValueDuringRequest: "downloading",
@@ -1225,7 +1227,8 @@ class JobParamFormSpreadsheet extends React.Component {
                 run_mode: this.props.run_mode, 
                 run_names: this.props.run_names.filter((r) => r != ""),
                 job_id: this.props.jobId,
-                sheet_format: this.state.sheetFormat
+                sheet_format: this.state.sheetFormat,
+                access_token: await get_user_info("accessToken")
             },
             route: routeGenParamFormSheet,
             onSuccess: (data, messages) => {
@@ -1632,7 +1635,9 @@ class JobTemplConfigInfoAjax extends React.Component {
             <AjaxComponent
                 key={this.props.cwlTarget}
                 requestRoute={routeGetJobTemplConfigInfo}
-                sendData={ {wf_target: this.props.cwlTarget} }
+                sendData={ {
+                    wf_target: this.props.cwlTarget
+                } }
                 buildContentOnSuccess={this.buildContentOnSuccess}
                 loaderSize="large"
                 loaderMessage="Loading template infos."

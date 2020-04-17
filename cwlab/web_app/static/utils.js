@@ -811,13 +811,15 @@ class AjaxComponent extends React.Component {
         this.ajaxRequest = ajaxRequest.bind(this)
     }
 
-    request(){ // ajax request to server
+    async request(){ // ajax request to server
+        let sendData = this.props.sendData
+        sendData["access_token"] = await get_user_info("accessToken")
         this.ajaxRequest({
             statusVar: "loading",
             statusValueDuringRequest: true,
             statusValueAfterRequest: false,
             messageVar: "serverMessages",
-            sendData: this.props.sendData,
+            sendData: sendData,
             route: this.props.requestRoute,
             onSuccess: (data, messages) => {
                 return({
@@ -980,7 +982,7 @@ class BrowseDir extends React.Component {
         this.getItemsInDir(false, path, true)
     }
 
-    getItemsInDir(getParentDir, targetDir, init){
+    async getItemsInDir(getParentDir, targetDir, init){
         this.ajaxRequest({
             statusVar: "actionStatus",
             statusValueDuringRequest: init ? "init" : "loading",
@@ -1000,7 +1002,8 @@ class BrowseDir extends React.Component {
                 default_base_dir: this.props.defaultBaseDir ? this.props.defaultBaseDir : null,
                 fixed_base_dir: this.props.fixedBaseDir ? this.props.fixedBaseDir : null,
                 fixed_base_dir_name: this.props.fixedBaseDirName ? this.props.fixedBaseDirName: "FIXED_BASE_DIR",
-                include_tmp_dir: this.props.includeTmpDir ? true : false
+                include_tmp_dir: this.props.includeTmpDir ? true : false,
+                access_token: await get_user_info("accessToken")
             },
             route: routeBrowseDir,
             onSuccess: (data, messages) => {
@@ -1081,7 +1084,7 @@ class BrowseDir extends React.Component {
         this.props.terminateBrowseDialog(changes, selectedItem)
     }
     
-    downloadFileOrFolder(event){
+    async downloadFileOrFolder(event){
         if (event.currentTarget.name == "download_dir"){
             this.setState({
                 downloadMessages: {
@@ -1100,7 +1103,8 @@ class BrowseDir extends React.Component {
                 path: path,
                 job_id: this.props.jobId ? this.props.jobId : null,
                 run_id: this.props.runId ? this.props.runId : null,
-                send_file: false
+                send_file: false,
+                access_token: await get_user_info("accessToken")
             },
             sendViaFormData: true,
             route: routeDownload,
@@ -1695,7 +1699,7 @@ class AjaxButton extends React.Component {
         this.ajaxRequest = ajaxRequest.bind(this);
     }
 
-    handleOnClick(value){
+    async handleOnClick(value){
         this.ajaxRequest({
             statusVar: "status",
             statusValueDuringRequest: "loading",
@@ -1704,6 +1708,7 @@ class AjaxButton extends React.Component {
             route: this.props.route,
             onSuccess: this.props.onSuccess,
             onError: this.props.onError,
+            access_token: await get_user_info("accessToken")
         })        
     }
 

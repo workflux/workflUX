@@ -102,14 +102,15 @@ class RunDetails extends React.Component {
     }
   
     
-    getRunDetails(){
+    async getRunDetails(){
         this.ajaxRequest({
             statusVar: "actionStatus",
             statusValueDuringRequest: "updating",
             messageVar: "serverMessages",
             sendData: {
                 job_id: this.props.jobId,
-                run_id: this.props.runId
+                run_id: this.props.runId,
+                access_token: await get_user_info("accessToken")
             },
             route: routeGetRunDetails,
             onSuccess: (data, messages) => {
@@ -246,14 +247,15 @@ class RunList extends React.Component {
         this.ajaxRequest = ajaxRequest.bind(this)
     }
 
-    getRunInfo(){
+    async getRunInfo(){
         this.ajaxRequest({
             statusVar: "actionStatus",
             statusValueDuringRequest: "updating",
             messageVar: "serverMessages",
             sendData: {
                 job_id: this.props.jobId,
-                run_ids: this.props.runIds
+                run_ids: this.props.runIds,
+                access_token: await get_user_info("accessToken")
             },
             route: routeGetRunStatus,
             onSuccess: (data, messages) => {
@@ -472,13 +474,14 @@ class JobContent extends React.Component {
         }
     }
 
-    getRunList(){
+    async getRunList(){
         this.ajaxRequest({
             statusVar: "actionStatus",
             statusValueDuringRequest: "get_run_list",
             messageVar: "serverMessages",
             sendData: {
-                job_id: this.props.jobId
+                job_id: this.props.jobId,
+                access_token: await get_user_info("accessToken")
             },
             route: routeGetRunList,
             onSuccess: (data, messages) => {
@@ -507,7 +510,7 @@ class JobContent extends React.Component {
 
     }
 
-    terminateRuns(mode="terminate"){
+    async terminateRuns(mode="terminate"){
         this.ajaxRequest({
             statusVar: "actionStatus",
             statusValueDuringRequest: mode,
@@ -515,7 +518,8 @@ class JobContent extends React.Component {
             sendData: {
                 job_id: this.props.jobId,
                 run_ids: this.state.runSelection,
-                mode: mode
+                mode: mode,
+                access_token: await get_user_info("accessToken")
             },
             route: routeTerminateRuns,
             onSuccess: (data, messages) => {
@@ -529,13 +533,14 @@ class JobContent extends React.Component {
         })
     }
 
-    deleteJob(){
+    async deleteJob(){
         this.ajaxRequest({
             statusVar: "actionStatus",
             statusValueDuringRequest: "delete_job",
             messageVar: "actionGlobalDangerMessages",
             sendData: {
-                job_id: this.props.jobId
+                job_id: this.props.jobId,
+                access_token: await get_user_info("accessToken")
             },
             route: routeDeleteJob,
             onSuccess: (data, messages) => {

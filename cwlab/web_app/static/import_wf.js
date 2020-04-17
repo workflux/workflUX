@@ -279,14 +279,15 @@ class ImportCwlZip extends React.Component{
         this.setState({actionStatus: "browse"})
     }
 
-    importCWLPath(){
+    async importCWLPath(){
         this.ajaxRequest({
             statusVar: "actionStatus",
             statusValueDuringRequest: "import",
             messageVar: "importMessages",
             sendData: {
                 wf_path: this.state.cwlPath,
-                import_name: this.state.importName
+                import_name: this.state.importName,
+                access_token: await get_user_info("accessToken")
             },
             route: routeImportCwlByPathOrUrl
         })
@@ -573,7 +574,7 @@ class ImportCwlUrl extends React.Component{
         })
     }
 
-    importCWLUrl(){
+    async importCWLUrl(){
         this.ajaxRequest({
             statusVar: "actionStatus",
             statusValueDuringRequest: "import",
@@ -581,7 +582,8 @@ class ImportCwlUrl extends React.Component{
             sendData: {
                 wf_path: this.state.cwlUrl,
                 is_url: true,
-                import_name: this.state.importName
+                import_name: this.state.importName,
+                access_token: await get_user_info("accessToken")
             },
             route: routeImportCwlByPathOrUrl
         })

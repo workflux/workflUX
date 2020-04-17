@@ -68,6 +68,7 @@ class GeneralInfo extends React.Component {
         return(
             <AjaxComponent
                 requestRoute={routeGetGeneralUserInfo}
+                sendData={ {} }
                 buildContentOnSuccess={this.buildContentOnSuccess}
                 loaderMessage="Loading user information."
             />
@@ -125,7 +126,7 @@ class AdminDashboard extends React.Component {
         })
     }
 
-    modifyOrDeleteUser(action){
+    async modifyOrDeleteUser(action){
         this.ajaxRequest({
             route: routeModifyOrDeleteUsers,
             statusVar: "actionStatus",
@@ -134,7 +135,8 @@ class AdminDashboard extends React.Component {
             sendData: {
                 action: action,
                 user_selection: this.state.userSelection,
-                value: action == "set_status" ? this.state.selectStatus : this.state.selectLevel
+                value: action == "set_status" ? this.state.selectStatus : this.state.selectLevel,
+                access_token: await get_user_info("accessToken")
             },
             onSuccess: (data, messages) => {
                 this.getUserInfo()
@@ -152,10 +154,13 @@ class AdminDashboard extends React.Component {
         this.getUserInfo()
     }
 
-    getUserInfo(){
+    async getUserInfo(){
         this.ajaxRequest({
             route: routeGetAllUsersInfo,
             statusValueDuringRequest: "loading",
+            sendData: {
+                access_token: await get_user_info("accessToken")
+            },
             onSuccess: (data, messages) => {
                 return({userInfo: data})
             }
@@ -364,12 +369,13 @@ class ChangePassword extends React.Component {
         this.changePassword = this.changePassword.bind(this)
     }
 
-    changePassword(){
+    async changePassword(){
         this.ajaxRequest({
             sendData: {
                 old_password: this.state.oldPassword,
                 new_password: this.state.newPassword,
-                new_rep_password: this.state.repNewPassword
+                new_rep_password: this.state.repNewPassword,
+                access_token: await get_user_info("accessToken")
             },
             route: routeChangePassword,
             onSuccess: (data, messages) => {
@@ -427,11 +433,12 @@ class DeleteAccount extends React.Component {
         this.changeInputField = changeInputField.bind(this)
     }
 
-    deleteAccount(){
+    async deleteAccount(){
         this.ajaxRequest({
             route: routeDeleteAccount,
             sendData: {
-                username: this.state.username
+                username: this.state.username,
+                access_token: await get_user_info("accessToken")
             },
             onSuccess: (data, messages) => {
                 if (data.success){
@@ -494,9 +501,12 @@ class Logout extends React.Component {
         this.logout()
     }
 
-    logout(){
+    async logout(){
         this.ajaxRequest({
             route: routeLogout,
+            sendData: {
+                access_token: await get_user_info("accessToken")
+            },
             onSuccess: (data, messages) => {
                 if (data.success){
                     window.location.reload(true)
@@ -775,18 +785,32 @@ class OIDCLogin extends React.Component{
     constructor(props){
         super(props);
         this.state = {
-            status: null,
-            username: null,
-            accessToken: null
+            loggedIn: false
         }
         
+    }
+
+    componentDidMount(){
         oidcUserManager.getUser().then(function (user) {
-            oidcUserManager.signinRedirect();
+            if (user && user.access_token && !user.expired){
+                this.setState({
+                    loggedIn: true
+                })
+            }
+            else {
+                oidcUserManager.signinRedirect();
+            }
         })
     }
 
+
     render(){
-        return(<div>You are logged in</div>)
+        return(
+            <div className="w2-panel">
+                logged in
+                {/* {this.state ? (<div>) : ( )} */}
+            </div>
+        )
     }
 }
 
