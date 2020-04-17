@@ -4,32 +4,26 @@
 WEB_SERVER_HOST: 0.0.0.0
 
 ## (2) choose the port:
-WEB_SERVER_PORT: 5000 # The default is 5000, if this port is blocked choose a different one
-
-TEMP_DIR: '/mnt/c/Users/kerst/OneDrive/home_dell/CWLab/scratch/temp'
-WORKFLOW_DIR: '/mnt/c/Users/kerst/OneDrive/home_dell/CWLab/scratch/wf_dir'
-EXEC_DIR: '/mnt/c/Users/kerst/OneDrive/home_dell/CWLab/scratch/exec'
-INPUT_DIR: '/mnt/c/Users/kerst/OneDrive/home_dell/CWLab/scratch/input'
-DB_DIR: '/mnt/c/Users/kerst/OneDrive/home_dell/CWLab/scratch/database'
+WEB_SERVER_PORT: 8443 # The default is 5000, if this port is blocked choose a different one
 
 DEBUG: True
 
 ENABLE_USERS: True
 USE_OIDC: True
 OIDC_CONF: {
-  response_type: 'code token id_token',
+  response_type: 'access_token',
   scope: 'openid profile email',
-  authority: 'https://login.elixir-czech.org/oidc/',
-  client_id: 'b1f68121-faec-4196-ab51-66eb61660ece',
-  redirect_uri: 'https://cwlab-oidc.krini.ingress.rancher.computational.bio/loginoidc',
-  post_logout_redirect_uri: 'https://cwlab-oidc.krini.ingress.rancher.computational.bio/',
+  authority: 'http://canepi-srv1:8080/auth',
+  client_id: 'cwlab',
+  redirect_uri: 'http://canepi-srv1:8443/loginoidc',
+  post_logout_redirect_uri: 'http://canepi-srv1:8443/main',
   metadata: {
-      issuer: 'https://login.elixir-czech.org/oidc/',
-      authorization_endpoint: 'https://login.elixir-czech.org/oidc/authorize',
-      userinfo_endpoint: 'https://login.elixir-czech.org/oidc/userinfo',
-      end_session_endpoint: 'https://login.elixir-czech.org/oidc/endsession',
-      jwks_uri: 'https://login.elixir-czech.org/oidc/jwk',
-  },
+      issuer: 'http://canepi-srv1:8080/auth/realms/master',
+      authorization_endpoint: 'http://canepi-srv1:8080/auth/realms/master/protocol/openid-connect/auth',
+      userinfo_endpoint: 'http://canepi-srv1:8080/auth/realms/master/protocol/openid-connect/userinfo',
+      end_session_endpoint: 'http://canepi-srv1:8080/auth/realms/master/protocol/openid-connect/logout',
+      jwks_uri: 'http://canepi-srv1:8080/auth/realms/master/protocol/openid-connect/certs',
+  }
 }
 
 EXEC_PROFILES:
