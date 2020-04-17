@@ -5,7 +5,7 @@
         <script>
             window.onload = function () {
                 let oidcConf = JSON.parse('{{ config.OIDC_CONF | tojson | safe }}')
-                oidcConf["responce_mode"] = "query"
+                oidcConf["response_mode"] = "query"
                 new Oidc.UserManager(oidcConf).signinRedirectCallback().then(function() {
                     window.location = "{{ url_for('main') }}"
                 }).catch(function (e) {
