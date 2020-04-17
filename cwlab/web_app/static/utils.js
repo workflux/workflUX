@@ -1494,17 +1494,19 @@ class FileUploadComponent extends React.Component {
         }
     }
 
-    upload(value){ // ajax request to server
+    async upload(value){ // ajax request to server
         const fileToUpload = this.state.file
         if (this.state.fileToUpload == ""){
             this.state.serverMessages = [{type:"error", text:"No file selected."}]
             this.setState({status: "wait_for_upload", error: true})
         }
         else{
+            let metaData = this.props.metaData ? this.props.metaData : {}
+            metaData["access_token"] = await get_user_info("accessToken")
             this.setState({status:"uploading"})
             let formData = new FormData()
             formData.append("file", fileToUpload)
-            formData.append("meta", JSON.stringify(this.props.metaData ? this.props.metaData : {}))
+            formData.append("meta", JSON.stringify(this.props.metaData))
 
             if (this.props.showProgress){let request = new XMLHttpRequest()
                 request.upload.addEventListener("progress", event => {
