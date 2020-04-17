@@ -2,7 +2,8 @@
 <html lang="en">
     <head>
         <script src="/static/oidc-client.min.js"></script>
-        <script>
+        <script src="https://unpkg.com/babel-standalone/babel.min.js"></script>
+        <script type="text/babel">
             window.onload = function () {
                 new Oidc.UserManager({ response_mode: "query"}).signinRedirectCallback().then(function() {
                     window.location = "{{ url_for('main') }}"
