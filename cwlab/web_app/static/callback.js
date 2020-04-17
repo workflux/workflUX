@@ -1,5 +1,5 @@
 window.onload = function () {
-    new Oidc.UserManager({ response_mode: "query"}).signinRedirectCallback().then(function() {
+    new Oidc.UserManager().signinRedirectCallback().then(function() {
         window.location = "/"
     }).catch(function (e) {
         console.log(e);
