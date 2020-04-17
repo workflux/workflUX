@@ -135,8 +135,7 @@ class AdminDashboard extends React.Component {
             sendData: {
                 action: action,
                 user_selection: this.state.userSelection,
-                value: action == "set_status" ? this.state.selectStatus : this.state.selectLevel,
-                access_token: await get_user_info("accessToken")
+                value: action == "set_status" ? this.state.selectStatus : this.state.selectLevel
             },
             onSuccess: (data, messages) => {
                 this.getUserInfo()
@@ -158,9 +157,6 @@ class AdminDashboard extends React.Component {
         this.ajaxRequest({
             route: routeGetAllUsersInfo,
             statusValueDuringRequest: "loading",
-            sendData: {
-                access_token: await get_user_info("accessToken")
-            },
             onSuccess: (data, messages) => {
                 return({userInfo: data})
             }
@@ -374,8 +370,7 @@ class ChangePassword extends React.Component {
             sendData: {
                 old_password: this.state.oldPassword,
                 new_password: this.state.newPassword,
-                new_rep_password: this.state.repNewPassword,
-                access_token: await get_user_info("accessToken")
+                new_rep_password: this.state.repNewPassword
             },
             route: routeChangePassword,
             onSuccess: (data, messages) => {
@@ -437,8 +432,7 @@ class DeleteAccount extends React.Component {
         this.ajaxRequest({
             route: routeDeleteAccount,
             sendData: {
-                username: this.state.username,
-                access_token: await get_user_info("accessToken")
+                username: this.state.username
             },
             onSuccess: (data, messages) => {
                 if (data.success){
@@ -504,9 +498,6 @@ class Logout extends React.Component {
     async logout(){
         this.ajaxRequest({
             route: routeLogout,
-            sendData: {
-                access_token: await get_user_info("accessToken")
-            },
             onSuccess: (data, messages) => {
                 if (data.success){
                     window.location.reload(true)
