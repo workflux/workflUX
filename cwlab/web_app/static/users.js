@@ -776,19 +776,18 @@ class OIDCLogin extends React.Component{
     constructor(props){
         super(props);
         this.state = {
-            loggedIn: false
+            isLoggedIn: false,
+            accessToken: "none",
+            userId: null,
         }
         
     }
 
     componentDidMount(){
-        oidcUserManager.getUser().then(function (user) {
-            if (user && user.access_token && !user.expired){
-                this.setState({
-                    loggedIn: true
-                })
-            }
-            else {
+        get_user_info("all").then( (userInfo) => {
+            if (userInfo.loggedIn){
+                this.setState(userInfo)
+            } else {
                 oidcUserManager.signinRedirect();
             }
         })
@@ -798,8 +797,30 @@ class OIDCLogin extends React.Component{
     render(){
         return(
             <div className="w2-panel">
-                logged in
-                {/* {this.state ? (<div>) : ( )} */}
+                {this.state.isLoggedIn ? (
+                    <div>
+                        <table>
+                            <tr>
+                                <td className="w3-text-green">Status:</td>
+                                <td>logged in</td>
+                            </tr>
+                            <tr>
+                                <td className="w3-text-green">User ID:</td>
+                                <td>{this.state.userId}</td>
+                            </tr>
+                            <tr>
+                                <td className="w3-text-green">Status:</td>
+                                <td>{this.state.accessToken}</td>
+                            </tr>
+                        </table>
+                    </div>
+                    ) : (
+                        <LoadingIndicator 
+                            size="large"
+                            message="You are redirected to the authentication authority. Please wait."
+                        />
+                    )
+                }
             </div>
         )
     }
