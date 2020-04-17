@@ -904,7 +904,7 @@ class JobExecRoot extends React.Component {
                 buildContentOnSuccess={this.buildContentOnSuccess}
                 loaderSize="large"
                 loaderMessage="Loading available job templates"
-                suppressMessages={true}
+                suppressMessages={false}
             />
         );
     }
