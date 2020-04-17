@@ -2,6 +2,16 @@
 <html lang="en">
     <head>
         <script src="/static/oidc-client.min.js"></script>
-        <script src="/static/callback.js"></script>
+        <script>
+            window.onload = function () {
+                new Oidc.UserManager({ response_mode: "query"}).signinRedirectCallback().then(function() {
+                    window.location = "{{ url_for('main') }}"
+                }).catch(function (e) {
+                    console.log(e);
+                    document.getElementById('error_explanation').innerText = "Problem has occured";
+                    document.getElementById('error_place').innerText = e;
+                });   
+            }
+        </script>
     </head>
 </html>
