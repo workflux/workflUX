@@ -18,6 +18,7 @@ OIDC_CONF: {
   client_id: 'b1f68121-faec-4196-ab51-66eb61660ece',
   redirect_uri: 'https://cwlab-oidc.krini.ingress.rancher.computational.bio/loginoidc',
   post_logout_redirect_uri: 'https://cwlab-oidc.krini.ingress.rancher.computational.bio/',
+  loadUserInfo: true
 }
 
 
