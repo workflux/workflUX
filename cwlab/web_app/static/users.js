@@ -817,14 +817,14 @@ class OIDCLogin extends React.Component{
 
     render(){
         return(
-            <div className="w2-panel">
+            <div className="w3-panel">
                 {this.state.isLoggedIn ? (
                     <div>
                         <h3>You are logged in.</h3>
                         <p>
-                            Please note, your access token will expire in
+                            Please note, your access token will expire in&nbsp;
                             <span className="w3-text-green">
-                                {seconds_to_duration_str(this.state.expires_in)}.
+                                {seconds_to_duration_str(this.state.expires_in)}
                             </span>
                             .
                         </p>
