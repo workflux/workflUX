@@ -97,12 +97,11 @@ def create_background_process(command_list, log_file):
     else: # on UNIX
         kwargs.update(start_new_session=True)
 
-    if (app.config["DEBUG"]):
-        with open(log_file, "wb") as log:
-            p = Popen(command_list, stdin=PIPE, stdout=log, stderr=log, **kwargs)
-    else:
-        p = Popen(command_list, stdin=PIPE, stdout=PIPE, stderr=PIPE, **kwargs)
-    print(p.pid)
+    # if (app.config["DEBUG"]):
+    with open(log_file, "wb") as log:
+        p = Popen(command_list, stdin=PIPE, stdout=log, stderr=log, **kwargs)
+    # else:
+    #     p = Popen(command_list, stdin=PIPE, stdout=PIPE, stderr=PIPE, **kwargs)
     assert not p.poll()
 
 
