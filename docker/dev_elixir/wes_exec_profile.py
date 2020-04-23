@@ -24,21 +24,29 @@ class PyExecProfile():
 
 class WES(PyExecProfile):
     def exec(self):
-        host = "http://localhost:8080"
+        host = "https://cwlwes.c03.k8s-popup.csc.fi/ga4gh/wes/v1/runse"
 
         with open(self.RUN_INPUT) as run_input:
             workflow_params = json.dumps(yaml.load(run_input, Loader=yaml.FullLoader))
 
+        # data = {
+        #     "workflow_params": workflow_params,
+        #     "workflow_type": "CWL",
+        #     "workflow_type_version": "v1.0",
+        #     "workflow_url": os.path.basename(self.WORKFLOW)
+        # }
+        
         data = {
-            "workflow_params": workflow_params,
+            "workflow_params": '{"input":{"class":"File","path":"ftp://ftp-private.ebi.ac.uk/upload/foivos/test.txt"}}',
             "workflow_type": "CWL",
             "workflow_type_version": "v1.0",
-            "workflow_url": os.path.basename(self.WORKFLOW)
+            "workflow_url": 'https://github.com/uniqueg/cwl-example-workflows/blob/master/hashsplitter-workflow.cwl'
         }
         
-        files = {
-            "workflow_attachment": (os.path.basename(self.WORKFLOW), open(self.WORKFLOW, "rb"))
-        }
+        # files = {
+        #     "workflow_attachment": (os.path.basename(self.WORKFLOW), open(self.WORKFLOW, "rb"))
+        # }
+        file = {}
     
         headers = {} if self.ACCESS_TOKEN == "none" \
             else {
