@@ -8,27 +8,44 @@ function changeInputField(event){
 async function get_user_info(
     what // can be one of "all", "accessToken", or "userId"
 ){
-    let userInfo;
+    let userInfo = {
+        isLoggedIn: loggedIn,
+        accessToken: "none",
+        userId: loggedIn ? username : null,
+        name: null,
+        username: null,
+        email: null,
+        auth_time: null,
+        expired: null,
+        expires_in: null,
+        expires_at: null,
+    };
     if (useOIDC){
         const user = await oidcUserManager.getUser()
         const isLoggedIn = (user && user.access_token && !user.expired) ? true : false
-        userInfo = {
-            isLoggedIn: isLoggedIn,
-            accessToken: isLoggedIn ? (
-                    user.access_token 
-                ) : (
-                    (user && user.expired) ? "expired" : "none"
-            ),
-            userId: isLoggedIn ? user.id_token : null,
+        if (isLoggedIn) {
+            userInfo = {
+                isLoggedIn: isLoggedIn,
+                accessToken: user.access_token,
+                userId: user.profile.sub,
+                name: user.profile.name,
+                username: user.profile.preferred_username,
+                email: user.profile.email,
+                auth_time: user.profile.auth_time,
+                expired: user.expires_in,
+                expires_at: user.expires_at,
+                expires_in: user.expires_in
+            }
+        }
+        else {
+            userInfo["accessToken"] = (user && user.expired) ? "expired" : "none"
+            userInfo["expired"] = (user && user.expired) ? true : null
         }
         console.log(user)
     }
     else {
-        userInfo = {
-            isLoggedIn: loggedIn,
-            accessToken: "none",
-            userId: loggedIn ? username : null,
-        }
+        userInfo["isLoggedIn"] = loggedIn
+        userInfo["userId"] = loggedIn ? username : null
     }
 
     if (what == "accessToken"){
@@ -789,7 +806,7 @@ class OIDCLogin extends React.Component{
 
     componentDidMount(){
         get_user_info("all").then( (userInfo) => {
-            if (userInfo.loggedIn){
+            if (userInfo.isLoggedIn){
                 this.setState(userInfo)
             } else {
                 oidcUserManager.signinRedirect();
@@ -803,20 +820,43 @@ class OIDCLogin extends React.Component{
             <div className="w2-panel">
                 {this.state.isLoggedIn ? (
                     <div>
+                        <h3>You are logged in.</h3>
+                        <p>
+                            Please note, your access token will expire in
+                            <span className="w3-text-green">
+                                {seconds_to_duration_str(this.state.expires_in)}.
+                            </span>
+                        </p>
                         <table>
                             <tr>
-                                <td className="w3-text-green">Status:</td>
-                                <td>logged in</td>
+                                <td className="w3-text-green">Authority:</td>
+                                <td>{oidcConf.authority}</td>
+                            </tr>
+                            <tr>
+                                <td className="w3-text-green">Name:</td>
+                                <td>{this.state.name}</td>
+                            </tr>
+                            <tr>
+                                <td className="w3-text-green">Username:</td>
+                                <td>{this.state.username}</td>
+                            </tr>
+                            <tr>
+                                <td className="w3-text-green">Email:</td>
+                                <td>{this.state.email}</td>
                             </tr>
                             <tr>
                                 <td className="w3-text-green">User ID:</td>
                                 <td>{this.state.userId}</td>
                             </tr>
                             <tr>
-                                <td className="w3-text-green">Status:</td>
+                                <td className="w3-text-green">Access token:</td>
                                 <td>{this.state.accessToken}</td>
                             </tr>
                         </table>
+                        <p>
+                            For changes at your user profile,
+                            please contact the authentication authority.
+                        </p>
                     </div>
                     ) : (
                         <LoadingIndicator 
