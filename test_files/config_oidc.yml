@@ -11,7 +11,7 @@ DEBUG: True
 ENABLE_USERS: True
 USE_OIDC: True
 OIDC_CONF: {
-  response_type: 'access_token',
+  response_type: 'token id_token',
   scope: 'openid profile email',
   authority: 'http://canepi-srv1:8080/auth',
   client_id: 'cwlab',
