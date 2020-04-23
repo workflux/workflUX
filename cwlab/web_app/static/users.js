@@ -14,7 +14,7 @@ async function get_user_info(
         const isLoggedIn = (user && user.access_token && !user.expired) ? true : false
         userInfo = {
             isLoggedIn: isLoggedIn,
-            accessToken: isLoggedIn ? user.accessToken : "none",
+            accessToken: isLoggedIn ? user.access_token : "none",
             userId: isLoggedIn ? user.id_token : null,
         }
         console.log(user)
