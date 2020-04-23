@@ -11,7 +11,7 @@ function seconds_to_duration_str(s){
     let s_remain = s % 3600
     const m = Math.floor( s_remain / 60 )
     s_remain = s_remain % 60
-    duration_str = h == 0 ? "" : h.toString() + " h "
+    let duration_str = h == 0 ? "" : h.toString() + " h "
     duration_str += m == 0 ? "" : m.toString() + " m "
     duration_str += s_remain == 0 ? "" : s_remain.toString() + " s"
     return(duration_str.trim())
