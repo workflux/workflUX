@@ -11,7 +11,7 @@ async function get_user_info(
     let userInfo;
     if (useOIDC){
         const user = await oidcUserManager.getUser()
-        const isLoggedIn = (user && user.accessToken && !user.expired) ? true : false
+        const isLoggedIn = (user && user.access_token && !user.expired) ? true : false
         userInfo = {
             isLoggedIn: isLoggedIn,
             accessToken: isLoggedIn ? user.accessToken : "none",
