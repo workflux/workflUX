@@ -826,6 +826,7 @@ class OIDCLogin extends React.Component{
                             <span className="w3-text-green">
                                 {seconds_to_duration_str(this.state.expires_in)}.
                             </span>
+                            .
                         </p>
                         <table>
                             <tr>
