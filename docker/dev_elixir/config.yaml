@@ -30,7 +30,7 @@ OIDC_CONF: {
 
 EXEC_PROFILES:
 
-  cwltool_singularity: 
+  cwltool_no_container: 
     shell: bash
     max_retries: 0
     max_paralle_exec: 8
