@@ -143,11 +143,11 @@ def start_exec():    # returns all parmeter and its default mode (global/job spe
         access_token = data_req["access_token"]
         login_required(access_token=access_token)
         user_id = current_user.get_id() if app.config["ENABLE_USERS"] and not app.config["USE_OIDC"] else None
-        access_token = data["access_token"]
-        job_id = data["job_id"]
-        run_ids = sorted(data["run_ids"])
-        exec_profile_name = data["exec_profile"]
-        max_parrallel_exec_user_def = int(data["parallel_exec"]) if "parallel_exec" in data.keys() else None
+        access_token = data_req["access_token"]
+        job_id = data_req["job_id"]
+        run_ids = sorted(data_req["run_ids"])
+        exec_profile_name = data_req["exec_profile"]
+        max_parrallel_exec_user_def = int(data_req["parallel_exec"]) if "parallel_exec" in data_req.keys() else None
 
         started_runs, already_running_runs = exec_runs(
             job_id,
