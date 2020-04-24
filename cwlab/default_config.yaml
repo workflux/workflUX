@@ -2,6 +2,8 @@ WEB_SERVER_HOST: localhost
 
 WEB_SERVER_PORT: 5000
 
+ENABLE_USERS: True
+
 EXEC_PROFILES:
   cwltool_local: 
     type: python

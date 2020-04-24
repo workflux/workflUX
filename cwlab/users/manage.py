@@ -1,3 +1,7 @@
+import requests
+import pprint
+import json
+
 from cwlab import login
 from cwlab import db_connector
 from flask import current_app as app
@@ -24,17 +28,45 @@ def load_user(id, return_username_only=False):
 def get_user_by_username(username):
     user = user_manager.load_by_name(username=username)
     return user
+  
 
 def has_user_been_activated(username):
     return get_user_by_username(username).status == "active"
 
 def login_required(admin=False):
-    if app.config["ENABLE_USERS"]:
+    if app.config["ENABLE_USERS"] and app.config['USE_OIDC']:
+        pass
+    elif app.config["ENABLE_USERS"]:
         assert current_user.is_authenticated, "Login required."
         user = load_user(current_user.get_id())
         assert not (admin and user.level != "admin"), "Admin required."
         assert user.status == "active", "Your account is currently not active." + \
             " Please wait for an administrator to approve it."
+
+#checks if a token is valid
+def check_oidc_token(token):
+    token_params = {
+        'Authorization': 'Bearer ' + token
+    }
+    response = requests.get(
+        app.config["OIDC_CONF"]["metadata"]["userinfo_endpoint"],
+        headers=token_params
+        )
+
+    parse_response = json.loads(response.text)
+
+    message = {}
+
+    if response.status_code == 200:
+        message['success'] = True
+        message['userinfo'] = parse_response
+    else:
+        message['success'] = False
+        message['error'] = parse_response
+        pprint.pprint(parse_response)
+
+    return message
+
 
 def check_if_username_exists(username):
         return not get_user_by_username(username) is None

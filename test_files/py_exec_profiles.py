@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-from cwlab.api import PyExecProfile
+# from cwlab.exec.session import PyExecProfile
 # from cwlab.exec.session import redirect_to_log
 import cwltool.context
 import cwltool.factory
@@ -8,6 +8,25 @@ from contextlib import redirect_stderr, redirect_stdout
 from contextlib import contextmanager
 import sys
 from subprocess import Popen, PIPE
+
+
+class PyExecProfile():
+    def __init__(
+        self,
+        session_vars :dict
+    ):
+        [setattr(self, str(key), session_vars[key]) for key in session_vars.keys()]
+    
+    # steps prepare, eval, and finalize are optional:
+
+    def prepare(self):
+        pass
+
+    def eval(self):
+        pass
+    
+    def finalize(self):
+        pass
 
 
 class CwltoolLocalNoContainer(PyExecProfile):

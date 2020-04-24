@@ -55,7 +55,7 @@ ENV PATH /usr/local/singularity/:${PATH}
 # Install cwlab:
 RUN python3 -m pip install cwltool==${CWLTOOL_VERSION}  && \
 	mkdir /cwlab && \
-	git clone https://github.com/CompEpigen/CWLab.git /cwlab/src && \
+	git clone -b development https://github.com/CompEpigen/CWLab.git /cwlab/src && \
 	cd /cwlab/src && \
 	python3 -m pip install .
 
