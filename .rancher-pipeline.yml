@@ -4,11 +4,11 @@
   - publishImageConfig:
       dockerfilePath: ./docker/dev_elixir/Dockerfile
       buildContext: .
-      tag: krini/cwlab:0.1-${CICD_EXECUTION_SEQUENCE}
+      tag: krini/cwlab:oidc-${CICD_EXECUTION_SEQUENCE}
   when:
     branch:
       include:
-      - development
+      - feature/oidcsupport
 - name: deploy
   steps:
   - applyYamlConfig:
@@ -16,6 +16,6 @@
   when:
     branch:
       include:
-      - development
+      - feature/oidcsupport
 timeout: 60
 notification: {}

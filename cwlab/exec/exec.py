@@ -97,12 +97,11 @@ def create_background_process(command_list, log_file):
     else: # on UNIX
         kwargs.update(start_new_session=True)
 
-    if (app.config["DEBUG"]):
-        with open(log_file, "wb") as log:
-            p = Popen(command_list, stdin=PIPE, stdout=log, stderr=log, **kwargs)
-    else:
-        p = Popen(command_list, stdin=PIPE, stdout=PIPE, stderr=PIPE, **kwargs)
-    print(p.pid)
+    # if (app.config["DEBUG"]):
+    with open(log_file, "wb") as log:
+        p = Popen(command_list, stdin=PIPE, stdout=log, stderr=log, **kwargs)
+    # else:
+    #     p = Popen(command_list, stdin=PIPE, stdout=PIPE, stderr=PIPE, **kwargs)
     assert not p.poll()
 
 
@@ -116,7 +115,16 @@ def cleanup_zombie_process(pid):
         pass
 
 
-def exec_runs(job_id, run_ids, exec_profile_name, user_id=None, max_parrallel_exec_user_def=None, add_exec_info={}, send_email=True):
+def exec_runs(
+    job_id, 
+    run_ids, 
+    exec_profile_name, 
+    user_id=None, 
+    max_parrallel_exec_user_def=None, 
+    add_exec_info={}, 
+    send_email=True,
+    access_token=None
+    ):
     if send_email and app.config["SEND_EMAIL"]:
         if not user_id is None:
             user_email = get_user_info(user_id)["email"]
@@ -157,7 +165,8 @@ def exec_runs(job_id, run_ids, exec_profile_name, user_id=None, max_parrallel_ex
             exec_profile=exec_profile,
             exec_profile_name=exec_profile_name,
             add_exec_info=add_exec_info,
-            user_email=user_email
+            user_email=user_email,
+            access_token=access_token
         )
         exec_manager.store(exec_db_entry[run_id])
     

@@ -23,7 +23,9 @@ def get_job_list():
     messages = []
     jobs = []
     try:
-        login_required()
+        data_req = request.get_json()
+        access_token = data_req["access_token"]
+        login_required(access_token=access_token)
         job_ids = get_job_ids()
         # for each dir:
         #   - check if form sheet present
@@ -86,8 +88,9 @@ def get_run_list():
     messages = []
     data = {}
     try:
-        login_required()
         data_req = request.get_json()
+        access_token = data_req["access_token"]
+        login_required(access_token=access_token)
         job_id = data_req["job_id"]
         run_ids = get_run_ids(job_id)
         run_ids.sort()
@@ -111,8 +114,9 @@ def get_run_status():
     messages = []
     data={}
     try:
-        login_required()
         data_req = request.get_json()
+        access_token = data_req["access_token"]
+        login_required(access_token=access_token)
         data = get_run_info(data_req["job_id"], data_req["run_ids"])
     except AssertionError as e:
         messages.append( handle_known_error(e, return_front_end_message=True))
@@ -135,20 +139,23 @@ def start_exec():    # returns all parmeter and its default mode (global/job spe
                                     # for a given xls config
     messages = []
     try:
-        login_required()
-        user_id = current_user.get_id() if app.config["ENABLE_USERS"] else None
-        data = request.get_json()
-        job_id = data["job_id"]
-        run_ids = sorted(data["run_ids"])
-        exec_profile_name = data["exec_profile"]
-        max_parrallel_exec_user_def = int(data["parallel_exec"]) if "parallel_exec" in data.keys() else None
+        data_req = request.get_json()
+        access_token = data_req["access_token"]
+        login_required(access_token=access_token)
+        user_id = current_user.get_id() if app.config["ENABLE_USERS"] and not app.config["USE_OIDC"] else None
+        access_token = data_req["access_token"]
+        job_id = data_req["job_id"]
+        run_ids = sorted(data_req["run_ids"])
+        exec_profile_name = data_req["exec_profile"]
+        max_parrallel_exec_user_def = int(data_req["parallel_exec"]) if "parallel_exec" in data_req.keys() else None
 
         started_runs, already_running_runs = exec_runs(
             job_id,
             run_ids,
             exec_profile_name,
             user_id,
-            max_parrallel_exec_user_def
+            max_parrallel_exec_user_def,
+            access_token=access_token
         )
         
         if len(started_runs) > 0:
@@ -179,10 +186,12 @@ def get_run_details():
     messages = []
     data = {}
     try:
-        login_required()
-        req_data = request.get_json()
-        job_id = req_data["job_id"]
-        run_id = req_data["run_id"]
+        data_req = request.get_json()
+        access_token = data_req["access_token"]
+        login_required(access_token=access_token)
+        data_req = request.get_json()
+        job_id = data_req["job_id"]
+        run_id = data_req["run_id"]
         log_content = read_run_log(job_id, run_id)
         yaml_content = read_run_input(job_id, run_id)
         data = {
@@ -204,11 +213,12 @@ def terminate_runs():
     messages = []
     data = {}
     try:
-        login_required()
-        req_data = request.get_json()
-        job_id = req_data["job_id"]
-        run_ids = sorted(req_data["run_ids"])
-        mode = req_data["mode"] # one of terminate, reset, delete
+        data_req = request.get_json()
+        access_token = data_req["access_token"]
+        login_required(access_token=access_token)
+        job_id = data_req["job_id"]
+        run_ids = sorted(data_req["run_ids"])
+        mode = data_req["mode"] # one of terminate, reset, delete
         succeeded, could_not_be_terminated, could_not_be_cleaned = terminate_runs_by_id(job_id, run_ids, mode)
         if len(succeeded) > 0:
             messages.append({
@@ -243,9 +253,10 @@ def delete_job():
     messages = []
     data = {}
     try:
-        login_required()
-        req_data = request.get_json()
-        job_id = req_data["job_id"]
+        data_req = request.get_json()
+        access_token = data_req["access_token"]
+        login_required(access_token=access_token)
+        job_id = data_req["job_id"]
         results = delete_job_by_id(job_id)
         if results["status"] == "success":
             pass

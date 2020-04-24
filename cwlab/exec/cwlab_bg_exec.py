@@ -118,6 +118,7 @@ exec_profile = exec_db_entry.exec_profile
 exec_profile_name = exec_db_entry.exec_profile_name
 add_exec_info = exec_db_entry.add_exec_info
 user_email = exec_db_entry.user_email
+access_token = exec_db_entry.access_token
 
 
 # set pid:
@@ -180,7 +181,8 @@ session_vars = get_session_var_dict(
     out_dir,
     global_temp_dir,
     log_file,
-    add_exec_info
+    add_exec_info,
+    access_token
 )
 ExecSession = session_class_by_type[exec_profile["type"]]
 exec_session = ExecSession(

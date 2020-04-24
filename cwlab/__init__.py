@@ -46,11 +46,11 @@ def create_app(config_file=None, webapp=True):
         if app.config['ENABLE_USERS']:
             from cwlab.users.manage import get_users, interactively_add_user
             admin_users = get_users(only_admins=True)
-            if len(admin_users) == 0:
-                interactively_add_user(
-                    level="admin",
-                    instruction="No admin user was defined yet. Please set the credentials for the first admin user."
-                )
+            # if len(admin_users) == 0:
+            #     interactively_add_user(
+            #         level="admin",
+            #         instruction="No admin user was defined yet. Please set the credentials for the first admin user."
+            #     )
     if webapp:    
         if app.config['ENABLE_USERS']:
             login.login_view = 'login'
