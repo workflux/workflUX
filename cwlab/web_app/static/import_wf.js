@@ -45,7 +45,7 @@ class ImportJanisFile extends React.Component{
         })
     }
 
-    upload(event){ // ajax request to server
+    async upload(event){ // ajax request to server
         if (this.state.wfFile == null){
             let newState = this.default_states
             newState["serverMessages"] = [{type:"error", text:"No file selected."}]
@@ -67,7 +67,8 @@ class ImportJanisFile extends React.Component{
                 "wf_type": "janis",
                 "translate_to_cwl": this.state.translateToCWL,
                 "translate_to_wdl": this.state.translateToWDL,
-                "wf_name_in_script": this.state.wfNameSelectedForImport
+                "wf_name_in_script": this.state.wfNameSelectedForImport,
+                "access_token": await get_user_info("accessToken")
             }))
             fetch(
                 event.currentTarget.value == "list_contained_workflows" ? (
@@ -279,7 +280,7 @@ class ImportCwlZip extends React.Component{
         this.setState({actionStatus: "browse"})
     }
 
-    importCWLPath(){
+    async importCWLPath(){
         this.ajaxRequest({
             statusVar: "actionStatus",
             statusValueDuringRequest: "import",
@@ -412,7 +413,7 @@ class ImportWfFile extends React.Component{
         })
     }
 
-    upload(){ // ajax request to server
+    async upload(){ // ajax request to server
         if (this.state.wfFile == ""){
             this.state.serverMessages = [{type:"error", text:"No file selected."}]
             this.setState({actionStatus: "none", error: true})
@@ -426,7 +427,8 @@ class ImportWfFile extends React.Component{
             }
             formData.append("meta", JSON.stringify({
                 "import_name": this.state.importName,
-                "wf_type": this.props.wfType
+                "wf_type": this.props.wfType,
+                "access_token": await get_user_info("accessToken")
             }))
             fetch(routeUploadWf, {
                 method: "POST",
@@ -573,7 +575,7 @@ class ImportCwlUrl extends React.Component{
         })
     }
 
-    importCWLUrl(){
+    async importCWLUrl(){
         this.ajaxRequest({
             statusVar: "actionStatus",
             statusValueDuringRequest: "import",

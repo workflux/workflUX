@@ -19,10 +19,11 @@ def upload_wf():
     messages = []
     data = []
     try:
-        login_required()
+        metadata = json_loads(request.form.get("meta"))
+        access_token = metadata["access_token"]
+        login_required(access_token=access_token)
 
         # load metadata:
-        metadata = json_loads(request.form.get("meta"))
         wf_type = metadata["wf_type"] if "wf_type" in metadata.keys() else None
         # only relavant for janis:
         translate_to_cwl = metadata["translate_to_cwl"] \
@@ -87,7 +88,9 @@ def list_avail_wfs_in_janis():
     messages = []
     data = []
     try:
-        login_required()
+        metadata = json_loads(request.form.get("meta"))
+        access_token = metadata["access_token"]
+        login_required(access_token=access_token)
 
         # save the file to the CWL directory:
         assert 'wf_file' in request.files, 'No file received.'
@@ -127,7 +130,10 @@ def upload_cwl_zip():
     messages = []
     data = {}
     try:
-        login_required()
+        metadata = json_loads(request.form.get("meta"))
+        access_token = metadata["access_token"]
+        login_required(access_token=access_token)
+        
         assert 'file' in request.files, 'No file received.'
 
         import_wf_file = request.files['file']
@@ -211,8 +217,9 @@ def import_wf_by_path_or_url():
     messages = []
     data = []
     try:
-        login_required()
         data_req = request.get_json()
+        access_token = data_req["access_token"]
+        login_required(access_token=access_token)
         wf_path = data_req["wf_path"]
         is_url = data_req["is_url"] if "is_url" in data_req.keys() else None
         import_name = data_req["import_name"]

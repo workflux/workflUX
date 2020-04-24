@@ -33,9 +33,10 @@ def get_user_by_username(username):
 def has_user_been_activated(username):
     return get_user_by_username(username).status == "active"
 
-def login_required(admin=False):
+def login_required(admin=False, access_token="none"):
     if app.config["ENABLE_USERS"] and app.config['USE_OIDC']:
-        pass
+        message = check_oidc_token(access_token)
+        assert message["success"], "Access token not valid: {}".format(message["error"])
     elif app.config["ENABLE_USERS"]:
         assert current_user.is_authenticated, "Login required."
         user = load_user(current_user.get_id())

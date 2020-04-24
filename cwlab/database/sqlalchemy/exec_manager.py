@@ -25,7 +25,9 @@ class ExecManager():
         exec_profile,
         exec_profile_name,
         add_exec_info,
-        user_email):
+        user_email,
+        access_token
+        ):
         exec = Exec(
             job_id=job_id,
             run_id=run_id,
@@ -45,7 +47,8 @@ class ExecManager():
             exec_profile=exec_profile,
             exec_profile_name=exec_profile_name,
             add_exec_info=add_exec_info,
-            user_email=user_email
+            user_email=user_email,
+            access_token=access_token
         )
         return exec
 

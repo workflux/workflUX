@@ -55,6 +55,10 @@ class Config(object):
             False
         )
 
+        self.BUILD_NUMBER = ( 
+            os.environ.get("BUILD_NUMBER") or
+            "none"
+        )
         self.USE_OIDC = (
             os.environ.get('CWLAB_USE_OIDC') or
             self.CONFIG_FILE_content.get('USE_OIDC') or  
@@ -235,6 +239,7 @@ class Config(object):
 
         # not accessible by user:
         self.SEND_FILE_MAX_AGE_DEFAULT = 0 # disables caching
+
 
 
         

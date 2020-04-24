@@ -45,12 +45,13 @@ def create_app(config_file=None, webapp=True):
         from .web_app import main, import_wf, create_job, job_exec, users, browse
         if app.config['ENABLE_USERS']:
             from cwlab.users.manage import get_users, interactively_add_user
-            admin_users = get_users(only_admins=True)
-            if len(admin_users) == 0:
-                interactively_add_user(
-                    level="admin",
-                    instruction="No admin user was defined yet. Please set the credentials for the first admin user."
-                )
+            if not app.config['USE_OIDC']:
+                admin_users = get_users(only_admins=True)
+                if len(admin_users) == 0:
+                    interactively_add_user(
+                        level="admin",
+                        instruction="No admin user was defined yet. Please set the credentials for the first admin user."
+                    )
     if webapp:    
         if app.config['ENABLE_USERS']:
             login.login_view = 'login'

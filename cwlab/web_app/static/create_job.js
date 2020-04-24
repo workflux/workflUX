@@ -944,7 +944,7 @@ class JobParamFormHTML extends React.Component {
             })
     }
 
-    createJob(){
+    async createJob(){
         let paramValues = {}
         Object.keys(this.state.paramValuesByMode).forEach((mode) => {
             Object.assign(paramValues, this.state.paramValuesByMode[mode])
@@ -1214,7 +1214,7 @@ class JobParamFormSpreadsheet extends React.Component {
         this.setState({"sheetFormat": event.currentTarget.value})
     }
 
-    genFormSheet(){
+    async genFormSheet(){
         this.ajaxRequest({
             statusVar: "file_transfer_status",
             statusValueDuringRequest: "downloading",
@@ -1632,7 +1632,9 @@ class JobTemplConfigInfoAjax extends React.Component {
             <AjaxComponent
                 key={this.props.cwlTarget}
                 requestRoute={routeGetJobTemplConfigInfo}
-                sendData={ {wf_target: this.props.cwlTarget} }
+                sendData={ {
+                    wf_target: this.props.cwlTarget
+                } }
                 buildContentOnSuccess={this.buildContentOnSuccess}
                 loaderSize="large"
                 loaderMessage="Loading template infos."

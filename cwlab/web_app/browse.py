@@ -16,18 +16,20 @@ def upload_file():
     messages = []
     data={}
     try:
-        login_required()
+        # load metadata:
+        metadata = json_loads(request.form.get("meta"))
+        dir_path = metadata["dir_path"]
+        job_id = metadata["job_id"] if "job_id" in metadata.keys() else None
+        access_token = metadata["access_token"]
+
+        login_required(access_token=access_token)
+
         assert 'file' in request.files, 'No file received.'
 
         import_file = request.files['file']
         assert import_file.filename != '', "No file specified."
 
         filename = secure_filename(import_file.filename)
-
-        # save the file to the CWL directory:
-        metadata = json_loads(request.form.get("meta"))
-        dir_path = metadata["dir_path"]
-        job_id = metadata["job_id"] if "job_id" in metadata.keys() else None
 
         # check if dir path allowed:
         allowed_dirs = get_allowed_base_dirs(
@@ -68,8 +70,9 @@ def browse_dir():
     messages = []
     data={}
     try:
-        login_required()
         data_req = request.get_json()
+        access_token = data_req["access_token"]
+        login_required(access_token=access_token)
         path = remove_non_printable_characters(data_req["path"])
         ignore_files = data_req["ignore_files"]
         file_exts = data_req["file_exts"]
@@ -141,8 +144,9 @@ def download():
     messages = []
     data = {}
     try:
-        login_required()
         data_req = json_loads(request.form.get("meta"))
+        access_token = data_req["access_token"]
+        login_required(access_token=access_token)
         job_id = data_req["job_id"]
         run_id = data_req["run_id"]
         path = data_req["path"]

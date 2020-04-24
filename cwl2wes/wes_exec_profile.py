@@ -40,12 +40,23 @@ class WES(PyExecProfile):
             "workflow_attachment": (os.path.basename(self.WORKFLOW), open(self.WORKFLOW, "rb"))
         }
     
+        headers = {} if self.ACCESS_TOKEN == "none" \
+            else {
+                'Authorization': 'Bearer ' + self.ACCESS_TOKEN
+            }
+
         with open(self.LOG_FILE, "wt") as log:
             # send request
             log.write(">>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>cwl2wes\n")
             log.write("Send CWL workflow to {}\n".format(host))
             log.write("Data: {}\n".format(data))
             log.write("Files: {}\n".format(files))
-            send_post = requests.post("{}/ga4gh/wes/v1/runs".format(host), data=data, files=files).json()
+            log.write("headers: {}\n".format(headers))
+            send_post = requests.post(
+                "{}/ga4gh/wes/v1/runs".format(host), 
+                data=data, 
+                files=files,
+                headers=headers
+            ).json()
             log.write("Run: {}\n".format(send_post))
             log.write("cwl2wes<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<\n")

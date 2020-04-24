@@ -102,7 +102,7 @@ class RunDetails extends React.Component {
     }
   
     
-    getRunDetails(){
+    async getRunDetails(){
         this.ajaxRequest({
             statusVar: "actionStatus",
             statusValueDuringRequest: "updating",
@@ -246,7 +246,7 @@ class RunList extends React.Component {
         this.ajaxRequest = ajaxRequest.bind(this)
     }
 
-    getRunInfo(){
+    async getRunInfo(){
         this.ajaxRequest({
             statusVar: "actionStatus",
             statusValueDuringRequest: "updating",
@@ -472,7 +472,7 @@ class JobContent extends React.Component {
         }
     }
 
-    getRunList(){
+    async getRunList(){
         this.ajaxRequest({
             statusVar: "actionStatus",
             statusValueDuringRequest: "get_run_list",
@@ -490,7 +490,7 @@ class JobContent extends React.Component {
         })
     }
 
-    execRuns(){
+    async execRuns(){
         this.ajaxRequest({
             statusVar: "actionStatus",
             statusValueDuringRequest: "starting",
@@ -503,9 +503,10 @@ class JobContent extends React.Component {
             },
             route: routeStartExec
         })
+
     }
 
-    terminateRuns(mode="terminate"){
+    async terminateRuns(mode="terminate"){
         this.ajaxRequest({
             statusVar: "actionStatus",
             statusValueDuringRequest: mode,
@@ -527,7 +528,7 @@ class JobContent extends React.Component {
         })
     }
 
-    deleteJob(){
+    async deleteJob(){
         this.ajaxRequest({
             statusVar: "actionStatus",
             statusValueDuringRequest: "delete_job",
@@ -903,7 +904,7 @@ class JobExecRoot extends React.Component {
                 buildContentOnSuccess={this.buildContentOnSuccess}
                 loaderSize="large"
                 loaderMessage="Loading available job templates"
-                suppressMessages={true}
+                suppressMessages={false}
             />
         );
     }

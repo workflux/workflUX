@@ -26,7 +26,9 @@ def get_job_templ_list():   # returns list of job templates
     messages = []
     templates = []
     try:
-        login_required()
+        data_req = request.get_json()
+        access_token = data_req["access_token"]
+        login_required(access_token=access_token)
         templates = get_job_templates()
     except AssertionError as e:
         messages.append( handle_known_error(e, return_front_end_message=True))
@@ -46,8 +48,10 @@ def get_job_templ_config_info():    # returns all parmeter and its default mode 
     param_config_info = []
     template_metadata = []
     try:
-        login_required()
-        wf_target = request.get_json()["wf_target"]
+        data_req = request.get_json()
+        access_token = data_req["access_token"]
+        login_required(access_token=access_token)
+        wf_target = data_req["wf_target"]
         param_config_info = get_job_templ_info("config", wf_target)
         template_metadata = get_job_templ_info("metadata", wf_target)
     except AssertionError as e:
@@ -69,14 +73,15 @@ def generate_param_form_sheet():    # generate param form sheet with data sent
     messages = []
     data = {}
     try:
-        login_required()
-        request_json = request.get_json() 
-        sheet_format = request_json["sheet_format"]
-        job_id = request_json["job_id"]
-        wf_target = request_json["wf_target"]
-        param_modes = request_json["param_modes"]
-        run_names = request_json["run_names"]
-        run_mode = request_json["run_mode"]
+        data_req = request.get_json()
+        access_token = data_req["access_token"]
+        login_required(access_token=access_token)
+        sheet_format = data_req["sheet_format"]
+        job_id = data_req["job_id"]
+        wf_target = data_req["wf_target"]
+        param_modes = data_req["param_modes"]
+        run_names = data_req["run_names"]
+        run_mode = data_req["run_mode"]
         temp_dir = make_temp_dir() # will stay, need to be cleaned up
         temp_dir_name = os.path.basename(temp_dir)
         output_file_path = os.path.join(temp_dir, f"{job_id}_inputs.{sheet_format}")
@@ -109,10 +114,12 @@ def get_param_form_sheet():
     messages = []
     data = {}
     try:
-        login_required()
-        req_data = request.args.to_dict()
-        job_id = req_data["job_id"]
-        temp_dir_name = req_data["temp_dir_name"]
+        data_req = request.get_json()
+        access_token = data_req["access_token"]
+        login_required(access_token=access_token)
+        data_req = request.args.to_dict()
+        job_id = data_req["job_id"]
+        temp_dir_name = data_req["temp_dir_name"]
         temp_dir = os.path.join(app.config["TEMP_DIR"], temp_dir_name)
 
         hits = fetch_files_in_dir(
@@ -148,7 +155,9 @@ def create_job_from_param_form_sheet():
     data = []
     temp_dir = make_temp_dir()
     try:
-        login_required()
+        metadata = json_loads(request.form.get("meta"))
+        access_token = metadata["access_token"]
+        login_required(access_token=access_token)
         assert 'file' in request.files, 'No file received.'
 
         import_file = request.files['file']
@@ -160,8 +169,6 @@ def create_job_from_param_form_sheet():
 
         sheet_format = os.path.splitext(import_file.filename)[1].strip(".").lower()
         
-        metadata = json_loads(request.form.get("meta"))
-        print(metadata)
         job_id = metadata["job_id"]
         import_filepath = os.path.join(temp_dir, f"param_sheet.{sheet_format}")
         import_file.save(import_filepath)
@@ -226,19 +233,20 @@ def create_job_from_param_values():
     data = []
     temp_dir = make_temp_dir()
     try:
-        login_required()
-        request_json = request.get_json()
-        param_values = request_json["param_values"]
-        param_configs = request_json["param_configs"]
-        wf_target = request_json["wf_target"]
+        data_req = request.get_json()
+        access_token = data_req["access_token"]
+        login_required(access_token=access_token)
+        param_values = data_req["param_values"]
+        param_configs = data_req["param_configs"]
+        wf_target = data_req["wf_target"]
 
-        job_id = request_json["job_id"]
+        job_id = data_req["job_id"]
         import_filepath = os.path.join(temp_dir, "param_sheet.xlsx")
 
-        validate_paths = request_json["validate_paths"]
-        search_paths = request_json["search_paths"]
-        search_dir = os.path.abspath(remove_non_printable_characters(request_json["search_dir"]))
-        include_subdirs_for_searching = request_json["include_subdirs_for_searching"] 
+        validate_paths = data_req["validate_paths"]
+        search_paths = data_req["search_paths"]
+        search_dir = os.path.abspath(remove_non_printable_characters(data_req["search_dir"]))
+        include_subdirs_for_searching = data_req["include_subdirs_for_searching"] 
 
         if search_paths:
             # test if search dir exists:
@@ -296,16 +304,17 @@ def get_param_values():
     messages = []
     data = {}
     try:
-        login_required()
-        request_json = request.get_json() 
+        data_req = request.get_json()
+        access_token = data_req["access_token"]
+        login_required(access_token=access_token)
         param_values, configs = gen_form_sheet(
             output_file_path = None,
-            template_config_file_path = get_path("job_templ", wf_target=request_json["wf_target"]),
-            has_multiple_runs= request_json["run_mode"],
-            run_names=request_json["run_names"],
-            param_is_run_specific=request_json["param_modes"],
+            template_config_file_path = get_path("job_templ", wf_target=data_req["wf_target"]),
+            has_multiple_runs= data_req["run_mode"],
+            run_names=data_req["run_names"],
+            param_is_run_specific=data_req["param_modes"],
             show_please_fill=True,
-            metadata={"workflow_name": request_json["wf_target"]}
+            metadata={"workflow_name": data_req["wf_target"]}
         )
         data = {
             "param_values": param_values,
