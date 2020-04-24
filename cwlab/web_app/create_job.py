@@ -97,7 +97,8 @@ def generate_param_form_sheet():    # generate param form sheet with data sent
         data["get_form_sheet_href"] = url_for(
             "get_param_form_sheet", 
             job_id=job_id,
-            temp_dir_name=temp_dir_name
+            temp_dir_name=temp_dir_name,
+            access_token=access_token ## should be changed
         )
     except AssertionError as e:
         messages.append( handle_known_error(e, return_front_end_message=True))
@@ -114,10 +115,9 @@ def get_param_form_sheet():
     messages = []
     data = {}
     try:
-        data_req = request.get_json()
+        data_req = request.args.to_dict()
         access_token = data_req["access_token"]
         login_required(access_token=access_token)
-        data_req = request.args.to_dict()
         job_id = data_req["job_id"]
         temp_dir_name = data_req["temp_dir_name"]
         temp_dir = os.path.join(app.config["TEMP_DIR"], temp_dir_name)
