@@ -4,7 +4,7 @@
 WEB_SERVER_HOST: 0.0.0.0
 
 ## (2) choose the port:
-WEB_SERVER_PORT: 8443 # The default is 5000, if this port is blocked choose a different one
+WEB_SERVER_PORT: 8443
 
 DEBUG: True
 

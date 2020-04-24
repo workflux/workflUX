@@ -646,20 +646,37 @@ class LoginForm extends React.Component {
     }
 
     login(){
-        this.ajaxRequest({
-            sendData: {
-                username: this.state.username,
-                password: this.state.password,
-                remember_me: this.state.rememberMe
-            },
-            route: routeLogin,
-            onSuccess: (data, messages) => {
-                if (data.success){
-                    window.location.reload(true)
-                }
+        if (useOIDC) {
+            oidcUserManager.getUser().then(function (user) {
+                if (user && !user.expired) {
+                    const headers = new Headers({
+                        'Authorization': 'Bearer ' + user['access_token']
+                    })
+                    fetch('http://localhost:5000/validateoidc',{
+                        method: 'GET',
+                        headers: headers,
+                    }).then()
 
-            }
-        })
+                } else {
+                    oidcUserManager.signinRedirect();
+                }
+            })
+        } else {
+            this.ajaxRequest({
+                sendData: {
+                    username: this.state.username,
+                    password: this.state.password,
+                    remember_me: this.state.rememberMe
+                },
+                route: routeLogin,
+                onSuccess: (data, messages) => {
+                    if (data.success){
+                        window.location.reload(true)
+                    }
+
+                }
+            })
+        }
     }
 
     register(){
