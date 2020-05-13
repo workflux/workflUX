@@ -8,7 +8,7 @@
   when:
     branch:
       include:
-      - feature/oidcsupport
+      - development
 - name: deploy
   steps:
   - applyYamlConfig:
@@ -16,6 +16,6 @@
   when:
     branch:
       include:
-      - feature/oidcsupport
+      - development
 timeout: 60
 notification: {}
