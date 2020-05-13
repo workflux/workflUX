@@ -1,0 +1,17 @@
+<!DOCTYPE html>
+<html lang="en">
+    <head>
+        <script src="/static/oidc-client.min.js"></script>
+        <script>
+            window.onload = function () {
+                // let oidcConf = JSON.parse('{{ config.OIDC_CONF | tojson | safe }}')
+                // oidcConf["response_mode"] = "query"
+                new Oidc.UserManager().signinRedirectCallback().then(function() {
+                    window.location = "{{ url_for('main') }}"
+                }).catch(function (e) {
+                    console.log(e);
+                });   
+            }
+        </script>
+    </head>
+</html>

@@ -9,6 +9,25 @@ DB_DIR: '/cwlab/database'
 
 DEBUG: False
 
+ENABLE_USERS: True
+USE_OIDC: True
+OIDC_CONF: {
+  response_type: 'token id_token',
+  scope: 'openid profile email',
+  authority: 'https://login.elixir-czech.org/oidc/',
+  client_id: 'b1f68121-faec-4196-ab51-66eb61660ece',
+  redirect_uri: 'https://cwlab-oidc.krini.ingress.rancher.computational.bio/loginoidc',
+  post_logout_redirect_uri: 'https://cwlab-oidc.krini.ingress.rancher.computational.bio/',
+  metadata: {
+    issuer: 'https://login.elixir-czech.org/oidc/',
+    authorization_endpoint: 'https://login.elixir-czech.org/oidc/authorize',
+    userinfo_endpoint: 'https://login.elixir-czech.org/oidc/userinfo',
+    end_session_endpoint: 'https://login.elixir-czech.org/oidc/endsession',
+    jwks_uri: 'https://login.elixir-czech.org/oidc/jwk'
+  }
+}
+
+
 EXEC_PROFILES:
 
   cwltool_no_container: 
@@ -23,3 +42,9 @@ EXEC_PROFILES:
 
     exec: |
       "${PYTHON_PATH}" -m cwltool --debug --no-container --outdir "${OUTPUT_DIR}" "${WORKFLOW}" "${RUN_INPUT}" >> "${LOG_FILE}" 2>&1
+
+  WES: 
+    type: python
+    max_retries: 2
+    py_module: ./wes_exec_profile.py
+    py_class: WES

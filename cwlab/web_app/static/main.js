@@ -19,7 +19,12 @@ const modules = {   // each entry corresponds to one wep app module,
                     // each module has a dedicated button in the top bar
                     // and specific content which is displayed on click of that button
     home: {
-        text: (<span>CW<span className="w3-text-green">Lab</span></span>),
+        text: (
+            <span>
+                CW<span className="w3-text-green">Lab</span>
+                {buildNumber != "none" && (<span className="w3-text-orange">&nbsp;build {buildNumber}</span>)}
+            </span>
+        ),
         icon: "",
         content: (<Welcome />)
     },
@@ -47,14 +52,21 @@ const modules = {   // each entry corresponds to one wep app module,
     //     icon: "fas fa-info-circle",
     //     content: "Under construction"
     // }
+    
     users: {
-        text:  loggedIn ? username : "login / register",
+        text:  useOIDC ? (
+                "login via OIDC" // has to be changed to display the username
+        ) : (
+            loggedIn ? username : "login / register"
+        ),
         icon: "fas fa-user",
         content: (<UserRoot />),
         align: "right",
         disabled: ! loginEnabled
     }
 };
+
+
 
 class TopBar extends React.Component { // controlled by Root Component
     constructor(props){
@@ -127,7 +139,8 @@ class Root extends React.Component {
     constructor(props) {
         super(props);
         this.state = {module: "home"};  // determines which web app module is displayed 
-        this.changeModule = this.changeModule.bind(this)
+        this.changeModule = this.changeModule.bind(this);
+        get_user_info()
     }
 
     changeModule(target_module){
@@ -144,3 +157,4 @@ class Root extends React.Component {
         );
     }
 }
+

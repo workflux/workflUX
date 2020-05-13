@@ -6,7 +6,18 @@ function get_time_str(){
     return(date.toLocaleTimeString())
 }
 
-function ajaxRequest({
+function seconds_to_duration_str(s){
+    const h = Math.floor( s / 3600 )
+    let s_remain = s % 3600
+    const m = Math.floor( s_remain / 60 )
+    s_remain = s_remain % 60
+    let duration_str = h == 0 ? "" : h.toString() + " h "
+    duration_str += m == 0 ? "" : m.toString() + " m "
+    duration_str += s_remain == 0 ? "" : s_remain.toString() + " s"
+    return(duration_str.trim())
+}
+
+async function ajaxRequest({
     // in a component bind this function: this.ajaxRequest = ajaxRequest.bind(this)
     statusVar="actionStatus",
     statusValueDuringRequest="action",
@@ -22,17 +33,19 @@ function ajaxRequest({
         return({})
     } 
 }){
+    let setDataAT = sendData
+    setDataAT["access_token"] = await get_user_info("accessToken")
     let formData
     if (sendViaFormData){
         formData = new FormData()
-        formData.append("meta", JSON.stringify(sendData))
+        formData.append("meta", JSON.stringify(setDataAT))
     }
     this.setState({
         [statusVar]: statusValueDuringRequest
     })
     fetch(route, {
         method: "POST",
-        body: sendViaFormData ? formData : JSON.stringify(sendData),
+        body: sendViaFormData ? formData : JSON.stringify(setDataAT),
         headers: new Headers(sendViaFormData ? (
                 {}
             ) : (
@@ -811,13 +824,15 @@ class AjaxComponent extends React.Component {
         this.ajaxRequest = ajaxRequest.bind(this)
     }
 
-    request(){ // ajax request to server
+    async request(){ // ajax request to server
+        let sendData = this.props.sendData
+        sendData["access_token"] = await get_user_info("accessToken")
         this.ajaxRequest({
             statusVar: "loading",
             statusValueDuringRequest: true,
             statusValueAfterRequest: false,
             messageVar: "serverMessages",
-            sendData: this.props.sendData,
+            sendData: sendData,
             route: this.props.requestRoute,
             onSuccess: (data, messages) => {
                 return({
@@ -980,7 +995,7 @@ class BrowseDir extends React.Component {
         this.getItemsInDir(false, path, true)
     }
 
-    getItemsInDir(getParentDir, targetDir, init){
+    async getItemsInDir(getParentDir, targetDir, init){
         this.ajaxRequest({
             statusVar: "actionStatus",
             statusValueDuringRequest: init ? "init" : "loading",
@@ -1081,7 +1096,7 @@ class BrowseDir extends React.Component {
         this.props.terminateBrowseDialog(changes, selectedItem)
     }
     
-    downloadFileOrFolder(event){
+    async downloadFileOrFolder(event){
         if (event.currentTarget.name == "download_dir"){
             this.setState({
                 downloadMessages: {
@@ -1490,17 +1505,19 @@ class FileUploadComponent extends React.Component {
         }
     }
 
-    upload(value){ // ajax request to server
+    async upload(value){ // ajax request to server
         const fileToUpload = this.state.file
         if (this.state.fileToUpload == ""){
             this.state.serverMessages = [{type:"error", text:"No file selected."}]
             this.setState({status: "wait_for_upload", error: true})
         }
         else{
+            let metaData = this.props.metaData ? this.props.metaData : {}
+            metaData["access_token"] = await get_user_info("accessToken")
             this.setState({status:"uploading"})
             let formData = new FormData()
             formData.append("file", fileToUpload)
-            formData.append("meta", JSON.stringify(this.props.metaData ? this.props.metaData : {}))
+            formData.append("meta", JSON.stringify(this.props.metaData))
 
             if (this.props.showProgress){let request = new XMLHttpRequest()
                 request.upload.addEventListener("progress", event => {
@@ -1695,7 +1712,7 @@ class AjaxButton extends React.Component {
         this.ajaxRequest = ajaxRequest.bind(this);
     }
 
-    handleOnClick(value){
+    async handleOnClick(value){
         this.ajaxRequest({
             statusVar: "status",
             statusValueDuringRequest: "loading",
@@ -1703,7 +1720,7 @@ class AjaxButton extends React.Component {
             sendData: this.props.sendData,
             route: this.props.route,
             onSuccess: this.props.onSuccess,
-            onError: this.props.onError,
+            onError: this.props.onError
         })        
     }
 

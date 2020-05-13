@@ -5,6 +5,60 @@ function changeInputField(event){
     this.setState({[event.currentTarget.name]: event.currentTarget.value})
 }
 
+async function get_user_info(
+    what // can be one of "all", "accessToken", or "userId"
+){
+    let userInfo = {
+        isLoggedIn: loggedIn,
+        accessToken: "none",
+        userId: loggedIn ? username : null,
+        name: null,
+        username: null,
+        email: null,
+        auth_time: null,
+        expired: null,
+        expires_in: null,
+        expires_at: null,
+    };
+    if (useOIDC){
+        const user = await oidcUserManager.getUser()
+        const isLoggedIn = (user && user.access_token && !user.expired) ? true : false
+        if (isLoggedIn) {
+            userInfo = {
+                isLoggedIn: isLoggedIn,
+                accessToken: user.access_token,
+                userId: user.profile.sub,
+                name: user.profile.name,
+                username: user.profile.preferred_username,
+                email: user.profile.email,
+                auth_time: user.profile.auth_time,
+                expired: user.expires_in,
+                expires_at: user.expires_at,
+                expires_in: user.expires_in
+            }
+        }
+        else {
+            userInfo["accessToken"] = (user && user.expired) ? "expired" : "none"
+            userInfo["expired"] = (user && user.expired) ? true : null
+        }
+        console.log(user)
+    }
+    else {
+        userInfo["isLoggedIn"] = loggedIn
+        userInfo["userId"] = loggedIn ? username : null
+    }
+
+    if (what == "accessToken"){
+        return(userInfo.accessToken)
+    }
+    else if (what == "userId"){
+        return(userInfo.userId)
+    }
+    else {
+        return(userInfo)
+    }
+}
+
 class GeneralInfo extends React.Component {
     constructor(props){
         super(props);
@@ -35,6 +89,7 @@ class GeneralInfo extends React.Component {
         return(
             <AjaxComponent
                 requestRoute={routeGetGeneralUserInfo}
+                sendData={ {} }
                 buildContentOnSuccess={this.buildContentOnSuccess}
                 loaderMessage="Loading user information."
             />
@@ -92,7 +147,7 @@ class AdminDashboard extends React.Component {
         })
     }
 
-    modifyOrDeleteUser(action){
+    async modifyOrDeleteUser(action){
         this.ajaxRequest({
             route: routeModifyOrDeleteUsers,
             statusVar: "actionStatus",
@@ -119,7 +174,7 @@ class AdminDashboard extends React.Component {
         this.getUserInfo()
     }
 
-    getUserInfo(){
+    async getUserInfo(){
         this.ajaxRequest({
             route: routeGetAllUsersInfo,
             statusValueDuringRequest: "loading",
@@ -331,7 +386,7 @@ class ChangePassword extends React.Component {
         this.changePassword = this.changePassword.bind(this)
     }
 
-    changePassword(){
+    async changePassword(){
         this.ajaxRequest({
             sendData: {
                 old_password: this.state.oldPassword,
@@ -394,7 +449,7 @@ class DeleteAccount extends React.Component {
         this.changeInputField = changeInputField.bind(this)
     }
 
-    deleteAccount(){
+    async deleteAccount(){
         this.ajaxRequest({
             route: routeDeleteAccount,
             sendData: {
@@ -461,7 +516,7 @@ class Logout extends React.Component {
         this.logout()
     }
 
-    logout(){
+    async logout(){
         this.ajaxRequest({
             route: routeLogout,
             onSuccess: (data, messages) => {
@@ -591,20 +646,37 @@ class LoginForm extends React.Component {
     }
 
     login(){
-        this.ajaxRequest({
-            sendData: {
-                username: this.state.username,
-                password: this.state.password,
-                remember_me: this.state.rememberMe
-            },
-            route: routeLogin,
-            onSuccess: (data, messages) => {
-                if (data.success){
-                    window.location.reload(true)
-                }
+        if (useOIDC) {
+            oidcUserManager.getUser().then(function (user) {
+                if (user && !user.expired) {
+                    const headers = new Headers({
+                        'Authorization': 'Bearer ' + user['access_token']
+                    })
+                    fetch('http://localhost:5000/validateoidc',{
+                        method: 'GET',
+                        headers: headers,
+                    }).then()
 
-            }
-        })
+                } else {
+                    oidcUserManager.signinRedirect();
+                }
+            })
+        } else {
+            this.ajaxRequest({
+                sendData: {
+                    username: this.state.username,
+                    password: this.state.password,
+                    remember_me: this.state.rememberMe
+                },
+                route: routeLogin,
+                onSuccess: (data, messages) => {
+                    if (data.success){
+                        window.location.reload(true)
+                    }
+
+                }
+            })
+        }
     }
 
     register(){
@@ -738,17 +810,135 @@ class LoginForm extends React.Component {
     }
 }
 
+class OIDCLogin extends React.Component{
+    constructor(props){
+        super(props);
+        this.state = {
+            isLoggedIn: false,
+            accessToken: "none",
+            userId: null,
+        }
+        
+    }
+
+    componentDidMount(){
+        get_user_info("all").then( (userInfo) => {
+            if (userInfo.isLoggedIn){
+                this.setState(userInfo)
+            } else {
+                oidcUserManager.signinRedirect();
+            }
+        })
+    }
+
+
+    render(){
+        return(
+            <div className="w3-panel">
+                {this.state.isLoggedIn ? (
+                    <div>
+                        <h3>You are logged in.</h3>
+                        <p>
+                            Please note, your access token will expire in&nbsp;
+                            <span className="w3-text-green">
+                                {seconds_to_duration_str(this.state.expires_in)}
+                            </span>
+                            .
+                        </p>
+                        <table>
+                            <tr>
+                                <td className="w3-text-green">Authority:</td>
+                                <td>{oidcConf.authority}</td>
+                            </tr>
+                            <tr>
+                                <td className="w3-text-green">Name:</td>
+                                <td>{this.state.name}</td>
+                            </tr>
+                            <tr>
+                                <td className="w3-text-green">Username:</td>
+                                <td>{this.state.username}</td>
+                            </tr>
+                            <tr>
+                                <td className="w3-text-green">Email:</td>
+                                <td>{this.state.email}</td>
+                            </tr>
+                            <tr>
+                                <td className="w3-text-green">User ID:</td>
+                                <td>{this.state.userId}</td>
+                            </tr>
+                            <tr>
+                                <td className="w3-text-green">Access token:</td>
+                                <td>{this.state.accessToken}</td>
+                            </tr>
+                        </table>
+                        <p>
+                            For changes at your user profile,
+                            please contact the authentication authority.
+                        </p>
+                    </div>
+                    ) : (
+                        <LoadingIndicator 
+                            size="large"
+                            message="You are redirected to the authentication authority. Please wait."
+                        />
+                    )
+                }
+            </div>
+        )
+    }
+}
+
 class UserRoot extends React.Component{
     constructor(props){
         super(props);
     }
 
     render(){
+        if (useOIDC){
+            return(<OIDCLogin />)
+        }
         if (loggedIn){
             return(<UserAccount />)
         }
         else{
             return(<LoginForm />)
         }
+    }
+}
+
+class UserTopBarButton extends React.Component {
+    constructor(props) {
+        super(props);
+        this.state = {
+            isLoggedIn: null,
+            access_token: null,
+            user_id: null
+        };
+    }
+
+    componentDidMount(){
+        this.mounted = true
+        this.getRunInfo()
+        // setup timer to automatically update
+        this.timerId = setInterval(
+            () => {
+                this.getRunInfo()
+            },
+            autoRefreshInterval
+          );
+    }
+
+    changeModule(target_module){
+        this.setState({module:target_module})
+    }
+
+    render() {
+        return (
+            <div className="w3-theme-d3 w3-medium">
+                <TopBar handleModuleChange={this.changeModule} whichFocus={this.state.module} />
+                <TopBar handleModuleChange={this.changeModule} whichFocus={this.state.module} fixed={true}/>
+                <MainContent> {modules[this.state.module].content} </MainContent>
+            </div>
+        );
     }
 }
