@@ -122,7 +122,7 @@ class UserAndSessionInfo extends React.Component {
             </div>
         )
     }
-    }
+}
 
 class AdminDashboard extends React.Component {
     constructor(props){
@@ -543,14 +543,13 @@ class Logout extends React.Component {
     }
 
     async logout(){
-        this.ajaxRequest({
-            route: routeLogout,
-            onSuccess: (data, messages) => {
-                if (data.success){
-                    window.location.reload(true)
-                }
-            }
-        })
+        if (useOIDC){
+            oidcUserManager.signoutRedirect()
+        }
+        else {
+            cleanSessionInfo()
+            window.location.reload(true)
+        }
     }
 
     render(){
@@ -849,13 +848,13 @@ class UserRoot extends React.Component{
 
     render(){
         if (!this.state.userInfoLoaded){
-        return(
-                        <LoadingIndicator 
+            return(
+                <LoadingIndicator 
                     message="Loading user info. Please wait."
-                            size="large"
-                        />
-                    )
-                }
+                    size="large"
+                />
+            )
+        }
         else if (this.state.userInfo.isLoggedIn){
             return(<UserAccount userInfo={this.state.userInfo}/>)
         }

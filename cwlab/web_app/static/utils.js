@@ -13,6 +13,11 @@ function storeSessionInfo(param_obj){
     })
 }
 
+function cleanSessionInfo(){
+    sessionStorage.clear()
+    localStorage.clear()
+}
+
 function getSessionInfo(param_list){
     let param_obj = {}
     param_list.map( (param) => {
