@@ -13,12 +13,12 @@ from cwlab import db_connector
 from cwlab.log import handle_known_error, handle_unknown_error
 from cwlab.utils import get_time_string
 
-@app.route('/loginoidc/', methods=['GET'])
+@app.route('/login_oidc/', methods=['GET'])
 def login_oidc():
     """Redirect handler for oidc login"""
     return render_template('callback.html')
 
-@app.route('/validateoidc/', methods=['GET'])
+@app.route('/validate_oidc/', methods=['GET'])
 def validate_oidc():
     """Demonstrates how an access token is validated"""
     token = request.headers['Authorization'].split(' ')[1]

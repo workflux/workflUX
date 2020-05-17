@@ -642,13 +642,13 @@ class LoginForm extends React.Component {
                     const headers = new Headers({
                         'Authorization': 'Bearer ' + user['access_token']
                     })
-                    fetch('http://localhost:5000/validateoidc',{
+                    fetch(routeValidateOIDC,{
                         method: 'GET',
                         headers: headers,
                     }).then()
 
                 } else {
-                    oidcUserManager.signinRedirect();
+                    oidcUserManager.signinRedirect()
                 }
             })
         } else {
