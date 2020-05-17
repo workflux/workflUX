@@ -40,8 +40,7 @@ def login_required(admin=False, access_token="none"):
             message = check_oidc_token(access_token)
             assert message["success"], "Access token not valid: {}".format(message["error"])
         else:
-            assert user_manager.validate_access_token( token = access_token ), 
-                "Access token is not valid or has expired."
+            user_manager.validate_access_token( token = access_token, admin_rights=admin)
             
 
 #checks if a token is valid
