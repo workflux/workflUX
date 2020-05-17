@@ -3,7 +3,7 @@ from string import ascii_letters, digits
 from werkzeug.security import generate_password_hash, check_password_hash
 from flask_login import UserMixin
 from random import random, choice as random_choice
-from datetime import datetime
+from datetime import datetime, timedelta
 
 class BaseUser(UserMixin):
     id = None
@@ -40,12 +40,13 @@ class AccessToken(db.Model):
     token = db.Column(db.String(64), index=True, unique=True)
     user_id = db.Column(db.Integer, db.ForeignKey('user.id'))
     expires_at = db.Column(db.DateTime())
+    expires_after = db.Column(db.Integer())
 
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
         self.token = "".join([random_choice(ascii_letters + digits) for c in range(0,64)])
         self.expires_after = self.expires_after if hasattr(self, "expires_after") else 86400
-        self.expires_at = datetime.now() + datetime.timedelta(seconds=self.expires_after)
+        self.expires_at = datetime.now() + timedelta(seconds=self.expires_after)
 
 
 class Exec(db.Model):
