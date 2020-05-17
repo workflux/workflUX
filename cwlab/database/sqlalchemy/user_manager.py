@@ -112,7 +112,7 @@ class UserManager():
         db_request = db.session.query(AccessToken).filter(AccessToken.token == token)
         assert db_request.count() == 1 and \
             datetime.now() < db_request.first().expires_at, \
-            "Access token is not valid or has expired."
+            "Access token is not valid or has expired. Please login again."
         user = self.user(db_request.first().user_id)
         self.validate_user_status(user)
         if admin_rights:
