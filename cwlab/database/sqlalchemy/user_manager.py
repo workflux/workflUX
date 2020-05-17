@@ -80,7 +80,7 @@ class UserManager():
         return(
             {
                 "email": user.email,
-                "admin_rights": user.level == "admin"
+                "admin": user.level == "admin"
             }
         )
 

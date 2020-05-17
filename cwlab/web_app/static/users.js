@@ -17,7 +17,8 @@ async function getUserInfo(
         email: null,
         expired: null,
         expiresAt: null,
-        expires_in: null
+        expires_in: null,
+        admin: false
     }
     if (useOIDC){
         const user = await oidcUserManager.getUser()
@@ -32,7 +33,8 @@ async function getUserInfo(
                 email: user.profile.email,
                 expired: user.expires_in,
                 expiresAt: user.expires_at,
-                expires_in: user.expires_in
+                expires_in: user.expires_in,
+                admin: false
             }
         }
         else {
@@ -55,44 +57,72 @@ async function getUserInfo(
     }
 }
 
-class GeneralInfo extends React.Component {
+class UserAndSessionInfo extends React.Component {
     constructor(props){
         super(props);
+        // props.userInfo
+
+        this.paramsToShow = [
+            "name",
+            "username",
+            "email",
+            "admin",
+            "userId",
+            "accessToken"
+        ]
 
         this.labels = {
+            name: "Name",
             username: "Username",
             email: "Email",
-            level: "Level"
+            admin: "Admin",
+            user_id: "User ID",
+            accessToken: "Access Token"
         }
-
-        this.buildContentOnSuccess = this.buildContentOnSuccess.bind(this)
-    }
-
-    buildContentOnSuccess(data, serverMessages, request){
-        return(
-            <div>
-                <h3>General User Account Information:</h3>
-                {Object.keys(this.labels).map((key) => (
-                    <p key={key}>
-                        <span className="w3-text-green">{this.labels[key]}:</span>&nbsp;{data[key]}
-                    </p>
-                ))}
-            </div>
-        )
     }
 
     render(){
         return(
-            <AjaxComponent
-                requestRoute={routeGetGeneralUserInfo}
-                sendData={ {} }
-                buildContentOnSuccess={this.buildContentOnSuccess}
-                loaderMessage="Loading user information."
-            />
+            <div>
+                <h3>You are logged in.</h3>
+                {this.props.userInfo.expires_in && (
+                    <p>
+                        Please note, your access token will expire in&nbsp;
+                        <span className="w3-text-green">
+                            {seconds_to_duration_str(this.state.expires_in)}
+                        </span>
+                        .
+                    </p>
+                )}
+                <table>
+                    <tbody>
+                        {useOIDC && (
+                            <tr>
+                                <td className="w3-text-green">Authority:</td>
+                                <td>{oidcConf.authority}</td>
+                            </tr>
+                        )}
+                        {this.paramsToShow
+                            .filter( (p) => (this.props.userInfo[p] != null))
+                            .map( (p) => (
+                                <tr key={p}>
+                                    <td className="w3-text-green">{this.labels[p]}</td>
+                                    <td>{this.props.userInfo[p]}</td>
+                                </tr>
+                            )
+                        )}
+                    </tbody>
+                </table>
+                {useOIDC && (
+                    <p>
+                        For changes at your user profile,
+                        please contact the authentication authority.
+                    </p>
+                )}
+            </div>
         )
-
     }
-}
+    }
 
 class AdminDashboard extends React.Component {
     constructor(props){
@@ -541,15 +571,16 @@ class Logout extends React.Component {
 class UserAccount extends React.Component {
     constructor(props) {
         super(props);
+        // props.userInfo
         
-        this.itemValues = userLevel == "admin" ? (
-                ["general_info", "admin_dashboard", "change_password", "delete_account", "logout"]
+        this.itemValues = this.props.userInfo.admin ? (
+                ["user_and_session_info", "admin_dashboard", "change_password", "delete_account", "logout"]
             ):(
-                ["general_info", "change_password", "delete_account", "logout"]
+                ["user_and_session_info", "change_password", "delete_account", "logout"]
             )
-        this.itemNames = userLevel == "admin" ? (
+        this.itemNames = this.props.userInfo.admin ? (
                 [
-                    <span><i className="fas fa-user"/>&nbsp;General Info</span>,
+                    <span><i className="fas fa-user"/>&nbsp;User/Session Info</span>,
                     <span><i className="fas fa-users"/>&nbsp;Admin Dashboard</span>,
                     <span><i className="fas fa-lock"/>&nbsp;Change Password</span>,
                     <span><i className="fas fa-trash-alt"/>&nbsp;Delete Account</span>,
@@ -557,7 +588,7 @@ class UserAccount extends React.Component {
                 ]
             ) : (
                 [
-                    <span><i className="fas fa-user"/>&nbsp;General Info</span>,
+                    <span><i className="fas fa-user"/>&nbsp;User/Session Info</span>,
                     <span><i className="fas fa-lock"/>&nbsp;Change Password</span>,
                     <span><i className="fas fa-trash-alt"/>&nbsp;Delete Account</span>,
                     <span><i className="fas fa-sign-out-alt"/>&nbsp;Logout</span>
@@ -565,7 +596,7 @@ class UserAccount extends React.Component {
             )
             
         this.itemContents = {
-            general_info: <GeneralInfo />,
+            user_and_session_info: <UserAndSessionInfo userInfo={this.props.userInfo} />,
             admin_dashboard: <AdminDashboard />,
             change_password: <ChangePassword />,
             delete_account: <DeleteAccount />,
@@ -573,7 +604,7 @@ class UserAccount extends React.Component {
         }
 
         this.state = {
-            whichFocus: "general_info"
+            whichFocus: "user_and_session_info"
         }
 
         this.changeFocus = this.changeFocus.bind(this)
@@ -598,6 +629,7 @@ class UserAccount extends React.Component {
         )
     }
 }
+
 
 class LoginForm extends React.Component {
     constructor(props) {
@@ -665,6 +697,7 @@ class LoginForm extends React.Component {
                             username: data.username,
                             expiresAt: data.expires_at,
                             email: data.email,
+                            admin: data.admin,
                             isLoggedIn: true
                         })
                         window.location.reload(true)
@@ -791,95 +824,40 @@ class LoginForm extends React.Component {
     }
 }
 
-class OIDCLogin extends React.Component{
-    constructor(props){
-        super(props);
-        this.state = {
-            isLoggedIn: false,
-            accessToken: "none",
-            userId: null,
-        }
-        
-    }
-
-    componentDidMount(){
-        getUserInfo("all").then( (userInfo) => {
-            if (userInfo.isLoggedIn){
-                this.setState(userInfo)
-            } else {
-                oidcUserManager.signinRedirect();
-            }
-        })
-    }
-
-
-    render(){
-        return(
-            <div className="w3-panel">
-                {this.state.isLoggedIn ? (
-                    <div>
-                        <h3>You are logged in.</h3>
-                        <p>
-                            Please note, your access token will expire in&nbsp;
-                            <span className="w3-text-green">
-                                {seconds_to_duration_str(this.state.expires_in)}
-                            </span>
-                            .
-                        </p>
-                        <table>
-                            <tr>
-                                <td className="w3-text-green">Authority:</td>
-                                <td>{oidcConf.authority}</td>
-                            </tr>
-                            <tr>
-                                <td className="w3-text-green">Name:</td>
-                                <td>{this.state.name}</td>
-                            </tr>
-                            <tr>
-                                <td className="w3-text-green">Username:</td>
-                                <td>{this.state.username}</td>
-                            </tr>
-                            <tr>
-                                <td className="w3-text-green">Email:</td>
-                                <td>{this.state.email}</td>
-                            </tr>
-                            <tr>
-                                <td className="w3-text-green">User ID:</td>
-                                <td>{this.state.userId}</td>
-                            </tr>
-                            <tr>
-                                <td className="w3-text-green">Access token:</td>
-                                <td>{this.state.accessToken}</td>
-                            </tr>
-                        </table>
-                        <p>
-                            For changes at your user profile,
-                            please contact the authentication authority.
-                        </p>
-                    </div>
-                    ) : (
-                        <LoadingIndicator 
-                            size="large"
-                            message="You are redirected to the authentication authority. Please wait."
-                        />
-                    )
-                }
-            </div>
-        )
-    }
-}
 
 class UserRoot extends React.Component{
     constructor(props){
         super(props);
+        this.state = {
+            userInfo: {},
+            userInfoLoaded: false
+        }
+    }
+
+    componentDidMount(){
+        getUserInfo("all").then( (userInfo) => {
+            if (useOIDC && !userInfo.isLoggedIn){
+                oidcUserManager.signinRedirect();
+            } else {
+                this.setState({
+                    userInfo: userInfo,
+                    userInfoLoaded: true
+                })
+            }
+        })
     }
 
     render(){
-        if (useOIDC){
-            return(<OIDCLogin />)
-        }
-        if (loggedIn){
-            return(<UserAccount />)
+        if (!this.state.userInfoLoaded){
+        return(
+                        <LoadingIndicator 
+                    message="Loading user info. Please wait."
+                            size="large"
+                        />
+                    )
+                }
+        else if (this.state.userInfo.isLoggedIn){
+            return(<UserAccount userInfo={this.state.userInfo}/>)
         }
         else{
             return(<LoginForm />)

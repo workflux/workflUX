@@ -53,6 +53,7 @@
             const routeBrowseDir = "{{ url_for('browse_dir') }}"
             const routeUploadFile = "{{ url_for('upload_file') }}"
             const routeDownload = "{{ url_for('download') }}"
+            const routeValidateOIDC = "{{ url_for('validate_oidc') }}"
             const autoRefreshInterval = parseInt(parseFloat("{{ config.WEB_AUTO_REFRESH_INTERVAL }}")*1000)
             const readMaxCharsFromFile = parseInt("{{ config.READ_MAX_CHARS_FROM_FILE }}")
             const loginEnabled = "{{ config.ENABLE_USERS }}" === "True"
