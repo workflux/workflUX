@@ -1,7 +1,9 @@
 from cwlab.database.connector import db
-from cwlab.database.models import BaseUser
+from string import ascii_letters, digits
 from werkzeug.security import generate_password_hash, check_password_hash
 from flask_login import UserMixin
+from random import random, choice as random_choice
+from datetime import datetime
 
 class BaseUser(UserMixin):
     id = None
@@ -15,7 +17,7 @@ class BaseUser(UserMixin):
 
     def __repr__(self):
         return '<User {}>'.format({self.id, self.username, self.email})
-
+    
     def set_password(self, password):
         self.password_hash = generate_password_hash(password)
 
@@ -31,6 +33,20 @@ class User(BaseUser, db.Model):
     password_hash = db.Column(db.String(128))
     date_register = db.Column(db.DateTime())
     date_last_login = db.Column(db.DateTime())
+
+
+class AccessToken(db.Model):
+    id = db.Column(db.Integer(), primary_key=True)
+    token = db.Column(db.String(64), index=True, unique=True)
+    user_id = db.Column(db.Integer, db.ForeignKey('user.id'))
+    expires_at = db.Column(db.DateTime())
+
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+        self.token = "".join([random_choice(ascii_letters + digits) for c in range(0,64)])
+        self.expires_after = self.expires_after if hasattr(self, "expires_after") else 86400
+        self.expires_at = datetime.now() + datetime.timedelta(seconds=self.expires_after)
+
 
 class Exec(db.Model):
     id = db.Column(db.Integer(), primary_key=True)

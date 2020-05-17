@@ -1,7 +1,8 @@
 from random import random
 from time import sleep
 from cwlab.database.connector import db
-from cwlab.database.sqlalchemy.models import User
+from .models import User, AccessToken
+from datetime import datetime 
 
 
 class UserManager():
@@ -74,3 +75,36 @@ class UserManager():
                 assert retry_delay != retry_delays[-1], "Could not connect to database."
                 sleep(retry_delay + retry_delay*random())
         return users
+
+    def create_access_token(self, user_id, expires_after):
+        access_token = AccessToken(
+            user_id=user_id,
+            expires_after=expires_after   
+        )
+        db.session.add(access_token)
+        self.update()
+        return(access_token.token)
+        
+    def get_access_token(self, username, password, expires_after=86400):
+        user = self.load_by_name(username)
+        err_message = "Password or username not valid"
+        assert user is not None, err_message
+        assert user.check_password, err_message
+        for retry in range(0,2):
+            try:
+                token = create_access_token(user_id=user.id, expires_after=expires_after)
+            except: # accounts for unlikely situation of colliding tokens
+                token = create_access_token(user_id=user.id, expires_after=expires_after)
+        return(token)
+
+    def validate_access_token(token):
+        db_request = db.session.query(AccessToken).filter(AccessToken.token == token)
+        if db_request.count() == 1 and \
+            datetime.now() < db_request.first().expires_at:
+            return(True)
+        return(False)
+
+        
+
+
+
