@@ -76,6 +76,14 @@ class UserManager():
                 sleep(retry_delay + retry_delay*random())
         return users
     
+    def get_user_info(self, user):
+        return(
+            {
+                "email": user.email,
+                "admin_rights": user.level == "admin"
+            }
+        )
+
     def validate_admin_rights(self, user):
         assert admin and user.level != "admin", "Admin rights required."
 
@@ -96,25 +104,36 @@ class UserManager():
         )
         db.session.add(access_token)
         self.update()
-        return(access_token.token)
+        return(access_token.token, access_token.expires_at)
         
     def get_access_token(self, username, password, expires_after=86400):
         user = self.load_by_name(username)
         self.validate_user_credentials(user, password)
         for retry in range(0,2):
             try:
-                token = self.create_access_token(user_id=user.id, expires_after=expires_after)
+                token, expires_at = self.create_access_token(
+                    user_id=user.id, 
+                    expires_after=expires_after
+                )
             except: # accounts for unlikely situation of colliding tokens
-                token = self.create_access_token(user_id=user.id, expires_after=expires_after)
-        return(token)
+                token, expires_at = self.create_access_token(
+                    user_id=user.id, 
+                    expires_after=expires_after
+                )
+        self.validate_user_status(user)
+        user_info = self.get_user_info(user)
+        return({
+            "access_token": token,
+            "expires_at": expires_at,
+            **user_info
+        })
 
-    def validate_access_token(token, admin_rights=False):
+    def validate_access_token(self, token, admin_rights=False):
         db_request = db.session.query(AccessToken).filter(AccessToken.token == token)
         assert db_request.count() == 1 and \
             datetime.now() < db_request.first().expires_at, \
             "Access token is not valid or has expired. Please login again."
-        user = self.user(db_request.first().user_id)
-        self.validate_user_status(user)
+        user = self.load(db_request.first().user_id)
         if admin_rights:
             self.validate_admin_rights(user)
 

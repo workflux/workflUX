@@ -6,6 +6,31 @@ function get_time_str(){
     return(date.toLocaleTimeString())
 }
 
+function storeSessionInfo(param_obj){
+    Object.keys(param_obj).map( (param) => {
+        sessionStorage.setItem(param, param_obj[param])
+        localStorage.setItem(param, param_obj[param])
+    })
+}
+
+function getSessionInfo(param_list){
+    let param_obj = {}
+    param_list.map( (param) => {
+        let value = sessionStorage.getItem(param)
+        if (!value){
+            value = localStorage.getItem(param)
+        }
+        if (value == "true"){
+            value = true
+        }
+        else if (value == "false"){
+            value = false
+        }
+        param_obj[param] = value
+    })
+    return(param_obj)
+}
+
 function seconds_to_duration_str(s){
     const h = Math.floor( s / 3600 )
     let s_remain = s % 3600
@@ -34,7 +59,7 @@ async function ajaxRequest({
     } 
 }){
     let setDataAT = sendData
-    setDataAT["access_token"] = await get_user_info("accessToken")
+    setDataAT["access_token"] = await getUserInfo("accessToken")
     let formData
     if (sendViaFormData){
         formData = new FormData()
@@ -826,7 +851,7 @@ class AjaxComponent extends React.Component {
 
     async request(){ // ajax request to server
         let sendData = this.props.sendData
-        sendData["access_token"] = await get_user_info("accessToken")
+        sendData["access_token"] = await getUserInfo("accessToken")
         this.ajaxRequest({
             statusVar: "loading",
             statusValueDuringRequest: true,
@@ -1513,7 +1538,7 @@ class FileUploadComponent extends React.Component {
         }
         else{
             let metaData = this.props.metaData ? this.props.metaData : {}
-            metaData["access_token"] = await get_user_info("accessToken")
+            metaData["access_token"] = await getUserInfo("accessToken")
             this.setState({status:"uploading"})
             let formData = new FormData()
             formData.append("file", fileToUpload)

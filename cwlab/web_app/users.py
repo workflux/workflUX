@@ -41,14 +41,15 @@ def get_access_token():
         data_req = request.get_json()
         username = data_req["username"]
         password = data_req["password"]
-        token = db_connector.user_manager.get_access_token(
+        token_info = db_connector.user_manager.get_access_token(
             username=username,
             password=password,
             expires_after=app.config["SQLALCHEMY_ACCESS_TOKEN_EXPIRES_AFTER"]
         )
         data={ 
             "success": True,
-            "access_token": token
+            "username": username,
+            **token_info
         }
     except AssertionError as e:
         messages.append( handle_known_error(e, return_front_end_message=True))

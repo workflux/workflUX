@@ -5,21 +5,20 @@ function changeInputField(event){
     this.setState({[event.currentTarget.name]: event.currentTarget.value})
 }
 
-async function get_user_info(
+async function getUserInfo(
     what // can be one of "all", "accessToken", or "userId"
 ){
     let userInfo = {
-        isLoggedIn: loggedIn,
-        accessToken: "none",
-        userId: loggedIn ? username : null,
+        isLoggedIn: false,
+        accessToken: null,
+        userId: null,
         name: null,
         username: null,
         email: null,
-        auth_time: null,
         expired: null,
-        expires_in: null,
-        expires_at: null,
-    };
+        expiresAt: null,
+        expires_in: null
+    }
     if (useOIDC){
         const user = await oidcUserManager.getUser()
         const isLoggedIn = (user && user.access_token && !user.expired) ? true : false
@@ -31,9 +30,8 @@ async function get_user_info(
                 name: user.profile.name,
                 username: user.profile.preferred_username,
                 email: user.profile.email,
-                auth_time: user.profile.auth_time,
                 expired: user.expires_in,
-                expires_at: user.expires_at,
+                expiresAt: user.expires_at,
                 expires_in: user.expires_in
             }
         }
@@ -41,11 +39,9 @@ async function get_user_info(
             userInfo["accessToken"] = (user && user.expired) ? "expired" : "none"
             userInfo["expired"] = (user && user.expired) ? true : null
         }
-        console.log(user)
     }
     else {
-        userInfo["isLoggedIn"] = loggedIn
-        userInfo["userId"] = loggedIn ? username : null
+        userInfo = getSessionInfo(Object.keys(userInfo))
     }
 
     if (what == "accessToken"){
@@ -664,9 +660,15 @@ class LoginForm extends React.Component {
                 route: routeGetAccessToken,
                 onSuccess: (data, messages) => {
                     if (data.success){
+                        storeSessionInfo({
+                            accessToken: data.access_token,
+                            username: data.username,
+                            expiresAt: data.expires_at,
+                            email: data.email,
+                            isLoggedIn: true
+                        })
                         window.location.reload(true)
                     }
-
                 }
             })
         }
@@ -801,7 +803,7 @@ class OIDCLogin extends React.Component{
     }
 
     componentDidMount(){
-        get_user_info("all").then( (userInfo) => {
+        getUserInfo("all").then( (userInfo) => {
             if (userInfo.isLoggedIn){
                 this.setState(userInfo)
             } else {
