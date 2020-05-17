@@ -34,15 +34,15 @@ def has_user_been_activated(username):
     return get_user_by_username(username).status == "active"
 
 def login_required(admin=False, access_token="none"):
-    if app.config["ENABLE_USERS"] and app.config['USE_OIDC']:
-        message = check_oidc_token(access_token)
-        assert message["success"], "Access token not valid: {}".format(message["error"])
-    elif app.config["ENABLE_USERS"]:
-        assert current_user.is_authenticated, "Login required."
-        user = load_user(current_user.get_id())
-        assert not (admin and user.level != "admin"), "Admin required."
-        assert user.status == "active", "Your account is currently not active." + \
-            " Please wait for an administrator to approve it."
+    if app.config["ENABLE_USERS"]:
+        assert access_token != "none", "No access token provided."
+        if app.config['USE_OIDC']:
+            message = check_oidc_token(access_token)
+            assert message["success"], "Access token not valid: {}".format(message["error"])
+        else:
+            assert user_manager.validate_access_token( token = access_token ), 
+                "Access token is not valid or has expired."
+            
 
 #checks if a token is valid
 def check_oidc_token(token):

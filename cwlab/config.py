@@ -158,6 +158,12 @@ class Config(object):
             self.CONFIG_FILE_content.get('DATABASE_TRACK_MODIFICATIONS') or  
             False
         )
+
+        self.SQLALCHEMY_ACCESS_TOKEN_EXPIRES_AFTER = ( # duration of validy of an access token in seconds
+            os.environ.get('SQLALCHEMY_ACCESS_TOKEN_EXPIRES_AFTER') or
+            self.CONFIG_FILE_content.get('SQLALCHEMY_ACCESS_TOKEN_EXPIRES_AFTER') or  
+            86400 # 24h
+        )
         
         self.READ_MAX_CHARS_FROM_FILE = (
             os.environ.get('CWLAB_READ_MAX_CHARS_FROM_FILE') or

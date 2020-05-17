@@ -9,6 +9,7 @@ from cwlab.users.manage import check_user_credentials, check_all_format_conforma
     get_all_users_info as get_all_users_info_, change_user_status_or_level, get_user_by_username, \
     has_user_been_activated
 from cwlab.users.manage import login_required, check_oidc_token
+from cwlab import db_connector
 from cwlab.log import handle_known_error, handle_unknown_error
 from cwlab.utils import get_time_string
 
@@ -26,6 +27,38 @@ def validate_oidc():
     return jsonify({
         'success': message['success']
     })
+
+@app.route('/get_access_token/', methods=['GET'])
+def get_access_token():
+    """Requests an access token. Only relevant when managing users via sqlalchemy."""
+    messages = []
+    data={ "success": False }
+    try:
+        assert app.config["ENABLE_USERS"], \
+            "Users are not enabled."
+        assert not app.config["USE_OIDC"], \
+            "Please request your access token from the corresponding OIDC authority."
+        data_req = request.get_json()
+        username = data_req["username"]
+        password = data_req["password"]
+        token = db_connector.user_manager.get_access_token(
+            username=username,
+            password=password,
+            expires_after=app.config["SQLALCHEMY_ACCESS_TOKEN_EXPIRES_AFTER"]
+        )
+        data={ 
+            "success": True,
+            "access_token": token
+        }
+    except AssertionError as e:
+        messages.append( handle_known_error(e, return_front_end_message=True))
+    except Exception as e:
+        messages.append(handle_unknown_error(e, return_front_end_message=True))
+    return jsonify({
+            "data": data,
+            "messages": messages
+        }
+    )
 
 @app.route('/login/', methods=['POST'])
 def login():
