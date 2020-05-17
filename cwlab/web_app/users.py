@@ -28,7 +28,7 @@ def validate_oidc():
         'success': message['success']
     })
 
-@app.route('/get_access_token/', methods=['GET'])
+@app.route('/get_access_token/', methods=['POST'])
 def get_access_token():
     """Requests an access token. Only relevant when managing users via sqlalchemy."""
     messages = []
@@ -59,50 +59,6 @@ def get_access_token():
             "messages": messages
         }
     )
-
-@app.route('/login/', methods=['POST'])
-def login():
-    messages = []
-    data={ "success": False }
-    try:
-        data_req = request.get_json()
-        username = data_req["username"]
-        password = data_req["password"]
-        remember_me = data_req["remember_me"]
-        validated_user = check_user_credentials(username, password, return_user_if_valid=True)
-        
-        if validated_user is None:
-            messages.append( { 
-                "time": get_time_string(),
-                "type":"error", 
-                "text": "Username or password is not valid."
-            } )
-        else:
-            if has_user_been_activated(username):
-                login_user(validated_user, remember=remember_me)
-                messages.append( { 
-                    "time": get_time_string(),
-                    "type":"success", 
-                    "text": "Successfully validated."
-                } )
-            else:
-                messages.append( { 
-                    "time": get_time_string(),
-                    "type":"error", 
-                    "text": "Your account has not been approved by an administrator, yet."
-                } )
-
-        data={ "success": True }
-    except AssertionError as e:
-        messages.append( handle_known_error(e, return_front_end_message=True))
-    except Exception as e:
-        messages.append(handle_unknown_error(e, return_front_end_message=True))
-    return jsonify({
-            "data": data,
-            "messages": messages
-        }
-    )
-
 
 @app.route('/register/', methods=['POST'])
 def register():

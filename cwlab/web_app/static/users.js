@@ -618,22 +618,16 @@ class LoginForm extends React.Component {
             email: "",
             password: "",
             repPassword: "",
-            rememberMe: false,
             actionStatus: "none",
             serverMessages: [],
             whichFocus: "login"
         }
 
         this.changeInputField = changeInputField.bind(this)
-        this.changeRememberMe = this.changeRememberMe.bind(this)
         this.login = this.login.bind(this)
         this.register = this.register.bind(this)
         this.ajaxRequest = ajaxRequest.bind(this)
         this.changeFocus = this.changeFocus.bind(this)
-    }
-
-    changeRememberMe(value, isSet){
-        this.setState({rememberMe: isSet})
     }
 
     changeFocus(newFocus){
@@ -665,10 +659,9 @@ class LoginForm extends React.Component {
             this.ajaxRequest({
                 sendData: {
                     username: this.state.username,
-                    password: this.state.password,
-                    remember_me: this.state.rememberMe
+                    password: this.state.password
                 },
-                route: routeLogin,
+                route: routeGetAccessToken,
                 onSuccess: (data, messages) => {
                     if (data.success){
                         window.location.reload(true)
@@ -761,20 +754,6 @@ class LoginForm extends React.Component {
                     </p>
                 )}
                 
-                { this.state.whichFocus == "login" && (
-                    <p>
-                        <label>
-                            <Checkbox
-                                name="remember_me"
-                                value="remember_me"
-                                checked={this.state.rememberMe}
-                                onChange={this.changeRememberMe}
-                            />
-                            Remember me
-                        </label>
-                    </p>
-                )}
-
                 <ActionButton
                     name="login"
                     value="login"
