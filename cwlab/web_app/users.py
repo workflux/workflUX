@@ -13,6 +13,12 @@ from cwlab import db_connector
 from cwlab.log import handle_known_error, handle_unknown_error
 from cwlab.utils import get_time_string
 
+def validate_local_login_enabled():
+    assert app.config["ENABLE_USERS"], \
+        "Users are not enabled."
+    assert not app.config["USE_OIDC"], \
+        "Please request your access token from the corresponding OIDC authority."
+
 @app.route('/login_oidc/', methods=['GET'])
 def login_oidc():
     """Redirect handler for oidc login"""
@@ -34,10 +40,7 @@ def get_access_token():
     messages = []
     data={ "success": False }
     try:
-        assert app.config["ENABLE_USERS"], \
-            "Users are not enabled."
-        assert not app.config["USE_OIDC"], \
-            "Please request your access token from the corresponding OIDC authority."
+        validate_local_login_enabled()
         data_req = request.get_json()
         username = data_req["username"]
         password = data_req["password"]
@@ -67,6 +70,7 @@ def register():
     messages = []
     data={ "success": False }
     try:
+        validate_local_login_enabled()
         data_req = request.get_json()
         username = data_req["username"]
         email = data_req["email"]
@@ -96,29 +100,14 @@ def register():
         }
     )
 
-@app.route('/get_general_user_info/', methods=['POST'])
-def get_general_user_info():
-    messages = []
-    data={}
-    try:
-        login_required()
-        data = get_user_info(current_user.get_id())
-    except AssertionError as e:
-        messages.append( handle_known_error(e, return_front_end_message=True))
-    except Exception as e:
-        messages.append(handle_unknown_error(e, return_front_end_message=True))
-    return jsonify({
-            "data": data,
-            "messages": messages
-        }
-    )
-
 @app.route('/get_all_users_info/', methods=['POST'])
 def get_all_users_info():
     messages = []
     data=[]
     try:
-        login_required(admin=True)
+        validate_local_login_enabled()
+        data_req = request.get_json()
+        access_token = data_req["access_token"]
         data = get_all_users_info_()
     except AssertionError as e:
         messages.append( handle_known_error(e, return_front_end_message=True))
@@ -135,8 +124,10 @@ def modify_or_delete_users():
     messages = []
     data=[]
     try:
-        login_required(admin=True)
+        validate_local_login_enabled()
         data_req = request.get_json()
+        access_token = data_req["access_token"]
+        login_required(access_token=access_token, admin=True)
         action = data_req["action"]
         user_selection = data_req["user_selection"]
         value = data_req["value"]
