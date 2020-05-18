@@ -4,6 +4,44 @@ from werkzeug.security import generate_password_hash, check_password_hash
 from flask_login import UserMixin
 from random import random, choice as random_choice
 from datetime import datetime, timedelta
+import re
+
+format_errors = {
+    "username": "The provided username is not valid." +
+                " It needs a minimal length of 4 and may only contain ASCII character and no whitespaces. Please try again.",
+    "password": "The provided password is not valid." +
+                " It needs a minimal length of 8 and may only contain utf-8 character. Please try again.",
+    "password_not_match": "Passwords did not match. Please try again.",
+    "email": "The provided email is not valid. Please try again."
+}
+
+def validate_format_conformance(which, string, exception_if_not_valid=True):
+    if which == "username":
+        is_valid = (
+            string.encode("ascii", "ignore").decode("utf-8").replace(" ", "") == string and
+            len(string) >= 4
+        )
+    elif which == "password":
+        is_valid = (
+            string.encode("utf-8", "ignore").decode("utf-8") == string and
+            len(string) >= 8
+        )
+    elif which == "email":
+        is_valid = (
+            string.encode("utf-8", "ignore").decode("utf-8") == string and
+            bool(re.match(".+@.+\..+", string))
+        )
+    if exception_if_not_valid:
+        assert is_valid, format_errors[which]
+    else:
+        return is_valid
+
+def validate_password_repeat_match(password, rep_password, exception_if_not_valid=True):
+    is_valid = password == rep_password
+    if exception_if_not_valid:
+        assert is_valid, format_errors["password_not_match"]
+    else:
+        return is_valid
 
 class BaseUser(UserMixin):
     id = None
@@ -14,17 +52,24 @@ class BaseUser(UserMixin):
     password_hash = None
     date_register = None
     date_last_login = None
-
+    
     def __repr__(self):
         return '<User {}>'.format({self.id, self.username, self.email})
     
-    def set_password(self, password):
+    def set_password(self, password, rep_password=None):
+        if rep_password is not None:
+            validate_password_repeat_match(password, rep_password)            
+        validate_format_conformance("password", password)
         self.password_hash = generate_password_hash(password)
 
     def check_password(self, password):
         return check_password_hash(self.password_hash, password)
 
 class User(BaseUser, db.Model):
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+        validate_format_conformance("username", self.username)
+        validate_format_conformance("email", self.email)
     id = db.Column(db.Integer, primary_key=True)
     username = db.Column(db.String(64), index=True, unique=True)
     email = db.Column(db.String(120), index=True)
