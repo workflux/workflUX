@@ -4,8 +4,7 @@ import pprint
 from flask import render_template, jsonify, redirect, flash, url_for, request, current_app as app
 from flask_login import current_user, login_user, logout_user
 from werkzeug.urls import url_parse
-from cwlab.users.manage import check_user_credentials, check_all_format_conformance, \
-    add_user, get_user_info, change_password as change_password_, load_user, delete_user, \
+from cwlab.users.manage import add_user, get_user_info, load_user, \
     get_all_users_info as get_all_users_info_, change_user_status_or_level, get_user_by_username, \
     has_user_been_activated
 from cwlab.users.manage import login_required, check_oidc_token
@@ -76,20 +75,19 @@ def register():
         email = data_req["email"]
         password = data_req["password"]
         rep_password = data_req["rep_password"]
-        valid_format = check_all_format_conformance(username, email, password, rep_password)
-        if valid_format != "valid":
-            messages.append( { 
-                "time": get_time_string(),
-                "type":"error", 
-                "text": valid_format 
-            } )
-        else:
-            add_user(username, email, "user",  password, "need_approval")
-            messages.append( { 
-                "time": get_time_string(),
-                "type":"success", 
-                "text": "Successfully send. An administrator will need to approve your account."
-            } )
+        db_connector.user_manager.create(
+            username=username,
+            email=email,
+            password=password,
+            rep_password=rep_password,
+            level="user",
+            status="approval_needed"
+        )
+        messages.append( { 
+            "time": get_time_string(),
+            "type":"success", 
+            "text": "Successfully send. An administrator will need to approve your account."
+        } )
     except AssertionError as e:
         messages.append( handle_known_error(e, return_front_end_message=True))
     except Exception as e:
@@ -108,6 +106,7 @@ def get_all_users_info():
         validate_local_login_enabled()
         data_req = request.get_json()
         access_token = data_req["access_token"]
+        login_required(access_token=access_token, admin=True)
         data = get_all_users_info_()
     except AssertionError as e:
         messages.append( handle_known_error(e, return_front_end_message=True))
@@ -170,12 +169,20 @@ def change_password():
     messages = []
     data={"success": False}
     try:
-        login_required()
+        validate_local_login_enabled()
         data_req = request.get_json()
+        access_token = data_req["access_token"]
+        username = data_req["username"]
         old_password = data_req["old_password"]
         new_password = data_req["new_password"]
         new_rep_password = data_req["new_rep_password"]
-        change_password_(current_user.get_id(), old_password, new_password, new_rep_password)
+        login_required(access_token=access_token, username=username)
+        db_connector.user_manager.change_password(
+            username, 
+            old_password, 
+            new_password, 
+            new_rep_password
+        )
         data={"success": True}
         messages.append( { 
             "time": get_time_string(),
@@ -197,12 +204,12 @@ def delete_account():
     messages = []
     data={"success": False}
     try:
-        login_required()
+        validate_local_login_enabled()
         data_req = request.get_json()
+        access_token = data_req["access_token"]
         username = data_req["username"]
-        current_user_id = current_user.get_id()
-        assert username == load_user(current_user_id).username, "The entered username does not match your account."
-        delete_user(current_user_id)
+        login_required(access_token=access_token, username=username)
+        db_connector.user_manager.delete(username)
         data={"success": True}
         messages.append( { 
             "time": get_time_string(),

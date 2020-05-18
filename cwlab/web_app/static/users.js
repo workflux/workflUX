@@ -408,6 +408,7 @@ class AdminDashboard extends React.Component {
 class ChangePassword extends React.Component {
     constructor(props){
         super(props);
+        // props.username
 
         this.state = {
             oldPassword: "",
@@ -432,6 +433,7 @@ class ChangePassword extends React.Component {
     async changePassword(){
         this.ajaxRequest({
             sendData: {
+                username: this.props.username,
                 old_password: this.state.oldPassword,
                 new_password: this.state.newPassword,
                 new_rep_password: this.state.repNewPassword
@@ -439,7 +441,7 @@ class ChangePassword extends React.Component {
             route: routeChangePassword,
             onSuccess: (data, messages) => {
                 if (data.success){
-                    window.location.reload(true)
+                    logout()
                 }
             }
         })
@@ -500,7 +502,7 @@ class DeleteAccount extends React.Component {
             },
             onSuccess: (data, messages) => {
                 if (data.success){
-                    window.location.reload(true)
+                    logout()
                 }
             }
         })
@@ -556,17 +558,7 @@ class Logout extends React.Component {
 
     
     componentDidMount() {
-        this.logout()
-    }
-
-    async logout(){
-        if (useOIDC){
-            oidcUserManager.signoutRedirect()
-        }
-        else {
-            cleanSessionInfo()
-            window.location.reload(true)
-        }
+        logout()
     }
 
     render(){
@@ -614,7 +606,7 @@ class UserAccount extends React.Component {
         this.itemContents = {
             user_and_session_info: <UserAndSessionInfo userInfo={this.props.userInfo} />,
             admin_dashboard: <AdminDashboard />,
-            change_password: <ChangePassword />,
+            change_password: <ChangePassword username={this.props.userInfo.username}/>,
             delete_account: <DeleteAccount />,
             logout: <Logout />,
         }
