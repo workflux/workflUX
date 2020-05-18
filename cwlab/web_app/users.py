@@ -46,6 +46,7 @@ def get_access_token():
             password=password,
             expires_after=app.config["SQLALCHEMY_ACCESS_TOKEN_EXPIRES_AFTER"]
         )
+        token_info["expires_at"] = token_info["expires_at"].strftime("%m-%d-%Y %H:%M:%S")
         data={ 
             "success": True,
             "username": username,

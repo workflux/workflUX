@@ -6,8 +6,9 @@ function changeInputField(event){
 }
 
 async function getUserInfo(
-    what // can be one of "all", "accessToken", or "userId"
+    what // can be one of "all", "accessToken", or "username"
 ){
+    
     let userInfo = {
         isLoggedIn: false,
         accessToken: null,
@@ -38,19 +39,31 @@ async function getUserInfo(
             }
         }
         else {
-            userInfo["accessToken"] = (user && user.expired) ? "expired" : "none"
-            userInfo["expired"] = (user && user.expired) ? true : null
+            userInfo.accessToken = (user && user.expired) ? "expired" : "none"
+            userInfo.expired = (user && user.expired) ? true : null
         }
     }
     else {
         userInfo = getSessionInfo(Object.keys(userInfo))
+        if (userInfo.expiresAt != null){
+            userInfo.expiresAt = new Date(userInfo.expiresAt)
+            const now = new Date()
+            userInfo.expiresIn = Math.floor((userInfo.expiresAt - now)/1000)
+            userInfo.expired = userInfo.expiresIn <= 0 ? true : false
+        }
+        
+        userInfo.isLoggedIn = (userInfo.username && userInfo.accessToken && !userInfo.expired) ? true : false
+        if (!userInfo.isLoggedIn) {
+            userInfo.username = null
+            userInfo.accessToken = "none"
+        }
     }
 
     if (what == "accessToken"){
         return(userInfo.accessToken)
     }
-    else if (what == "userId"){
-        return(userInfo.userId)
+    else if (what == "username"){
+        return(userInfo.username)
     }
     else {
         return(userInfo)
@@ -85,11 +98,11 @@ class UserAndSessionInfo extends React.Component {
         return(
             <div>
                 <h3>You are logged in.</h3>
-                {this.props.userInfo.expires_in && (
+                {this.props.userInfo.expiresIn && (
                     <p>
                         Please note, your access token will expire in&nbsp;
                         <span className="w3-text-green">
-                            {seconds_to_duration_str(this.state.expires_in)}
+                            {seconds_to_duration_str(this.props.userInfo.expiresIn)}
                         </span>
                         .
                     </p>
@@ -106,8 +119,12 @@ class UserAndSessionInfo extends React.Component {
                             .filter( (p) => (this.props.userInfo[p] != null))
                             .map( (p) => (
                                 <tr key={p}>
-                                    <td className="w3-text-green">{this.labels[p]}</td>
-                                    <td>{this.props.userInfo[p]}</td>
+                                    <td className="w3-text-green" style={ {whiteSpace: "nowrap"} }>
+                                        {this.labels[p]}:
+                                    </td>
+                                    <td>
+                                        {String(this.props.userInfo[p])}
+                                    </td>
                                 </tr>
                             )
                         )}
