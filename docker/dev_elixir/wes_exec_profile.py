@@ -25,8 +25,7 @@ class PyExecProfile():
 
 
 class WES(PyExecProfile):
-    def exec(self):
-        host = "https://csc-wes.rahtiapp.fi"
+    def exec(self, host_url):
 
         with open(self.RUN_INPUT) as run_input:
             workflow_params = json.dumps(yaml.load(run_input, Loader=yaml.FullLoader))
@@ -48,38 +47,57 @@ class WES(PyExecProfile):
             }
 
         with open(self.LOG_FILE, "wt") as log:
-            # send request
-            log.write(">>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>cwl2wes\n")
-            log.write("Send CWL workflow to {}\n".format(host))
-            log.write("Data: {}\n".format(data))
-            log.write("Files: {}\n".format(files))
-            log.write("headers: {}\n".format(headers))
-            send_post = requests.post(
-                "{}/ga4gh/wes/v1/runs".format(host), 
-                data=data, 
-                files=files,
-                headers=headers
+            log.write(
+                "> Send CWL workflow to {}\n".format(host_url) + 
+                "    Data: {}\n".format(data) +
+                "    Files: {}\n".format(files) +
+                "    Headers: {}\n".format(headers)
             )
-            log.write("Send: {}\n".format(send_post))
-            log.write("Status Code: {}\n".format(send_post.status_code))
-            if send_post.status_code == 200:
-                log.write("Run: {}\n".format(send_post.json()))
-                keep_running = True
-                while keep_running:
-                    current_run = requests.get(
-                        "{}/ga4gh/wes/v1/runs/{}".format(host, send_post.json()["run_id"]),
-                        headers=headers
-                    )
-                    log.write("Get: {}\n".format(current_run.json()))
-                    if current_run.json()["state"] in ["EXECUTOR_ERROR", "SYSTEM_ERROR", "CANCELED", "CANCELING"]:
-                        log.write("WES-Error: {}\n".format(current_run.json()["state"]))
-                        log.write("cwl2wes<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<\n")
-                        sys.exit(1)
-                    if current_run.json()["state"] == "COMPLETE":
-                        log.write("WES-Error: {}\n".format(current_run.json()["state"]))
-                        keep_running=False
-                    time.sleep(5)
-                log.write("cwl2wes<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<\n")
-            else:
-                log.write("cwl2wes<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<\n")
-                sys.exit(1)
+
+        send_post = requests.post(
+            "{}/ga4gh/wes/v1/runs".format(host_url), 
+            data=data, 
+            files=files,
+            headers=headers
+        )
+
+        if send_post.status_code == 200:
+            with open(self.LOG_FILE, "a") as log:
+                log.write("> Received run_id: {}\n". format(send_post.json()["run_id"]))
+
+            while True:
+
+                with open(self.LOG_FILE, "a") as log:
+                     log.write("> Check {}: ". format(send_post.json()["run_id"]))
+
+                current_run = requests.get(
+                    "{}/ga4gh/wes/v1/runs/{}".format(host_url, send_post.json()["run_id"]),
+                    headers=headers
+                )
+
+                with open(self.LOG_FILE, "a") as log:
+                    log.write("{}\n". format(current_run.json()["state"]))
+
+                if current_run.json()["state"] in ["EXECUTOR_ERROR", "SYSTEM_ERROR", "CANCELED", "CANCELING"]:
+                    with open(self.LOG_FILE, "a") as log:
+                        log.write(json.dumps(current_run.json(), indent=4))
+                    sys.exit(1)
+
+                if current_run.json()["state"] == "COMPLETE":
+                    with open(self.LOG_FILE, "a") as log:
+                        log.write(json.dumps(current_run.json(), indent=4))
+                    break
+                
+                time.sleep(5)
+        else:
+            sys.exit(1)
+
+class WES_localhost(WES):
+    def exec(self):
+        host_url="http://localhost:8080"
+        super(WES_localhost, self).exec(host_url)
+
+class WES_rathiapp(WES):
+    def exec(self):
+        host_url="https://csc-wes.rahtiapp.fi"
+        super(WES_rathiapp, self).exec(host_url)

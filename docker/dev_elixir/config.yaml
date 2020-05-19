@@ -47,4 +47,4 @@ EXEC_PROFILES:
     type: python
     max_retries: 2
     py_module: ./wes_exec_profile.py
-    py_class: WES
+    py_class: WES_rathiapp
