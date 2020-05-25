@@ -34,8 +34,8 @@ RUN apt-get install -qq -y \
 	git
 
 # Install cwlab:
-COPY . /src/cwltool
-RUN python3 -m pip install -e /src/cwltool
+COPY . /src/cwlab
+RUN python3 -m pip install -e /src/cwlab
 
 # Configure cwlab:
 RUN mkdir -p \
