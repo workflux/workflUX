@@ -97,7 +97,17 @@ class WES_localhost(WES):
         host_url="http://localhost:8080"
         super(WES_localhost, self).exec(host_url)
 
-class WES_rathiapp(WES):
+class ELIXIR_FI_WES_1(WES):
     def exec(self):
         host_url="https://csc-wes.rahtiapp.fi"
-        super(WES_rathiapp, self).exec(host_url)
+        super(ELIXIR_FI_WES_1, self).exec(host_url)
+        
+class ELIXIR_FI_WES_2(WES):
+    def exec(self):
+        host_url="https://csc-wes-alvaro.c03.k8s-popup.csc.fi"
+        super(ELIXIR_FI_WES_2, self).exec(host_url)
+        
+class ELIXIR_CZ_WES_1(WES):
+    def exec(self):
+        host_url="https://elixir-wes1.cerit-sc.cz"
+        super(ELIXIR_CZ_WES_1, self).exec(host_url)
