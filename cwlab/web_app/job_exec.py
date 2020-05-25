@@ -1,7 +1,6 @@
 import sys
 import os
 from flask import render_template, jsonify, redirect, flash, url_for, request, send_from_directory
-from flask_login import current_user
 from werkzeug.urls import url_parse
 from flask import current_app as app 
 from cwlab.utils import fetch_files_in_dir, allowed_extensions_by_type, \
@@ -141,8 +140,8 @@ def start_exec():    # returns all parmeter and its default mode (global/job spe
     try:
         data_req = request.get_json()
         access_token = data_req["access_token"]
-        login_required(access_token=access_token)
-        user_id = current_user.get_id() if app.config["ENABLE_USERS"] and not app.config["USE_OIDC"] else None
+        username = data_req["username"]
+        login_required(access_token=access_token, username=username)
         access_token = data_req["access_token"]
         job_id = data_req["job_id"]
         run_ids = sorted(data_req["run_ids"])
@@ -153,8 +152,8 @@ def start_exec():    # returns all parmeter and its default mode (global/job spe
             job_id,
             run_ids,
             exec_profile_name,
-            user_id,
-            max_parrallel_exec_user_def,
+            username=username,
+            max_parrallel_exec_user_def=max_parrallel_exec_user_def,
             access_token=access_token
         )
         

@@ -2,7 +2,6 @@ import requests
 import pprint
 import json
 
-from cwlab import login
 from cwlab import db_connector
 from flask import current_app as app
 from getpass import getpass
@@ -11,13 +10,11 @@ from random import random
 import sys
 from re import match
 from datetime import datetime
-from flask_login import current_user
 
 allowed_levels = ["admin", "user"]
 
 user_manager = db_connector.user_manager
 
-@login.user_loader
 def load_user(id, return_username_only=False):
     user = user_manager.load(id=id)
     if return_username_only:
@@ -78,14 +75,6 @@ def get_users(only_admins=False, return_usernames=False):
         return usernames
     else:
         return users
-
-def get_user_info(id):
-    user = load_user(id)
-    return {
-        "username": user.username,
-        "email": user.email,
-        "level": user.level
-    }
 
 def add_user(username, email, level, password, status="active"):
     assert not check_if_username_exists(username), "Username already exists."

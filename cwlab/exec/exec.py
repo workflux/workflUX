@@ -1,7 +1,6 @@
 from flask import current_app as app
 from cwlab.utils import get_path, get_duration, read_file_content, get_run_ids, \
     get_job_name_from_job_id, get_job_templ_info, get_allowed_base_dirs, check_if_path_in_dirs
-from cwlab.users.manage import get_user_info
 from cwlab import db_connector
 from datetime import datetime
 import os, sys, platform
@@ -17,6 +16,7 @@ basedir = os.path.abspath(os.path.dirname(__file__))
 python_interpreter = sys.executable
 
 exec_manager = db_connector.exec_manager
+user_manager = db_connector.user_manager
 
 def make_job_dir_tree(job_id):
     job_dir = get_path("job_dir", job_id)
@@ -119,15 +119,15 @@ def exec_runs(
     job_id, 
     run_ids, 
     exec_profile_name, 
-    user_id=None, 
+    username=None, 
     max_parrallel_exec_user_def=None, 
     add_exec_info={}, 
     send_email=True,
     access_token=None
     ):
     if send_email and app.config["SEND_EMAIL"]:
-        if not user_id is None:
-            user_email = get_user_info(user_id)["email"]
+        if not username is None:
+            user_email = user_manager.get_user_info(username)["email"]
         else:
             user_email = app.config["DEFAULT_EMAIL"]
     else:
@@ -161,7 +161,7 @@ def exec_runs(
             time_finished=None, #*
             timeout_limit=None, #*
             pid=-1, #*
-            user_id=user_id,
+            username=username,
             exec_profile=exec_profile,
             exec_profile_name=exec_profile_name,
             add_exec_info=add_exec_info,

@@ -552,7 +552,6 @@ class Logout extends React.Component {
             serverMessages: []
         }
 
-        this.logout = this.logout.bind(this)
         this.ajaxRequest = ajaxRequest.bind(this)
     }
 

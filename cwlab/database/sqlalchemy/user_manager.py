@@ -79,7 +79,8 @@ class UserManager():
                 sleep(retry_delay + retry_delay*random())
         return users
     
-    def get_user_info(self, user):
+    def get_user_info(self, username):
+        user = self.load_by_name(username)
         return(
             {
                 "email": user.email,
@@ -131,7 +132,7 @@ class UserManager():
                     expires_after=expires_after
                 )
         self.validate_user_status(user)
-        user_info = self.get_user_info(user)
+        user_info = self.get_user_info(user.username)
         return({
             "access_token": token,
             "expires_at": expires_at,

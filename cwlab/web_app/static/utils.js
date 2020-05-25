@@ -66,6 +66,7 @@ async function ajaxRequest({
     sendData={},
     sendViaFormData=false,
     route,
+    sendUsername=false,
     onSuccess= (data, messages) => {
                 return({})
             }, //function taking arguments data and messages, return state update
@@ -74,7 +75,11 @@ async function ajaxRequest({
     } 
 }){
     let setDataAT = sendData
-    setDataAT["access_token"] = await getUserInfo("accessToken")
+    const userInfo = await getUserInfo("all")
+    setDataAT["access_token"] = userInfo.accessToken
+    if (sendUsername){
+        setDataAT["username"] = userInfo.username
+    }
     let formData
     if (sendViaFormData){
         formData = new FormData()

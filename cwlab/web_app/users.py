@@ -2,15 +2,15 @@ import sys
 import os
 import pprint
 from flask import render_template, jsonify, redirect, flash, url_for, request, current_app as app
-from flask_login import current_user, login_user, logout_user
 from werkzeug.urls import url_parse
-from cwlab.users.manage import add_user, get_user_info, load_user, \
-    get_all_users_info as get_all_users_info_, change_user_status_or_level, get_user_by_username, \
-    has_user_been_activated
-from cwlab.users.manage import login_required, check_oidc_token
+from cwlab.users.manage import get_all_users_info as get_all_users_info_, \
+    change_user_status_or_level, get_user_by_username, \
+    has_user_been_activated, login_required, check_oidc_token
 from cwlab import db_connector
 from cwlab.log import handle_known_error, handle_unknown_error
 from cwlab.utils import get_time_string
+
+user_manager = db_connector.user_manager
 
 def validate_local_login_enabled():
     assert app.config["ENABLE_USERS"], \
@@ -105,6 +105,7 @@ def get_all_users_info():
     try:
         validate_local_login_enabled()
         data_req = request.get_json()
+        print(data_req)
         access_token = data_req["access_token"]
         login_required(access_token=access_token, admin=True)
         data = get_all_users_info_()
@@ -131,8 +132,8 @@ def modify_or_delete_users():
         user_selection = data_req["user_selection"]
         value = data_req["value"]
         if action == "delete":
-            for user in user_selection:
-                delete_user(get_user_by_username(user).id)
+            for username in user_selection:
+                user_manager.delete(username)
             messages.append( { 
                 "time": get_time_string(),
                 "type":"success", 
@@ -226,20 +227,3 @@ def delete_account():
         }
     )
 
-@app.route('/logout/', methods=['POST'])
-def logout():
-    messages = []
-    data={"success": False}
-    try:
-        login_required()
-        logout_user()
-        data["success"] = True
-    except AssertionError as e:
-        messages.append( handle_known_error(e, return_front_end_message=True))
-    except Exception as e:
-        messages.append(handle_unknown_error(e, return_front_end_message=True))
-    return jsonify({
-            "data": data,
-            "messages": messages
-        }
-    )
