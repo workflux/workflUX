@@ -1026,6 +1026,7 @@ class BrowseDir extends React.Component {
         this.changeBaseDir = this.changeBaseDir.bind(this);
         this.terminateBrowseDialog = this.terminateBrowseDialog.bind(this);
         this.handleFileUpload = this.handleFileUpload.bind(this);
+        this.triggerFileSend = this.triggerFileSend.bind(this);
         this.downloadFileOrFolder = this.downloadFileOrFolder.bind(this);
     }
 
@@ -1141,6 +1142,26 @@ class BrowseDir extends React.Component {
         this.props.terminateBrowseDialog(changes, selectedItem)
     }
     
+    async triggerFileSend(event, data, path){
+        let form = document.createElement('form');
+        form.method = 'post';
+        form.action = routeDownload;
+        let input = document.createElement('input');
+        input.type = 'hidden';
+        input.name = "meta";
+        input.value = JSON.stringify({
+            path: event.currentTarget.name == "download_dir" ? data["zip_path"] : path,
+            job_id: this.props.jobId ? this.props.jobId : null,
+            run_id: this.props.runId ? this.props.runId : null,
+            send_file: true,
+            access_token: await getUserInfo("accessToken")
+        });
+        form.appendChild(input);
+        document.body.appendChild(form);
+        form.submit();
+        return({downloadMessages: []})
+    }
+
     async downloadFileOrFolder(event){
         if (event.currentTarget.name == "download_dir"){
             this.setState({
@@ -1164,24 +1185,7 @@ class BrowseDir extends React.Component {
             },
             sendViaFormData: true,
             route: routeDownload,
-            onSuccess: (data, messages) => {
-                let form = document.createElement('form');
-                form.method = 'post';
-                form.action = routeDownload;
-                let input = document.createElement('input');
-                input.type = 'hidden';
-                input.name = "meta";
-                input.value = JSON.stringify({
-                    path: event.currentTarget.name == "download_dir" ? data["zip_path"] : path,
-                    job_id: this.props.jobId ? this.props.jobId : null,
-                    run_id: this.props.runId ? this.props.runId : null,
-                    send_file: true
-                });
-                form.appendChild(input);
-                document.body.appendChild(form);
-                form.submit();
-                return({downloadMessages: []})
-            }
+            onSuccess: (data, messages) => this.triggerFileSend(event, data, path)
         })
     }
 
