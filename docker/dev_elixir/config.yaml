@@ -33,7 +33,7 @@ EXEC_PROFILES:
   cwltool_no_container: 
     shell: bash
     max_retries: 0
-    max_paralle_exec: 8
+    max_parallel_exec: 8
 
     timeout:
       pre_exec: 120
@@ -45,6 +45,7 @@ EXEC_PROFILES:
 
   WES: 
     type: python
-    max_retries: 2
+    max_retries: 0
+    max_parallel_exec: 1000
     py_module: ./wes_exec_profile.py
     py_class: WES_rathiapp
