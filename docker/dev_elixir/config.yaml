@@ -43,9 +43,23 @@ EXEC_PROFILES:
     exec: |
       "${PYTHON_PATH}" -m cwltool --debug --no-container --outdir "${OUTPUT_DIR}" "${WORKFLOW}" "${RUN_INPUT}" >> "${LOG_FILE}" 2>&1
 
-  WES: 
+  ELIXIR_FI_WES_1: 
     type: python
     max_retries: 0
     max_parallel_exec: 1000
     py_module: ./wes_exec_profile.py
-    py_class: WES_rathiapp
+    py_class: ELIXIR_FI_WES_1
+    
+  ELIXIR_FI_WES_2: 
+    type: python
+    max_retries: 0
+    max_parallel_exec: 1000
+    py_module: ./wes_exec_profile.py
+    py_class: ELIXIR_FI_WES_2
+    
+  ELIXIR_CZ_WES_1: 
+    type: python
+    max_retries: 0
+    max_parallel_exec: 1000
+    py_module: ./wes_exec_profile.py
+    py_class: ELIXIR_CZ_WES_1
