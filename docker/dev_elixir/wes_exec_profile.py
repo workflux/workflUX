@@ -119,7 +119,7 @@ class WES(PyExecProfile):
 
                 time.sleep(5)
                 get_update_response = requests.get(
-                    "{}/ga4gh/wes/v1/runs/{}".format(host_url, send_post.json()["run_id"]),
+                    "{}/ga4gh/wes/v1/runs/{}".format(host_url, self.run_id),
                     headers=headers
                 )
 
@@ -146,7 +146,7 @@ class WES(PyExecProfile):
                 self.status = self.get_update_response_data["status"]
                 log.write(
                     "> {} status: {}\n".format(
-                        datetime.now().strftime("%m/%d - %H:%M:%S")
+                        datetime.now().strftime("%m/%d - %H:%M:%S"),
                         self.status
                     )
                 )
@@ -174,7 +174,7 @@ class WES(PyExecProfile):
                     log.write("> No output attribute found in get response from WES endpoint")
                 log.write("\n\n> Job execution ended successful.\n")
             else:
-                log.write(json.dumps(current_run.json(), indent=4))
+                log.write(json.dumps(self.get_update_response_data, indent=4))
                 log.write("\n\n> Job execution failed.\n")
 
 
