@@ -163,11 +163,11 @@ class WES(PyExecProfile):
                         
 
                 self.get_update_response_data = get_update_response.json()
-                if "status" not in self.get_update_response_data.keys():
+                if "state" not in self.get_update_response_data.keys():
                     n_errors_in_a_row += 1
                     self.ERR_MESSAGE = """
                     Get responce from WES endpoint did not contain 
-                    a \"status\" attribute.
+                    a \"state\" attribute.
                     """
                     log.write(f"> ERROR OCCURED: {self.ERR_MESSAGE}\n")
                     log.write(f"""> The response data was:
@@ -175,7 +175,7 @@ class WES(PyExecProfile):
                     )
                     continue
 
-                self.status = self.get_update_response_data["status"]
+                self.status = self.get_update_response_data["state"]
                 log.write(
                     "> {} status: {}\n".format(
                         datetime.now().strftime("%m/%d - %H:%M:%S"),
