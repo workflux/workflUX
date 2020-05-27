@@ -61,12 +61,23 @@ class WES(PyExecProfile):
             )
 
             ## submit job to wes endpoint:
-            post_run_response = requests.post(
-                "{}/ga4gh/wes/v1/runs".format(host_url), 
-                data=data, 
-                files=files,
-                headers=headers
-            )
+            try:
+                post_run_response = requests.post(
+                    "{}/ga4gh/wes/v1/runs".format(host_url), 
+                    data=data, 
+                    files=files,
+                    headers=headers
+                )
+                assert hasattr(post_run_response, "status_code") and post_run_response.status_code, \
+                    "POST response has no or invalid attribute status_code"
+            except Exception as e:
+                self.ERR_MESSAGE = f"""
+                Exception while submitting job to WES endpoint: 
+                {str(e)}
+                """
+                log.write(f"> ERROR OCCURED: {self.ERR_MESSAGE}\n> Terminating\n")
+                self.SUCCESS = False
+                return()
 
             if post_run_response.status_code == 200:
                 post_run_response_data = post_run_response.json()
@@ -75,16 +86,16 @@ class WES(PyExecProfile):
                     log.write(f"> Run successfully submitted with id: {self.run_id}\n" )
                 else:
                     self.ERR_MESSAGE = """
-                        Post responce from WES endpoint did not contain
-                        a \"run_id\" attribute.\n
+                    Post responce from WES endpoint did not contain
+                    a \"run_id\" attribute.\n
                     """
                     log.write(f"> ERROR OCCURED: {self.ERR_MESSAGE}\n> Terminating\n")
                     self.SUCCESS = False
                     return()
             else:
                 self.ERR_MESSAGE = f"""
-                    Could not submit ost run to WES endpoint.
-                    Post request resulted in status code: {post_run_response.status_code}\n
+                Could not submit ost run to WES endpoint.
+                Post request resulted in status code: {post_run_response.status_code}\n
                 """
                 log.write(f"> ERROR OCCURED: {self.ERR_MESSAGE}\n> Terminating\n")
                 self.SUCCESS = False
@@ -94,10 +105,8 @@ class WES(PyExecProfile):
             ## periodically check run status:
             log.write(
                 f"""
-                    \n
-                    >>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>\n
-                    Checking status of run periodically:
-                    \n\n
+                >>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>
+                Checking status of run periodically:
                 """
             )
             n_errors_in_a_row = 0
@@ -111,19 +120,39 @@ class WES(PyExecProfile):
                     log.write(
                         f"""
                         > Exceeded allowed number of unsuccessful status checks: {self.ERR_MESSAGE}\n
-                        > Terminating\n
+                        > Terminating
                         """
                     )
                     self.SUCCESS = False
                     return()
 
                 time.sleep(5)
-                get_update_response = requests.get(
-                    "{}/ga4gh/wes/v1/runs/{}".format(host_url, self.run_id),
-                    headers=headers
-                )
+                try:
+                    get_update_response = requests.get(
+                        "{}/ga4gh/wes/v1/runs/{}".format(host_url, self.run_id),
+                        headers=headers
+                    )
+                    assert hasattr(get_update_response, "status_code") and get_update_response.status_code, \
+                        "POST response has no or invalid attribute status_code"
+                except Exception as e:
+                    n_errors_in_a_row += 1
+                    self.ERR_MESSAGE = f"""
+                    Exception while getting status update from WES endpoint: 
+                    {str(e)}
+                    """
+                    log.write(f"> ERROR OCCURED: {self.ERR_MESSAGE}\n")
+                    continue
+                    
 
-                if get_update_response.status_code != 200:
+                if not hasattr(get_update_response, "status_code"):
+                    n_errors_in_a_row += 1
+                    self.ERR_MESSAGE = f"""
+                    Could not get status update from WES endpoint.
+                    Get request had not status code status code: {get_update_response.status_code}\n
+                    """
+                    log.write(f"> ERROR OCCURED: {self.ERR_MESSAGE}\n")
+                    continue
+                elif get_update_response.status_code != 200:
                     n_errors_in_a_row += 1
                     self.ERR_MESSAGE = f"""
                     Could not get status update from WES endpoint.
@@ -137,8 +166,8 @@ class WES(PyExecProfile):
                 if "status" in self.get_update_response_data.keys():
                     n_errors_in_a_row += 1
                     self.ERR_MESSAGE = """
-                    Post responce from WES endpoint did not contain 
-                    a \"run_id\" attribute.
+                    Get responce from WES endpoint did not contain 
+                    a \"status\" attribute.
                     """
                     log.write(f"> ERROR OCCURED: {self.ERR_MESSAGE}\n")
                     continue
