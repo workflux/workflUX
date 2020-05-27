@@ -156,7 +156,8 @@ def create_job_from_param_form_sheet():
     try:
         metadata = json_loads(request.form.get("meta"))
         access_token = metadata["access_token"]
-        login_required(access_token=access_token)
+        username = metadata["username"]
+        login_required(access_token=access_token, username=username)
         assert 'file' in request.files, 'No file received.'
 
         import_file = request.files['file']
@@ -198,6 +199,7 @@ def create_job_from_param_form_sheet():
         make_job_dir_tree(job_id)
         create_job_(
             job_id=job_id,
+            username=username,
             job_param_sheet=import_filepath,
             validate_paths=validate_paths,
             search_paths=search_paths,
@@ -234,7 +236,8 @@ def create_job_from_param_values():
     try:
         data_req = request.get_json()
         access_token = data_req["access_token"]
-        login_required(access_token=access_token)
+        username = data_req["username"]
+        login_required(access_token=access_token, username=username)
         param_values = data_req["param_values"]
         param_configs = data_req["param_configs"]
         wf_target = data_req["wf_target"]
@@ -272,6 +275,7 @@ def create_job_from_param_values():
         make_job_dir_tree(job_id)
         create_job_(
             job_id=job_id,
+            username=username,
             job_param_sheet=import_filepath,
             validate_paths=validate_paths,
             search_paths=search_paths,

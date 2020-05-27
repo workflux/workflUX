@@ -501,8 +501,7 @@ class JobContent extends React.Component {
                 exec_profile: this.state.execProfile,
                 parallel_exec: this.state.parallelExec
             },
-            route: routeStartExec,
-            sendUsername: true
+            route: routeStartExec
         })
 
     }
