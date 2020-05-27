@@ -15,12 +15,12 @@ class JobManager():
             username=username,
             wf_target=wf_target
         )
-        self.store_job(job)
+        self.store(job)
         return job.id
 
     def create_exec(
         self,
-        job_id,
+        job_name,
         run_name,
         wf_target,
         run_input,
@@ -42,7 +42,7 @@ class JobManager():
         access_token
         ):
         exec_ = Exec(
-            job_id=job_id,
+            job_name=job_name,
             run_name=run_name,
             wf_target=wf_target,
             run_input=run_input,
@@ -63,49 +63,98 @@ class JobManager():
             user_email=user_email,
             access_token=access_token
         )
-        self.store_exec(exec_)
+        self.store(exec_)
         return exec_.id
 
     def update(self):
-        db.session.commit()
+        retry_delays = [1, 4]
+        for retry_delay in retry_delays:
+            try:
+                db.session.commit()
+            except Exception as e:
+                assert retry_delay != retry_delays[-1], "Could not connect to database."
+                sleep(retry_delay + retry_delay*random())
 
-    def store_exec(self, exec):
-        db.session.add(exec)
+    def store(self, obj):
+        db.session.add(obj)
         self.update()
-
-    def store_job(self, job):
-        db.session.add(job)
-        self.update()
-
-    def load_all_by_jobid(self, job_id):
-        print("load_exec_by_jobid")
-        db_job_id_request = db.session.query(Exec).filter(Exec.job_id==job_id)
-        return [exec for exec in db_job_id_request]
     
-    def get_running_runs_names(self, job_id, run_ids):
+    def get_running_runs_names(self, job_name, run_names):
         already_running_runs = []
-        db_job_id_request = db.session.query(Exec).filter(Exec.job_id==job_id)
-        for run_id in run_ids:
-            db_run_id_request = db_job_id_request.filter(Exec.run_id==run_id).distinct()
-            if db_run_id_request.count() > 0:
+        db_job_name_request = db.session.query(Exec).filter(Exec.job_name==job_name)
+        for run_name in run_names:
+            execs_request = get_execs_db_query_(job_name, run_names).distinct()
+            if execs_request.count() > 0:
                 # find latest:
-                run_info =  db_run_id_request.filter(Exec.id==max([r.id for r in db_run_id_request])).first()
+                run_info =  execs_request.filter(Exec.id==max([exec.id for exec in execs_request])).first()
                 if run_info.time_finished is None or run_info.status == "finished":
-                    already_running_runs.append(run_id)
+                    already_running_runs.append(run_name)
         return already_running_runs
     
-    def get_job_runs_db_query_(self, job_id, run_id):
+    def get_execs_db_query_(self, job_name, run_name):
         # this is just an Manager Internal helper function
         # it should not be used outside of this class
-        return db.session.query(Exec).filter(Exec.job_id==job_id, Exec.run_id==run_id)
+        retry_delays = [1, 4]
+        for retry_delay in retry_delays:
+            try:
+                return db.session.query(Exec).filter(Exec.job_name==job_name, Exec.run_name==run_name)
+            except Exception as e:
+                assert retry_delay != retry_delays[-1], "Could not connect to database."
+                sleep(retry_delay + retry_delay*random())
     
-    def get_job_run(self, job_id, run_id):
-        execs = self.get_job_runs_db_query_(job_id, run_id).distinct().all()
+    def get_exec(self, job_name, run_name):
+        execs = self.get_execs_db_query_(job_name, run_name).distinct().all()
         if len(execs) == 0:
             return None
         else:
             # find latest:
             return [exec_ for exec_ in execs if exec_.id==max([temp_exec.id for temp_exec in execs])][0]
 
-    def delete_run(self, job_id, run_id):
-        self.get_job_runs_db_query_(job_id, run_id).delete(synchronize_session=False)
+    def load_run_by_name(self, job_name, run_name):
+        retry_delays = [1, 4]
+        for retry_delay in retry_delays:
+            try:
+                db_request = db.session.query(Run).filter(Run.run_name == run_name, Run.job_name == job_name)
+                if db_request.count() == 0:
+                    return None
+                run = db_request.first()
+            except Exception as e:
+                assert retry_delay != retry_delays[-1], "Could not connect to database."
+                sleep(retry_delay + retry_delay*random())
+        return run
+    
+    def load_all_runs_by_job_name(self, job_name):
+        retry_delays = [1, 4]
+        for retry_delay in retry_delays:
+            try:
+                db_request = db.session.query(Run).filter(Run.job_name == job_name)
+                if db_request.count() == 0:
+                    return None
+                runs = db_request.all()
+            except Exception as e:
+                assert retry_delay != retry_delays[-1], "Could not connect to database."
+                sleep(retry_delay + retry_delay*random())
+        return runs
+
+    def load_job_by_name(self, job_name):
+        retry_delays = [1, 4]
+        for retry_delay in retry_delays:
+            try:
+                db_request = db.session.query(Job).filter(Job.job_name == job_name)
+                if db_request.count() == 0:
+                    return None
+                job = db_request.first()
+            except Exception as e:
+                assert retry_delay != retry_delays[-1], "Could not connect to database."
+                sleep(retry_delay + retry_delay*random())
+        return job
+
+    def delete_run(self, job_name, run_name):
+        self.get_execs_db_query_(job_name, run_name).delete(synchronize_session=False)
+        db.session.delete(self.load_run_by_name(job_name, run_name))
+        self.update()
+
+    def delete_job(self, job_name):
+        db.session.delete(self.load_job_by_name(job_name))
+        [db.session.delete(run) for run in load_all_runs_by_job_name(job_name)]
+        self.update()

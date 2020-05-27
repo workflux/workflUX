@@ -88,9 +88,10 @@ def create_job(job_name, username, job_param_sheet=None, run_inputs=None, wf_tar
                 os.mkdir(run_out_dir)
 
     # add job to database:
-    job_manager.create_job(
+    _ = job_manager.create_job(
         job_name=job_name,
-        user_id=
+        username=username,
+        wf_target=wf_target
     )
 
 
