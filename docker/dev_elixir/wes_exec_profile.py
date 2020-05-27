@@ -81,7 +81,7 @@ class WES(PyExecProfile):
 
             if post_run_response.status_code == 200:
                 post_run_response_data = post_run_response.json()
-                if "run_id" not in post_run_response_data.keys():
+                if "run_id" in post_run_response_data.keys():
                     self.run_id = post_run_response.json()["run_id"]
                     log.write(f"> Run successfully submitted with id: {self.run_id}\n" )
                 else:
