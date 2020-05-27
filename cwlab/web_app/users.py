@@ -2,22 +2,28 @@ import sys
 import os
 import pprint
 from flask import render_template, jsonify, redirect, flash, url_for, request, current_app as app
-from flask_login import current_user, login_user, logout_user
 from werkzeug.urls import url_parse
-from cwlab.users.manage import check_user_credentials, check_all_format_conformance, \
-    add_user, get_user_info, change_password as change_password_, load_user, delete_user, \
-    get_all_users_info as get_all_users_info_, change_user_status_or_level, get_user_by_username, \
-    has_user_been_activated
-from cwlab.users.manage import login_required, check_oidc_token
+from cwlab.users.manage import get_all_users_info as get_all_users_info_, \
+    change_user_status_or_level, get_user_by_username, \
+    has_user_been_activated, login_required, check_oidc_token
+from cwlab import db_connector
 from cwlab.log import handle_known_error, handle_unknown_error
 from cwlab.utils import get_time_string
 
-@app.route('/loginoidc/', methods=['GET'])
+user_manager = db_connector.user_manager
+
+def validate_local_login_enabled():
+    assert app.config["ENABLE_USERS"], \
+        "Users are not enabled."
+    assert not app.config["USE_OIDC"], \
+        "Please request your access token from the corresponding OIDC authority."
+
+@app.route('/login_oidc/', methods=['GET'])
 def login_oidc():
     """Redirect handler for oidc login"""
     return render_template('callback.html')
 
-@app.route('/validateoidc/', methods=['GET'])
+@app.route('/validate_oidc/', methods=['GET'])
 def validate_oidc():
     """Demonstrates how an access token is validated"""
     token = request.headers['Authorization'].split(' ')[1]
@@ -27,39 +33,27 @@ def validate_oidc():
         'success': message['success']
     })
 
-@app.route('/login/', methods=['POST'])
-def login():
+@app.route('/get_access_token/', methods=['POST'])
+def get_access_token():
+    """Requests an access token. Only relevant when managing users via sqlalchemy."""
     messages = []
     data={ "success": False }
     try:
+        validate_local_login_enabled()
         data_req = request.get_json()
         username = data_req["username"]
         password = data_req["password"]
-        remember_me = data_req["remember_me"]
-        validated_user = check_user_credentials(username, password, return_user_if_valid=True)
-        
-        if validated_user is None:
-            messages.append( { 
-                "time": get_time_string(),
-                "type":"error", 
-                "text": "Username or password is not valid."
-            } )
-        else:
-            if has_user_been_activated(username):
-                login_user(validated_user, remember=remember_me)
-                messages.append( { 
-                    "time": get_time_string(),
-                    "type":"success", 
-                    "text": "Successfully validated."
-                } )
-            else:
-                messages.append( { 
-                    "time": get_time_string(),
-                    "type":"error", 
-                    "text": "Your account has not been approved by an administrator, yet."
-                } )
-
-        data={ "success": True }
+        token_info = db_connector.user_manager.get_access_token(
+            username=username,
+            password=password,
+            expires_after=app.config["SQLALCHEMY_ACCESS_TOKEN_EXPIRES_AFTER"]
+        )
+        token_info["expires_at"] = token_info["expires_at"].strftime("%m-%d-%Y %H:%M:%S")
+        data={ 
+            "success": True,
+            "username": username,
+            **token_info
+        }
     except AssertionError as e:
         messages.append( handle_known_error(e, return_front_end_message=True))
     except Exception as e:
@@ -69,49 +63,31 @@ def login():
             "messages": messages
         }
     )
-
 
 @app.route('/register/', methods=['POST'])
 def register():
     messages = []
     data={ "success": False }
     try:
+        validate_local_login_enabled()
         data_req = request.get_json()
         username = data_req["username"]
         email = data_req["email"]
         password = data_req["password"]
         rep_password = data_req["rep_password"]
-        valid_format = check_all_format_conformance(username, email, password, rep_password)
-        if valid_format != "valid":
-            messages.append( { 
-                "time": get_time_string(),
-                "type":"error", 
-                "text": valid_format 
-            } )
-        else:
-            add_user(username, email, "user",  password, "need_approval")
-            messages.append( { 
-                "time": get_time_string(),
-                "type":"success", 
-                "text": "Successfully send. An administrator will need to approve your account."
-            } )
-    except AssertionError as e:
-        messages.append( handle_known_error(e, return_front_end_message=True))
-    except Exception as e:
-        messages.append(handle_unknown_error(e, return_front_end_message=True))
-    return jsonify({
-            "data": data,
-            "messages": messages
-        }
-    )
-
-@app.route('/get_general_user_info/', methods=['POST'])
-def get_general_user_info():
-    messages = []
-    data={}
-    try:
-        login_required()
-        data = get_user_info(current_user.get_id())
+        db_connector.user_manager.create(
+            username=username,
+            email=email,
+            password=password,
+            rep_password=rep_password,
+            level="user",
+            status="approval_needed"
+        )
+        messages.append( { 
+            "time": get_time_string(),
+            "type":"success", 
+            "text": "Successfully send. An administrator will need to approve your account."
+        } )
     except AssertionError as e:
         messages.append( handle_known_error(e, return_front_end_message=True))
     except Exception as e:
@@ -127,7 +103,11 @@ def get_all_users_info():
     messages = []
     data=[]
     try:
-        login_required(admin=True)
+        validate_local_login_enabled()
+        data_req = request.get_json()
+        print(data_req)
+        access_token = data_req["access_token"]
+        login_required(access_token=access_token, admin=True)
         data = get_all_users_info_()
     except AssertionError as e:
         messages.append( handle_known_error(e, return_front_end_message=True))
@@ -144,14 +124,16 @@ def modify_or_delete_users():
     messages = []
     data=[]
     try:
-        login_required(admin=True)
+        validate_local_login_enabled()
         data_req = request.get_json()
+        access_token = data_req["access_token"]
+        login_required(access_token=access_token, admin=True)
         action = data_req["action"]
         user_selection = data_req["user_selection"]
         value = data_req["value"]
         if action == "delete":
-            for user in user_selection:
-                delete_user(get_user_by_username(user).id)
+            for username in user_selection:
+                user_manager.delete(username)
             messages.append( { 
                 "time": get_time_string(),
                 "type":"success", 
@@ -188,12 +170,20 @@ def change_password():
     messages = []
     data={"success": False}
     try:
-        login_required()
+        validate_local_login_enabled()
         data_req = request.get_json()
+        access_token = data_req["access_token"]
+        username = data_req["username"]
         old_password = data_req["old_password"]
         new_password = data_req["new_password"]
         new_rep_password = data_req["new_rep_password"]
-        change_password_(current_user.get_id(), old_password, new_password, new_rep_password)
+        login_required(access_token=access_token, username=username)
+        db_connector.user_manager.change_password(
+            username, 
+            old_password, 
+            new_password, 
+            new_rep_password
+        )
         data={"success": True}
         messages.append( { 
             "time": get_time_string(),
@@ -215,12 +205,12 @@ def delete_account():
     messages = []
     data={"success": False}
     try:
-        login_required()
+        validate_local_login_enabled()
         data_req = request.get_json()
+        access_token = data_req["access_token"]
         username = data_req["username"]
-        current_user_id = current_user.get_id()
-        assert username == load_user(current_user_id).username, "The entered username does not match your account."
-        delete_user(current_user_id)
+        login_required(access_token=access_token, username=username)
+        db_connector.user_manager.delete(username)
         data={"success": True}
         messages.append( { 
             "time": get_time_string(),
@@ -237,20 +227,3 @@ def delete_account():
         }
     )
 
-@app.route('/logout/', methods=['POST'])
-def logout():
-    messages = []
-    data={"success": False}
-    try:
-        login_required()
-        logout_user()
-        data["success"] = True
-    except AssertionError as e:
-        messages.append( handle_known_error(e, return_front_end_message=True))
-    except Exception as e:
-        messages.append(handle_unknown_error(e, return_front_end_message=True))
-    return jsonify({
-            "data": data,
-            "messages": messages
-        }
-    )

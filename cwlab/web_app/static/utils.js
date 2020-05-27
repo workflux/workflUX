@@ -6,6 +6,46 @@ function get_time_str(){
     return(date.toLocaleTimeString())
 }
 
+function storeSessionInfo(param_obj){
+    Object.keys(param_obj).map( (param) => {
+        sessionStorage.setItem(param, param_obj[param])
+        localStorage.setItem(param, param_obj[param])
+    })
+}
+
+function cleanSessionInfo(){
+    sessionStorage.clear()
+    localStorage.clear()
+}
+
+function logout(){
+    if (useOIDC){
+        oidcUserManager.signoutRedirect()
+    }
+    else {
+        cleanSessionInfo()
+        window.location.reload(true)
+    }
+}
+
+function getSessionInfo(param_list){
+    let param_obj = {}
+    param_list.map( (param) => {
+        let value = sessionStorage.getItem(param)
+        if (!value){
+            value = localStorage.getItem(param)
+        }
+        if (value == "true"){
+            value = true
+        }
+        else if (value == "false"){
+            value = false
+        }
+        param_obj[param] = value
+    })
+    return(param_obj)
+}
+
 function seconds_to_duration_str(s){
     const h = Math.floor( s / 3600 )
     let s_remain = s % 3600
@@ -26,6 +66,7 @@ async function ajaxRequest({
     sendData={},
     sendViaFormData=false,
     route,
+    sendUsername=false,
     onSuccess= (data, messages) => {
                 return({})
             }, //function taking arguments data and messages, return state update
@@ -34,7 +75,11 @@ async function ajaxRequest({
     } 
 }){
     let setDataAT = sendData
-    setDataAT["access_token"] = await get_user_info("accessToken")
+    const userInfo = await getUserInfo("all")
+    setDataAT["access_token"] = userInfo.accessToken
+    if (sendUsername){
+        setDataAT["username"] = userInfo.username
+    }
     let formData
     if (sendViaFormData){
         formData = new FormData()
@@ -421,7 +466,7 @@ class Tooltip extends React.Component {
                     ) : (
                         <span 
                             className="tooltiptext w3-metro-darken"
-                            style={ {width: width.toString().concat("px"), whiteSpace: "no-wrap", zIndex: "100"} }
+                            style={ {width: width.toString().concat("px"), whiteSpace: "nowrap", zIndex: "100"} }
                         >
                             {preview}
                         </span>   
@@ -826,7 +871,7 @@ class AjaxComponent extends React.Component {
 
     async request(){ // ajax request to server
         let sendData = this.props.sendData
-        sendData["access_token"] = await get_user_info("accessToken")
+        sendData["access_token"] = await getUserInfo("accessToken")
         this.ajaxRequest({
             statusVar: "loading",
             statusValueDuringRequest: true,
@@ -981,6 +1026,7 @@ class BrowseDir extends React.Component {
         this.changeBaseDir = this.changeBaseDir.bind(this);
         this.terminateBrowseDialog = this.terminateBrowseDialog.bind(this);
         this.handleFileUpload = this.handleFileUpload.bind(this);
+        this.triggerFileSend = this.triggerFileSend.bind(this);
         this.downloadFileOrFolder = this.downloadFileOrFolder.bind(this);
     }
 
@@ -1096,6 +1142,26 @@ class BrowseDir extends React.Component {
         this.props.terminateBrowseDialog(changes, selectedItem)
     }
     
+    async triggerFileSend(event, data, path){
+        let form = document.createElement('form');
+        form.method = 'post';
+        form.action = routeDownload;
+        let input = document.createElement('input');
+        input.type = 'hidden';
+        input.name = "meta";
+        input.value = JSON.stringify({
+            path: event.currentTarget.name == "download_dir" ? data["zip_path"] : path,
+            job_id: this.props.jobId ? this.props.jobId : null,
+            run_id: this.props.runId ? this.props.runId : null,
+            send_file: true,
+            access_token: await getUserInfo("accessToken")
+        });
+        form.appendChild(input);
+        document.body.appendChild(form);
+        form.submit();
+        return({downloadMessages: []})
+    }
+
     async downloadFileOrFolder(event){
         if (event.currentTarget.name == "download_dir"){
             this.setState({
@@ -1119,24 +1185,7 @@ class BrowseDir extends React.Component {
             },
             sendViaFormData: true,
             route: routeDownload,
-            onSuccess: (data, messages) => {
-                let form = document.createElement('form');
-                form.method = 'post';
-                form.action = routeDownload;
-                let input = document.createElement('input');
-                input.type = 'hidden';
-                input.name = "meta";
-                input.value = JSON.stringify({
-                    path: event.currentTarget.name == "download_dir" ? data["zip_path"] : path,
-                    job_id: this.props.jobId ? this.props.jobId : null,
-                    run_id: this.props.runId ? this.props.runId : null,
-                    send_file: true
-                });
-                form.appendChild(input);
-                document.body.appendChild(form);
-                form.submit();
-                return({downloadMessages: []})
-            }
+            onSuccess: (data, messages) => this.triggerFileSend(event, data, path)
         })
     }
 
@@ -1513,7 +1562,7 @@ class FileUploadComponent extends React.Component {
         }
         else{
             let metaData = this.props.metaData ? this.props.metaData : {}
-            metaData["access_token"] = await get_user_info("accessToken")
+            metaData["access_token"] = await getUserInfo("accessToken")
             this.setState({status:"uploading"})
             let formData = new FormData()
             formData.append("file", fileToUpload)
