@@ -82,6 +82,7 @@ class WES(PyExecProfile):
 
             assert "run_id" in post_run_response_data.keys(), \
                 "Post response did not contain a \"run_id\" attribute.\n"
+                
 
             self.run_id = post_run_response.json()["run_id"]
             with open(self.LOG_FILE, "a") as log:
@@ -138,10 +139,11 @@ class WES(PyExecProfile):
                 with open(self.LOG_FILE, "a") as log:
                     log.write(f"> ERROR OCCURED: {str(e)}\n")
                 if n_errors_in_a_row > max_errors_in_a_row:
-                    log.write(
-                        f"> Exceeded allowed number of unsuccessful status checks\n"
-                        "> Terminating"
-                    )
+                    with open(self.LOG_FILE, "a") as log:
+                        log.write(
+                            f"> Exceeded allowed number of unsuccessful status checks\n"
+                            "> Terminating"
+                        )
                     raise AssertionError(str(e))
                 continue
                 
@@ -152,7 +154,7 @@ class WES(PyExecProfile):
                 "\n>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>\n"
                 f"Final process status:{self.status}\n"
             )
-            
+
             if self.status == "COMPLETE":
                 if "outputs" in self.get_update_response_data.keys():
                     log.write(
