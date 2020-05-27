@@ -35,7 +35,7 @@ setup(
                       'pyexcel-ods3',
                       'pyexcel-xls',
                       'pyexcel-xlsx<=0.5.7',
-                      'PyYAML',
+                      'PyYAML>=5.1',
                       'pexpect',
                       'janis-pipelines',
                       'cwltool==1.0.20181201184214; platform_system=="Windows"',
