@@ -100,7 +100,7 @@ class WES(PyExecProfile):
                 "Checking status of run periodically:\n\n"
             )
         n_errors_in_a_row = 0
-        max_errors_in_a_row = 10
+        max_errors_in_a_row = 20
         status_finished = ["EXECUTOR_ERROR", "SYSTEM_ERROR", "CANCELED", "CANCELING", "COMPLETE"]
         self.status = "NONE"
         self.get_update_response_data = None
@@ -124,7 +124,10 @@ class WES(PyExecProfile):
 
                 self.get_update_response_data = get_update_response.json()
                 assert "state" not in self.get_update_response_data.keys(), \
-                    "Get response did not contain a \"state\" attribute.\n"
+                    (
+                        "Get response did not contain a \"state\" attribute.\n"
+                        f"The full response was:\n{json.dumps(self.get_update_response_data, indent=4)}"
+                    )
 
                 self.status = self.get_update_response_data["state"]
                 with open(self.LOG_FILE, "a") as log:
