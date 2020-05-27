@@ -123,7 +123,7 @@ class WES(PyExecProfile):
                     "Get request resulted in status code: {post_run_response.status_code}\n"
 
                 self.get_update_response_data = get_update_response.json()
-                assert "state" not in self.get_update_response_data.keys(), \
+                assert "state" in self.get_update_response_data.keys(), \
                     (
                         "Get response did not contain a \"state\" attribute.\n"
                         f"The full response was:\n{json.dumps(self.get_update_response_data, indent=4)}"
