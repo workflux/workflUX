@@ -12,6 +12,7 @@ from time import sleep
 from datetime import datetime, timedelta
 import importlib.util
 from contextlib import contextmanager
+import traceback
 
 def get_session_var_dict(
     job_id,
