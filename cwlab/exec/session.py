@@ -231,7 +231,7 @@ class ExecSessionPython(ExecSessionBase):
                         self.exec_db_entry.status = step + " failed"
                         self.exec_db_entry.err_message = "Error occured while \"" + \
                                 self.status_message[step] + "\""
-                        if self.py_exec_profile.ERR_MESSAGE:
+                        if self.py_exec_profile.ERR_MESSAGE != "None":
                             self.exec_db_entry.err_message = self.exec_db_entry.err_message + \
                                 ": " + self.py_exec_profile.ERR_MESSAGE
                         raise AssertionError(self.py_exec_profile.ERR_MESSAGE)
