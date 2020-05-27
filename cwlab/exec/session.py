@@ -238,8 +238,8 @@ class ExecSessionPython(ExecSessionBase):
             self.exec_db_entry.status = "finished" 
         except AssertionError as e:
             print(">>> A step could not be finished sucessfully: \n" + str(e))
-        except Exception as e:
-            print(">>> System error occured: \n " + str(e))
+        except Exception:
+            print(">>> System error occured: \n " + str(traceback.format_exc()))
             self.exec_db_entry.status = "system error"
             self.exec_db_entry.err_message = "System Error occured"
         self.commit()
