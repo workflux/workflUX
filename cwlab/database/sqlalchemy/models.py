@@ -15,7 +15,7 @@ class User(BaseUser, db.Model):
 class Job(db.Model):
     id = db.Column(db.Integer(), primary_key=True)
     job_name = db.Column(db.String(255), index=True, unique=True)
-    user_id = db.Column(db.Integer())
+    username = db.Column(db.String(64), index=True) # change to user_id later
     wf_target = db.Column(db.String(4096))
 
     def __repr__(self):

@@ -4,16 +4,15 @@ import sqlalchemy
 
 
 class JobManager():
-
     def create_job(
         self,
         job_name,
-        user_id,
+        username,
         wf_target
         ):
         job = Job(
             job_name=job_name,
-            user_id=user_id,
+            username=username,
             wf_target=wf_target
         )
         self.store_job(job)

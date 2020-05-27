@@ -35,7 +35,7 @@ def make_job_dir_tree(job_id):
     if not os.path.exists(job_wf_dir):
         os.mkdir(job_wf_dir)
 
-def create_job(job_id, job_param_sheet=None, run_inputs=None, wf_target=None,
+def create_job(job_name, job_param_sheet=None, run_inputs=None, wf_target=None,
     validate_paths=True, search_paths=False, search_subdirs=False, search_dir=None, sheet_format="xlsx"):
     assert not (job_param_sheet is None and (run_inputs is None or wf_target is None)), "You have to either provide a job_param_sheet or a list of run_inputs plus a wf_target document"
 
@@ -86,6 +86,9 @@ def create_job(job_id, job_param_sheet=None, run_inputs=None, wf_target=None,
         run_out_dir = get_path("run_out_dir", job_id, run_id)
         if not os.path.exists(run_out_dir):
                 os.mkdir(run_out_dir)
+
+    # add job to database:
+        
 
 
 def create_background_process(command_list, log_file):
