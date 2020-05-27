@@ -15,8 +15,8 @@ from cwlab.wf_input.read_wf import get_workflow_type_from_file_ext
 basedir = os.path.abspath(os.path.dirname(__file__))
 python_interpreter = sys.executable
 
-exec_manager = db_connector.exec_manager
 user_manager = db_connector.user_manager
+job_manager = db_connector.job_manager
 
 def make_job_dir_tree(job_id):
     job_dir = get_path("job_dir", job_id)
@@ -35,7 +35,7 @@ def make_job_dir_tree(job_id):
     if not os.path.exists(job_wf_dir):
         os.mkdir(job_wf_dir)
 
-def create_job(job_id, job_param_sheet=None, run_inputs=None, wf_target=None,
+def create_job(job_name, username, job_param_sheet=None, run_inputs=None, wf_target=None,
     validate_paths=True, search_paths=False, search_subdirs=False, search_dir=None, sheet_format="xlsx"):
     assert not (job_param_sheet is None and (run_inputs is None or wf_target is None)), "You have to either provide a job_param_sheet or a list of run_inputs plus a wf_target document"
 
@@ -87,6 +87,12 @@ def create_job(job_id, job_param_sheet=None, run_inputs=None, wf_target=None,
         if not os.path.exists(run_out_dir):
                 os.mkdir(run_out_dir)
 
+    # add job to database:
+    job_manager.create_job(
+        job_name=job_name,
+        user_id=
+    )
+
 
 def create_background_process(command_list, log_file):
     kwargs = {}
@@ -134,7 +140,7 @@ def exec_runs(
         user_email = None
 
     # check if runs are already running:
-    already_running_runs = exec_manager.get_running_runs_ids(job_id=job_id, run_ids=run_ids)
+    already_running_runs = job_manager.get_running_runs_ids(job_id=job_id, run_ids=run_ids)
     
     run_ids = sorted(list(set(run_ids) - set(already_running_runs)))
 
@@ -144,9 +150,9 @@ def exec_runs(
         exec_profile["allow_user_decrease_max_parallel_exec"] and \
         max_parrallel_exec_user_def < exec_profile["max_parallel_exec"]:
         exec_profile["max_parallel_exec"] = max_parrallel_exec_user_def
-    exec_db_entry = {}
+    exec_ids = {}
     for run_id in run_ids:
-        exec_db_entry[run_id] = exec_manager.create(
+        exec_ids[run_id] = job_manager.create_exec(
             job_id=job_id,
             run_id=run_id,
             wf_target=get_path("job_wf", job_id=job_id),
@@ -168,7 +174,6 @@ def exec_runs(
             user_email=user_email,
             access_token=access_token
         )
-        exec_manager.store(exec_db_entry[run_id])
     
 
     # start the background process:
@@ -183,7 +188,7 @@ def exec_runs(
                 python_interpreter,
                 os.path.join(basedir, "cwlab_bg_exec.py"),
                 app.config["SQLALCHEMY_DATABASE_URI"],
-                str(exec_db_entry[run_id].id),
+                str(exec_ids[run_id]),
                 str(app.config["DEBUG"])
             ],
             get_path("debug_run_log", job_id=job_id, run_id=run_id)
@@ -196,7 +201,7 @@ def get_run_info(job_id, run_ids, return_pid=False):
 
     for run_id in run_ids:
         data[run_id] = {}
-        run = exec_manager.get_job_run(job_id, run_id)
+        run = job_manager.get_job_run(job_id, run_id)
         if run is None:
             data[run_id]["pid"] = None
             data[run_id]["status"] = "not started yet"
@@ -272,7 +277,7 @@ def terminate_runs(
     run_info = get_run_info(job_id, run_ids, return_pid=True)
     db_changed = False
     for run_id in run_info.keys():
-        db_run = exec_manager.get_job_run(job_id, run_id)
+        db_run = job_manager.get_job_run(job_id, run_id)
         if isinstance(run_info[run_id]["time_started"], datetime) and \
             not isinstance(run_info[run_id]["time_finished"], datetime):
             if run_info[run_id]["pid"] != -1:
@@ -293,7 +298,7 @@ def terminate_runs(
                 if os.path.exists(run_out_dir):
                     rmtree(run_out_dir)
                 if isinstance(run_info[run_id]["time_started"], datetime):
-                    exec_manager.delete_run(job_id, run_id)
+                    job_manager.delete_run(job_id, run_id)
                     db_changed = True
             except Exception as e:
                 could_not_be_cleaned.append(run_id)
@@ -308,7 +313,7 @@ def terminate_runs(
                 continue
         succeeded.append(run_id)
     if db_changed:
-        exec_manager.update()
+        job_manager.update()
     return succeeded, could_not_be_terminated, could_not_be_cleaned
             
 def read_run_log(job_id, run_id):

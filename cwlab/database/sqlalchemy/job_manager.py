@@ -1,11 +1,24 @@
 from cwlab.database.connector import db
-from cwlab.database.sqlalchemy.models import User, Exec
+from cwlab.database.sqlalchemy.models import User, Exec, Job
 import sqlalchemy
 
 
-class ExecManager():
+class JobManager():
+    def create_job(
+        self,
+        job_name,
+        username,
+        wf_target
+        ):
+        job = Job(
+            job_name=job_name,
+            username=username,
+            wf_target=wf_target
+        )
+        self.store_job(job)
+        return job.id
 
-    def create(
+    def create_exec(
         self,
         job_id,
         run_id,
@@ -28,7 +41,7 @@ class ExecManager():
         user_email,
         access_token
         ):
-        exec = Exec(
+        exec_ = Exec(
             job_id=job_id,
             run_id=run_id,
             wf_target=wf_target,
@@ -50,13 +63,18 @@ class ExecManager():
             user_email=user_email,
             access_token=access_token
         )
-        return exec
+        self.store_exec(exec_)
+        return exec_.id
 
     def update(self):
         db.session.commit()
 
-    def store(self, exec):
+    def store_exec(self, exec):
         db.session.add(exec)
+        self.update()
+
+    def store_job(self, job):
+        db.session.add(job)
         self.update()
 
     def load_all_by_jobid(self, job_id):
