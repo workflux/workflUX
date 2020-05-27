@@ -81,7 +81,7 @@ class WES(PyExecProfile):
 
             if post_run_response.status_code == 200:
                 post_run_response_data = post_run_response.json()
-                if "run_id" in post_run_response_data.keys():
+                if "run_id" not in post_run_response_data.keys():
                     self.run_id = post_run_response.json()["run_id"]
                     log.write(f"> Run successfully submitted with id: {self.run_id}\n" )
                 else:
@@ -163,13 +163,16 @@ class WES(PyExecProfile):
                         
 
                 self.get_update_response_data = get_update_response.json()
-                if "status" in self.get_update_response_data.keys():
+                if "status" not in self.get_update_response_data.keys():
                     n_errors_in_a_row += 1
                     self.ERR_MESSAGE = """
                     Get responce from WES endpoint did not contain 
                     a \"status\" attribute.
                     """
                     log.write(f"> ERROR OCCURED: {self.ERR_MESSAGE}\n")
+                    log.write(f"""> The response data was:
+                        {json.dumps(self.get_update_response_data, indent=4)}\n"""
+                    )
                     continue
 
                 self.status = self.get_update_response_data["status"]
