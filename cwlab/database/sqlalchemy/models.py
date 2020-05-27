@@ -12,10 +12,19 @@ class User(BaseUser, db.Model):
     date_register = db.Column(db.DateTime())
     date_last_login = db.Column(db.DateTime())
 
+class Job(db.Model):
+    id = db.Column(db.Integer(), primary_key=True)
+    job_name = db.Column(db.String(255), index=True, unique=True)
+    user_id = db.Column(db.Integer())
+    wf_target = db.Column(db.String(4096))
+
+    def __repr__(self):
+        return '<Job {}>'.format({self.id, self.job_name})
+
 class Exec(db.Model):
     id = db.Column(db.Integer(), primary_key=True)
     run_id = db.Column(db.String(255), index=True)
-    job_id = db.Column(db.String(255), index=True)
+    job_id = db.Column(db.Integer(25), db.ForeignKey('job.id'))
     wf_target = db.Column(db.String(4096))
     run_input = db.Column(db.String(4096))
     log = db.Column(db.String(4096))
