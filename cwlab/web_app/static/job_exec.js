@@ -108,8 +108,8 @@ class RunDetails extends React.Component {
             statusValueDuringRequest: "updating",
             messageVar: "serverMessages",
             sendData: {
-                job_id: this.props.jobId,
-                run_id: this.props.runId
+                job_name: this.props.jobId,
+                run_name: this.props.runId
             },
             route: routeGetRunDetails,
             onSuccess: (data, messages) => {
@@ -252,8 +252,8 @@ class RunList extends React.Component {
             statusValueDuringRequest: "updating",
             messageVar: "serverMessages",
             sendData: {
-                job_id: this.props.jobId,
-                run_ids: this.props.runIds
+                job_name: this.props.jobId,
+                run_names: this.props.runIds
             },
             route: routeGetRunStatus,
             onSuccess: (data, messages) => {
@@ -478,12 +478,12 @@ class JobContent extends React.Component {
             statusValueDuringRequest: "get_run_list",
             messageVar: "serverMessages",
             sendData: {
-                job_id: this.props.jobId
+                job_name: this.props.jobId
             },
             route: routeGetRunList,
             onSuccess: (data, messages) => {
                 return({
-                    runIds: data.run_ids, 
+                    runIds: data.run_names, 
                     runSelection: []
                 }) 
             }
@@ -496,8 +496,8 @@ class JobContent extends React.Component {
             statusValueDuringRequest: "starting",
             messageVar: "actionRunExecMessages",
             sendData: {
-                job_id: this.props.jobId,
-                run_ids: this.state.runSelection,
+                job_name: this.props.jobId,
+                run_names: this.state.runSelection,
                 exec_profile: this.state.execProfile,
                 parallel_exec: this.state.parallelExec
             },
@@ -512,8 +512,8 @@ class JobContent extends React.Component {
             statusValueDuringRequest: mode,
             messageVar: "actionRunDangerMessages",
             sendData: {
-                job_id: this.props.jobId,
-                run_ids: this.state.runSelection,
+                job_name: this.props.jobId,
+                run_names: this.state.runSelection,
                 mode: mode
             },
             route: routeTerminateRuns,
@@ -534,7 +534,7 @@ class JobContent extends React.Component {
             statusValueDuringRequest: "delete_job",
             messageVar: "actionGlobalDangerMessages",
             sendData: {
-                job_id: this.props.jobId
+                job_name: this.props.jobId
             },
             route: routeDeleteJob,
             onSuccess: (data, messages) => {
@@ -805,19 +805,19 @@ class JobList extends React.Component {
 
 
     render() {
-        const itemValues = this.props.jobInfo.map( (job) => job.job_id);
+        const itemValues = this.props.jobInfo.map( (job) => job.job_name);
         const itemNames = this.props.jobInfo.map( (job) => (
-            <p key={job.job_id}>
+            <p key={job.job_name}>
                 <i style={ {fontFamily: "courier"} }>
                     {(
-                        job.job_id.substring(0,4) + "." +
-                        job.job_id.substring(4,6) + "." + 
-                        job.job_id.substring(6,8) + "/" + 
-                        job.job_id.substring(9,12)
+                        job.job_name.substring(0,4) + "." +
+                        job.job_name.substring(4,6) + "." + 
+                        job.job_name.substring(6,8) + "/" + 
+                        job.job_name.substring(9,12)
                     )}
                 </i><br/>
                 {
-                    job.job_id.substring(13,job.job_id.length)
+                    job.job_name.substring(13,job.job_name.length)
                 }<br/>
                 <IneditableValueField
                     backclassName="w3-theme"
@@ -831,7 +831,7 @@ class JobList extends React.Component {
         if(this.state.whichFocus && this.state.whichFocus != "") {
             let jobInfo={}
             this.props.jobInfo.map((job) =>
-                job.job_id == this.state.whichFocus && (jobInfo = job)
+                job.job_name == this.state.whichFocus && (jobInfo = job)
             )
             itemContent = <JobContent 
                 jobId={this.state.whichFocus} 

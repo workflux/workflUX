@@ -21,7 +21,7 @@ class JobManager():
     def create_exec(
         self,
         job_id,
-        run_id,
+        run_name,
         wf_target,
         run_input,
         out_dir,
@@ -43,7 +43,7 @@ class JobManager():
         ):
         exec_ = Exec(
             job_id=job_id,
-            run_id=run_id,
+            run_name=run_name,
             wf_target=wf_target,
             run_input=run_input,
             out_dir=out_dir,
@@ -82,7 +82,7 @@ class JobManager():
         db_job_id_request = db.session.query(Exec).filter(Exec.job_id==job_id)
         return [exec for exec in db_job_id_request]
     
-    def get_running_runs_ids(self, job_id, run_ids):
+    def get_running_runs_names(self, job_id, run_ids):
         already_running_runs = []
         db_job_id_request = db.session.query(Exec).filter(Exec.job_id==job_id)
         for run_id in run_ids:

@@ -14,8 +14,8 @@ import importlib.util
 from contextlib import contextmanager
 
 def get_session_var_dict(
-    job_id,
-    run_id,
+    job_name,
+    run_name,
     wf_target,
     run_input,
     out_dir,
@@ -25,8 +25,8 @@ def get_session_var_dict(
     access_token
 ):
     session_vars = {
-        "JOB_ID": job_id,
-        "RUN_ID": run_id,
+        "job_name": job_name,
+        "run_name": run_name,
         "WORKFLOW": wf_target,
         "RUN_INPUT": run_input,
         "OUTPUT_DIR": out_dir,
