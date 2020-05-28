@@ -120,9 +120,9 @@ class WES(PyExecProfile):
                     "Get response has no or invalid attribute status_code"
                  
                 with open(self.LOG_FILE, "a") as log:
-                    log.write(f"> \"{get_update_response.status_code}\" - {type(get_update_response.status_code)}")
+                    log.write(f">> {get_update_response.status_code} ")
                 assert get_update_response.status_code == 200, \
-                    f"Get request resulted in status code: {post_run_response.status_code}\n"
+                    f"Get request resulted in status code: {get_update_response.status_code}\n"
 
                 self.get_update_response_data = get_update_response.json()
                 assert "state" in self.get_update_response_data.keys(), \
