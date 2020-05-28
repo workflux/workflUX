@@ -305,7 +305,7 @@ class RunList extends React.Component {
 
     getDurationString(duration){
         let durationString = ""
-        if ( duration == "-" ){
+        if ( !duration || duration == "-" ){
             durationString = "-"
         }
         else{
