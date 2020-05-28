@@ -959,7 +959,7 @@ class JobParamFormHTML extends React.Component {
                 param_values: paramValues,
                 param_configs: this.state.paramConfigs,
                 wf_target: this.props.cwlTarget,
-                job_id: this.props.jobId,
+                job_name: this.props.jobId,
                 validate_paths: this.props.validatePaths,
                 search_paths: this.props.searchPaths,
                 search_dir: this.props.searchDir,
@@ -1224,7 +1224,7 @@ class JobParamFormSpreadsheet extends React.Component {
                 param_modes: this.props.param_modes,
                 run_mode: this.props.run_mode, 
                 run_names: this.props.run_names.filter((r) => r != ""),
-                job_id: this.props.jobId,
+                job_name: this.props.jobId,
                 sheet_format: this.state.sheetFormat
             },
             route: routeGenParamFormSheet,
@@ -1282,7 +1282,7 @@ class JobParamFormSpreadsheet extends React.Component {
                     disabled={this.state.file_transfer_status != "none"}
                     metaData={ 
                         {
-                            job_id: this.props.jobId,
+                            job_name: this.props.jobId,
                             validate_paths: this.props.validatePaths,
                             search_paths: this.props.searchPaths,
                             search_dir: this.props.searchDir,
@@ -1327,7 +1327,7 @@ class JobCreationPrep extends React.Component {
             prevPath: null
         }
 
-        // construct job_id:
+        // construct job_name:
         const date = new Date()
         let year = date.getFullYear().toString()
         let month = date.getMonth() + 1

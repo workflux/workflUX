@@ -1,3 +1,10 @@
+[![PyPI status](https://img.shields.io/pypi/status/cwlab.svg)](https://pypi.python.org/pypi/cwlab/)
+[![PyPI version shields.io](https://img.shields.io/pypi/v/cwlab.svg)](https://pypi.python.org/pypi/cwlab/)
+[![PyPI pyversions](https://img.shields.io/pypi/pyversions/cwlab.svg)](https://pypi.python.org/pypi/cwlab/)
+[![DOI](https://zenodo.org/badge/180648493.svg)](https://zenodo.org/badge/latestdoi/180648493)
+
+
+
 # CWLab - An open-source framework for simplified deployment of the Common Workflow Language using a graphical web interface
 
 ## Background and Scope:

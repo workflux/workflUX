@@ -14,8 +14,8 @@ import importlib.util
 from contextlib import contextmanager
 
 def get_session_var_dict(
-    job_id,
-    run_id,
+    job_name,
+    run_name,
     wf_target,
     run_input,
     out_dir,
@@ -25,8 +25,8 @@ def get_session_var_dict(
     access_token
 ):
     session_vars = {
-        "JOB_ID": job_id,
-        "RUN_ID": run_id,
+        "job_name": job_name,
+        "run_name": run_name,
         "WORKFLOW": wf_target,
         "RUN_INPUT": run_input,
         "OUTPUT_DIR": out_dir,
@@ -231,15 +231,15 @@ class ExecSessionPython(ExecSessionBase):
                         self.exec_db_entry.status = step + " failed"
                         self.exec_db_entry.err_message = "Error occured while \"" + \
                                 self.status_message[step] + "\""
-                        if self.py_exec_profile.ERR_MESSAGE:
+                        if self.py_exec_profile.ERR_MESSAGE != "None":
                             self.exec_db_entry.err_message = self.exec_db_entry.err_message + \
                                 ": " + self.py_exec_profile.ERR_MESSAGE
                         raise AssertionError(self.py_exec_profile.ERR_MESSAGE)
             self.exec_db_entry.status = "finished" 
         except AssertionError as e:
             print(">>> A step could not be finished sucessfully: \n" + str(e))
-        except Exception as e:
-            print(">>> System error occured: \n " + str(e))
+        except Exception:
+            print(">>> System error occured: \n " + str(traceback.format_exc()))
             self.exec_db_entry.status = "system error"
             self.exec_db_entry.err_message = "System Error occured"
         self.commit()

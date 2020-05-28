@@ -1,6 +1,6 @@
 from flask import current_app as app
-from cwlab.utils import get_path, get_duration, read_file_content, get_run_ids, \
-    get_job_name_from_job_id, get_job_templ_info, get_allowed_base_dirs, check_if_path_in_dirs
+from cwlab.utils import get_path, get_duration, read_file_content, \
+    get_job_templ_info, get_allowed_base_dirs, check_if_path_in_dirs
 from cwlab import db_connector
 from datetime import datetime
 import os, sys, platform
@@ -15,39 +15,39 @@ from cwlab.wf_input.read_wf import get_workflow_type_from_file_ext
 basedir = os.path.abspath(os.path.dirname(__file__))
 python_interpreter = sys.executable
 
-exec_manager = db_connector.exec_manager
 user_manager = db_connector.user_manager
+job_manager = db_connector.job_manager
 
-def make_job_dir_tree(job_id):
-    job_dir = get_path("job_dir", job_id)
+def make_job_dir_tree(job_name):
+    job_dir = get_path("job_dir", job_name)
     if not os.path.exists(job_dir):
         os.mkdir(job_dir)
-    runs_yaml_dir = get_path("runs_yaml_dir", job_id)
+    runs_yaml_dir = get_path("runs_yaml_dir", job_name)
     if not os.path.exists(runs_yaml_dir):
         os.mkdir(runs_yaml_dir)
-    runs_out_dir = get_path("runs_out_dir", job_id)
+    runs_out_dir = get_path("runs_out_dir", job_name)
     if not os.path.exists(runs_out_dir):
         os.mkdir(runs_out_dir)
-    runs_log_dir = get_path("runs_log_dir", job_id)
+    runs_log_dir = get_path("runs_log_dir", job_name)
     if not os.path.exists(runs_log_dir):
         os.mkdir(runs_log_dir)
-    job_wf_dir = get_path("job_wf_dir", job_id)
+    job_wf_dir = get_path("job_wf_dir", job_name)
     if not os.path.exists(job_wf_dir):
         os.mkdir(job_wf_dir)
 
-def create_job(job_id, job_param_sheet=None, run_inputs=None, wf_target=None,
+def create_job(job_name, username, job_param_sheet=None, run_inputs=None, wf_target=None,
     validate_paths=True, search_paths=False, search_subdirs=False, search_dir=None, sheet_format="xlsx"):
     assert not (job_param_sheet is None and (run_inputs is None or wf_target is None)), "You have to either provide a job_param_sheet or a list of run_inputs plus a wf_target document"
 
-    runs_yaml_dir = get_path("runs_yaml_dir", job_id=job_id)
+    runs_yaml_dir = get_path("runs_yaml_dir", job_name=job_name)
     if wf_target is None:
-        job_param_sheet_dest_path = get_path("job_param_sheet", job_id=job_id, param_sheet_format=sheet_format)
+        job_param_sheet_dest_path = get_path("job_param_sheet", job_name=job_name, param_sheet_format=sheet_format)
         copyfile(job_param_sheet, job_param_sheet_dest_path)
         wf_target = get_job_templ_info("metadata", job_templ_path=job_param_sheet_dest_path)["workflow_name"]
     wf_type = get_workflow_type_from_file_ext(wf_target)
 
     # make directories:
-    make_job_dir_tree(job_id)
+    make_job_dir_tree(job_name)
 
     # make run yamls:
     if not job_param_sheet is None:
@@ -65,11 +65,20 @@ def create_job(job_id, job_param_sheet=None, run_inputs=None, wf_target=None,
     else:
         [copy(run_input, runs_yaml_dir) for run_input in run_inputs]
 
+    # get run names from produced yamls_
+    runs_yaml_dir = get_path("runs_yaml_dir", job_name)
+    run_yamls = fetch_files_in_dir(
+        dir_path=runs_yaml_dir, 
+        file_exts=["yaml"],
+        ignore_subdirs=True
+    )
+    run_names = [r["file_nameroot"] for r in run_yamls]
+
     # check if wf_target is absolute path and exists, else search for it in the wf_target dir:
     if os.path.exists(wf_target):
         wf_target = os.path.abspath(wf_target)
         allowed_dirs = get_allowed_base_dirs(
-            job_id=job_id,
+            job_name=job_name,
             allow_input=True,
             allow_upload=False,
             allow_download=False
@@ -78,14 +87,26 @@ def create_job(job_id, job_param_sheet=None, run_inputs=None, wf_target=None,
     else:
         wf_target = get_path("wf", wf_target=wf_target)
     # copy wf_target document:
-    copyfile(wf_target, get_path("job_wf", job_id=job_id, wf_type=wf_type))
+    copyfile(wf_target, get_path("job_wf", job_name=job_name, wf_type=wf_type))
 
     # make output directories:
-    run_ids = get_run_ids(job_id)
-    for run_id in run_ids:
-        run_out_dir = get_path("run_out_dir", job_id, run_id)
+    for run_name in run_names:
+        run_out_dir = get_path("run_out_dir", job_name, run_name)
         if not os.path.exists(run_out_dir):
                 os.mkdir(run_out_dir)
+
+    # add job to database:
+    _ = job_manager.create_job(
+        job_name=job_name,
+        username=username,
+        wf_target=wf_target
+    )
+    
+    # add runs to database:
+    job_manager.create_runs(
+        run_names=run_names,
+        job_name=job_name
+    )
 
 
 def create_background_process(command_list, log_file):
@@ -116,8 +137,8 @@ def cleanup_zombie_process(pid):
 
 
 def exec_runs(
-    job_id, 
-    run_ids, 
+    job_name, 
+    run_names, 
     exec_profile_name, 
     username=None, 
     max_parrallel_exec_user_def=None, 
@@ -134,9 +155,9 @@ def exec_runs(
         user_email = None
 
     # check if runs are already running:
-    already_running_runs = exec_manager.get_running_runs_ids(job_id=job_id, run_ids=run_ids)
+    already_running_runs = job_manager.get_running_runs_names(job_name=job_name, run_names=run_names)
     
-    run_ids = sorted(list(set(run_ids) - set(already_running_runs)))
+    run_names = sorted(list(set(run_names) - set(already_running_runs)))
 
     # create new exec entry in database:
     exec_profile = app.config["EXEC_PROFILES"][exec_profile_name]
@@ -144,16 +165,16 @@ def exec_runs(
         exec_profile["allow_user_decrease_max_parallel_exec"] and \
         max_parrallel_exec_user_def < exec_profile["max_parallel_exec"]:
         exec_profile["max_parallel_exec"] = max_parrallel_exec_user_def
-    exec_db_entry = {}
-    for run_id in run_ids:
-        exec_db_entry[run_id] = exec_manager.create(
-            job_id=job_id,
-            run_id=run_id,
-            wf_target=get_path("job_wf", job_id=job_id),
-            run_input=get_path("run_input", job_id=job_id, run_id=run_id),
-            out_dir=get_path("run_out_dir", job_id=job_id, run_id=run_id),
+    exec_ids = {}
+    for run_name in run_names:
+        exec_ids[run_name] = job_manager.create_exec(
+            job_name=job_name,
+            run_name=run_name,
+            wf_target=get_path("job_wf", job_name=job_name),
+            run_input=get_path("run_input", job_name=job_name, run_name=run_name),
+            out_dir=get_path("run_out_dir", job_name=job_name, run_name=run_name),
             global_temp_dir=app.config["TEMP_DIR"],
-            log=get_path("run_log", job_id=job_id, run_id=run_id),
+            log=get_path("run_log", job_name=job_name, run_name=run_name),
             status="queued",
             err_message="",
             retry_count=0,
@@ -168,7 +189,6 @@ def exec_runs(
             user_email=user_email,
             access_token=access_token
         )
-        exec_manager.store(exec_db_entry[run_id])
     
 
     # start the background process:
@@ -177,43 +197,50 @@ def exec_runs(
     # even if the parent process is terminated / fails,
     # the child process will continue
     started_runs = []
-    for run_id in run_ids:
+    for run_name in run_names:
         create_background_process(
             [
                 python_interpreter,
                 os.path.join(basedir, "cwlab_bg_exec.py"),
                 app.config["SQLALCHEMY_DATABASE_URI"],
-                str(exec_db_entry[run_id].id),
+                str(exec_ids[run_name]),
                 str(app.config["DEBUG"])
             ],
-            get_path("debug_run_log", job_id=job_id, run_id=run_id)
+            get_path("debug_run_log", job_name=job_name, run_name=run_name)
         )
-        started_runs.append(run_id)
+        started_runs.append(run_name)
     return started_runs, already_running_runs
 
-def get_run_info(job_id, run_ids, return_pid=False):
+def get_runs_info(job_name, run_names, return_pid=False):
     data = {}
 
-    for run_id in run_ids:
-        data[run_id] = {}
-        run = exec_manager.get_job_run(job_id, run_id)
+    for run_name in run_names:
+        data[run_name] = {}
+        run = job_manager.get_exec_info(job_name, run_name)
         if run is None:
-            data[run_id]["pid"] = None
-            data[run_id]["status"] = "not started yet"
-            data[run_id]["time_started"] = "-"
-            data[run_id]["time_finished"] = "-"
-            data[run_id]["duration"] = "-"
-            data[run_id]["exec_profile"] = "-"
-            data[run_id]["retry_count"] = "0"
+            run = {
+                "pid": None,
+                "status": "not started yet",
+                "time_started": "-",
+                "time_finished": "-",
+                "duration": "-",
+                "exec_profile": "-",
+                "retry_count": "0"
+            }
         else:
             # check if background process still running:
             cleanup_zombie_process(run.pid)
             
-            if (not isinstance(run.time_finished, datetime)) and \
-                (not run.pid == -1) and \
-                (not pid_exists(run.pid)):
-                run.status = "process ended unexpectedly"
-                run.time_finished = datetime.now()
+            if (not isinstance(run["time_finished"], datetime)) and \
+                (not run["pid"] == -1) and \
+                (not pid_exists(run["pid"])):
+                run["status"] = "process ended unexpectedly"
+                run["time_finished"] = datetime.now()
+                job_manager.set_exec_ended(
+                    job_name, run_name,
+                    status = run["status"],
+                    time_finished = run["time_finished"]
+                )
                     
             # if not ended, set end time to now for calc of duration
             if run.time_finished:
@@ -221,15 +248,9 @@ def get_run_info(job_id, run_ids, return_pid=False):
             else:
                 time_finished = datetime.now()
 
-            if return_pid:
-                data[run_id]["pid"] = run.pid
-            data[run_id]["status"] = run.status
-            data[run_id]["time_started"] = run.time_started
-            data[run_id]["time_finished"] = run.time_finished
-            data[run_id]["duration"] = get_duration(run.time_started, time_finished)
-            data[run_id]["exec_profile"] = run.exec_profile_name
-            data[run_id]["retry_count"] = run.retry_count
-    else:
+            data[run_name] = run
+            if not return_pid:
+                del data[run_name]["pid"]
         return data
     
 
@@ -262,70 +283,68 @@ def kill_proc_tree(pid, include_parent=True,
 
 
 def terminate_runs(
-    job_id, 
-    run_ids, 
+    job_name, 
+    run_names, 
     mode="terminate" # can be one of terminate, reset, or delete
 ):
     could_not_be_terminated = []
     could_not_be_cleaned = []
     succeeded = []
-    run_info = get_run_info(job_id, run_ids, return_pid=True)
+    runs_info = get_runs_info(job_name, run_names, return_pid=True)
     db_changed = False
-    for run_id in run_info.keys():
-        db_run = exec_manager.get_job_run(job_id, run_id)
-        if isinstance(run_info[run_id]["time_started"], datetime) and \
-            not isinstance(run_info[run_id]["time_finished"], datetime):
-            if run_info[run_id]["pid"] != -1:
-                is_killed = kill_proc_tree(run_info[run_id]["pid"])
+    for run_name in runs_info.keys():
+        if isinstance(runs_info[run_name]["time_started"], datetime) and \
+            not isinstance(runs_info[run_name]["time_finished"], datetime):
+            if runs_info[run_name]["pid"] != -1:
+                is_killed = kill_proc_tree(runs_info[run_name]["pid"])
                 if not is_killed:
-                    could_not_be_terminated.append(run_id)
+                    could_not_be_terminated.append(run_name)
                     continue
-                cleanup_zombie_process(run_info[run_id]["pid"])
-            db_run.time_finished = datetime.now()
-            db_run.status = "terminated by user"
-            db_changed = True
+                cleanup_zombie_process(runs_info[run_name]["pid"])
+            job_manager.set_exec_ended(
+                job_name, run_name,
+                status="terminated by user",
+                time_finished=datetime.now()
+            )
         if mode in ["reset", "delete"]:
             try:
-                log_path = get_path("run_log", job_id, run_id)
+                log_path = get_path("run_log", job_name, run_name)
                 if os.path.exists(log_path):
                     os.remove(log_path)
-                run_out_dir = get_path("run_out_dir", job_id, run_id)
+                run_out_dir = get_path("run_out_dir", job_name, run_name)
                 if os.path.exists(run_out_dir):
                     rmtree(run_out_dir)
-                if isinstance(run_info[run_id]["time_started"], datetime):
-                    exec_manager.delete_run(job_id, run_id)
-                    db_changed = True
+                if isinstance(runs_info[run_name]["time_started"], datetime):
+                    job_manager.delete_run(job_name, run_name)
             except Exception as e:
-                could_not_be_cleaned.append(run_id)
+                could_not_be_cleaned.append(run_name)
                 continue
         if mode == "delete":
             try:
-                yaml_path = get_path("run_input", job_id, run_id)
+                yaml_path = get_path("run_input", job_name, run_name)
                 if os.path.exists(yaml_path):
                     os.remove(yaml_path)
             except Exception as e:
-                could_not_be_cleaned.append(run_id)
+                could_not_be_cleaned.append(run_name)
                 continue
-        succeeded.append(run_id)
-    if db_changed:
-        exec_manager.update()
+        succeeded.append(run_name)
     return succeeded, could_not_be_terminated, could_not_be_cleaned
             
-def read_run_log(job_id, run_id):
-    log_path = get_path("run_log", job_id, run_id)
+def read_run_log(job_name, run_name):
+    log_path = get_path("run_log", job_name, run_name)
     if not os.path.isfile(log_path):
         return "Run not started yet."
     content, _ = read_file_content(log_path)
     return content
     
-def read_run_input(job_id, run_id):
-    yaml_path = get_path("run_input", job_id, run_id)
+def read_run_input(job_name, run_name):
+    yaml_path = get_path("run_input", job_name, run_name)
     content, _ = read_file_content(yaml_path)
     return content
     
-def delete_job(job_id):
-    run_ids = get_run_ids(job_id)
-    _, could_not_be_terminated, could_not_be_cleaned = terminate_runs(job_id, run_ids, mode="delete")
+def delete_job(job_name):
+    run_names = job_manager.get_run_names(job_name)
+    _, could_not_be_terminated, could_not_be_cleaned = terminate_runs(job_name, run_names, mode="delete")
     if len(could_not_be_terminated) > 0 or len(could_not_be_cleaned) > 0 :
         return {
             "status": "failed run termination",
@@ -333,15 +352,16 @@ def delete_job(job_id):
             "could_not_be_cleaned": could_not_be_cleaned
         }
     try:
-        job_dir = get_path("job_dir", job_id)
+        job_dir = get_path("job_dir", job_name)
         if os.path.exists(job_dir):
             rmtree(job_dir)
-        return {
-            "status": "success"
-        }
     except Exception as e:
         return {
             "status": "failed to remove job dir",
             "errorMessage": str(e)
         }
+    job_manager.delete_job(job_name)
+    return {
+        "status": "success"
+    }
 

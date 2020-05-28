@@ -66,7 +66,6 @@ async function ajaxRequest({
     sendData={},
     sendViaFormData=false,
     route,
-    sendUsername=false,
     onSuccess= (data, messages) => {
                 return({})
             }, //function taking arguments data and messages, return state update
@@ -77,9 +76,7 @@ async function ajaxRequest({
     let setDataAT = sendData
     const userInfo = await getUserInfo("all")
     setDataAT["access_token"] = userInfo.accessToken
-    if (sendUsername){
-        setDataAT["username"] = userInfo.username
-    }
+    setDataAT["username"] = userInfo.username
     let formData
     if (sendViaFormData){
         formData = new FormData()
@@ -164,9 +161,9 @@ function getAllowedDirs({
 }){
     let sendData = {}
     if (jobId){
-        sendData["job_id"] = jobId
+        sendData["job_name"] = jobId
         if (runId){
-            sendData["run_id"] = runId
+            sendData["run_name"] = runId
         }
     }
 
@@ -1055,8 +1052,8 @@ class BrowseDir extends React.Component {
                 allow_input: this.allowInput ? true : false,
                 allow_upload: this.allowUpload ? true : false,
                 allow_download: this.allowDownload ? true : false,
-                job_id: this.props.jobId ? this.props.jobId : null,
-                run_id: this.props.runId ? this.props.runId : null,
+                job_name: this.props.jobId ? this.props.jobId : null,
+                run_name: this.props.runId ? this.props.runId : null,
                 on_error_return_base_dir_items: init ? true : false,
                 default_base_dir: this.props.defaultBaseDir ? this.props.defaultBaseDir : null,
                 fixed_base_dir: this.props.fixedBaseDir ? this.props.fixedBaseDir : null,
@@ -1151,8 +1148,8 @@ class BrowseDir extends React.Component {
         input.name = "meta";
         input.value = JSON.stringify({
             path: event.currentTarget.name == "download_dir" ? data["zip_path"] : path,
-            job_id: this.props.jobId ? this.props.jobId : null,
-            run_id: this.props.runId ? this.props.runId : null,
+            job_name: this.props.jobId ? this.props.jobId : null,
+            run_name: this.props.runId ? this.props.runId : null,
             send_file: true,
             access_token: await getUserInfo("accessToken")
         });
@@ -1179,8 +1176,8 @@ class BrowseDir extends React.Component {
             messageVar: "downloadMessages",
             sendData: {
                 path: path,
-                job_id: this.props.jobId ? this.props.jobId : null,
-                run_id: this.props.runId ? this.props.runId : null,
+                job_name: this.props.jobId ? this.props.jobId : null,
+                run_name: this.props.runId ? this.props.runId : null,
                 send_file: false
             },
             sendViaFormData: true,
@@ -1311,7 +1308,7 @@ class BrowseDir extends React.Component {
                                         disabled={this.state.actionStatus != "none"}
                                         metaData={ 
                                             {
-                                                job_id: this.props.jobId,
+                                                job_name: this.props.jobId,
                                                 dir_path: this.state.dirPath
                                             }
                                         }

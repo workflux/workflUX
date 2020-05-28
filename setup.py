@@ -35,14 +35,15 @@ setup(
                       'pyexcel-ods3',
                       'pyexcel-xls',
                       'pyexcel-xlsx<=0.5.7',
-                      'PyYAML',
+                      'PyYAML>=5.1',
                       'pexpect',
                       'janis-pipelines',
                       'cwltool==1.0.20181201184214; platform_system=="Windows"',
                       'cwltool >=1.0.20180809224403, <=1.0.20191022103248; platform_system!="Windows"',
                       'psutil',
-                      'miniwdl>=0.0.5'
-                      'requests'               
+                      'miniwdl>=0.0.5',
+                      'requests',
+                      'path<13.2.0'               
                       ],
     classifiers=[
         'Development Status :: 4 - Beta',

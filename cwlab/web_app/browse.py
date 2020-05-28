@@ -19,7 +19,7 @@ def upload_file():
         # load metadata:
         metadata = json_loads(request.form.get("meta"))
         dir_path = metadata["dir_path"]
-        job_id = metadata["job_id"] if "job_id" in metadata.keys() else None
+        job_name = metadata["job_name"] if "job_name" in metadata.keys() else None
         access_token = metadata["access_token"]
 
         login_required(access_token=access_token)
@@ -33,7 +33,7 @@ def upload_file():
 
         # check if dir path allowed:
         allowed_dirs = get_allowed_base_dirs(
-            job_id=job_id, 
+            job_name=job_name, 
             allow_input=False,
             allow_upload=True,
             allow_download=False
@@ -82,16 +82,16 @@ def browse_dir():
         allow_upload = data_req["allow_upload"]
         allow_download = data_req["allow_download"]
         default_base_dir = data_req["default_base_dir"] if "default_base_dir" in data_req.keys() else None
-        job_id = data_req["job_id"] if "job_id" in data_req.keys() else None
-        run_id = data_req["run_id"] if "run_id" in data_req.keys() else None
+        job_name = data_req["job_name"] if "job_name" in data_req.keys() else None
+        run_name = data_req["run_name"] if "run_name" in data_req.keys() else None
         on_error_return_base_dir_items = data_req["on_error_return_base_dir_items"]
         fixed_base_dir = data_req["fixed_base_dir"] if "fixed_base_dir" in data_req.keys() else None
         fixed_base_dir_name = data_req["fixed_base_dir_name"] if "fixed_base_dir_name" in data_req.keys() else "FIXED_BASE_DIR"
         include_tmp_dir = data_req["include_tmp_dir"] if "include_tmp_dir" in data_req.keys() else False
 
         data["allowed_dirs"] = get_allowed_base_dirs(
-            job_id=job_id, 
-            run_id=run_id, 
+            job_name=job_name, 
+            run_name=run_name, 
             allow_input=allow_input,
             allow_upload=allow_upload,
             allow_download=allow_download,
@@ -148,15 +148,15 @@ def download():
         print(data_req)
         access_token = data_req["access_token"]
         login_required(access_token=access_token)
-        job_id = data_req["job_id"]
-        run_id = data_req["run_id"]
+        job_name = data_req["job_name"]
+        run_name = data_req["run_name"]
         path = data_req["path"]
         send_file = data_req["send_file"]
         assert path != "" and os.path.exists(path), "Path does not exist or you have no permission to enter it."
         path = normalize_path(path)
         allowed_dirs = get_allowed_base_dirs(
-            job_id=job_id,
-            run_id=run_id,
+            job_name=job_name,
+            run_name=run_name,
             allow_input=False,
             allow_upload=False,
             allow_download=True
