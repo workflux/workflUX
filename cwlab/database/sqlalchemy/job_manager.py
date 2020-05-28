@@ -190,7 +190,7 @@ class JobManager():
 
     def delete_job(self, job_name):
         db.session.delete(self.load_job_by_name(job_name))
-        [db.session.delete(run) for run in load_all_runs_by_job_name(job_name)]
+        [db.session.delete(run) for run in self.load_all_runs_by_job_name(job_name)]
         self.update()
     
     def get_jobs_info_for_user(self, username):
@@ -201,9 +201,13 @@ class JobManager():
         runs = self.load_all_runs_by_job_name(job_name)
         return [run.run_name for run in runs]
 
-    def set_exec_ended(job_name, run_name, status, pid=-1, time_finished=datetime.now()):
+    def set_exec_ended(self, job_name, run_name, status, pid=-1, time_finished=datetime.now()):
         exec_ = self.get_exec(job_name, run_name)
-        exec_.pid = status
+        exec_.status = status
         exec_.pid = pid
-        exec_.pid = time_finished
+        exec_.time_finished = time_finished
         self.store(exec_)
+
+    def delete_exec(self, job_name, run_name):
+        self.get_execs_db_query_(job_name, run_name).delete(synchronize_session=False)
+        self.update()

@@ -292,40 +292,41 @@ def terminate_runs(
     runs_info = get_runs_info(job_name, run_names, return_pid=True)
     db_changed = False
     for run_name in runs_info.keys():
-        if isinstance(runs_info[run_name]["time_started"], datetime) and \
-            not isinstance(runs_info[run_name]["time_finished"], datetime):
-            if runs_info[run_name]["pid"] != -1:
-                is_killed = kill_proc_tree(runs_info[run_name]["pid"])
-                if not is_killed:
-                    could_not_be_terminated.append(run_name)
-                    continue
-                cleanup_zombie_process(runs_info[run_name]["pid"])
-            job_manager.set_exec_ended(
-                job_name, run_name,
-                status="terminated by user",
-                time_finished=datetime.now()
-            )
-        if mode in ["reset", "delete"]:
-            try:
+        try:
+            if isinstance(runs_info[run_name]["time_started"], datetime) and \
+                not isinstance(runs_info[run_name]["time_finished"], datetime):
+                if runs_info[run_name]["pid"] != -1:
+                    is_killed = kill_proc_tree(runs_info[run_name]["pid"])
+                    if not is_killed:
+                        could_not_be_terminated.append(run_name)
+                        continue
+                    cleanup_zombie_process(runs_info[run_name]["pid"])
+            if mode == "terminate":
+                job_manager.set_exec_ended(
+                    job_name, run_name,
+                    status="terminated by user",
+                    time_finished=datetime.now()
+                )
+            else:
                 log_path = get_path("run_log", job_name, run_name)
                 if os.path.exists(log_path):
                     os.remove(log_path)
                 run_out_dir = get_path("run_out_dir", job_name, run_name)
                 if os.path.exists(run_out_dir):
                     rmtree(run_out_dir)
-                if isinstance(runs_info[run_name]["time_started"], datetime):
+                    
+                if mode == "delete":
                     job_manager.delete_run(job_name, run_name)
-            except Exception as e:
-                could_not_be_cleaned.append(run_name)
-                continue
-        if mode == "delete":
-            try:
-                yaml_path = get_path("run_input", job_name, run_name)
-                if os.path.exists(yaml_path):
-                    os.remove(yaml_path)
-            except Exception as e:
-                could_not_be_cleaned.append(run_name)
-                continue
+                    yaml_path = get_path("run_input", job_name, run_name)
+                    if os.path.exists(yaml_path):
+                        os.remove(yaml_path)
+                else:
+                    os.mkdir(run_out_dir)
+                    job_manager.delete_exec(job_name, run_name)
+        except Exception as e:
+            print(str(e))
+            could_not_be_cleaned.append(run_name)
+            continue
         succeeded.append(run_name)
     return succeeded, could_not_be_terminated, could_not_be_cleaned
             
