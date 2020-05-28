@@ -72,6 +72,11 @@ def get_run_list():
         run_names = job_manager.get_run_names(job_name)
         run_names.sort()
         data["run_names"] = run_names
+        if len(run_names) == 0:
+            messages.append( { 
+                "type": "info", 
+                "text": f"No runs available in this job."
+            } )
     except AssertionError as e:
         messages.append( handle_known_error(e, return_front_end_message=True))
     except Exception as e:
@@ -94,7 +99,8 @@ def get_run_status():
         data_req = request.get_json()
         access_token = data_req["access_token"]
         login_required(access_token=access_token)
-        data = get_runs_info(data_req["job_name"], data_req["run_names"])
+        if data_req["run_names"] is not None:
+            data = get_runs_info(data_req["job_name"], data_req["run_names"])
     except AssertionError as e:
         messages.append( handle_known_error(e, return_front_end_message=True))
     except Exception as e:
