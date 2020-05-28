@@ -16,6 +16,9 @@ from random import random
 from shutil import move
 from cwlab.users.manage import login_required
 from cwlab.log import handle_known_error, handle_unknown_error
+from cwlab import db_connector
+
+job_manager = db_connector.job_manager
 
 @app.route('/get_job_list/', methods=['GET','POST'])
 def get_job_list():
