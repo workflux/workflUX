@@ -229,7 +229,7 @@ def get_runs_info(job_name, run_names, return_pid=False):
             }
         else:
             # check if background process still running:
-            cleanup_zombie_process(run.pid)
+            cleanup_zombie_process(run["pid"])
             
             if (not isinstance(run["time_finished"], datetime)) and \
                 (not run["pid"] == -1) and \
@@ -243,11 +243,10 @@ def get_runs_info(job_name, run_names, return_pid=False):
                 )
                     
             # if not ended, set end time to now for calc of duration
-            if run.time_finished:
-                time_finished = run.time_finished
-            else:
-                time_finished = datetime.now()
+            if not run["time_finished"]:
+                run["time_finished"] = datetime.now()
 
+            run["duration"] = get_duration(run["time_started"], run["time_finished"])
         data[run_name] = run
         if not return_pid:
             del data[run_name]["pid"]

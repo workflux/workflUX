@@ -97,7 +97,7 @@ class JobManager():
         already_running_runs = []
         db_job_name_request = db.session.query(Exec).filter(Exec.job_name==job_name)
         for run_name in run_names:
-            execs_request = get_execs_db_query_(job_name, run_names).distinct()
+            execs_request = self.get_execs_db_query_(job_name, run_name).distinct()
             if execs_request.count() > 0:
                 # find latest:
                 run_info =  execs_request.filter(Exec.id==max([exec.id for exec in execs_request])).first()
@@ -133,8 +133,7 @@ class JobManager():
             "status": exec_.status,
             "time_started": exec_.time_started,
             "time_finished": exec_.time_finished,
-            "duration": exec_.duration,
-            "exec_profile": exec_.exec_profile,
+            "exec_profile": exec_.exec_profile_name,
             "retry_count": exec_.retry_count
         }
 

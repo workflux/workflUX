@@ -112,8 +112,8 @@ class Run(db.Model):
 
 class Exec(db.Model):
     id = db.Column(db.Integer(), primary_key=True)
+    job_name = db.Column(db.String(255), index=True)
     run_name = db.Column(db.String(255), index=True)
-    job_name = db.Column(db.String(255), index=True, unique=True)
     wf_target = db.Column(db.String(4096))
     run_input = db.Column(db.String(4096))
     log = db.Column(db.String(4096))

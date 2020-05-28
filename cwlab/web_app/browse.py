@@ -145,7 +145,6 @@ def download():
     data = {}
     try:
         data_req = json_loads(request.form.get("meta"))
-        print(data_req)
         access_token = data_req["access_token"]
         login_required(access_token=access_token)
         job_name = data_req["job_name"]

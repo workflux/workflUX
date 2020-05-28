@@ -105,7 +105,6 @@ def get_all_users_info():
     try:
         validate_local_login_enabled()
         data_req = request.get_json()
-        print(data_req)
         access_token = data_req["access_token"]
         login_required(access_token=access_token, admin=True)
         data = get_all_users_info_()
