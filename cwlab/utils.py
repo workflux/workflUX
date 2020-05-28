@@ -205,14 +205,6 @@ def get_duration(start_time, end_time):
     minutes = (delta.seconds//60)%60
     return [days, hours, minutes]
 
-def get_job_names():
-    exec_dir = app.config["EXEC_DIR"]
-    job_names = [d for d in os.listdir(exec_dir) if os.path.isdir(os.path.join(exec_dir, d))]
-    return job_names
-
-def get_job_name_from_job_name(job_name):
-    return match('(\d+)_(\d+)_(.+)', job_name).group(3)
-
 def get_path(which, job_name=None, run_name=None, param_sheet_format=None, wf_target=None, wf_type=None):
     if which == "job_dir":
         path = os.path.join(app.config["EXEC_DIR"], job_name)
@@ -438,16 +430,6 @@ def import_wf(
     else:
         import_wdl(wf_path, name, wf_imports_zip_path)
     
-def get_run_names(job_name):
-    runs_yaml_dir = get_path("runs_yaml_dir", job_name)
-    run_inputs = fetch_files_in_dir(
-        dir_path=runs_yaml_dir, 
-        file_exts=["yaml"],
-        ignore_subdirs=True
-    )
-    run_names = [r["file_nameroot"] for r in run_inputs]
-    return run_names
-    
 def get_job_templates():
     # read list of template files:
     templates = fetch_files_in_dir(
@@ -460,7 +442,6 @@ def get_job_templates():
     for i, t  in enumerate(templates):
         templates[i]["wf_target"] = sub(r'\.job_templ$', '', t["file_nameroot"])
     return templates
-
     
 def get_job_templ_info(which, wf_target=None, job_templ_path=None):
     if job_templ_path is None:

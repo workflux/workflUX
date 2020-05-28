@@ -4,7 +4,7 @@ from flask import render_template, jsonify, redirect, flash, url_for, request, s
 from werkzeug.urls import url_parse
 from flask import current_app as app 
 from cwlab.utils import fetch_files_in_dir, allowed_extensions_by_type, \
-    get_duration, get_job_names, get_path, get_run_names, get_job_templ_info, get_time_string
+    get_duration, get_path, get_job_templ_info, get_time_string
 import requests
 from re import sub, match
 from cwlab.wf_input.web_interface import gen_form_sheet as gen_job_param_sheet

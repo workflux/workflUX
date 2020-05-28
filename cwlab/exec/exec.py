@@ -1,5 +1,5 @@
 from flask import current_app as app
-from cwlab.utils import get_path, get_duration, read_file_content, get_run_names, \
+from cwlab.utils import get_path, get_duration, read_file_content, \
     get_job_templ_info, get_allowed_base_dirs, check_if_path_in_dirs
 from cwlab import db_connector
 from datetime import datetime
