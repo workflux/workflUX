@@ -112,7 +112,6 @@ class WES(PyExecProfile):
                         "{}/ga4gh/wes/v1/runs/{}".format(host_url, self.run_id),
                         headers=headers
                     )
-
                 except Exception as e:
                     raise AssertionError(f"Exception while getting status update from WES endpoint: {str(e)}")
             
@@ -120,7 +119,7 @@ class WES(PyExecProfile):
                     "Get response has no or invalid attribute status_code"
                         
                 assert get_update_response.status_code == 200, \
-                    "Get request resulted in status code: {post_run_response.status_code}\n"
+                    f"Get request resulted in status code: {post_run_response.status_code}\n"
 
                 self.get_update_response_data = get_update_response.json()
                 assert "state" in self.get_update_response_data.keys(), \
