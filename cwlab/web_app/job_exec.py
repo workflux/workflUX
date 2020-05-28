@@ -9,8 +9,8 @@ import requests
 from re import sub, match
 from cwlab.wf_input.web_interface import gen_form_sheet as gen_job_param_sheet
 from cwlab.wf_input import only_validate_xls, transcode as make_runs
-from cwlab.exec.exec import exec_runs, get_run_info, read_run_log, read_run_input, \
-    terminate_runs as terminate_runs_by_id, delete_job as delete_job_by_id
+from cwlab.exec.exec import exec_runs, get_runs_info, read_run_log, read_run_input, \
+    terminate_runs as terminate_runs_by_name, delete_job as delete_job_by_name
 from time import sleep
 from random import random
 from shutil import move
@@ -24,35 +24,9 @@ def get_job_list():
     try:
         data_req = request.get_json()
         access_token = data_req["access_token"]
-        login_required(access_token=access_token)
-        job_names = get_job_names()
-        # for each dir:
-        #   - check if form sheet present
-        #   - if yes:
-        #       - read in form sheet metadata
-        #       - get list of runs
-        for job_name in job_names:
-            job_dir = get_path("job_dir", job_name=job_name)
-            try:
-                job_param_sheet = get_path("job_param_sheet", job_name=job_name)
-            except AssertionError as e:
-                continue
-                
-            job_param_sheet_metadata = get_job_templ_info("metadata", job_templ_path=job_param_sheet)
-            if "workflow_name" not in job_param_sheet_metadata.keys() or job_param_sheet_metadata["workflow_name"] == "":
-                messages.append( { 
-                    "time": get_time_string(),
-                    "type":"warning", 
-                    "text":"No workflow name was specified in the job_param_sheet of job \"" + 
-                        job_name + "\". Ignoring."
-                } )
-                continue
-            wf_target = job_param_sheet_metadata["workflow_name"]
-            jobs.append({
-                "job_name": job_name,
-                "job_abs_path": job_dir,
-                "wf_target": wf_target
-                })
+        username = data_req["username"]
+        login_required(access_token=access_token, username=username)
+        job_info = job_manager.get_jobs_info_for_user(username)
     except AssertionError as e:
         messages.append( handle_known_error(e, return_front_end_message=True))
         messages.append(handle_unknown_error(
@@ -76,7 +50,7 @@ def get_job_list():
             "data": {
                 "exec_profiles": exec_profile_names,
                 "exec_profile_params": exec_profile_params,
-                "jobs": jobs
+                "jobs": job_info
             },
             "messages": messages
         }
@@ -89,9 +63,10 @@ def get_run_list():
     try:
         data_req = request.get_json()
         access_token = data_req["access_token"]
-        login_required(access_token=access_token)
+        username = data_req["username"]
+        login_required(access_token=access_token, username=username)
         job_name = data_req["job_name"]
-        run_names = get_run_names(job_name)
+        run_names = job_manager.get_run_names(job_name)
         run_names.sort()
         data["run_names"] = run_names
     except AssertionError as e:
@@ -116,7 +91,7 @@ def get_run_status():
         data_req = request.get_json()
         access_token = data_req["access_token"]
         login_required(access_token=access_token)
-        data = get_run_info(data_req["job_name"], data_req["run_names"])
+        data = get_runs_info(data_req["job_name"], data_req["run_names"])
     except AssertionError as e:
         messages.append( handle_known_error(e, return_front_end_message=True))
     except Exception as e:
@@ -218,7 +193,7 @@ def terminate_runs():
         job_name = data_req["job_name"]
         run_names = sorted(data_req["run_names"])
         mode = data_req["mode"] # one of terminate, reset, delete
-        succeeded, could_not_be_terminated, could_not_be_cleaned = terminate_runs_by_id(job_name, run_names, mode)
+        succeeded, could_not_be_terminated, could_not_be_cleaned = terminate_runs_by_name(job_name, run_names, mode)
         if len(succeeded) > 0:
             messages.append({
                 "time": get_time_string(),
@@ -256,7 +231,7 @@ def delete_job():
         access_token = data_req["access_token"]
         login_required(access_token=access_token)
         job_name = data_req["job_name"]
-        results = delete_job_by_id(job_name)
+        results = delete_job_by_name(job_name)
         if results["status"] == "success":
             pass
         elif results["status"] == "failed run termination":

@@ -197,29 +197,36 @@ def exec_runs(
         started_runs.append(run_name)
     return started_runs, already_running_runs
 
-def get_run_info(job_name, run_names, return_pid=False):
+def get_runs_info(job_name, run_names, return_pid=False):
     data = {}
 
     for run_name in run_names:
         data[run_name] = {}
-        run = job_manager.get_job_run(job_name, run_name)
+        run = job_manager.get_exec_info(job_name, run_name)
         if run is None:
-            data[run_name]["pid"] = None
-            data[run_name]["status"] = "not started yet"
-            data[run_name]["time_started"] = "-"
-            data[run_name]["time_finished"] = "-"
-            data[run_name]["duration"] = "-"
-            data[run_name]["exec_profile"] = "-"
-            data[run_name]["retry_count"] = "0"
+            run = {
+                "pid": None,
+                "status": "not started yet",
+                "time_started": "-",
+                "time_finished": "-",
+                "duration": "-",
+                "exec_profile": "-",
+                "retry_count": "0"
+            }
         else:
             # check if background process still running:
             cleanup_zombie_process(run.pid)
             
-            if (not isinstance(run.time_finished, datetime)) and \
-                (not run.pid == -1) and \
-                (not pid_exists(run.pid)):
-                run.status = "process ended unexpectedly"
-                run.time_finished = datetime.now()
+            if (not isinstance(run["time_finished"], datetime)) and \
+                (not run["pid"] == -1) and \
+                (not pid_exists(run["pid"])):
+                run["status"] = "process ended unexpectedly"
+                run["time_finished"] = datetime.now()
+                job_manager.set_exec_ended(
+                    job_name, run_name,
+                    status = run["status"],
+                    time_finished = run["time_finished"]
+                )
                     
             # if not ended, set end time to now for calc of duration
             if run.time_finished:
@@ -227,15 +234,9 @@ def get_run_info(job_name, run_names, return_pid=False):
             else:
                 time_finished = datetime.now()
 
-            if return_pid:
-                data[run_name]["pid"] = run.pid
-            data[run_name]["status"] = run.status
-            data[run_name]["time_started"] = run.time_started
-            data[run_name]["time_finished"] = run.time_finished
-            data[run_name]["duration"] = get_duration(run.time_started, time_finished)
-            data[run_name]["exec_profile"] = run.exec_profile_name
-            data[run_name]["retry_count"] = run.retry_count
-    else:
+            data[run_name] = run
+            if not return_pid:
+                del data[run_name]["pid"]
         return data
     
 
@@ -275,21 +276,22 @@ def terminate_runs(
     could_not_be_terminated = []
     could_not_be_cleaned = []
     succeeded = []
-    run_info = get_run_info(job_name, run_names, return_pid=True)
+    runs_info = get_runs_info(job_name, run_names, return_pid=True)
     db_changed = False
-    for run_name in run_info.keys():
-        db_run = job_manager.get_job_run(job_name, run_name)
-        if isinstance(run_info[run_name]["time_started"], datetime) and \
-            not isinstance(run_info[run_name]["time_finished"], datetime):
-            if run_info[run_name]["pid"] != -1:
-                is_killed = kill_proc_tree(run_info[run_name]["pid"])
+    for run_name in runs_info.keys():
+        if isinstance(runs_info[run_name]["time_started"], datetime) and \
+            not isinstance(runs_info[run_name]["time_finished"], datetime):
+            if runs_info[run_name]["pid"] != -1:
+                is_killed = kill_proc_tree(runs_info[run_name]["pid"])
                 if not is_killed:
                     could_not_be_terminated.append(run_name)
                     continue
-                cleanup_zombie_process(run_info[run_name]["pid"])
-            db_run.time_finished = datetime.now()
-            db_run.status = "terminated by user"
-            db_changed = True
+                cleanup_zombie_process(runs_info[run_name]["pid"])
+            job_manager.set_exec_ended(
+                job_name, run_name,
+                status="terminated by user",
+                time_finished=datetime.now()
+            )
         if mode in ["reset", "delete"]:
             try:
                 log_path = get_path("run_log", job_name, run_name)
@@ -298,9 +300,8 @@ def terminate_runs(
                 run_out_dir = get_path("run_out_dir", job_name, run_name)
                 if os.path.exists(run_out_dir):
                     rmtree(run_out_dir)
-                if isinstance(run_info[run_name]["time_started"], datetime):
+                if isinstance(runs_info[run_name]["time_started"], datetime):
                     job_manager.delete_run(job_name, run_name)
-                    db_changed = True
             except Exception as e:
                 could_not_be_cleaned.append(run_name)
                 continue
@@ -313,8 +314,6 @@ def terminate_runs(
                 could_not_be_cleaned.append(run_name)
                 continue
         succeeded.append(run_name)
-    if db_changed:
-        job_manager.update()
     return succeeded, could_not_be_terminated, could_not_be_cleaned
             
 def read_run_log(job_name, run_name):
@@ -330,7 +329,7 @@ def read_run_input(job_name, run_name):
     return content
     
 def delete_job(job_name):
-    run_names = get_run_names(job_name)
+    run_names = job_manager.get_run_names(job_name)
     _, could_not_be_terminated, could_not_be_cleaned = terminate_runs(job_name, run_names, mode="delete")
     if len(could_not_be_terminated) > 0 or len(could_not_be_cleaned) > 0 :
         return {
@@ -342,12 +341,13 @@ def delete_job(job_name):
         job_dir = get_path("job_dir", job_name)
         if os.path.exists(job_dir):
             rmtree(job_dir)
-        return {
-            "status": "success"
-        }
     except Exception as e:
         return {
             "status": "failed to remove job dir",
             "errorMessage": str(e)
         }
+    job_manager.delete_job(job_name)
+    return {
+        "status": "success"
+    }
 

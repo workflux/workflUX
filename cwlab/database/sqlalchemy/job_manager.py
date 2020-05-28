@@ -1,7 +1,7 @@
 from cwlab.database.connector import db
 from cwlab.database.sqlalchemy.models import User, Exec, Job
 import sqlalchemy
-
+from datetime import datetime
 
 class JobManager():
     def create_job(
@@ -110,6 +110,20 @@ class JobManager():
             # find latest:
             return [exec_ for exec_ in execs if exec_.id==max([temp_exec.id for temp_exec in execs])][0]
 
+    def get_exec_info(self, job_name, run_name):
+        exec_ = self.get_exec(job_name, run_name)
+        if exec_ is None:
+            return None
+        return {
+            "pid": exec_.pid,
+            "status": exec_.status,
+            "time_started": exec_.time_started,
+            "time_finished": exec_.time_finished,
+            "duration": exec_.duration,
+            "exec_profile": exec_.exec_profile,
+            "retry_count": exec_.retry_count
+        }
+
     def load_run_by_name(self, job_name, run_name):
         retry_delays = [1, 4]
         for retry_delay in retry_delays:
@@ -127,10 +141,7 @@ class JobManager():
         retry_delays = [1, 4]
         for retry_delay in retry_delays:
             try:
-                db_request = db.session.query(Run).filter(Run.job_name == job_name)
-                if db_request.count() == 0:
-                    return None
-                runs = db_request.all()
+                runs = db.session.query(Run).filter(Run.job_name == job_name).all()
             except Exception as e:
                 assert retry_delay != retry_delays[-1], "Could not connect to database."
                 sleep(retry_delay + retry_delay*random())
@@ -149,6 +160,16 @@ class JobManager():
                 sleep(retry_delay + retry_delay*random())
         return job
 
+    def load_jobs_for_user(self, username):
+        retry_delays = [1, 4]
+        for retry_delay in retry_delays:
+            try:
+                jobs = db.session.query(Job).filter(Job.username == username).all()
+            except Exception as e:
+                assert retry_delay != retry_delays[-1], "Could not connect to database."
+                sleep(retry_delay + retry_delay*random())
+        return jobs
+
     def delete_run(self, job_name, run_name):
         self.get_execs_db_query_(job_name, run_name).delete(synchronize_session=False)
         db.session.delete(self.load_run_by_name(job_name, run_name))
@@ -158,3 +179,18 @@ class JobManager():
         db.session.delete(self.load_job_by_name(job_name))
         [db.session.delete(run) for run in load_all_runs_by_job_name(job_name)]
         self.update()
+    
+    def get_jobs_info_for_user(self, username):
+        jobs = self.load_jobs_for_user(username)
+        return [{"job_name": job.job_name, "wf_target": job.wf_target} for job in jobs]
+
+    def get_run_names(self, job_name):
+        runs = self.load_all_runs_by_job_name(job_name)
+        return [run.run_name for run in runs]
+
+    def set_exec_ended(job_name, run_name, status, pid=-1, time_finished=datetime.now()):
+        exec_ = self.get_exec(job_name, run_name)
+        exec_.pid = status
+        exec_.pid = pid
+        exec_.pid = time_finished
+        self.store(exec_)
