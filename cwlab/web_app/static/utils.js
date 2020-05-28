@@ -75,8 +75,10 @@ async function ajaxRequest({
 }){
     let setDataAT = sendData
     const userInfo = await getUserInfo("all")
-    setDataAT["access_token"] = userInfo.accessToken
-    setDataAT["username"] = userInfo.username
+    setDataAT.access_token = userInfo.accessToken
+    if (! setDataAT.hasOwnProperty("username")){
+        setDataAT.username = userInfo.username
+    }
     let formData
     if (sendViaFormData){
         formData = new FormData()

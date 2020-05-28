@@ -12,7 +12,6 @@ from re import match
 from datetime import datetime
 
 allowed_levels = ["admin", "user"]
-
 user_manager = db_connector.user_manager
 
 def load_user(id, return_username_only=False):
@@ -119,7 +118,11 @@ def change_user_status_or_level(id, new_status=None, new_level=None):
 
     user_manager.update()
 
-def interactively_add_user(level=None, status="active", instruction="Please set the credentials of the user to be added."):
+def interactively_add_user(
+    level=None, 
+    status="active", 
+    instruction="Please set the credentials of the user to be added."
+):
     success = False
     print(instruction)
     username = ""
