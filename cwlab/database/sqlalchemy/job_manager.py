@@ -1,7 +1,7 @@
 from cwlab.database.connector import db
-from cwlab.database.sqlalchemy.models import User, Exec, Job
+from cwlab.database.sqlalchemy.models import User, Exec, Job, Run
 import sqlalchemy
-
+from datetime import datetime
 
 class JobManager():
     def create_job(
@@ -15,13 +15,26 @@ class JobManager():
             username=username,
             wf_target=wf_target
         )
-        self.store_job(job)
+        self.store(job)
         return job.id
+        
+    def create_runs(
+        self,
+        run_names,
+        job_name,
+        ):
+        for run_name in run_names:
+            run = Run(
+                run_name=run_name,
+                job_name=job_name,
+            )
+            self.store(run, do_not_update=True)
+        self.update()
 
     def create_exec(
         self,
-        job_id,
-        run_id,
+        job_name,
+        run_name,
         wf_target,
         run_input,
         out_dir,
@@ -42,8 +55,8 @@ class JobManager():
         access_token
         ):
         exec_ = Exec(
-            job_id=job_id,
-            run_id=run_id,
+            job_name=job_name,
+            run_name=run_name,
             wf_target=wf_target,
             run_input=run_input,
             out_dir=out_dir,
@@ -63,49 +76,135 @@ class JobManager():
             user_email=user_email,
             access_token=access_token
         )
-        self.store_exec(exec_)
+        self.store(exec_)
         return exec_.id
 
     def update(self):
-        db.session.commit()
+        retry_delays = [1, 4]
+        for retry_delay in retry_delays:
+            try:
+                db.session.commit()
+            except Exception as e:
+                assert retry_delay != retry_delays[-1], "Could not connect to database."
+                sleep(retry_delay + retry_delay*random())
 
-    def store_exec(self, exec):
-        db.session.add(exec)
-        self.update()
-
-    def store_job(self, job):
-        db.session.add(job)
-        self.update()
-
-    def load_all_by_jobid(self, job_id):
-        print("load_exec_by_jobid")
-        db_job_id_request = db.session.query(Exec).filter(Exec.job_id==job_id)
-        return [exec for exec in db_job_id_request]
+    def store(self, obj, do_not_update=False):
+        db.session.add(obj)
+        if not do_not_update:
+            self.update()
     
-    def get_running_runs_ids(self, job_id, run_ids):
+    def get_running_runs_names(self, job_name, run_names):
         already_running_runs = []
-        db_job_id_request = db.session.query(Exec).filter(Exec.job_id==job_id)
-        for run_id in run_ids:
-            db_run_id_request = db_job_id_request.filter(Exec.run_id==run_id).distinct()
-            if db_run_id_request.count() > 0:
+        db_job_name_request = db.session.query(Exec).filter(Exec.job_name==job_name)
+        for run_name in run_names:
+            execs_request = get_execs_db_query_(job_name, run_names).distinct()
+            if execs_request.count() > 0:
                 # find latest:
-                run_info =  db_run_id_request.filter(Exec.id==max([r.id for r in db_run_id_request])).first()
+                run_info =  execs_request.filter(Exec.id==max([exec.id for exec in execs_request])).first()
                 if run_info.time_finished is None or run_info.status == "finished":
-                    already_running_runs.append(run_id)
+                    already_running_runs.append(run_name)
         return already_running_runs
     
-    def get_job_runs_db_query_(self, job_id, run_id):
+    def get_execs_db_query_(self, job_name, run_name):
         # this is just an Manager Internal helper function
         # it should not be used outside of this class
-        return db.session.query(Exec).filter(Exec.job_id==job_id, Exec.run_id==run_id)
+        retry_delays = [1, 4]
+        for retry_delay in retry_delays:
+            try:
+                return db.session.query(Exec).filter(Exec.job_name==job_name, Exec.run_name==run_name)
+            except Exception as e:
+                assert retry_delay != retry_delays[-1], "Could not connect to database."
+                sleep(retry_delay + retry_delay*random())
     
-    def get_job_run(self, job_id, run_id):
-        execs = self.get_job_runs_db_query_(job_id, run_id).distinct().all()
+    def get_exec(self, job_name, run_name):
+        execs = self.get_execs_db_query_(job_name, run_name).distinct().all()
         if len(execs) == 0:
             return None
         else:
             # find latest:
             return [exec_ for exec_ in execs if exec_.id==max([temp_exec.id for temp_exec in execs])][0]
 
-    def delete_run(self, job_id, run_id):
-        self.get_job_runs_db_query_(job_id, run_id).delete(synchronize_session=False)
+    def get_exec_info(self, job_name, run_name):
+        exec_ = self.get_exec(job_name, run_name)
+        if exec_ is None:
+            return None
+        return {
+            "pid": exec_.pid,
+            "status": exec_.status,
+            "time_started": exec_.time_started,
+            "time_finished": exec_.time_finished,
+            "duration": exec_.duration,
+            "exec_profile": exec_.exec_profile,
+            "retry_count": exec_.retry_count
+        }
+
+    def load_run_by_name(self, job_name, run_name):
+        retry_delays = [1, 4]
+        for retry_delay in retry_delays:
+            try:
+                db_request = db.session.query(Run).filter(Run.run_name == run_name, Run.job_name == job_name)
+                if db_request.count() == 0:
+                    return None
+                run = db_request.first()
+            except Exception as e:
+                assert retry_delay != retry_delays[-1], "Could not connect to database."
+                sleep(retry_delay + retry_delay*random())
+        return run
+    
+    def load_all_runs_by_job_name(self, job_name):
+        retry_delays = [1, 4]
+        for retry_delay in retry_delays:
+            try:
+                runs = db.session.query(Run).filter(Run.job_name == job_name).all()
+            except Exception as e:
+                assert retry_delay != retry_delays[-1], "Could not connect to database."
+                sleep(retry_delay + retry_delay*random())
+        return runs
+
+    def load_job_by_name(self, job_name):
+        retry_delays = [1, 4]
+        for retry_delay in retry_delays:
+            try:
+                db_request = db.session.query(Job).filter(Job.job_name == job_name)
+                if db_request.count() == 0:
+                    return None
+                job = db_request.first()
+            except Exception as e:
+                assert retry_delay != retry_delays[-1], "Could not connect to database."
+                sleep(retry_delay + retry_delay*random())
+        return job
+
+    def load_jobs_for_user(self, username):
+        retry_delays = [1, 4]
+        for retry_delay in retry_delays:
+            try:
+                jobs = db.session.query(Job).filter(Job.username == username).all()
+            except Exception as e:
+                assert retry_delay != retry_delays[-1], "Could not connect to database."
+                sleep(retry_delay + retry_delay*random())
+        return jobs
+
+    def delete_run(self, job_name, run_name):
+        self.get_execs_db_query_(job_name, run_name).delete(synchronize_session=False)
+        db.session.delete(self.load_run_by_name(job_name, run_name))
+        self.update()
+
+    def delete_job(self, job_name):
+        db.session.delete(self.load_job_by_name(job_name))
+        [db.session.delete(run) for run in load_all_runs_by_job_name(job_name)]
+        self.update()
+    
+    def get_jobs_info_for_user(self, username):
+        jobs = self.load_jobs_for_user(username)
+        return [{"job_name": job.job_name, "wf_target": job.wf_target} for job in jobs]
+
+    def get_run_names(self, job_name):
+        runs = self.load_all_runs_by_job_name(job_name)
+        return [run.run_name for run in runs]
+
+    def set_exec_ended(job_name, run_name, status, pid=-1, time_finished=datetime.now()):
+        exec_ = self.get_exec(job_name, run_name)
+        exec_.pid = status
+        exec_.pid = pid
+        exec_.pid = time_finished
+        self.store(exec_)

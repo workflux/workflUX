@@ -4,7 +4,7 @@ from flask import render_template, jsonify, redirect, flash, url_for, request, s
 from werkzeug.urls import url_parse
 from flask import current_app as app
 from cwlab.utils import fetch_files_in_dir, is_allowed_file, allowed_extensions_by_type, get_job_templates, \
-    get_job_templ_info, get_path, get_run_ids, make_temp_dir
+    get_job_templ_info, get_path, make_temp_dir
 import requests
 from cwlab.exec.exec import make_job_dir_tree, create_job as create_job_
 from re import match
@@ -76,14 +76,14 @@ def generate_param_form_sheet():    # generate param form sheet with data sent
         access_token = data_req["access_token"]
         login_required(access_token=access_token)
         sheet_format = data_req["sheet_format"]
-        job_id = data_req["job_id"]
+        job_name = data_req["job_name"]
         wf_target = data_req["wf_target"]
         param_modes = data_req["param_modes"]
         run_names = data_req["run_names"]
         run_mode = data_req["run_mode"]
         temp_dir = make_temp_dir() # will stay, need to be cleaned up
         temp_dir_name = os.path.basename(temp_dir)
-        output_file_path = os.path.join(temp_dir, f"{job_id}_inputs.{sheet_format}")
+        output_file_path = os.path.join(temp_dir, f"{job_name}_inputs.{sheet_format}")
         gen_form_sheet(
             output_file_path = output_file_path,
             template_config_file_path = get_path("job_templ", wf_target=wf_target),
@@ -95,7 +95,7 @@ def generate_param_form_sheet():    # generate param form sheet with data sent
         )
         data["get_form_sheet_href"] = url_for(
             "get_param_form_sheet", 
-            job_id=job_id,
+            job_name=job_name,
             temp_dir_name=temp_dir_name,
             access_token=access_token ## should be changed
         )
@@ -117,14 +117,14 @@ def get_param_form_sheet():
         data_req = request.args.to_dict()
         access_token = data_req["access_token"]
         login_required(access_token=access_token)
-        job_id = data_req["job_id"]
+        job_name = data_req["job_name"]
         temp_dir_name = data_req["temp_dir_name"]
         temp_dir = os.path.join(app.config["TEMP_DIR"], temp_dir_name)
 
         hits = fetch_files_in_dir(
             dir_path=temp_dir,
             file_exts=allowed_extensions_by_type["spreadsheet"],
-            search_string=job_id,
+            search_string=job_name,
             return_abspaths=True
         )
 
@@ -135,7 +135,7 @@ def get_param_form_sheet():
         return send_from_directory(
             os.path.dirname(sheet_path),
             os.path.basename(sheet_path),
-            attachment_filename=job_id + "_inputs" + os.path.splitext(sheet_path)[1],
+            attachment_filename=job_name + "_inputs" + os.path.splitext(sheet_path)[1],
             as_attachment=True
         )
     except AssertionError as e:
@@ -156,7 +156,8 @@ def create_job_from_param_form_sheet():
     try:
         metadata = json_loads(request.form.get("meta"))
         access_token = metadata["access_token"]
-        login_required(access_token=access_token)
+        username = metadata["username"]
+        login_required(access_token=access_token, username=username)
         assert 'file' in request.files, 'No file received.'
 
         import_file = request.files['file']
@@ -168,7 +169,7 @@ def create_job_from_param_form_sheet():
 
         sheet_format = os.path.splitext(import_file.filename)[1].strip(".").lower()
         
-        job_id = metadata["job_id"]
+        job_name = metadata["job_name"]
         import_filepath = os.path.join(temp_dir, f"param_sheet.{sheet_format}")
         import_file.save(import_filepath)
 
@@ -195,9 +196,10 @@ def create_job_from_param_form_sheet():
         assert validation_result == "VALID", "The provided form failed validation: {}".format(validation_result)
 
         # create job:
-        make_job_dir_tree(job_id)
+        make_job_dir_tree(job_name)
         create_job_(
-            job_id=job_id,
+            job_name=job_name,
+            username=username,
             job_param_sheet=import_filepath,
             validate_paths=validate_paths,
             search_paths=search_paths,
@@ -214,7 +216,7 @@ def create_job_from_param_form_sheet():
     if len(messages) == 0:
         messages.append( { 
             "type":"success", 
-            "text": f"Job {job_id} was successfully created. Please head over to \"Job Execution and Results\""
+            "text": f"Job {job_name} was successfully created. Please head over to \"Job Execution and Results\""
         } )
     
     try:
@@ -234,12 +236,13 @@ def create_job_from_param_values():
     try:
         data_req = request.get_json()
         access_token = data_req["access_token"]
-        login_required(access_token=access_token)
+        username = data_req["username"]
+        login_required(access_token=access_token, username=username)
         param_values = data_req["param_values"]
         param_configs = data_req["param_configs"]
         wf_target = data_req["wf_target"]
 
-        job_id = data_req["job_id"]
+        job_name = data_req["job_name"]
         import_filepath = os.path.join(temp_dir, "param_sheet.xlsx")
 
         validate_paths = data_req["validate_paths"]
@@ -269,9 +272,10 @@ def create_job_from_param_values():
             raise AssertionError("The provided form failed validation: {}".format(str(e)))
 
         # create job:
-        make_job_dir_tree(job_id)
+        make_job_dir_tree(job_name)
         create_job_(
-            job_id=job_id,
+            job_name=job_name,
+            username=username,
             job_param_sheet=import_filepath,
             validate_paths=validate_paths,
             search_paths=search_paths,
@@ -288,7 +292,7 @@ def create_job_from_param_values():
     if len(messages) == 0:
         messages.append( { 
             "type":"success", 
-            "text": f"Job {job_id} was successfully created. Please head over to \"Job Execution and Results\""
+            "text": f"Job {job_name} was successfully created. Please head over to \"Job Execution and Results\""
         } )
     
     try:

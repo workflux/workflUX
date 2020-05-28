@@ -95,16 +95,25 @@ class AccessToken(db.Model):
 class Job(db.Model):
     id = db.Column(db.Integer(), primary_key=True)
     job_name = db.Column(db.String(255), index=True, unique=True)
-    username = db.Column(db.String(64), index=True) # change to user_id later
+    username = db.Column(db.String(64), index=True)
     wf_target = db.Column(db.String(4096))
 
     def __repr__(self):
         return '<Job {}>'.format({self.id, self.job_name})
 
+
+class Run(db.Model):
+    id = db.Column(db.Integer(), primary_key=True)
+    run_name = db.Column(db.String(64), index=True)
+    job_name = db.Column(db.String(255), index=True)
+
+    def __repr__(self):
+        return '<Run {}>'.format({self.id, self.job_name})
+
 class Exec(db.Model):
     id = db.Column(db.Integer(), primary_key=True)
-    run_id = db.Column(db.String(255), index=True)
-    job_id = db.Column(db.Integer(25), db.ForeignKey('job.id'))
+    run_name = db.Column(db.String(255), index=True)
+    job_name = db.Column(db.String(255), index=True, unique=True)
     wf_target = db.Column(db.String(4096))
     run_input = db.Column(db.String(4096))
     log = db.Column(db.String(4096))
@@ -117,7 +126,7 @@ class Exec(db.Model):
     time_finished = db.Column(db.DateTime())
     timeout_limit = db.Column(db.DateTime())
     pid = db.Column(db.Integer())
-    username = db.Column(db.Integer())
+    username = db.Column(db.String(64), index=True) #! change to user_id later
     exec_profile = db.Column(db.JSON(none_as_null=True))
     exec_profile_name = db.Column(db.String(64))
     add_exec_info = db.Column(db.JSON(none_as_null=True))
@@ -125,4 +134,4 @@ class Exec(db.Model):
     access_token = db.Column(db.String(64))
 
     def __repr__(self):
-        return '<Exec {}>'.format({self.id, self.status, self.run_id, self.job_id})
+        return '<Exec {}>'.format({self.id, self.status, self.run_name, self.job_name})
