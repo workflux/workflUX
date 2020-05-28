@@ -23,6 +23,16 @@ spec:
         env:
         - name: BUILD_NUMBER
           value: oidc-${CICD_EXECUTION_SEQUENCE}
+        - name: mysql-password-2 
+          valueFrom:
+            secretKeyRef:
+              name: cwlab-mysql-2
+              key: mysql-password
+        - name: mysql-username-2 
+          valueFrom:
+            secretKeyRef:
+              name: cwlab-mysql-2
+              key: mysql-username
         ports:
         - containerPort: 5000
           
