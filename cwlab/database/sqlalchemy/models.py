@@ -104,12 +104,11 @@ class Job(db.Model):
 
 class Run(db.Model):
     id = db.Column(db.Integer(), primary_key=True)
-    job_name = db.Column(db.String(255), index=True, unique=True)
     run_name = db.Column(db.String(64), index=True)
-    wf_target = db.Column(db.String(4096))
+    job_name = db.Column(db.String(255), index=True)
 
     def __repr__(self):
-        return '<Job {}>'.format({self.id, self.job_name})
+        return '<Run {}>'.format({self.id, self.job_name})
 
 class Exec(db.Model):
     id = db.Column(db.Integer(), primary_key=True)

@@ -1,5 +1,5 @@
 from cwlab.database.connector import db
-from cwlab.database.sqlalchemy.models import User, Exec, Job
+from cwlab.database.sqlalchemy.models import User, Exec, Job, Run
 import sqlalchemy
 from datetime import datetime
 
@@ -17,6 +17,19 @@ class JobManager():
         )
         self.store(job)
         return job.id
+        
+    def create_runs(
+        self,
+        run_names,
+        job_name,
+        ):
+        for run_name in run_names:
+            run = Run(
+                run_name=run_name,
+                job_name=job_name,
+            )
+            self.store(run, do_not_update=True)
+        self.update()
 
     def create_exec(
         self,
@@ -75,9 +88,10 @@ class JobManager():
                 assert retry_delay != retry_delays[-1], "Could not connect to database."
                 sleep(retry_delay + retry_delay*random())
 
-    def store(self, obj):
+    def store(self, obj, do_not_update=False):
         db.session.add(obj)
-        self.update()
+        if not do_not_update:
+            self.update()
     
     def get_running_runs_names(self, job_name, run_names):
         already_running_runs = []

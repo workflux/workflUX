@@ -1,6 +1,6 @@
 from flask import current_app as app
 from cwlab.utils import get_path, get_duration, read_file_content, get_run_names, \
-    get_job_name_from_job_name, get_job_templ_info, get_allowed_base_dirs, check_if_path_in_dirs
+    get_job_templ_info, get_allowed_base_dirs, check_if_path_in_dirs
 from cwlab import db_connector
 from datetime import datetime
 import os, sys, platform
@@ -65,6 +65,15 @@ def create_job(job_name, username, job_param_sheet=None, run_inputs=None, wf_tar
     else:
         [copy(run_input, runs_yaml_dir) for run_input in run_inputs]
 
+    # get run names from produced yamls_
+    runs_yaml_dir = get_path("runs_yaml_dir", job_name)
+    run_yamls = fetch_files_in_dir(
+        dir_path=runs_yaml_dir, 
+        file_exts=["yaml"],
+        ignore_subdirs=True
+    )
+    run_names = [r["file_nameroot"] for r in run_yamls]
+
     # check if wf_target is absolute path and exists, else search for it in the wf_target dir:
     if os.path.exists(wf_target):
         wf_target = os.path.abspath(wf_target)
@@ -81,7 +90,6 @@ def create_job(job_name, username, job_param_sheet=None, run_inputs=None, wf_tar
     copyfile(wf_target, get_path("job_wf", job_name=job_name, wf_type=wf_type))
 
     # make output directories:
-    run_names = get_run_names(job_name)
     for run_name in run_names:
         run_out_dir = get_path("run_out_dir", job_name, run_name)
         if not os.path.exists(run_out_dir):
@@ -92,6 +100,12 @@ def create_job(job_name, username, job_param_sheet=None, run_inputs=None, wf_tar
         job_name=job_name,
         username=username,
         wf_target=wf_target
+    )
+    
+    # add runs to database:
+    job_manager.create_runs(
+        run_names=run_names,
+        job_name=job_name
     )
 
 
