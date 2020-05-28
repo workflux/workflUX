@@ -7,6 +7,7 @@ LABEL author="Kersten Breuer, Cancer Epigenomics, Plass Team, DKFZ 2020" \
 ENV CWLTOOL_VERSION 1.0.20181012180214
 
 # Install essential dependencies:
+ENV DEBCONF_FRONTEND noninteractive
 RUN apt-get update -qq -y --fix-missing
 RUN apt-get install -y build-essential \
     python3-dev \
@@ -20,8 +21,6 @@ RUN apt-get install -y build-essential \
     libssl-dev \
 	libcurl4-openssl-dev
 
-# Install singularity:
-ENV DEBCONF_FRONTEND noninteractive
 RUN echo "console-setup   console-setup/charmap47 select  UTF-8" > encoding.conf && \
 	debconf-set-selections encoding.conf && \
 	rm encoding.conf
@@ -35,7 +34,8 @@ RUN apt-get install -qq -y \
 
 # Install cwlab:
 COPY . /src/cwlab
-RUN python3 -m pip install -e /src/cwlab
+RUN python3 -m pip install cwltool==1.0.20191022103248 \
+	&& python3 -m pip install -e /src/cwlab
 
 # Configure cwlab:
 RUN mkdir -p \

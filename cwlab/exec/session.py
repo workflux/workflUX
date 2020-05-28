@@ -12,6 +12,7 @@ from time import sleep
 from datetime import datetime, timedelta
 import importlib.util
 from contextlib import contextmanager
+import traceback
 
 def get_session_var_dict(
     job_id,
@@ -231,15 +232,15 @@ class ExecSessionPython(ExecSessionBase):
                         self.exec_db_entry.status = step + " failed"
                         self.exec_db_entry.err_message = "Error occured while \"" + \
                                 self.status_message[step] + "\""
-                        if self.py_exec_profile.ERR_MESSAGE:
+                        if self.py_exec_profile.ERR_MESSAGE != "None":
                             self.exec_db_entry.err_message = self.exec_db_entry.err_message + \
                                 ": " + self.py_exec_profile.ERR_MESSAGE
                         raise AssertionError(self.py_exec_profile.ERR_MESSAGE)
             self.exec_db_entry.status = "finished" 
         except AssertionError as e:
             print(">>> A step could not be finished sucessfully: \n" + str(e))
-        except Exception as e:
-            print(">>> System error occured: \n " + str(e))
+        except Exception:
+            print(">>> System error occured: \n " + str(traceback.format_exc()))
             self.exec_db_entry.status = "system error"
             self.exec_db_entry.err_message = "System Error occured"
         self.commit()

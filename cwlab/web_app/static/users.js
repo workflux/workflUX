@@ -9,9 +9,9 @@ async function get_user_info(
     what // can be one of "all", "accessToken", or "userId"
 ){
     let userInfo = {
-        isLoggedIn: loggedIn,
+        isLoggedIn: false,
         accessToken: "none",
-        userId: loggedIn ? username : null,
+        userId: null,
         name: null,
         username: null,
         email: null,
@@ -25,7 +25,7 @@ async function get_user_info(
         const isLoggedIn = (user && user.access_token && !user.expired) ? true : false
         if (isLoggedIn) {
             userInfo = {
-                isLoggedIn: isLoggedIn,
+                isLoggedIn: true,
                 accessToken: user.access_token,
                 userId: user.profile.sub,
                 name: user.profile.name,
@@ -38,10 +38,9 @@ async function get_user_info(
             }
         }
         else {
-            userInfo["accessToken"] = (user && user.expired) ? "expired" : "none"
+            userInfo["isLoggedIn"] = false
             userInfo["expired"] = (user && user.expired) ? true : null
         }
-        console.log(user)
     }
     else {
         userInfo["isLoggedIn"] = loggedIn
@@ -846,30 +845,32 @@ class OIDCLogin extends React.Component{
                             .
                         </p>
                         <table>
-                            <tr>
-                                <td className="w3-text-green">Authority:</td>
-                                <td>{oidcConf.authority}</td>
-                            </tr>
-                            <tr>
-                                <td className="w3-text-green">Name:</td>
-                                <td>{this.state.name}</td>
-                            </tr>
-                            <tr>
-                                <td className="w3-text-green">Username:</td>
-                                <td>{this.state.username}</td>
-                            </tr>
-                            <tr>
-                                <td className="w3-text-green">Email:</td>
-                                <td>{this.state.email}</td>
-                            </tr>
-                            <tr>
-                                <td className="w3-text-green">User ID:</td>
-                                <td>{this.state.userId}</td>
-                            </tr>
-                            <tr>
-                                <td className="w3-text-green">Access token:</td>
-                                <td>{this.state.accessToken}</td>
-                            </tr>
+                            <tbody>
+                                <tr>
+                                    <td className="w3-text-green">Authority:</td>
+                                    <td>{oidcConf.authority}</td>
+                                </tr>
+                                <tr>
+                                    <td className="w3-text-green">Name:</td>
+                                    <td>{this.state.name}</td>
+                                </tr>
+                                <tr>
+                                    <td className="w3-text-green">Username:</td>
+                                    <td>{this.state.username}</td>
+                                </tr>
+                                <tr>
+                                    <td className="w3-text-green">Email:</td>
+                                    <td>{this.state.email}</td>
+                                </tr>
+                                <tr>
+                                    <td className="w3-text-green">User ID:</td>
+                                    <td>{this.state.userId}</td>
+                                </tr>
+                                <tr>
+                                    <td className="w3-text-green">Access token:</td>
+                                    <td>{this.state.accessToken}</td>
+                                </tr>
+                            </tbody>
                         </table>
                         <p>
                             For changes at your user profile,
