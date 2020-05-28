@@ -152,8 +152,8 @@ function getAllowedDirs({
     statusValueDuringRequest="action",
     statusValueAfterRequest="none",
     messageVar="serverMessages",
-    jobId=null,
-    runId=null,
+    jobName=null,
+    runName=null,
     onSuccess= (data, messages) => {
                 return({})
             },
@@ -162,10 +162,10 @@ function getAllowedDirs({
     } 
 }){
     let sendData = {}
-    if (jobId){
-        sendData["job_name"] = jobId
-        if (runId){
-            sendData["run_name"] = runId
+    if (jobName){
+        sendData["job_name"] = jobName
+        if (runName){
+            sendData["run_name"] = runName
         }
     }
 
@@ -976,8 +976,8 @@ class BrowseDir extends React.Component {
         // props.allowInput
         // props.allowUpload
         // props.allowDownload
-        // props.jobId
-        // props.runId
+        // props.jobName
+        // props.runName
         // props.defaultBaseDir
         // props.showCancelButton
         // props.terminateBrowseDialog
@@ -1054,8 +1054,8 @@ class BrowseDir extends React.Component {
                 allow_input: this.allowInput ? true : false,
                 allow_upload: this.allowUpload ? true : false,
                 allow_download: this.allowDownload ? true : false,
-                job_name: this.props.jobId ? this.props.jobId : null,
-                run_name: this.props.runId ? this.props.runId : null,
+                job_name: this.props.jobName ? this.props.jobName : null,
+                run_name: this.props.runName ? this.props.runName : null,
                 on_error_return_base_dir_items: init ? true : false,
                 default_base_dir: this.props.defaultBaseDir ? this.props.defaultBaseDir : null,
                 fixed_base_dir: this.props.fixedBaseDir ? this.props.fixedBaseDir : null,
@@ -1150,8 +1150,8 @@ class BrowseDir extends React.Component {
         input.name = "meta";
         input.value = JSON.stringify({
             path: event.currentTarget.name == "download_dir" ? data["zip_path"] : path,
-            job_name: this.props.jobId ? this.props.jobId : null,
-            run_name: this.props.runId ? this.props.runId : null,
+            job_name: this.props.jobName ? this.props.jobName : null,
+            run_name: this.props.runName ? this.props.runName : null,
             send_file: true,
             access_token: await getUserInfo("accessToken")
         });
@@ -1178,8 +1178,8 @@ class BrowseDir extends React.Component {
             messageVar: "downloadMessages",
             sendData: {
                 path: path,
-                job_name: this.props.jobId ? this.props.jobId : null,
-                run_name: this.props.runId ? this.props.runId : null,
+                job_name: this.props.jobName ? this.props.jobName : null,
+                run_name: this.props.runName ? this.props.runName : null,
                 send_file: false
             },
             sendViaFormData: true,
@@ -1310,7 +1310,7 @@ class BrowseDir extends React.Component {
                                         disabled={this.state.actionStatus != "none"}
                                         metaData={ 
                                             {
-                                                job_name: this.props.jobId,
+                                                job_name: this.props.jobName,
                                                 dir_path: this.state.dirPath
                                             }
                                         }
@@ -1419,7 +1419,7 @@ class BrowseDirTextField extends React.Component {
         // props.allowInput
         // props.allowUpload
         // props.allowDownload
-        // props.jobId
+        // props.jobName
         // props.defaultBaseDir
         // props.prevPath
         // props.changePrevPath
@@ -1499,7 +1499,7 @@ class BrowseDirTextField extends React.Component {
                         allowInput={this.props.allowInput}
                         allowUpload={this.props.allowUpload}
                         allowDownload={this.props.allowDownload}
-                        jobId={this.props.jobId}
+                        jobName={this.props.jobName}
                         defaultBaseDir={this.props.defaultBaseDir}
                         prevPath={this.props.prevPath}
                         changePrevPath={this.props.changePrevPath}

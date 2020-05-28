@@ -62,8 +62,8 @@ class RunDetailsLog extends React.Component {
 class RunDetails extends React.Component {
     constructor(props) {
         super(props);
-        // props.jobId
-        // props.runId
+        // props.jobName
+        // props.runName
         // props.handleBack
         this.state = {
             actionStatus: "none",
@@ -108,8 +108,8 @@ class RunDetails extends React.Component {
             statusValueDuringRequest: "updating",
             messageVar: "serverMessages",
             sendData: {
-                job_name: this.props.jobId,
-                run_name: this.props.runId
+                job_name: this.props.jobName,
+                run_name: this.props.runName
             },
             route: routeGetRunDetails,
             onSuccess: (data, messages) => {
@@ -168,8 +168,8 @@ class RunDetails extends React.Component {
             content=( 
                 <BrowseDir
                     allowDownload={true}
-                    jobId={this.props.jobId}
-                    runId={this.props.runId}
+                    jobName={this.props.jobName}
+                    runName={this.props.runName}
                     defaultBaseDir="OUTPUT_DIR_CURRENT_RUN"
                     terminateBrowseDialog={this.downloadFileOrFolder}
                     disableOnTop={true}
@@ -207,8 +207,8 @@ class RunDetails extends React.Component {
 class RunList extends React.Component {
     constructor(props){
         super(props)
-        // props.runsIds
-        // props.jobId
+        // props.runNames
+        // props.jobName
         // props.changeRunSelection
         // props.toggelRunSelectionAll
         // props.runSelection
@@ -227,14 +227,14 @@ class RunList extends React.Component {
         }
         this.mounted = false;
         let runInfo = {}
-        this.props.runIds.map( (r) => runInfo[r] = this.initRunInfo)
+        this.props.runNames.map( (r) => runInfo[r] = this.initRunInfo)
         this.state = {
             actionStatus: "none", 
             serverMessages: [],
             runInfo: runInfo
         }
         this.columnNames = {
-            runId: "Run ID",
+            runName: "Run ID",
             status: "Status",
             duration: "duration",
             execProfile: "Exec. Profile",
@@ -252,8 +252,8 @@ class RunList extends React.Component {
             statusValueDuringRequest: "updating",
             messageVar: "serverMessages",
             sendData: {
-                job_name: this.props.jobId,
-                run_names: this.props.runIds
+                job_name: this.props.jobName,
+                run_names: this.props.runNames
             },
             route: routeGetRunStatus,
             onSuccess: (data, messages) => {
@@ -261,15 +261,15 @@ class RunList extends React.Component {
             },
             onError: (messages) => {
                 let runInfo = {}
-                this.props.runIds.map( (r) => runInfo[r] = this.errorRunInfo)
+                this.props.runNames.map( (r) => runInfo[r] = this.errorRunInfo)
                 return({runInfo: runInfo, doNotUpdate: !this.mounted})
             }
         })
     }
 
-    componentDidMount(){
+    async componentDidMount(){
         this.mounted = true
-        this.getRunInfo()
+        await this.getRunInfo()
         // setup timer to automatically update
         this.timerId = setInterval(
             () => {
@@ -282,12 +282,6 @@ class RunList extends React.Component {
     componentWillUnmount() {
         clearInterval(this.timerId);
         this.mounted = false
-    }
-
-    componentDidUpdate(){
-        if(this.state.runInfo === {}){
-            this.getRunInfo()
-        }
     }
 
     getStatusColor(status){
@@ -328,7 +322,7 @@ class RunList extends React.Component {
 
     render(){
         let runInfo = {}
-        this.props.runIds.map( (r) => (
+        this.props.runNames.map( (r) => (
             Object.keys(this.state.runInfo).includes(r) ? (
                 runInfo[r] = this.state.runInfo[r]
             ) : (
@@ -336,9 +330,9 @@ class RunList extends React.Component {
             )
         ))
 
-        const rowData = this.props.runIds.map( (r) => (
+        const rowData = this.props.runNames.map( (r) => (
             {
-                runId: {value: r},
+                runName: {value: r},
                 status: {
                     value: (
                         <span>
@@ -375,7 +369,7 @@ class RunList extends React.Component {
                     handleSelectionChange={this.props.changeRunSelection}
                     selection={this.props.runSelection}
                     rowData={rowData}
-                    selectionKey="runId"
+                    selectionKey="runName"
                 />
             </div>
         )
@@ -386,7 +380,7 @@ class RunList extends React.Component {
 class JobContent extends React.Component {
     // Inputs:
     // props.runs list of run ids
-    // props.jobId
+    // props.jobName
     // props.cwlTarget
     // props.execProfiles
     // props.execProfileParams
@@ -397,9 +391,9 @@ class JobContent extends React.Component {
     constructor(props){
         super(props)
         this.initState = {
-            runIds: [],
+            runNames: [],
             runSelection: [],
-            actionStatus: "loading",
+            actionStatus: "get_run_list",
             execProfile: this.props.execProfiles[0],
             parallelExec: this.props.execProfileParams[this.props.execProfiles[0]]["max_parallel_exec"],
             maxRetries: this.props.execProfileParams[this.props.execProfiles[0]]["max_retries"],
@@ -430,7 +424,7 @@ class JobContent extends React.Component {
     }
 
     componentDidUpdate(prevProps){
-        if (prevProps.jobId != this.props.jobId){
+        if (prevProps.jobName != this.props.jobName){
             this.setState(this.initState)
             this.getRunList()
         }
@@ -478,12 +472,12 @@ class JobContent extends React.Component {
             statusValueDuringRequest: "get_run_list",
             messageVar: "serverMessages",
             sendData: {
-                job_name: this.props.jobId
+                job_name: this.props.jobName
             },
             route: routeGetRunList,
             onSuccess: (data, messages) => {
                 return({
-                    runIds: data.run_names, 
+                    runNames: data.run_names, 
                     runSelection: []
                 }) 
             }
@@ -496,7 +490,7 @@ class JobContent extends React.Component {
             statusValueDuringRequest: "starting",
             messageVar: "actionRunExecMessages",
             sendData: {
-                job_name: this.props.jobId,
+                job_name: this.props.jobName,
                 run_names: this.state.runSelection,
                 exec_profile: this.state.execProfile,
                 parallel_exec: this.state.parallelExec
@@ -512,7 +506,7 @@ class JobContent extends React.Component {
             statusValueDuringRequest: mode,
             messageVar: "actionRunDangerMessages",
             sendData: {
-                job_name: this.props.jobId,
+                job_name: this.props.jobName,
                 run_names: this.state.runSelection,
                 mode: mode
             },
@@ -534,7 +528,7 @@ class JobContent extends React.Component {
             statusValueDuringRequest: "delete_job",
             messageVar: "actionGlobalDangerMessages",
             sendData: {
-                job_name: this.props.jobId
+                job_name: this.props.jobName
             },
             route: routeDeleteJob,
             onSuccess: (data, messages) => {
@@ -545,7 +539,7 @@ class JobContent extends React.Component {
     }
 
     render(){
-        if (this.actionStatus == "loading"){
+        if (this.state.actionStatus == "get_run_list"){
             return(
                 <LoadingIndicator 
                     message="Loading list of runs." 
@@ -562,8 +556,8 @@ class JobContent extends React.Component {
                     <DisplayServerMessages messages={this.state.serverMessages} />
                     <h3>List of Runs:</h3>
                     <RunList 
-                        jobId={this.props.jobId}
-                        runIds={this.state.runIds}
+                        jobName={this.props.jobName}
+                        runNames={this.state.runNames}
                         changeRunSelection={this.changeRunSelection}
                         toggelRunSelectionAll={this.toggelRunSelectionAll}
                         runSelection={this.state.runSelection}
@@ -762,8 +756,8 @@ class JobContent extends React.Component {
         } else {
             return(
                 <RunDetails 
-                    jobId={this.props.jobId}
-                    runId={this.props.whichRunDetails}
+                    jobName={this.props.jobName}
+                    runName={this.props.whichRunDetails}
                     handleBack={this.props.showRunList}
                 />
             )
@@ -795,8 +789,8 @@ class JobList extends React.Component {
         });
     }
 
-    showRunDetails(runId){
-        this.setState({whichRunDetails: runId})
+    showRunDetails(runName){
+        this.setState({whichRunDetails: runName})
     }
 
     showRunList(){
@@ -834,7 +828,7 @@ class JobList extends React.Component {
                 job.job_name == this.state.whichFocus && (jobInfo = job)
             )
             itemContent = <JobContent 
-                jobId={this.state.whichFocus} 
+                jobName={this.state.whichFocus} 
                 cwlTarget={jobInfo.wf_target} 
                 execProfiles={this.props.execProfiles}
                 execProfileParams={this.props.execProfileParams}
