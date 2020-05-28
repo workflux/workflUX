@@ -248,10 +248,10 @@ def get_runs_info(job_name, run_names, return_pid=False):
             else:
                 time_finished = datetime.now()
 
-            data[run_name] = run
-            if not return_pid:
-                del data[run_name]["pid"]
-        return data
+        data[run_name] = run
+        if not return_pid:
+            del data[run_name]["pid"]
+    return data
     
 
 def kill_proc_tree(pid, include_parent=True,
