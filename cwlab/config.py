@@ -146,12 +146,55 @@ class Config(object):
 
         if self.DEBUG:
             print("Debug mode turned on, don't use this on production machines.", file=sys.stderr)
+        
+        database_username_env_name = (
+            os.environ.get('CWLAB_DATABASE_USERNAME_ENVVAR') or
+            self.CONFIG_FILE_content.get('DATABASE_USERNAME_ENVVAR') or  
+            None
+        )
+
+        if database_username_env_name is not None:
+            database_username = (
+                os.environ.get(database_username_env_name) or
+                None
+            )
+        else:
+            database_username = (
+                os.environ.get('CWLAB_DATABASE_USERNAME') or
+                self.CONFIG_FILE_content.get('DATABASE_USERNAME') or  
+                None
+            )
+            
+        database_passowrd_env_name = (
+            os.environ.get('CWLAB_DATABASE_PASSWORD_ENVVAR') or
+            self.CONFIG_FILE_content.get('DATABASE_PASSWORD_ENVVAR') or  
+            None
+        )
+
+        if database_passowrd_env_name is not None:
+            database_password = (
+                os.environ.get(database_passowrd_env_name) or
+                None
+            )
+        else:
+            database_password = (
+                os.environ.get('CWLAB_DATABASE_PASSWORD') or
+                self.CONFIG_FILE_content.get('DATABASE_PASSWORD') or  
+                None
+            )
 
         self.SQLALCHEMY_DATABASE_URI = (
-            os.environ.get('CWLAB_DATABASE_URL') or
+            os.environ.get('CWLAB_DATABASE_URI') or
             self.CONFIG_FILE_content.get('DATABASE_URL') or  
             ('sqlite:///' + os.path.join(self.DB_DIR, 'cwlab.db'))
         )
+        if isinstance(self.SQLALCHEMY_DATABASE_URI, str) and \
+            isinstance(database_password, str) and \
+            isinstance(database_username, str):
+            print("Found username and password environment variables for DB.")
+            self.SQLALCHEMY_DATABASE_URI = self.SQLALCHEMY_DATABASE_URI \
+                .replace("<username>", str(database_username)) \
+                .replace("<password>", str(database_password))
         
         self.SQLALCHEMY_TRACK_MODIFICATIONS = (
             os.environ.get('CWLAB_DATABASE_TRACK_MODIFICATIONS') or
