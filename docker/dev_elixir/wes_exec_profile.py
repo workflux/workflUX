@@ -118,7 +118,9 @@ class WES(PyExecProfile):
             
                 assert hasattr(get_update_response, "status_code") and get_update_response.status_code, \
                     "Get response has no or invalid attribute status_code"
-                        
+                 
+                with open(self.LOG_FILE, "a") as log:
+                    log.write(f"> \"{get_update_response.status_code}\" - {type(get_update_response.status_code)}")
                 assert get_update_response.status_code == 200, \
                     f"Get request resulted in status code: {post_run_response.status_code}\n"
 
