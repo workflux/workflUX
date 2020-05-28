@@ -854,71 +854,13 @@ class UserRoot extends React.Component{
     }
 
     render(){
-        return(
-            <div className="w3-panel">
-                {this.state.isLoggedIn ? (
-                    <div>
-                        <h3>You are logged in.</h3>
-                        <p>
-                            Please note, your access token will expire in&nbsp;
-                            <span className="w3-text-green">
-                                {seconds_to_duration_str(this.state.expires_in)}
-                            </span>
-                            .
-                        </p>
-                        <table>
-                            <tbody>
-                                <tr>
-                                    <td className="w3-text-green">Authority:</td>
-                                    <td>{oidcConf.authority}</td>
-                                </tr>
-                                <tr>
-                                    <td className="w3-text-green">Name:</td>
-                                    <td>{this.state.name}</td>
-                                </tr>
-                                <tr>
-                                    <td className="w3-text-green">Username:</td>
-                                    <td>{this.state.username}</td>
-                                </tr>
-                                <tr>
-                                    <td className="w3-text-green">Email:</td>
-                                    <td>{this.state.email}</td>
-                                </tr>
-                                <tr>
-                                    <td className="w3-text-green">User ID:</td>
-                                    <td>{this.state.userId}</td>
-                                </tr>
-                                <tr>
-                                    <td className="w3-text-green">Access token:</td>
-                                    <td>{this.state.accessToken}</td>
-                                </tr>
-                            </tbody>
-                        </table>
-                        <p>
-                            For changes at your user profile,
-                            please contact the authentication authority.
-                        </p>
-                    </div>
-                    ) : (
-                        <LoadingIndicator 
-                            size="large"
-                            message="You are redirected to the authentication authority. Please wait."
-                        />
-                    )
-                }
-            </div>
-        )
-    }
-}
-
-class UserRoot extends React.Component{
-    constructor(props){
-        super(props);
-    }
-
-    render(){
-        if (useOIDC){
-            return(<OIDCLogin />)
+        if (!this.state.userInfoLoaded){
+            return(
+                <LoadingIndicator 
+                    message="Loading user info. Please wait."
+                    size="large"
+                />
+            )
         }
         else if (this.state.userInfo.isLoggedIn){
             return(<UserAccount userInfo={this.state.userInfo}/>)
