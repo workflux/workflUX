@@ -76,7 +76,7 @@ class WES(PyExecProfile):
                 "POST response has no or invalid attribute status_code"
 
             assert post_run_response.status_code == 200, \
-                "Post request resulted in status code: {post_run_response.status_code}\n"
+                f"Post request resulted in status code: {post_run_response.status_code}\n"
 
             post_run_response_data = post_run_response.json()
 
@@ -90,7 +90,8 @@ class WES(PyExecProfile):
         except AssertionError as e:
             with open(self.LOG_FILE, "a") as log:
                 log.write(f"> ERROR OCCURED: {str(e)}\n> Terminating\n" )
-            raise AssertionError(str(e))
+            self.SUCCESS = False
+            return()
             
 
         ## periodically check run status:
@@ -146,7 +147,8 @@ class WES(PyExecProfile):
                             f"> Exceeded allowed number of unsuccessful status checks\n"
                             "> Terminating"
                         )
-                    raise AssertionError(str(e))
+                    self.SUCCESS = False
+                    return()
                 continue
                 
         
