@@ -65,8 +65,21 @@ class Config(object):
             False
         )
 
-        self.OIDC_CONF = self.CONFIG_FILE_content.get('OIDC_CONF') if self.USE_OIDC \
-            else None
+        self.FINAL_WEB_HOST_URL = (
+            os.environ.get(os.environ.get('CWLAB_FINAL_WEB_HOST_URL_ENV_VAR')) if os.environ.get('CWLAB_FINAL_WEB_HOST_URL_ENV_VAR') else None or
+            os.environ.get(self.CONFIG_FILE_content.get('FINAL_WEB_HOST_URL_ENV_VAR')) if self.CONFIG_FILE_content.get('FINAL_WEB_HOST_URL_ENV_VAR') else None or
+            os.environ.get('CWLAB_FINAL_WEB_HOST_URL') or
+            self.CONFIG_FILE_content.get('FINAL_WEB_HOST_URL') or  
+            False
+        )
+
+        if self.CONFIG_FILE_content.get('OIDC_CONF'):
+            self.OIDC_CONF = self.CONFIG_FILE_content.get('OIDC_CONF')
+            for key in self.OIDC_CONF.keys():
+                if isinstance(self.OIDC_CONF[key], str):
+                    self.OIDC_CONF[key] = self.OIDC_CONF[key].replace("<final_web_host_url>", self.FINAL_WEB_HOST_URL)
+        else:
+            self.OIDC_CONF = None
 
         self.DEFAULT_EMAIL = (
             os.environ.get('CWLAB_DEFAULT_EMAIL') or 
