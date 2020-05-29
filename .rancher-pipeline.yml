@@ -18,10 +18,8 @@ stages:
   when:
     branch:
       include:
-      - development
       - master
-      - feature/testing
-- name: build-master
+- name: build-testing
   steps:
   - publishImageConfig:
       dockerfilePath: ./docker/dev_elixir/Dockerfile
