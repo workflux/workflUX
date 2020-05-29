@@ -198,10 +198,9 @@ class Config(object):
             self.CONFIG_FILE_content.get('DATABASE_HOST') or  
             None
         )
-
+        
         self.SQLALCHEMY_DATABASE_URI = (
-            (os.environ.get(database_uri_env_var) if database_uri_env_var else None) or
-            os.environ.get('CWLAB_DATABASE_URI') or
+            os.environ.get('CWLAB_DATABASE_URL') or
             self.CONFIG_FILE_content.get('DATABASE_URL') or  
             ('sqlite:///' + os.path.join(self.DB_DIR, 'cwlab.db'))
         )
