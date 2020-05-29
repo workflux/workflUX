@@ -22,10 +22,12 @@ spec:
         - name: pipeline-docker-registry
       containers:
       - name: cwlab-oidc
-        image: ${CICD_REGISTRY}/krini/cwlab:oidc-${CICD_EXECUTION_SEQUENCE}
+        image: ${CICD_REGISTRY}/krini/cwlab:testing-${CICD_EXECUTION_SEQUENCE}
         env:
         - name: BUILD_NUMBER
           value: oidc-${CICD_EXECUTION_SEQUENCE}
+        - name: host
+          value: cwlab.dev.krini.ingress.rancher.computational.bio
         - name: mysql-host
           valueFrom:
             secretKeyRef:
@@ -58,7 +60,13 @@ spec:
               key: password
         ports:
         - containerPort: 5000
-          
+        volumeMounts:
+        - name: shared-pv
+          mountPath: /mnt/cwlab
+      volumes:
+        - name: shared-pv
+          persistentVolumeClaim:
+            claimName: shared-develop
 ---
 apiVersion: v1
 kind: Service
