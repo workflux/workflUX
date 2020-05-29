@@ -1,0 +1,91 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: cwlabdeployment-odic
+  namespace: cwlab-elixir-develop
+  labels:
+    app: cwlab
+    stage: stable
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: cwlab
+      stage: stable
+  template:
+    metadata:
+      labels:
+        app: cwlab-oidc
+        stage: stable
+    spec:
+      imagePullSecrets:
+        - name: pipeline-docker-registry
+      containers:
+      - name: cwlab-oidc
+        image: ${CICD_REGISTRY}/krini/cwlab:oidc-${CICD_EXECUTION_SEQUENCE}
+        env:
+        - name: BUILD_NUMBER
+          value: oidc-${CICD_EXECUTION_SEQUENCE}
+        - name: mysql-password-2 
+          valueFrom:
+            secretKeyRef:
+              name: cwlab-mysql-2
+              key: mysql-password
+        - name: mysql-username-2 
+          valueFrom:
+            secretKeyRef:
+              name: cwlab-mysql-2
+              key: mysql-username
+        - name: ftp-host
+          valueFrom:
+            secretKeyRef:
+              name: ftp
+              key: url
+        - name: ftp-username
+          valueFrom:
+            secretKeyRef:
+              name: ftp
+              key: username
+        - name: ftp-password 
+          valueFrom:
+            secretKeyRef:
+              name: ftp
+              key: password
+        ports:
+        - containerPort: 5000
+          
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: cwlabservice-stable
+  namespace: cwlab-elixir-develop
+spec:
+  selector:
+    app: cwlab-oidc
+    stage: stable
+  ports:
+    - protocol: TCP
+      port: 80
+      targetPort: 5000
+---
+apiVersion: extensions/v1beta1
+kind: Ingress
+metadata:
+  name: cwlabingress-stable
+  namespace: cwlab-elixir-develop
+  annotations:
+    cert-manager.io/issuer: letsencrypt-prod
+spec:
+  rules:
+  - host: cwlab.krini.ingress.rancher.computational.bio
+    http:
+      paths:
+      - backend:
+          serviceName: cwlabservice-stable
+          servicePort: 80
+        path: /
+  tls: # < placing a host in the TLS config will indicate a certificate should be created
+  - hosts:
+    - cwlab.krini.ingress.rancher.computational.bio
+    secretName: cwlab-letsencrypt-prod-private-cert # < cert-manager will store the created certificate in this secret.
