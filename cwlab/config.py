@@ -70,7 +70,7 @@ class Config(object):
             os.environ.get(self.CONFIG_FILE_content.get('FINAL_WEB_HOST_URL_ENV_VAR')) if self.CONFIG_FILE_content.get('FINAL_WEB_HOST_URL_ENV_VAR') else None or
             os.environ.get('CWLAB_FINAL_WEB_HOST_URL') or
             self.CONFIG_FILE_content.get('FINAL_WEB_HOST_URL') or  
-            False
+            None
         )
 
         if self.CONFIG_FILE_content.get('OIDC_CONF'):
