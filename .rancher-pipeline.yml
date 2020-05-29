@@ -1,15 +1,34 @@
 stages:
-- name: build
+- name: build-dev
   steps:
   - publishImageConfig:
       dockerfilePath: ./docker/dev_elixir/Dockerfile
       buildContext: .
-      tag: krini/cwlab:oidc-${CICD_EXECUTION_SEQUENCE}
+      tag: krini/cwlab:dev-${CICD_EXECUTION_SEQUENCE}
   when:
     branch:
       include:
       - development
+- name: build-master
+  steps:
+  - publishImageConfig:
+      dockerfilePath: ./docker/dev_elixir/Dockerfile
+      buildContext: .
+      tag: krini/cwlab:stable-${CICD_EXECUTION_SEQUENCE}
+  when:
+    branch:
+      include:
       - master
+- name: build-testing
+  steps:
+  - publishImageConfig:
+      dockerfilePath: ./docker/dev_elixir/Dockerfile
+      buildContext: .
+      tag: krini/cwlab:testing-${CICD_EXECUTION_SEQUENCE}
+  when:
+    branch:
+      include:
+      - feature/testing
 - name: deploy-dev
   steps:
   - applyYamlConfig:
@@ -26,5 +45,13 @@ stages:
     branch:
       include:
       - master
+- name: deploy-feature-testing
+  steps:
+  - applyYamlConfig:
+      path: ./kube/testing-deployment.yaml
+  when:
+    branch:
+      include:
+      - feature/testing
 timeout: 60
 notification: {}
