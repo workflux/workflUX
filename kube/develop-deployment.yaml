@@ -81,7 +81,6 @@ spec:
     - protocol: TCP
       port: 80
       targetPort: 5000
----
 apiVersion: extensions/v1beta1
 kind: Ingress
 metadata:
