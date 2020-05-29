@@ -1,11 +1,12 @@
 WEB_SERVER_HOST: 0.0.0.0
 WEB_SERVER_PORT: 5000 
 
-TEMP_DIR: '/cwlab/tmp'
-WORKFLOW_DIR: '/cwlab/worlflows'
-EXEC_DIR: '/cwlab/exec'
-INPUT_DIR: '/cwlab/input'
-DB_DIR: '/cwlab/database'
+TEMP_DIR: '/mnt/cwlab/tmp'
+WORKFLOW_DIR: '/mnt/cwlab/worlflows'
+EXEC_DIR: '/mnt/cwlab/exec'
+INPUT_DIR: '/mnt/cwlab/input'
+DB_DIR: '/mnt/cwlab/database'
+LOG_DIR: '/mnt/cwlab/logs'
 
 DATABASE_URL: "mysql://<username>:<password>@<host>"
 DATABASE_HOST_ENVVAR: "mysql-host"
