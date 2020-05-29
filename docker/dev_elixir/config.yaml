@@ -9,10 +9,10 @@ INPUT_DIR: '/mnt/cwlab/input'
 DB_DIR: '/mnt/cwlab/database'
 LOG_DIR: '/mnt/cwlab/logs'
 
-DATABASE_URL: "mysql://<username>:<password>@<host>"
-DATABASE_HOST_ENVVAR: "mysql-host"
-DATABASE_USERNAME_ENVVAR: "mysql-username"
-DATABASE_PASSWORD_ENVVAR: "mysql-password"
+# DATABASE_URL: "mysql://<username>:<password>@<host>"
+# DATABASE_HOST_ENVVAR: "mysql-host"
+# DATABASE_USERNAME_ENVVAR: "mysql-username"
+# DATABASE_PASSWORD_ENVVAR: "mysql-password"
 
 DEBUG: False
 
