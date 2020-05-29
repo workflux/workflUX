@@ -10,6 +10,7 @@ stages:
       include:
       - development
       - master
+      - feature/testing
 - name: deploy-dev
   steps:
   - applyYamlConfig:
@@ -26,5 +27,13 @@ stages:
     branch:
       include:
       - master
+- name: deploy-feature-testing
+  steps:
+  - applyYamlConfig:
+      path: ./kube/testing-deployment.yaml
+  when:
+    branch:
+      include:
+      - feature/testing
 timeout: 60
 notification: {}

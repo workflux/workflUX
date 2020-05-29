@@ -26,15 +26,20 @@ spec:
         env:
         - name: BUILD_NUMBER
           value: oidc-${CICD_EXECUTION_SEQUENCE}
-        - name: mysql-password-2 
+        - name: mysql-host
           valueFrom:
             secretKeyRef:
-              name: cwlab-mysql-2
+              name: mysql-cwlab-develop
+              key: mysql-host
+        - name: mysql-password
+          valueFrom:
+            secretKeyRef:
+              name: mysql-cwlab-develop
               key: mysql-password
-        - name: mysql-username-2 
+        - name: mysql-username
           valueFrom:
             secretKeyRef:
-              name: cwlab-mysql-2
+              name: mysql-cwlab-develop
               key: mysql-username
         - name: ftp-host
           valueFrom:
@@ -78,7 +83,7 @@ metadata:
     cert-manager.io/issuer: letsencrypt-prod
 spec:
   rules:
-  - host: cwlab.dev.krini.ingress.rancher.computational.bio
+  - host: cwlab.testing.krini.ingress.rancher.computational.bio
     http:
       paths:
       - backend:
