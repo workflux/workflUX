@@ -58,6 +58,13 @@ spec:
               key: password
         ports:
         - containerPort: 5000
+        volumeMounts:
+        - name: shared-pv
+          mountPath: /mnt/cwlab
+      volumes:
+        - name: shared-pv
+          persistentVolumeClaim:
+          claimName: shared-testing
           
 ---
 apiVersion: v1
