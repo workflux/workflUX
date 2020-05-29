@@ -29,17 +29,17 @@ spec:
         - name: mysql-host
           valueFrom:
             secretKeyRef:
-              name: mysql-cwlab-develop
+              name: mysql-cwlab-stable
               key: mysql-host
         - name: mysql-password
           valueFrom:
             secretKeyRef:
-              name: mysql-cwlab-develop
+              name: mysql-cwlab-stable
               key: mysql-password
         - name: mysql-username
           valueFrom:
             secretKeyRef:
-              name: mysql-cwlab-develop
+              name: mysql-cwlab-stable
               key: mysql-username
         - name: ftp-host
           valueFrom:
