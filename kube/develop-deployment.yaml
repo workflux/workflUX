@@ -22,7 +22,7 @@ spec:
         - name: pipeline-docker-registry
       containers:
       - name: cwlab-oidc
-        image: ${CICD_REGISTRY}/krini/cwlab:oidc-${CICD_EXECUTION_SEQUENCE}
+        image: ${CICD_REGISTRY}/krini/cwlab:testing-${CICD_EXECUTION_SEQUENCE}
         env:
         - name: BUILD_NUMBER
           value: oidc-${CICD_EXECUTION_SEQUENCE}
@@ -66,8 +66,7 @@ spec:
       volumes:
         - name: shared-pv
           persistentVolumeClaim:
-            claimName: shared-stable
-          
+            claimName: shared-develop
 ---
 apiVersion: v1
 kind: Service
