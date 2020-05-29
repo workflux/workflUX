@@ -1,5 +1,6 @@
 WEB_SERVER_HOST: 0.0.0.0
 WEB_SERVER_PORT: 5000 
+FINAL_WEB_HOST_URL_ENVVAR: "host"
 
 TEMP_DIR: '/cwlab/tmp'
 WORKFLOW_DIR: '/cwlab/worlflows'
