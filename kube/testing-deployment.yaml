@@ -27,7 +27,7 @@ spec:
         - name: BUILD_NUMBER
           value: oidc-${CICD_EXECUTION_SEQUENCE}
         - name: host
-          value: cwlab-oidc.krini.ingress.rancher.computational.bio
+          value: cwlab.testing.krini.ingress.rancher.computational.bio
         - name: mysql-host
           valueFrom:
             secretKeyRef:
@@ -91,7 +91,7 @@ metadata:
     cert-manager.io/issuer: letsencrypt-prod
 spec:
   rules:
-  - host: cwlab-oidc.krini.ingress.rancher.computational.bio
+  - host: cwlab.testing.krini.ingress.rancher.computational.bio
     http:
       paths:
       - backend:
@@ -100,5 +100,5 @@ spec:
         path: /
   tls: # < placing a host in the TLS config will indicate a certificate should be created
   - hosts:
-    - cwlab-oidc.krini.ingress.rancher.computational.bio
+    - cwlab.testing.krini.ingress.rancher.computational.bio
     secretName: cwlab-testing-letsencrypt-prod-private-cert # < cert-manager will store the created certificate in this secret.
