@@ -15,7 +15,7 @@ spec:
   template:
     metadata:
       labels:
-        app: cwlab-oidc
+        app: cwlab
         stage: stable
     spec:
       imagePullSecrets:
