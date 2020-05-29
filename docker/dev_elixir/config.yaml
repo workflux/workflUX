@@ -1,17 +1,11 @@
 WEB_SERVER_HOST: 0.0.0.0
 WEB_SERVER_PORT: 5000 
 
-TEMP_DIR: '/mnt/cwlab/tmp'
-WORKFLOW_DIR: '/mnt/cwlab/worlflows'
-EXEC_DIR: '/mnt/cwlab/exec'
-INPUT_DIR: '/mnt/cwlab/input'
-DB_DIR: '/mnt/cwlab/database'
-LOG_DIR: '/mnt/cwlab/logs'
-
-DATABASE_URL: "mysql://<username>:<password>@<host>"
-DATABASE_HOST_ENVVAR: "mysql-host"
-DATABASE_USERNAME_ENVVAR: "mysql-username"
-DATABASE_PASSWORD_ENVVAR: "mysql-password"
+TEMP_DIR: '/cwlab/tmp'
+WORKFLOW_DIR: '/cwlab/worlflows'
+EXEC_DIR: '/cwlab/exec'
+INPUT_DIR: '/cwlab/input'
+DB_DIR: '/cwlab/database'
 
 DEBUG: False
 
@@ -22,8 +16,8 @@ OIDC_CONF: {
   scope: 'openid profile email eduperson_entitlement',
   authority: 'https://login.elixir-czech.org/oidc/',
   client_id: 'b1f68121-faec-4196-ab51-66eb61660ece',
-  redirect_uri: 'https://cwlab.testing.krini.ingress.rancher.computational.bio/loginoidc',
-  post_logout_redirect_uri: 'https://cwlab.testing.krini.ingress.rancher.computational.bio/',
+  redirect_uri: 'https://cwlab-oidc.krini.ingress.rancher.computational.bio/loginoidc',
+  post_logout_redirect_uri: 'https://cwlab-oidc.krini.ingress.rancher.computational.bio/',
   metadata: {
     issuer: 'https://login.elixir-czech.org/oidc/',
     authorization_endpoint: 'https://login.elixir-czech.org/oidc/authorize',
