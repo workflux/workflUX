@@ -7,9 +7,10 @@ EXEC_DIR: '/cwlab/exec'
 INPUT_DIR: '/cwlab/input'
 DB_DIR: '/cwlab/database'
 
-DATABASE_URL: "mysql://<username>:<password>@mysql-t9zrr.mysql-kdv2k.svc.cluster.local"
-DATABASE_USERNAME_ENVVAR: "mysql-username-2"
-DATABASE_PASSWORD_ENVVAR: "mysql-username-2"
+DATABASE_URL: "mysql://<username>:<password>@<host>"
+DATABASE_HOST_ENVVAR: "mysql-host"
+DATABASE_USERNAME_ENVVAR: "mysql-username"
+DATABASE_PASSWORD_ENVVAR: "mysql-password"
 
 DEBUG: False
 
