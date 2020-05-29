@@ -9,13 +9,22 @@ stages:
     branch:
       include:
       - development
-- name: deploy
+      - master
+- name: deploy-dev
   steps:
   - applyYamlConfig:
-      path: ./kube/deployment.yaml
+      path: ./kube/develop-deployment.yaml
   when:
     branch:
       include:
       - development
+- name: deploy-master
+  steps:
+  - applyYamlConfig:
+      path: ./kube/stable-deployment.yaml
+  when:
+    branch:
+      include:
+      - master
 timeout: 60
 notification: {}
