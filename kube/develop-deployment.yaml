@@ -67,7 +67,7 @@ spec:
         - name: shared-pv
           persistentVolumeClaim:
             claimName: shared-develop
----
+
 apiVersion: v1
 kind: Service
 metadata:

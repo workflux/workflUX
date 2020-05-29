@@ -159,7 +159,7 @@ class Config(object):
 
         if self.DEBUG:
             print("Debug mode turned on, don't use this on production machines.", file=sys.stderr)
-        
+            
         database_username_env_name = (
             os.environ.get('CWLAB_DATABASE_USERNAME_ENVVAR') or
             self.CONFIG_FILE_content.get('DATABASE_USERNAME_ENVVAR') or  
@@ -204,14 +204,6 @@ class Config(object):
             self.CONFIG_FILE_content.get('DATABASE_URL') or  
             ('sqlite:///' + os.path.join(self.DB_DIR, 'cwlab.db'))
         )
-        if isinstance(self.SQLALCHEMY_DATABASE_URI, str) and \
-            isinstance(database_password, str) and \
-            isinstance(database_username, str):
-            print("Found username and password environment variables for DB.")
-            self.SQLALCHEMY_DATABASE_URI = self.SQLALCHEMY_DATABASE_URI \
-                .replace("<host>", str(database_host)) \
-                .replace("<password>", str(database_password)) \
-                .replace("<password>", str(database_password))
         
         self.SQLALCHEMY_TRACK_MODIFICATIONS = (
             os.environ.get('CWLAB_DATABASE_TRACK_MODIFICATIONS') or
