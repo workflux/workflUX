@@ -64,7 +64,7 @@ spec:
       volumes:
         - name: shared-pv
           persistentVolumeClaim:
-          claimName: shared-testing
+            claimName: shared-testing
           
 ---
 apiVersion: v1
