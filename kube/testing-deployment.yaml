@@ -27,7 +27,7 @@ spec:
         - name: BUILD_NUMBER
           value: oidc-${CICD_EXECUTION_SEQUENCE}
         - name: host
-          value: cwlab.testing.krini.ingress.rancher.computational.bio
+          value: cwlab-oidc.krini.ingress.rancher.computational.bio
         - name: mysql-host
           valueFrom:
             secretKeyRef:
