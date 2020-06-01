@@ -959,7 +959,7 @@ class JobParamFormHTML extends React.Component {
         Object.assign(paramValues, this.state.paramHelperValues)
         
         this.ajaxRequest({
-            statusVar: "status",
+            statusVar: "actionStatus",
             statusValueDuringRequest: "create_job",
             messageVar: "createJobMessages",
             sendData: {
