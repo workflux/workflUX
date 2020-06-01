@@ -10,6 +10,10 @@ INCLUDE_BUILD_NUMBER_IN_BASE_DIR: True
 # DATABASE_USERNAME_ENVVAR: "mysql-username"
 # DATABASE_PASSWORD_ENVVAR: "mysql-password"
 
+INPUT_SOURCES:
+  local_file_system: False
+  URL: True
+
 DEBUG: False
 
 ENABLE_USERS: True
