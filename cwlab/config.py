@@ -49,11 +49,15 @@ class Config(object):
             os.environ.get("BUILD_NUMBER") or
             "none"
         )
+        
+        self.CORRECT_SYMLINKS = self.CONFIG_FILE_content.get('CORRECT_SYMLINKS') \
+            if not self.CONFIG_FILE_content.get('CORRECT_SYMLINKS') is None \
+            else True
 
         self.BASE_DIR = normalize_path( # overwrites the fallback dir
             os.environ.get('CWLAB_BASE_DIR') or
             self.CONFIG_FILE_content.get('BASE_DIR') or  
-            self.BASE_DIR,
+            cwlab_fallback_dir,
             correct_symlinks=self.CORRECT_SYMLINKS
         )
 
@@ -66,9 +70,6 @@ class Config(object):
         if include_build_number_in_base_dir:
             self.BASE_DIR = os.path.join(self.BASE_DIR, self.BUILD_NUMBER)
 
-        self.CORRECT_SYMLINKS = self.CONFIG_FILE_content.get('CORRECT_SYMLINKS') \
-            if not self.CONFIG_FILE_content.get('CORRECT_SYMLINKS') is None \
-            else True
             
         self.ENABLE_USERS = (
             os.environ.get('CWLAB_ENABLE_USERS') or
