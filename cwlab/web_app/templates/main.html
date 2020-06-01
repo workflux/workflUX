@@ -63,6 +63,7 @@
             const registrationInstruction = "{{ config.REGISTRATION_INSTRUCTION }}"
             const useOIDC = "{{ config.USE_OIDC }}" === "True"
             const buildNumber = "{{ config.BUILD_NUMBER }}"
+            const inputSources = JSON.parse('{{ config.INPUT_SOURCES | tojson | safe }}')
 
             // other global params:
             Oidc.Log.logger = console;

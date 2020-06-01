@@ -131,6 +131,16 @@ class Config(object):
             correct_symlinks=self.CORRECT_SYMLINKS
         )
 
+        self.INPUT_SOURCES = {
+            "local_file_system": True,
+            "URL": True
+        }
+        user_defined_input_sources = (
+            self.CONFIG_FILE_content.get('INPUT_SOURCES') or
+            {}
+        )
+        self.INPUT_SOURCES.update(user_defined_input_sources)
+
         self.UPLOAD_ALLOWED = self.CONFIG_FILE_content.get('UPLOAD_ALLOWED') \
             if not self.CONFIG_FILE_content.get('UPLOAD_ALLOWED') is None \
             else True
