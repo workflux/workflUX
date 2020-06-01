@@ -336,45 +336,75 @@ class ParamField extends React.Component{
                     }
                     break;
                 case "input_file":
-                    return(
-                        <BrowseDirTextField
-                            name={"input_" + this.key}
-                            value={this.props.paramValue}
-                            onChange={this.handleChange}
-                            disabled={disableInput}
-                            ignoreFiles={false}
-                            fileExts={[]}
-                            showOnlyHits={false}
-                            selectDir={false}
-                            allowInput={true}
-                            allowUpload={true}
-                            allowDownload={false}
-                            defaultBaseDir="DEFAULT_INPUT_DIR"
-                            prevPath={this.props.prevPath}
-                            changePrevPath={this.props.changePrevPath}
-                            smallSize={true}
-                        />
-                    )
+                    if (inputSources.local_file_system){
+                        return(
+                            <BrowseDirTextField
+                                name={"input_" + this.key}
+                                value={this.props.paramValue}
+                                onChange={this.handleChange}
+                                disabled={disableInput}
+                                ignoreFiles={false}
+                                fileExts={[]}
+                                showOnlyHits={false}
+                                selectDir={false}
+                                allowInput={true}
+                                allowUpload={true}
+                                allowDownload={false}
+                                defaultBaseDir="DEFAULT_INPUT_DIR"
+                                prevPath={this.props.prevPath}
+                                changePrevPath={this.props.changePrevPath}
+                                smallSize={true}
+                            />
+                        )
+                    }
+                    else {
+                        return(
+                            <input
+                                className="param-input"
+                                type="text"
+                                name={"input_" + this.key}
+                                value={this.props.paramValue}
+                                onChange={this.handleChange}
+                                required={true}
+                                disabled={disableInput}
+                            />
+                        )
+                    }
                     break;
                 case "input_dir":
-                    return(
-                        <BrowseDirTextField
-                            name={"input_" + this.key}
-                            value={this.props.paramValue}
-                            onChange={this.handleChange}
-                            ignoreFiles={false}
-                            fileExts={[]}
-                            showOnlyHits={false}
-                            selectDir={true}
-                            allowInput={true}
-                            allowUpload={true}
-                            allowDownload={false}
-                            defaultBaseDir="DEFAULT_INPUT_DIR"
-                            prevPath={this.props.prevPath}
-                            changePrevPath={this.props.changePrevPath}
-                            smallSize={true}
-                        />
-                    )
+                    if (inputSources.local_file_system){
+                        return(
+                            <BrowseDirTextField
+                                name={"input_" + this.key}
+                                value={this.props.paramValue}
+                                onChange={this.handleChange}
+                                ignoreFiles={false}
+                                fileExts={[]}
+                                showOnlyHits={false}
+                                selectDir={true}
+                                allowInput={true}
+                                allowUpload={true}
+                                allowDownload={false}
+                                defaultBaseDir="DEFAULT_INPUT_DIR"
+                                prevPath={this.props.prevPath}
+                                changePrevPath={this.props.changePrevPath}
+                                smallSize={true}
+                            />
+                        )
+                    }
+                    else {
+                        return(
+                            <input
+                                className="param-input"
+                                type="text"
+                                name={"input_" + this.key}
+                                value={this.props.paramValue}
+                                onChange={this.handleChange}
+                                required={true}
+                                disabled={disableInput}
+                            />
+                        )
+                    }
                     break;
             }
         }
