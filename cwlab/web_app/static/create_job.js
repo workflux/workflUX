@@ -1095,7 +1095,7 @@ class JobParamFormHTML extends React.Component {
             return(
                 <div>
                     <DisplayServerMessages messages={this.state.serverMessages} />
-                    <PathValAndSearch
+                    <ParamValidationOptions
                         jobName={this.props.jobName}
                         validateURIs={this.props.validateURIs}
                         searchPaths={this.props.searchPaths}
@@ -1247,7 +1247,7 @@ class JobParamFormSpreadsheet extends React.Component {
     render() {
         return(
             <div>
-                <PathValAndSearch
+                <ParamValidationOptions
                     jobName={this.props.jobName}
                     validateURIs={this.props.validateURIs}
                     searchPaths={this.props.searchPaths}
