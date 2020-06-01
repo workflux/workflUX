@@ -1,0 +1,104 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: cwlabdeployment-testing
+  namespace: cwlab-elixir-testing
+  labels:
+    app: cwlab
+    stage: testing
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: cwlab
+      stage: testing
+  template:
+    metadata:
+      labels:
+        app: cwlab
+        stage: testing
+    spec:
+      imagePullSecrets:
+        - name: pipeline-docker-registry
+      containers:
+      - name: cwlab-oidc
+        image: ${CICD_REGISTRY}/krini/cwlab:testing-${CICD_EXECUTION_SEQUENCE}
+        env:
+        - name: BUILD_NUMBER
+          value: oidc-${CICD_EXECUTION_SEQUENCE}
+        - name: host
+          value: cwlab.testing.krini.ingress.rancher.computational.bio
+        - name: mysql-host
+          valueFrom:
+            secretKeyRef:
+              name: mysql-cwlab-testing
+              key: mysql-host
+        - name: mysql-password
+          valueFrom:
+            secretKeyRef:
+              name: mysql-cwlab-testing
+              key: mysql-password
+        - name: mysql-username
+          valueFrom:
+            secretKeyRef:
+              name: mysql-cwlab-testing
+              key: mysql-username
+        - name: ftp-host
+          valueFrom:
+            secretKeyRef:
+              name: ftp
+              key: url
+        - name: ftp-username
+          valueFrom:
+            secretKeyRef:
+              name: ftp
+              key: username
+        - name: ftp-password 
+          valueFrom:
+            secretKeyRef:
+              name: ftp
+              key: password
+        ports:
+        - containerPort: 5000
+        volumeMounts:
+        - name: shared-pv
+          mountPath: /mnt/cwlab
+      volumes:
+        - name: shared-pv
+          persistentVolumeClaim:
+            claimName: shared-testing
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: cwlabservice-testing
+  namespace: cwlab-elixir-testing
+spec:
+  selector:
+    app: cwlab
+    stage: testing
+  ports:
+    - protocol: TCP
+      port: 80
+      targetPort: 5000
+---
+apiVersion: extensions/v1beta1
+kind: Ingress
+metadata:
+  name: cwlabingress-testing
+  namespace: cwlab-elixir-testing
+  annotations:
+    cert-manager.io/issuer: letsencrypt-prod
+spec:
+  rules:
+  - host: cwlab.testing.krini.ingress.rancher.computational.bio
+    http:
+      paths:
+      - backend:
+          serviceName: cwlabservice-testing
+          servicePort: 80
+        path: /
+  tls: # < placing a host in the TLS config will indicate a certificate should be created
+  - hosts:
+    - cwlab.testing.krini.ingress.rancher.computational.bio
+    secretName: cwlab-testing-letsencrypt-prod-private-cert # < cert-manager will store the created certificate in this secret.

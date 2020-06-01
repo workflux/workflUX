@@ -6,6 +6,46 @@ function get_time_str(){
     return(date.toLocaleTimeString())
 }
 
+function storeSessionInfo(param_obj){
+    Object.keys(param_obj).map( (param) => {
+        sessionStorage.setItem(param, param_obj[param])
+        localStorage.setItem(param, param_obj[param])
+    })
+}
+
+function cleanSessionInfo(){
+    sessionStorage.clear()
+    localStorage.clear()
+}
+
+function logout(){
+    if (useOIDC){
+        oidcUserManager.signoutRedirect()
+    }
+    else {
+        cleanSessionInfo()
+        window.location.reload(true)
+    }
+}
+
+function getSessionInfo(param_list){
+    let param_obj = {}
+    param_list.map( (param) => {
+        let value = sessionStorage.getItem(param)
+        if (!value){
+            value = localStorage.getItem(param)
+        }
+        if (value == "true"){
+            value = true
+        }
+        else if (value == "false"){
+            value = false
+        }
+        param_obj[param] = value
+    })
+    return(param_obj)
+}
+
 function seconds_to_duration_str(s){
     const h = Math.floor( s / 3600 )
     let s_remain = s % 3600
@@ -34,7 +74,11 @@ async function ajaxRequest({
     } 
 }){
     let setDataAT = sendData
-    setDataAT["access_token"] = await get_user_info("accessToken")
+    const userInfo = await getUserInfo("all")
+    setDataAT.access_token = userInfo.accessToken
+    if (! setDataAT.hasOwnProperty("username")){
+        setDataAT.username = userInfo.username
+    }
     let formData
     if (sendViaFormData){
         formData = new FormData()
@@ -108,8 +152,8 @@ function getAllowedDirs({
     statusValueDuringRequest="action",
     statusValueAfterRequest="none",
     messageVar="serverMessages",
-    jobId=null,
-    runId=null,
+    jobName=null,
+    runName=null,
     onSuccess= (data, messages) => {
                 return({})
             },
@@ -118,10 +162,10 @@ function getAllowedDirs({
     } 
 }){
     let sendData = {}
-    if (jobId){
-        sendData["job_id"] = jobId
-        if (runId){
-            sendData["run_id"] = runId
+    if (jobName){
+        sendData["job_name"] = jobName
+        if (runName){
+            sendData["run_name"] = runName
         }
     }
 
@@ -421,7 +465,7 @@ class Tooltip extends React.Component {
                     ) : (
                         <span 
                             className="tooltiptext w3-metro-darken"
-                            style={ {width: width.toString().concat("px"), whiteSpace: "no-wrap", zIndex: "100"} }
+                            style={ {width: width.toString().concat("px"), whiteSpace: "nowrap", zIndex: "100"} }
                         >
                             {preview}
                         </span>   
@@ -826,7 +870,7 @@ class AjaxComponent extends React.Component {
 
     async request(){ // ajax request to server
         let sendData = this.props.sendData
-        sendData["access_token"] = await get_user_info("accessToken")
+        sendData["access_token"] = await getUserInfo("accessToken")
         this.ajaxRequest({
             statusVar: "loading",
             statusValueDuringRequest: true,
@@ -932,8 +976,8 @@ class BrowseDir extends React.Component {
         // props.allowInput
         // props.allowUpload
         // props.allowDownload
-        // props.jobId
-        // props.runId
+        // props.jobName
+        // props.runName
         // props.defaultBaseDir
         // props.showCancelButton
         // props.terminateBrowseDialog
@@ -981,6 +1025,7 @@ class BrowseDir extends React.Component {
         this.changeBaseDir = this.changeBaseDir.bind(this);
         this.terminateBrowseDialog = this.terminateBrowseDialog.bind(this);
         this.handleFileUpload = this.handleFileUpload.bind(this);
+        this.triggerFileSend = this.triggerFileSend.bind(this);
         this.downloadFileOrFolder = this.downloadFileOrFolder.bind(this);
     }
 
@@ -1009,8 +1054,8 @@ class BrowseDir extends React.Component {
                 allow_input: this.allowInput ? true : false,
                 allow_upload: this.allowUpload ? true : false,
                 allow_download: this.allowDownload ? true : false,
-                job_id: this.props.jobId ? this.props.jobId : null,
-                run_id: this.props.runId ? this.props.runId : null,
+                job_name: this.props.jobName ? this.props.jobName : null,
+                run_name: this.props.runName ? this.props.runName : null,
                 on_error_return_base_dir_items: init ? true : false,
                 default_base_dir: this.props.defaultBaseDir ? this.props.defaultBaseDir : null,
                 fixed_base_dir: this.props.fixedBaseDir ? this.props.fixedBaseDir : null,
@@ -1096,6 +1141,26 @@ class BrowseDir extends React.Component {
         this.props.terminateBrowseDialog(changes, selectedItem)
     }
     
+    async triggerFileSend(event, data, path){
+        let form = document.createElement('form');
+        form.method = 'post';
+        form.action = routeDownload;
+        let input = document.createElement('input');
+        input.type = 'hidden';
+        input.name = "meta";
+        input.value = JSON.stringify({
+            path: event.currentTarget.name == "download_dir" ? data["zip_path"] : path,
+            job_name: this.props.jobName ? this.props.jobName : null,
+            run_name: this.props.runName ? this.props.runName : null,
+            send_file: true,
+            access_token: await getUserInfo("accessToken")
+        });
+        form.appendChild(input);
+        document.body.appendChild(form);
+        form.submit();
+        return({downloadMessages: []})
+    }
+
     async downloadFileOrFolder(event){
         if (event.currentTarget.name == "download_dir"){
             this.setState({
@@ -1113,30 +1178,13 @@ class BrowseDir extends React.Component {
             messageVar: "downloadMessages",
             sendData: {
                 path: path,
-                job_id: this.props.jobId ? this.props.jobId : null,
-                run_id: this.props.runId ? this.props.runId : null,
+                job_name: this.props.jobName ? this.props.jobName : null,
+                run_name: this.props.runName ? this.props.runName : null,
                 send_file: false
             },
             sendViaFormData: true,
             route: routeDownload,
-            onSuccess: (data, messages) => {
-                let form = document.createElement('form');
-                form.method = 'post';
-                form.action = routeDownload;
-                let input = document.createElement('input');
-                input.type = 'hidden';
-                input.name = "meta";
-                input.value = JSON.stringify({
-                    path: event.currentTarget.name == "download_dir" ? data["zip_path"] : path,
-                    job_id: this.props.jobId ? this.props.jobId : null,
-                    run_id: this.props.runId ? this.props.runId : null,
-                    send_file: true
-                });
-                form.appendChild(input);
-                document.body.appendChild(form);
-                form.submit();
-                return({downloadMessages: []})
-            }
+            onSuccess: (data, messages) => this.triggerFileSend(event, data, path)
         })
     }
 
@@ -1262,7 +1310,7 @@ class BrowseDir extends React.Component {
                                         disabled={this.state.actionStatus != "none"}
                                         metaData={ 
                                             {
-                                                job_id: this.props.jobId,
+                                                job_name: this.props.jobName,
                                                 dir_path: this.state.dirPath
                                             }
                                         }
@@ -1371,7 +1419,7 @@ class BrowseDirTextField extends React.Component {
         // props.allowInput
         // props.allowUpload
         // props.allowDownload
-        // props.jobId
+        // props.jobName
         // props.defaultBaseDir
         // props.prevPath
         // props.changePrevPath
@@ -1451,7 +1499,7 @@ class BrowseDirTextField extends React.Component {
                         allowInput={this.props.allowInput}
                         allowUpload={this.props.allowUpload}
                         allowDownload={this.props.allowDownload}
-                        jobId={this.props.jobId}
+                        jobName={this.props.jobName}
                         defaultBaseDir={this.props.defaultBaseDir}
                         prevPath={this.props.prevPath}
                         changePrevPath={this.props.changePrevPath}
@@ -1513,7 +1561,7 @@ class FileUploadComponent extends React.Component {
         }
         else{
             let metaData = this.props.metaData ? this.props.metaData : {}
-            metaData["access_token"] = await get_user_info("accessToken")
+            metaData["access_token"] = await getUserInfo("accessToken")
             this.setState({status:"uploading"})
             let formData = new FormData()
             formData.append("file", fileToUpload)

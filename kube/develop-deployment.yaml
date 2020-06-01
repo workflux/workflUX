@@ -1,0 +1,104 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: cwlabdeployment-develop
+  namespace: cwlab-elixir-develop
+  labels:
+    app: cwlab
+    stage: develop
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: cwlab
+      stage: develop
+  template:
+    metadata:
+      labels:
+        app: cwlab
+        stage: develop
+    spec:
+      imagePullSecrets:
+        - name: pipeline-docker-registry
+      containers:
+      - name: cwlab-oidc
+        image: ${CICD_REGISTRY}/krini/cwlab:testing-${CICD_EXECUTION_SEQUENCE}
+        env:
+        - name: BUILD_NUMBER
+          value: oidc-${CICD_EXECUTION_SEQUENCE}
+        - name: host
+          value: cwlab.dev.krini.ingress.rancher.computational.bio
+        - name: mysql-host
+          valueFrom:
+            secretKeyRef:
+              name: mysql-cwlab-develop
+              key: mysql-host
+        - name: mysql-password
+          valueFrom:
+            secretKeyRef:
+              name: mysql-cwlab-develop
+              key: mysql-password
+        - name: mysql-username
+          valueFrom:
+            secretKeyRef:
+              name: mysql-cwlab-develop
+              key: mysql-username
+        - name: ftp-host
+          valueFrom:
+            secretKeyRef:
+              name: ftp
+              key: url
+        - name: ftp-username
+          valueFrom:
+            secretKeyRef:
+              name: ftp
+              key: username
+        - name: ftp-password 
+          valueFrom:
+            secretKeyRef:
+              name: ftp
+              key: password
+        ports:
+        - containerPort: 5000
+        volumeMounts:
+        - name: shared-pv
+          mountPath: /mnt/cwlab
+      volumes:
+        - name: shared-pv
+          persistentVolumeClaim:
+            claimName: shared-develop
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: cwlabservice-develop
+  namespace: cwlab-elixir-develop
+spec:
+  selector:
+    app: cwlab
+    stage: develop
+  ports:
+    - protocol: TCP
+      port: 80
+      targetPort: 5000
+---
+apiVersion: extensions/v1beta1
+kind: Ingress
+metadata:
+  name: cwlabingress-develop
+  namespace: cwlab-elixir-develop
+  annotations:
+    cert-manager.io/issuer: letsencrypt-prod
+spec:
+  rules:
+  - host: cwlab.dev.krini.ingress.rancher.computational.bio
+    http:
+      paths:
+      - backend:
+          serviceName: cwlabservice-develop
+          servicePort: 80
+        path: /
+  tls: # < placing a host in the TLS config will indicate a certificate should be created
+  - hosts:
+    - cwlab.dev.krini.ingress.rancher.computational.bio
+    secretName: cwlab-develop-letsencrypt-prod-private-cert # < cert-manager will store the created certificate in this secret.

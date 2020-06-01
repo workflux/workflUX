@@ -205,54 +205,46 @@ def get_duration(start_time, end_time):
     minutes = (delta.seconds//60)%60
     return [days, hours, minutes]
 
-def get_job_ids():
-    exec_dir = app.config["EXEC_DIR"]
-    job_ids = [d for d in os.listdir(exec_dir) if os.path.isdir(os.path.join(exec_dir, d))]
-    return job_ids
-
-def get_job_name_from_job_id(job_id):
-    return match('(\d+)_(\d+)_(.+)', job_id).group(3)
-
-def get_path(which, job_id=None, run_id=None, param_sheet_format=None, wf_target=None, wf_type=None):
+def get_path(which, job_name=None, run_name=None, param_sheet_format=None, wf_target=None, wf_type=None):
     if which == "job_dir":
-        path = os.path.join(app.config["EXEC_DIR"], job_id)
+        path = os.path.join(app.config["EXEC_DIR"], job_name)
     elif which == "runs_out_dir":
-        path = os.path.join(app.config["EXEC_DIR"], job_id, "runs_out")
+        path = os.path.join(app.config["EXEC_DIR"], job_name, "runs_out")
     elif which == "run_out_dir":
-        path = os.path.join(app.config["EXEC_DIR"], job_id, "runs_out", run_id)
+        path = os.path.join(app.config["EXEC_DIR"], job_name, "runs_out", run_name)
     elif which == "job_param_sheet":
         if param_sheet_format:
-            path = os.path.join(app.config["EXEC_DIR"], job_id, "param_sheet." + param_sheet_format)
+            path = os.path.join(app.config["EXEC_DIR"], job_name, "param_sheet." + param_sheet_format)
         else:
-            path = os.path.join(app.config["EXEC_DIR"], job_id)
+            path = os.path.join(app.config["EXEC_DIR"], job_name)
             hits = fetch_files_in_dir(path, allowed_extensions_by_type["spreadsheet"], "param_sheet")
-            assert len(hits) != 0, "No spreadsheet found for job " + job_id
+            assert len(hits) != 0, "No spreadsheet found for job " + job_name
             path = os.path.join(path, hits[0]["file_name"])
     elif which == "job_wf_dir":
-        path = os.path.join(app.config["EXEC_DIR"], job_id, "workflow")
+        path = os.path.join(app.config["EXEC_DIR"], job_name, "workflow")
     elif which == "job_wf":
         if wf_type is None:
             exts = [supported_workflow_exts[wf_type][0] for wf_type in supported_workflow_exts.keys()]
             hits = fetch_files_in_dir(
-                os.path.join(app.config["EXEC_DIR"], job_id, "workflow"), 
+                os.path.join(app.config["EXEC_DIR"], job_name, "workflow"), 
                 exts, "main", return_abspaths=True
             )
-            assert len(hits) == 1, f"No workflow found in exec dir of job \"{job_id}\""
+            assert len(hits) == 1, f"No workflow found in exec dir of job \"{job_name}\""
             path = hits[0]["file_abspath"]
         else:
-            path = os.path.join(app.config["EXEC_DIR"], job_id, "workflow", f"main.{supported_workflow_exts[wf_type][0]}")
+            path = os.path.join(app.config["EXEC_DIR"], job_name, "workflow", f"main.{supported_workflow_exts[wf_type][0]}")
     elif which == "job_param_sheet_temp":
         if param_sheet_format:
-            path = os.path.join(app.config["EXEC_DIR"], job_id, "job_templ." + param_sheet_format)
+            path = os.path.join(app.config["EXEC_DIR"], job_name, "job_templ." + param_sheet_format)
         else:
-            path = os.path.join(app.config["EXEC_DIR"], job_id)
+            path = os.path.join(app.config["EXEC_DIR"], job_name)
             hits = fetch_files_in_dir(path, allowed_extensions_by_type["spreadsheet"], "job_templ")
-            assert len(hits) != 0, "No spreadsheet found for job " + job_id
+            assert len(hits) != 0, "No spreadsheet found for job " + job_name
             path = os.path.join(path, hits[0]["file_name"])
     elif which == "runs_yaml_dir":
-        path = os.path.join(app.config["EXEC_DIR"], job_id, "runs_params")
+        path = os.path.join(app.config["EXEC_DIR"], job_name, "runs_params")
     elif which == "run_input":
-        path = os.path.join(app.config["EXEC_DIR"], job_id, "runs_params", run_id + ".yaml")
+        path = os.path.join(app.config["EXEC_DIR"], job_name, "runs_params", run_name + ".yaml")
     elif which == "job_templ":
         path = os.path.join(app.config['WORKFLOW_DIR'], wf_target + ".job_templ.xlsx")
     elif which == "wf":
@@ -260,13 +252,13 @@ def get_path(which, job_id=None, run_id=None, param_sheet_format=None, wf_target
     elif which == "wf_imports_zip":
         path = os.path.join(app.config['WORKFLOW_DIR'], f"{wf_target}.imports.zip")
     elif which == "runs_log_dir":
-        path = os.path.join(app.config['EXEC_DIR'], job_id, "runs_log")
+        path = os.path.join(app.config['EXEC_DIR'], job_name, "runs_log")
     elif which == "run_log":
-        path = os.path.join(app.config['EXEC_DIR'], job_id, "runs_log", run_id + ".log")
+        path = os.path.join(app.config['EXEC_DIR'], job_name, "runs_log", run_name + ".log")
     elif which == "debug_run_log":
-        path = os.path.join(app.config['EXEC_DIR'], job_id, "runs_log", run_id + ".debug.log")
+        path = os.path.join(app.config['EXEC_DIR'], job_name, "runs_log", run_name + ".debug.log")
     elif which == "job_input_dir":
-        path = os.path.join(app.config['INPUT_DIR'], job_id, "job")
+        path = os.path.join(app.config['INPUT_DIR'], job_name, "job")
     elif which == "error_log":
         path = os.path.join(app.config['LOG_DIR'], "error.log")
     elif which == "info_log":
@@ -438,16 +430,6 @@ def import_wf(
     else:
         import_wdl(wf_path, name, wf_imports_zip_path)
     
-def get_run_ids(job_id):
-    runs_yaml_dir = get_path("runs_yaml_dir", job_id)
-    run_inputs = fetch_files_in_dir(
-        dir_path=runs_yaml_dir, 
-        file_exts=["yaml"],
-        ignore_subdirs=True
-    )
-    run_ids = [r["file_nameroot"] for r in run_inputs]
-    return run_ids
-    
 def get_job_templates():
     # read list of template files:
     templates = fetch_files_in_dir(
@@ -460,7 +442,6 @@ def get_job_templates():
     for i, t  in enumerate(templates):
         templates[i]["wf_target"] = sub(r'\.job_templ$', '', t["file_nameroot"])
     return templates
-
     
 def get_job_templ_info(which, wf_target=None, job_templ_path=None):
     if job_templ_path is None:
@@ -479,7 +460,7 @@ def output_example_config():
         "https://github.com/CompEpigen/CWLab#configuration")
     print(example_config_content)
     
-def get_allowed_base_dirs(job_id=None, run_id=None, allow_input=True, allow_upload=True, allow_download=False, include_tmp_dir=False):
+def get_allowed_base_dirs(job_name=None, run_name=None, allow_input=True, allow_upload=True, allow_download=False, include_tmp_dir=False):
     allowed_dirs = {}
     if allow_input and (not allow_download) and include_tmp_dir:
         allowed_dirs["OUTPUT_DIR_CURRENT_JOB"] = {
@@ -488,19 +469,19 @@ def get_allowed_base_dirs(job_id=None, run_id=None, allow_input=True, allow_uplo
         }
     if (app.config["DOWNLOAD_ALLOWED"] and allow_download) or (allow_input and not allow_download):
         mode = "download" if (app.config["DOWNLOAD_ALLOWED"] and allow_download) else "input"
-        if not job_id is None:
+        if not job_name is None:
             allowed_dirs["OUTPUT_DIR_CURRENT_JOB"] = {
-                "path": get_path("runs_out_dir", job_id=job_id),
+                "path": get_path("runs_out_dir", job_name=job_name),
                 "mode": mode
             }
-        if not run_id is None:
+        if not run_name is None:
             allowed_dirs["OUTPUT_DIR_CURRENT_RUN"] = {
-                "path": get_path("run_out_dir", job_id=job_id, run_id=run_id),
+                "path": get_path("run_out_dir", job_name=job_name, run_name=run_name),
                 "mode": mode
             }
     if (app.config["UPLOAD_ALLOWED"] and allow_upload) or (allow_input and not allow_download):
         mode = "upload" if app.config["UPLOAD_ALLOWED"] and allow_upload else "input"
-        if not job_id is None:
+        if not job_name is None:
             allowed_dirs["DEFAULT_INPUT_DIR"] = {
                 "path": app.config["DEFAULT_INPUT_DIR"],
                 "mode": mode
@@ -512,9 +493,9 @@ def get_allowed_base_dirs(job_id=None, run_id=None, allow_input=True, allow_uplo
                     "mode": mode
                 }
     if not allow_download and allow_input:
-        if not job_id is None:
+        if not job_name is None:
             allowed_dirs["EXEC_DIR_CURRENT_JOB"] = {
-                "path": get_path("job_dir", job_id=job_id),
+                "path": get_path("job_dir", job_name=job_name),
                 "mode": "input"
             }
         allowed_dirs["EXEC_DIR_ALL_JOBS"] = {

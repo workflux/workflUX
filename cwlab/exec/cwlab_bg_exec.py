@@ -106,8 +106,8 @@ def commit(db_retry_delays_=None, no_error=False):
 
 # retrieve infos from database:
 exec_db_entry = query_info_from_db("run_info")
-job_id = exec_db_entry.job_id
-run_id = exec_db_entry.run_id
+job_name = exec_db_entry.job_name
+run_name = exec_db_entry.run_name
 wf_target = exec_db_entry.wf_target
 run_input = exec_db_entry.run_input
 out_dir = exec_db_entry.out_dir
@@ -174,8 +174,8 @@ if not os.path.exists(out_dir):
 
 # start exec session:
 session_vars = get_session_var_dict(
-    job_id,
-    run_id,
+    job_name,
+    run_name,
     wf_target,
     run_input,
     out_dir,
@@ -203,7 +203,7 @@ commit()
 
 # send mail
 if exec_db_entry.status == "finished":
-    subj = "The run \"{}\" of job \"{}\" successfully finished.".format(run_id, job_id)
+    subj = "The run \"{}\" of job \"{}\" successfully finished.".format(run_name, job_name)
     text = """
     Time started: {}<br/>
     Time finished: {}<br/><br/>
@@ -212,7 +212,7 @@ if exec_db_entry.status == "finished":
             str(exec_db_entry.time_started), str(exec_db_entry.time_finished), out_dir
         )
 else:
-    subj = "The run \"{}\" of job \"{}\" failed.".format(run_id, job_id)
+    subj = "The run \"{}\" of job \"{}\" failed.".format(run_name, job_name)
     text = """
     Final status: {}<br/>
     The error message was: {}<br/><br/>

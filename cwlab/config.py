@@ -45,9 +45,31 @@ class Config(object):
         cwlab_fallback_dir = os.path.join(os.path.expanduser("~"), "cwlab")
 
         # parameters:
+        self.BUILD_NUMBER = ( 
+            os.environ.get("BUILD_NUMBER") or
+            "none"
+        )
+        
         self.CORRECT_SYMLINKS = self.CONFIG_FILE_content.get('CORRECT_SYMLINKS') \
             if not self.CONFIG_FILE_content.get('CORRECT_SYMLINKS') is None \
             else True
+
+        self.BASE_DIR = normalize_path( # overwrites the fallback dir
+            os.environ.get('CWLAB_BASE_DIR') or
+            self.CONFIG_FILE_content.get('BASE_DIR') or  
+            cwlab_fallback_dir,
+            correct_symlinks=self.CORRECT_SYMLINKS
+        )
+
+        include_build_number_in_base_dir = ( # usefull for continuous deployment
+            os.environ.get('CWLAB_INCLUDE_BUILD_NUMBER_IN_BASE_DIR') or
+            self.CONFIG_FILE_content.get('INCLUDE_BUILD_NUMBER_IN_BASE_DIR') or  
+            False
+        )
+
+        if include_build_number_in_base_dir:
+            self.BASE_DIR = os.path.join(self.BASE_DIR, self.BUILD_NUMBER)
+
             
         self.ENABLE_USERS = (
             os.environ.get('CWLAB_ENABLE_USERS') or
@@ -55,18 +77,27 @@ class Config(object):
             False
         )
 
-        self.BUILD_NUMBER = ( 
-            os.environ.get("BUILD_NUMBER") or
-            "none"
-        )
         self.USE_OIDC = (
             os.environ.get('CWLAB_USE_OIDC') or
             self.CONFIG_FILE_content.get('USE_OIDC') or  
             False
         )
 
-        self.OIDC_CONF = self.CONFIG_FILE_content.get('OIDC_CONF') if self.USE_OIDC \
-            else None
+        self.FINAL_WEB_HOST_URL = (
+            os.environ.get(os.environ.get('CWLAB_FINAL_WEB_HOST_URL_ENV_VAR')) if os.environ.get('CWLAB_FINAL_WEB_HOST_URL_ENV_VAR') else None or
+            os.environ.get(self.CONFIG_FILE_content.get('FINAL_WEB_HOST_URL_ENV_VAR')) if self.CONFIG_FILE_content.get('FINAL_WEB_HOST_URL_ENV_VAR') else None or
+            os.environ.get('CWLAB_FINAL_WEB_HOST_URL') or
+            self.CONFIG_FILE_content.get('FINAL_WEB_HOST_URL') or  
+            None
+        )
+
+        if self.CONFIG_FILE_content.get('OIDC_CONF'):
+            self.OIDC_CONF = self.CONFIG_FILE_content.get('OIDC_CONF')
+            for key in self.OIDC_CONF.keys():
+                if isinstance(self.OIDC_CONF[key], str):
+                    self.OIDC_CONF[key] = self.OIDC_CONF[key].replace("<final_web_host_url>", self.FINAL_WEB_HOST_URL)
+        else:
+            self.OIDC_CONF = None
 
         self.DEFAULT_EMAIL = (
             os.environ.get('CWLAB_DEFAULT_EMAIL') or 
@@ -87,37 +118,37 @@ class Config(object):
         self.TEMP_DIR = normalize_path(
             os.environ.get('CWLAB_TEMP_DIR') or
             self.CONFIG_FILE_content.get('TEMP_DIR') or  
-            os.path.join( cwlab_fallback_dir, "temp"),
+            os.path.join( self.BASE_DIR, "temp"),
             correct_symlinks=self.CORRECT_SYMLINKS
         )
         self.LOG_DIR = normalize_path(
             os.environ.get('CWLAB_LOG_DIR') or
             self.CONFIG_FILE_content.get('LOG_DIR') or  
-            os.path.join(cwlab_fallback_dir, "logs"),
+            os.path.join(self.BASE_DIR, "logs"),
             correct_symlinks=self.CORRECT_SYMLINKS
         )
         self.WORKFLOW_DIR = normalize_path(
             os.environ.get('CWLAB_WORKFLOW_DIR') or  
             self.CONFIG_FILE_content.get('WORKFLOW_DIR') or  
-            os.path.join( cwlab_fallback_dir, "CWL"),
+            os.path.join( self.BASE_DIR, "CWL"),
             correct_symlinks=self.CORRECT_SYMLINKS
         )
         self.EXEC_DIR = normalize_path(
             os.environ.get('CWLAB_EXEC_DIR') or 
             self.CONFIG_FILE_content.get('EXEC_DIR') or   
-            os.path.join( cwlab_fallback_dir, "exec"),
+            os.path.join( self.BASE_DIR, "exec"),
             correct_symlinks=self.CORRECT_SYMLINKS
         )
         self.DEFAULT_INPUT_DIR = normalize_path(
             os.environ.get('CWLAB_DEFAULT_INPUT_DIR') or 
             self.CONFIG_FILE_content.get('DEFAULT_INPUT_DIR') or  
-            os.path.join( cwlab_fallback_dir, "input"),
+            os.path.join( self.BASE_DIR, "input"),
             correct_symlinks=self.CORRECT_SYMLINKS
         )
         self.DB_DIR = normalize_path(
             os.environ.get('CWLAB_DB_DIR') or 
             self.CONFIG_FILE_content.get('DB_DIR') or  
-            os.path.join( cwlab_fallback_dir, "database"),
+            os.path.join( self.BASE_DIR, "database"),
             correct_symlinks=self.CORRECT_SYMLINKS
         )
         self.ADD_INPUT_DIRS = normalize_path_dict(
@@ -156,17 +187,70 @@ class Config(object):
 
         if self.DEBUG:
             print("Debug mode turned on, don't use this on production machines.", file=sys.stderr)
+        
+        database_username_env_name = (
+            os.environ.get('CWLAB_DATABASE_USERNAME_ENVVAR') or
+            self.CONFIG_FILE_content.get('DATABASE_USERNAME_ENVVAR') or  
+            None
+        )
 
+        database_username = (
+            (os.environ.get(database_username_env_name) if database_username_env_name else None) or
+            os.environ.get('CWLAB_DATABASE_USERNAME') or
+            self.CONFIG_FILE_content.get('DATABASE_USERNAME') or  
+            None
+        )
+            
+        database_password_env_name = (
+            os.environ.get('CWLAB_DATABASE_PASSWORD_ENVVAR') or
+            self.CONFIG_FILE_content.get('DATABASE_PASSWORD_ENVVAR') or  
+            None
+        )
+
+        database_password = (
+            (os.environ.get(database_password_env_name) if database_password_env_name else None) or
+            os.environ.get('CWLAB_DATABASE_PASSWORD') or
+            self.CONFIG_FILE_content.get('DATABASE_PASSWORD') or  
+            None
+        )
+
+        database_host_env_name = (
+            os.environ.get('CWLAB_DATABASE_HOST_ENVVAR') or
+            self.CONFIG_FILE_content.get('DATABASE_HOST_ENVVAR') or  
+            None
+        )
+
+        database_host = (
+            (os.environ.get(database_host_env_name) if database_host_env_name else None) or
+            os.environ.get('CWLAB_DATABASE_HOST') or
+            self.CONFIG_FILE_content.get('DATABASE_HOST') or  
+            None
+        )
+        
         self.SQLALCHEMY_DATABASE_URI = (
             os.environ.get('CWLAB_DATABASE_URL') or
             self.CONFIG_FILE_content.get('DATABASE_URL') or  
             ('sqlite:///' + os.path.join(self.DB_DIR, 'cwlab.db'))
         )
+        if isinstance(self.SQLALCHEMY_DATABASE_URI, str) and \
+            isinstance(database_password, str) and \
+            isinstance(database_username, str):
+            print("Found username and password environment variables for DB.")
+            self.SQLALCHEMY_DATABASE_URI = self.SQLALCHEMY_DATABASE_URI \
+                .replace("<host>", str(database_host)) \
+                .replace("<password>", str(database_password)) \
+                .replace("<password>", str(database_password))
         
         self.SQLALCHEMY_TRACK_MODIFICATIONS = (
             os.environ.get('CWLAB_DATABASE_TRACK_MODIFICATIONS') or
             self.CONFIG_FILE_content.get('DATABASE_TRACK_MODIFICATIONS') or  
             False
+        )
+
+        self.SQLALCHEMY_ACCESS_TOKEN_EXPIRES_AFTER = ( # duration of validy of an access token in seconds
+            os.environ.get('SQLALCHEMY_ACCESS_TOKEN_EXPIRES_AFTER') or
+            self.CONFIG_FILE_content.get('SQLALCHEMY_ACCESS_TOKEN_EXPIRES_AFTER') or  
+            86400 # 24h
         )
         
         self.READ_MAX_CHARS_FROM_FILE = (
