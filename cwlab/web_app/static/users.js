@@ -5,9 +5,10 @@ function changeInputField(event){
     this.setState({[event.currentTarget.name]: event.currentTarget.value})
 }
 
-async function get_user_info(
-    what // can be one of "all", "accessToken", or "userId"
+async function getUserInfo(
+    what // can be one of "all", "accessToken", or "username"
 ){
+    
     let userInfo = {
         isLoggedIn: false,
         accessToken: "none",
@@ -15,11 +16,11 @@ async function get_user_info(
         name: null,
         username: null,
         email: null,
-        auth_time: null,
         expired: null,
+        expiresAt: null,
         expires_in: null,
-        expires_at: null,
-    };
+        admin: false
+    }
     if (useOIDC){
         const user = await oidcUserManager.getUser()
         const isLoggedIn = (user && user.access_token && !user.expired) ? true : false
@@ -31,69 +32,111 @@ async function get_user_info(
                 name: user.profile.name,
                 username: user.profile.preferred_username,
                 email: user.profile.email,
-                auth_time: user.profile.auth_time,
                 expired: user.expires_in,
-                expires_at: user.expires_at,
-                expires_in: user.expires_in
+                expiresAt: user.expires_at,
+                expires_in: user.expires_in,
+                admin: false
             }
         }
         else {
-            userInfo["isLoggedIn"] = false
-            userInfo["expired"] = (user && user.expired) ? true : null
+            userInfo.expired = (user && user.expired) ? true : null
         }
     }
     else {
-        userInfo["isLoggedIn"] = loggedIn
-        userInfo["userId"] = loggedIn ? username : null
+        userInfo = getSessionInfo(Object.keys(userInfo))
+        if (userInfo.expiresAt != null){
+            userInfo.expiresAt = new Date(userInfo.expiresAt)
+            const now = new Date()
+            userInfo.expiresIn = Math.floor((userInfo.expiresAt - now)/1000)
+            userInfo.expired = userInfo.expiresIn <= 0 ? true : false
+        }
+        
+        userInfo.isLoggedIn = (userInfo.username && userInfo.accessToken && !userInfo.expired) ? true : false
+        if (!userInfo.isLoggedIn) {
+            userInfo.username = null
+            userInfo.accessToken = "none"
+        }
     }
 
     if (what == "accessToken"){
         return(userInfo.accessToken)
     }
-    else if (what == "userId"){
-        return(userInfo.userId)
+    else if (what == "username"){
+        return(userInfo.username)
     }
     else {
         return(userInfo)
     }
 }
 
-class GeneralInfo extends React.Component {
+class UserAndSessionInfo extends React.Component {
     constructor(props){
         super(props);
+        // props.userInfo
+
+        this.paramsToShow = [
+            "name",
+            "username",
+            "email",
+            "admin",
+            "userId",
+            "accessToken"
+        ]
 
         this.labels = {
+            name: "Name",
             username: "Username",
             email: "Email",
-            level: "Level"
+            admin: "Admin",
+            user_id: "User ID",
+            accessToken: "Access Token"
         }
-
-        this.buildContentOnSuccess = this.buildContentOnSuccess.bind(this)
-    }
-
-    buildContentOnSuccess(data, serverMessages, request){
-        return(
-            <div>
-                <h3>General User Account Information:</h3>
-                {Object.keys(this.labels).map((key) => (
-                    <p key={key}>
-                        <span className="w3-text-green">{this.labels[key]}:</span>&nbsp;{data[key]}
-                    </p>
-                ))}
-            </div>
-        )
     }
 
     render(){
         return(
-            <AjaxComponent
-                requestRoute={routeGetGeneralUserInfo}
-                sendData={ {} }
-                buildContentOnSuccess={this.buildContentOnSuccess}
-                loaderMessage="Loading user information."
-            />
+            <div>
+                <h3>You are logged in.</h3>
+                {this.props.userInfo.expiresIn && (
+                    <p>
+                        Please note, your access token will expire in&nbsp;
+                        <span className="w3-text-green">
+                            {seconds_to_duration_str(this.props.userInfo.expiresIn)}
+                        </span>
+                        .
+                    </p>
+                )}
+                <table>
+                    <tbody>
+                        {useOIDC && (
+                            <tr>
+                                <td className="w3-text-green">Authority:</td>
+                                <td>{oidcConf.authority}</td>
+                            </tr>
+                        )}
+                        {this.paramsToShow
+                            .filter( (p) => (this.props.userInfo[p] != null))
+                            .map( (p) => (
+                                <tr key={p}>
+                                    <td className="w3-text-green" style={ {whiteSpace: "nowrap"} }>
+                                        {this.labels[p]}:
+                                    </td>
+                                    <td>
+                                        {String(this.props.userInfo[p])}
+                                    </td>
+                                </tr>
+                            )
+                        )}
+                    </tbody>
+                </table>
+                {useOIDC && (
+                    <p>
+                        For changes at your user profile,
+                        please contact the authentication authority.
+                    </p>
+                )}
+            </div>
         )
-
     }
 }
 
@@ -364,6 +407,7 @@ class AdminDashboard extends React.Component {
 class ChangePassword extends React.Component {
     constructor(props){
         super(props);
+        // props.username
 
         this.state = {
             oldPassword: "",
@@ -388,6 +432,7 @@ class ChangePassword extends React.Component {
     async changePassword(){
         this.ajaxRequest({
             sendData: {
+                username: this.props.username,
                 old_password: this.state.oldPassword,
                 new_password: this.state.newPassword,
                 new_rep_password: this.state.repNewPassword
@@ -395,7 +440,7 @@ class ChangePassword extends React.Component {
             route: routeChangePassword,
             onSuccess: (data, messages) => {
                 if (data.success){
-                    window.location.reload(true)
+                    logout()
                 }
             }
         })
@@ -456,7 +501,7 @@ class DeleteAccount extends React.Component {
             },
             onSuccess: (data, messages) => {
                 if (data.success){
-                    window.location.reload(true)
+                    logout()
                 }
             }
         })
@@ -506,24 +551,12 @@ class Logout extends React.Component {
             serverMessages: []
         }
 
-        this.logout = this.logout.bind(this)
         this.ajaxRequest = ajaxRequest.bind(this)
     }
 
     
     componentDidMount() {
-        this.logout()
-    }
-
-    async logout(){
-        this.ajaxRequest({
-            route: routeLogout,
-            onSuccess: (data, messages) => {
-                if (data.success){
-                    window.location.reload(true)
-                }
-            }
-        })
+        logout()
     }
 
     render(){
@@ -544,15 +577,16 @@ class Logout extends React.Component {
 class UserAccount extends React.Component {
     constructor(props) {
         super(props);
+        // props.userInfo
         
-        this.itemValues = userLevel == "admin" ? (
-                ["general_info", "admin_dashboard", "change_password", "delete_account", "logout"]
+        this.itemValues = this.props.userInfo.admin ? (
+                ["user_and_session_info", "admin_dashboard", "change_password", "delete_account", "logout"]
             ):(
-                ["general_info", "change_password", "delete_account", "logout"]
+                ["user_and_session_info", "change_password", "delete_account", "logout"]
             )
-        this.itemNames = userLevel == "admin" ? (
+        this.itemNames = this.props.userInfo.admin ? (
                 [
-                    <span><i className="fas fa-user"/>&nbsp;General Info</span>,
+                    <span><i className="fas fa-user"/>&nbsp;User/Session Info</span>,
                     <span><i className="fas fa-users"/>&nbsp;Admin Dashboard</span>,
                     <span><i className="fas fa-lock"/>&nbsp;Change Password</span>,
                     <span><i className="fas fa-trash-alt"/>&nbsp;Delete Account</span>,
@@ -560,7 +594,7 @@ class UserAccount extends React.Component {
                 ]
             ) : (
                 [
-                    <span><i className="fas fa-user"/>&nbsp;General Info</span>,
+                    <span><i className="fas fa-user"/>&nbsp;User/Session Info</span>,
                     <span><i className="fas fa-lock"/>&nbsp;Change Password</span>,
                     <span><i className="fas fa-trash-alt"/>&nbsp;Delete Account</span>,
                     <span><i className="fas fa-sign-out-alt"/>&nbsp;Logout</span>
@@ -568,15 +602,15 @@ class UserAccount extends React.Component {
             )
             
         this.itemContents = {
-            general_info: <GeneralInfo />,
+            user_and_session_info: <UserAndSessionInfo userInfo={this.props.userInfo} />,
             admin_dashboard: <AdminDashboard />,
-            change_password: <ChangePassword />,
+            change_password: <ChangePassword username={this.props.userInfo.username}/>,
             delete_account: <DeleteAccount />,
             logout: <Logout />,
         }
 
         this.state = {
-            whichFocus: "general_info"
+            whichFocus: "user_and_session_info"
         }
 
         this.changeFocus = this.changeFocus.bind(this)
@@ -602,6 +636,7 @@ class UserAccount extends React.Component {
     }
 }
 
+
 class LoginForm extends React.Component {
     constructor(props) {
         super(props);
@@ -617,22 +652,16 @@ class LoginForm extends React.Component {
             email: "",
             password: "",
             repPassword: "",
-            rememberMe: false,
             actionStatus: "none",
             serverMessages: [],
             whichFocus: "login"
         }
 
         this.changeInputField = changeInputField.bind(this)
-        this.changeRememberMe = this.changeRememberMe.bind(this)
         this.login = this.login.bind(this)
         this.register = this.register.bind(this)
         this.ajaxRequest = ajaxRequest.bind(this)
         this.changeFocus = this.changeFocus.bind(this)
-    }
-
-    changeRememberMe(value, isSet){
-        this.setState({rememberMe: isSet})
     }
 
     changeFocus(newFocus){
@@ -651,28 +680,34 @@ class LoginForm extends React.Component {
                     const headers = new Headers({
                         'Authorization': 'Bearer ' + user['access_token']
                     })
-                    fetch('http://localhost:5000/validateoidc',{
+                    fetch(routeValidateOIDC,{
                         method: 'GET',
                         headers: headers,
                     }).then()
 
                 } else {
-                    oidcUserManager.signinRedirect();
+                    oidcUserManager.signinRedirect()
                 }
             })
         } else {
             this.ajaxRequest({
                 sendData: {
                     username: this.state.username,
-                    password: this.state.password,
-                    remember_me: this.state.rememberMe
+                    password: this.state.password
                 },
-                route: routeLogin,
+                route: routeGetAccessToken,
                 onSuccess: (data, messages) => {
                     if (data.success){
+                        storeSessionInfo({
+                            accessToken: data.access_token,
+                            username: data.username,
+                            expiresAt: data.expires_at,
+                            email: data.email,
+                            admin: data.admin,
+                            isLoggedIn: true
+                        })
                         window.location.reload(true)
                     }
-
                 }
             })
         }
@@ -760,20 +795,6 @@ class LoginForm extends React.Component {
                     </p>
                 )}
                 
-                { this.state.whichFocus == "login" && (
-                    <p>
-                        <label>
-                            <Checkbox
-                                name="remember_me"
-                                value="remember_me"
-                                checked={this.state.rememberMe}
-                                onChange={this.changeRememberMe}
-                            />
-                            Remember me
-                        </label>
-                    </p>
-                )}
-
                 <ActionButton
                     name="login"
                     value="login"
@@ -809,137 +830,43 @@ class LoginForm extends React.Component {
     }
 }
 
-class OIDCLogin extends React.Component{
-    constructor(props){
-        super(props);
-        this.state = {
-            isLoggedIn: false,
-            accessToken: "none",
-            userId: null,
-        }
-        
-    }
-
-    componentDidMount(){
-        get_user_info("all").then( (userInfo) => {
-            if (userInfo.isLoggedIn){
-                this.setState(userInfo)
-            } else {
-                oidcUserManager.signinRedirect();
-            }
-        })
-    }
-
-
-    render(){
-        return(
-            <div className="w3-panel">
-                {this.state.isLoggedIn ? (
-                    <div>
-                        <h3>You are logged in.</h3>
-                        <p>
-                            Please note, your access token will expire in&nbsp;
-                            <span className="w3-text-green">
-                                {seconds_to_duration_str(this.state.expires_in)}
-                            </span>
-                            .
-                        </p>
-                        <table>
-                            <tbody>
-                                <tr>
-                                    <td className="w3-text-green">Authority:</td>
-                                    <td>{oidcConf.authority}</td>
-                                </tr>
-                                <tr>
-                                    <td className="w3-text-green">Name:</td>
-                                    <td>{this.state.name}</td>
-                                </tr>
-                                <tr>
-                                    <td className="w3-text-green">Username:</td>
-                                    <td>{this.state.username}</td>
-                                </tr>
-                                <tr>
-                                    <td className="w3-text-green">Email:</td>
-                                    <td>{this.state.email}</td>
-                                </tr>
-                                <tr>
-                                    <td className="w3-text-green">User ID:</td>
-                                    <td>{this.state.userId}</td>
-                                </tr>
-                                <tr>
-                                    <td className="w3-text-green">Access token:</td>
-                                    <td>{this.state.accessToken}</td>
-                                </tr>
-                            </tbody>
-                        </table>
-                        <p>
-                            For changes at your user profile,
-                            please contact the authentication authority.
-                        </p>
-                    </div>
-                    ) : (
-                        <LoadingIndicator 
-                            size="large"
-                            message="You are redirected to the authentication authority. Please wait."
-                        />
-                    )
-                }
-            </div>
-        )
-    }
-}
 
 class UserRoot extends React.Component{
     constructor(props){
         super(props);
+        this.state = {
+            userInfo: {},
+            userInfoLoaded: false
+        }
+    }
+
+    componentDidMount(){
+        getUserInfo("all").then( (userInfo) => {
+            if (useOIDC && !userInfo.isLoggedIn){
+                oidcUserManager.signinRedirect();
+            } else {
+                this.setState({
+                    userInfo: userInfo,
+                    userInfoLoaded: true
+                })
+            }
+        })
     }
 
     render(){
-        if (useOIDC){
-            return(<OIDCLogin />)
+        if (!this.state.userInfoLoaded){
+            return(
+                <LoadingIndicator 
+                    message="Loading user info. Please wait."
+                    size="large"
+                />
+            )
         }
-        if (loggedIn){
-            return(<UserAccount />)
+        else if (this.state.userInfo.isLoggedIn){
+            return(<UserAccount userInfo={this.state.userInfo}/>)
         }
         else{
             return(<LoginForm />)
         }
-    }
-}
-
-class UserTopBarButton extends React.Component {
-    constructor(props) {
-        super(props);
-        this.state = {
-            isLoggedIn: null,
-            access_token: null,
-            user_id: null
-        };
-    }
-
-    componentDidMount(){
-        this.mounted = true
-        this.getRunInfo()
-        // setup timer to automatically update
-        this.timerId = setInterval(
-            () => {
-                this.getRunInfo()
-            },
-            autoRefreshInterval
-          );
-    }
-
-    changeModule(target_module){
-        this.setState({module:target_module})
-    }
-
-    render() {
-        return (
-            <div className="w3-theme-d3 w3-medium">
-                <TopBar handleModuleChange={this.changeModule} whichFocus={this.state.module} />
-                <TopBar handleModuleChange={this.changeModule} whichFocus={this.state.module} fixed={true}/>
-                <MainContent> {modules[this.state.module].content} </MainContent>
-            </div>
-        );
     }
 }

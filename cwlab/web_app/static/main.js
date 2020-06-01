@@ -15,57 +15,6 @@ class Welcome extends React.Component {
     }
 }
 
-const modules = {   // each entry corresponds to one wep app module,
-                    // each module has a dedicated button in the top bar
-                    // and specific content which is displayed on click of that button
-    home: {
-        text: (
-            <span>
-                CW<span className="w3-text-green">Lab</span>
-                {buildNumber != "none" && (<span className="w3-text-orange">&nbsp;build {buildNumber}</span>)}
-            </span>
-        ),
-        icon: "",
-        content: (<Welcome />)
-    },
-    import_wf:  {
-        text: "Import CWL Workflow/Tool",
-        icon: "fas fa-file-import",
-        content: (<ImportCWLRoot />),
-        disabled: loginEnabled && ! loggedIn
-    },
-    create_job:  {
-        text: "Create Job",
-        icon: "fas  fa-plus",
-        content: (<CreateJobRoot />),
-        disabled: loginEnabled && ! loggedIn
-    },
-    jobs: {
-        text:  "Job Execution & Results",
-        icon: "fas fa-rocket",
-        content: (<JobExecRoot />),
-        disabled: loginEnabled && ! loggedIn
-    },
-    // ,
-    // help: {
-    //     text: "Help",
-    //     icon: "fas fa-info-circle",
-    //     content: "Under construction"
-    // }
-    
-    users: {
-        text:  useOIDC ? (
-                "login via OIDC" // has to be changed to display the username
-        ) : (
-            loggedIn ? username : "login / register"
-        ),
-        icon: "fas fa-user",
-        content: (<UserRoot />),
-        align: "right",
-        disabled: ! loginEnabled
-    }
-};
-
 
 
 class TopBar extends React.Component { // controlled by Root Component
@@ -89,8 +38,8 @@ class TopBar extends React.Component { // controlled by Root Component
                 )}
             >
                 {
-                    Object.keys(modules).map( (key) => (
-                            modules[key].hasOwnProperty("disabled") && modules[key].disabled ?
+                    Object.keys(this.props.modules).map( (key) => (
+                            this.props.modules[key].hasOwnProperty("disabled") && this.props.modules[key].disabled ?
                                 (
                                     <span key={key}></span>
                                 ) : (
@@ -103,7 +52,7 @@ class TopBar extends React.Component { // controlled by Root Component
                                                     " w3-theme-d3" : ""
                                             ) +
                                             (
-                                                modules[key].hasOwnProperty("align") && modules[key].align == "right" ?
+                                                this.props.modules[key].hasOwnProperty("align") && this.props.modules[key].align == "right" ?
                                                     " w3-right" : ""
                                             )
                                             
@@ -111,10 +60,10 @@ class TopBar extends React.Component { // controlled by Root Component
                                         style={ {display: "inline-block"} }
                                         key={key} 
                                         onClick={this.handleClick.bind(this, key)}>
-                                        {modules[key].icon != "" &&
-                                            <i className={modules[key].icon} style={ {paddingLeft: "10px", paddingRight: "10px"} }></i>
+                                        {this.props.modules[key].icon != "" &&
+                                            <i className={this.props.modules[key].icon} style={ {paddingLeft: "10px", paddingRight: "10px"} }></i>
                                         }
-                                        {modules[key].text}
+                                        {this.props.modules[key].text}
                                     </a>
                                 )
                         )
@@ -138,21 +87,100 @@ class MainContent extends React.Component {
 class Root extends React.Component {
     constructor(props) {
         super(props);
-        this.state = {module: "home"};  // determines which web app module is displayed 
+        this.state = {
+            userInfoLoaded: false,
+            module: "home"
+        };  // determines which web app module is displayed 
         this.changeModule = this.changeModule.bind(this);
-        get_user_info()
+    }
+
+    async componentDidMount() {
+        const userInfo = await getUserInfo()
+
+        this.modules = {   // each entry corresponds to one wep app module,
+                            // each module has a dedicated button in the top bar
+                            // and specific content which is displayed on click of that button
+            home: {
+                text: (
+                    <span>
+                        CW<span className="w3-text-green">Lab</span>
+                        {buildNumber != "none" && (<span className="w3-text-orange">&nbsp;build {buildNumber}</span>)}
+                    </span>
+                ),
+                icon: "",
+                content: (<Welcome />)
+            },
+            import_wf:  {
+                text: "Import CWL Workflow/Tool",
+                icon: "fas fa-file-import",
+                content: (<ImportCWLRoot />),
+                disabled: loginEnabled && !userInfo.isLoggedIn
+            },
+            create_job:  {
+                text: "Create Job",
+                icon: "fas  fa-plus",
+                content: (<CreateJobRoot />),
+                disabled: loginEnabled && !userInfo.isLoggedIn
+            },
+            jobs: {
+                text:  "Job Execution & Results",
+                icon: "fas fa-rocket",
+                content: (<JobExecRoot />),
+                disabled: loginEnabled && !userInfo.isLoggedIn
+            },
+            // ,
+            // help: {
+            //     text: "Help",
+            //     icon: "fas fa-info-circle",
+            //     content: "Under construction"
+            // }
+            user: {
+                text:  userInfo.isLoggedIn ? (
+                    userInfo.username
+                ) : (
+                    "login / register"
+                ),
+                icon: "fas fa-user",
+                content: (<UserRoot />),
+                align: "right",
+                disabled: !loginEnabled
+            }
+        }
+
+        this.setState({
+            userInfoLoaded: true
+        })
     }
 
     changeModule(target_module){
-        this.setState({module:target_module})
+        this.setState({module: target_module})
     }
 
     render() {
         return (
             <div className="w3-theme-d3 w3-medium">
-                <TopBar handleModuleChange={this.changeModule} whichFocus={this.state.module} />
-                <TopBar handleModuleChange={this.changeModule} whichFocus={this.state.module} fixed={true}/>
-                <MainContent> {modules[this.state.module].content} </MainContent>
+                {this.state.userInfoLoaded ? (
+                        <div>
+                            <TopBar 
+                                modules={this.modules} 
+                                handleModuleChange={this.changeModule} 
+                                whichFocus={this.state.module} 
+                            />
+                            <TopBar 
+                                modules={this.modules} 
+                                handleModuleChange={this.changeModule} 
+                                whichFocus={this.state.module} 
+                                fixed={true}
+                            />
+                            <MainContent> {this.modules[this.state.module].content} </MainContent>
+                        </div>
+                    ) : (
+                        <LoadingIndicator
+                            size="large"
+                            message="Please wait."
+                        />
+                    )
+                }
             </div>
         );
     }

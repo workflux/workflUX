@@ -6,12 +6,10 @@ import os
 from flask import Flask
 from .config import Config
 from cwlab.database.connector import Connector
-from flask_login import LoginManager
 
 basedir = os.path.abspath(os.path.dirname(__file__))
 
 db_connector = Connector()
-login = LoginManager()
 
 def setup_working_dirs(app):
     for param in [
@@ -38,7 +36,6 @@ def create_app(config_file=None, webapp=True):
         from . import log
         setup_working_dirs(app)
     
-    login.init_app(app)
     db_connector.init_app(app)
     
     with app.app_context():
@@ -53,8 +50,6 @@ def create_app(config_file=None, webapp=True):
                         instruction="No admin user was defined yet. Please set the credentials for the first admin user."
                     )
     if webapp:    
-        if app.config['ENABLE_USERS']:
-            login.login_view = 'login'
         app.run(host=app.config["WEB_SERVER_HOST"], port=app.config["WEB_SERVER_PORT"])
     return app
 
