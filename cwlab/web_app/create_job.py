@@ -205,8 +205,6 @@ def create_job_from_param_form_sheet():
             validate_uris=validate_uris,
             search_paths=search_paths,
             search_subdirs=include_subdirs_for_searching,
-            allow_remote_uri=app.config["INPUT_SOURCES"]["URL"], 
-            allow_local_path=app.config["INPUT_SOURCES"]["local_file_system"], 
             search_dir=search_dir,
             sheet_format=sheet_format
         )
@@ -283,8 +281,6 @@ def create_job_from_param_values():
             validate_uris=validate_uris,
             search_paths=search_paths,
             search_subdirs=include_subdirs_for_searching,
-            allow_remote_uri=app.config["INPUT_SOURCES"]["URL"], 
-            allow_local_path=app.config["INPUT_SOURCES"]["local_file_system"], 
             search_dir=search_dir,
             sheet_format="xlsx"
         )
