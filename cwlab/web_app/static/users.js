@@ -593,7 +593,7 @@ class UserAccount extends React.Component {
                     <span><i className="fas fa-sign-out-alt"/>&nbsp;Logout</span>
                 ]
             ) : (
-                userOIDC ? (
+                useOIDC ? (
                     [
                         <span><i className="fas fa-user"/>&nbsp;General Info</span>,
                         <span><i className="fas fa-sign-out-alt"/>&nbsp;Logout</span>
