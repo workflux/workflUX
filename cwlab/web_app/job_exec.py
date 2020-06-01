@@ -29,7 +29,10 @@ def get_job_list():
         access_token = data_req["access_token"]
         username = data_req["username"]
         login_required(access_token=access_token, username=username)
-        job_info = job_manager.get_jobs_info_for_user(username)
+        job_info = []
+        for job in job_manager.get_jobs_info_for_user(username): #! should be changed once workflows are integrated into the database
+            job["wf_name"] = os.path.basename(job["wf_target"])
+            job_info.append(job)
     except AssertionError as e:
         messages.append( handle_known_error(e, return_front_end_message=True))
         messages.append(handle_unknown_error(

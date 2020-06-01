@@ -816,7 +816,7 @@ class JobList extends React.Component {
                 <IneditableValueField
                     backclassName="w3-theme"
                 >
-                    {job.wf_target}
+                    {job.wf_name}
                 </IneditableValueField>
             </p>
         ))
