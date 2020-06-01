@@ -14,8 +14,9 @@ def path_exists(uri_str, is_dir=False):
 def remote_uri_exists(uri_str):
     try:
         _ = urlopen(uri_str)
-    except Exception:
-        raise AssertionError("Cannot open the provided url: {}".format(uri_str))
+        return True
+    except:
+        return False
 
 def search_file_or_dir(glob_pattern, is_dir=False, input_dir="", search_subdirs=True):
     if not '*' in glob_pattern:
@@ -166,9 +167,30 @@ def match_type( param_name, all_param_values, configs, validate_uris=True, searc
                 value_type_matched.append( None )
             else:
                 if configs[param_name]["type"] == "File":
-                    value_type_matched.append( class_file(value_string, configs[param_name]["secondary_files"], validate_uris, search_paths, allow_remote_uri, allow_local_path, input_dir) )
+                    value_type_matched.append( 
+                        class_file(
+                            value_string=value_string,
+                            secondary_files=configs[param_name]["secondary_files"], 
+                            validate_uris=validate_uris, 
+                            search_paths=search_paths, 
+                            search_subdirs=search_subdirs,
+                            allow_remote_uri=allow_remote_uri, 
+                            allow_local_path=allow_local_path, 
+                            input_dir=input_dir
+                        ) 
+                    )
                 elif configs[param_name]["type"] == "Directory":
-                    value_type_matched.append( class_directory(value_string, validate_uris, search_paths, allow_remote_uri, allow_local_path, input_dir) )
+                    value_type_matched.append( 
+                        class_directory(
+                            value_string=value_string,
+                            validate_uris=validate_uris, 
+                            search_paths=search_paths, 
+                            search_subdirs=search_subdirs,
+                            allow_remote_uri=allow_remote_uri, 
+                            allow_local_path=allow_local_path, 
+                            input_dir=input_dir
+                        ) 
+                    )
                 else:
                     value_type_matched.append( type_matching_functions[configs[param_name]["type"]](value_string) )
         except Exception as e:
