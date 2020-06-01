@@ -88,7 +88,7 @@ class UserAndSessionInfo extends React.Component {
             username: "Username",
             email: "Email",
             admin: "Admin",
-            user_id: "User ID",
+            userId: "User ID",
             accessToken: "Access Token"
         }
     }
