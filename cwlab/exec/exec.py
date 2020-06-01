@@ -146,7 +146,7 @@ def exec_runs(
     send_email=True,
     access_token=None
     ):
-    if send_email and app.config["SEND_EMAIL"]:
+    if send_email and app.config["SEND_EMAIL"] and not app.config["USE_OIDC"]:
         if not username is None:
             user_email = user_manager.get_user_info(username)["email"]
         else:
