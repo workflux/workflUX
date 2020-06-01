@@ -15,7 +15,7 @@ OIDC_CONF: {
   scope: 'openid profile email',
   authority: 'http://canepi-srv1:8080/auth',
   client_id: 'cwlab',
-  redirect_uri: 'http://canepi-srv1:8443/login_oidc',
+  redirect_uri: 'http://canepi-srv1:8443/loginoidc',
   post_logout_redirect_uri: 'http://canepi-srv1:8443/main',
   metadata: {
       issuer: 'http://canepi-srv1:8080/auth/realms/master',

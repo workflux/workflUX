@@ -18,8 +18,8 @@ def validate_local_login_enabled():
     assert not app.config["USE_OIDC"], \
         "Please request your access token from the corresponding OIDC authority."
 
-@app.route('/login_oidc/', methods=['GET'])
-def login_oidc():
+@app.route('/loginoidc/', methods=['GET'])
+def loginoidc():
     """Redirect handler for oidc login"""
     return render_template('callback.html')
 
