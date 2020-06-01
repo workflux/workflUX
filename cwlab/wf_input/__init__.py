@@ -20,7 +20,9 @@ from . import match_types
 from . import web_interface 
 
 def validate_manipulate_split_type_match( param_values, configs,
-    validate_paths=True, search_paths=True, search_subdirs=True, input_dir="", default_run_id="run"):
+    validate_uris=True, search_paths=True, search_subdirs=True, allow_remote_uri=True, allow_local_path=True,
+    input_dir="", default_run_id="run"
+):
     print_pref = "[validate_manipulate_split_type_match]:"
     # fill in config defaults:
     try:
@@ -51,24 +53,30 @@ def validate_manipulate_split_type_match( param_values, configs,
             raise AssertionError(print_pref + "E: failed to fill in default parameters for run \"" + run_id + "\": " + str(e))
         # match types:
         try:
-            type_matched_params_by_run_id[run_id] = match_types.get_type_matched_param_values( params_by_run_id[run_id], configs, validate_paths, search_paths, search_subdirs, input_dir)
+            type_matched_params_by_run_id[run_id] = match_types.get_type_matched_param_values( params_by_run_id[run_id], configs, validate_uris, search_paths, search_subdirs, allow_remote_uri, allow_local_path, input_dir)
         except AssertionError as e:
             raise AssertionError(print_pref + "E: type matching failed for run \"" + run_id + "\": " + str(e))
     return type_matched_params_by_run_id, params_by_run_id, configs
 
 def import_from_xls(sheet_file,
-    validate_paths=True, search_paths=True, search_subdirs=True, input_dir="", default_run_id="run"):
+    validate_uris=True, search_paths=True, search_subdirs=True, 
+    allow_remote_uri=True, allow_local_path=True, 
+    input_dir="", default_run_id="run"
+):
     # read spread sheets
     param_values, configs, metadata = read_xls.sheet_file(sheet_file, verbose_level=0)
     # split into runs, validate parameters, and manipulate them:
-    type_matched_params_by_run_id, params_by_run_id, configs = validate_manipulate_split_type_match( param_values, configs, validate_paths, search_paths, search_subdirs, input_dir, default_run_id)
+    type_matched_params_by_run_id, params_by_run_id, configs = validate_manipulate_split_type_match( param_values, configs, validate_uris, search_paths, search_subdirs, allow_remote_uri, allow_local_path, input_dir, default_run_id)
     return type_matched_params_by_run_id, params_by_run_id, configs, metadata
 
 
 def only_validate_xls(sheet_file,
-    validate_paths=True, search_paths=True, search_subdirs=True, input_dir=""):
+    validate_uris=True, search_paths=True, 
+    allow_remote_uri=True, allow_local_path=True,
+    search_subdirs=True, input_dir=""
+):
     try:
-        type_matched_params_by_run_id, params_by_run_id, configs, metadata = import_from_xls(sheet_file, validate_paths, search_paths, search_subdirs, input_dir)
+        type_matched_params_by_run_id, params_by_run_id, configs, metadata = import_from_xls(sheet_file, validate_uris, search_paths, allow_remote_uri, allow_local_path, search_subdirs, input_dir)
     except AssertionError as e:
         return 'INVALID:' + str(e)
     return "VALID"
@@ -77,9 +85,12 @@ def only_validate_xls(sheet_file,
 # main function of this module:
 def transcode(sheet_file, wf_type=None, # only needed if workflow_type is not specified in the metadata sheet
     output_basename="",  default_run_id="run", 
-    output_dir=".", verbose_level=2, validate_paths=True, search_paths=True, search_subdirs=True, input_dir=""):
+    output_dir=".", verbose_level=2, validate_uris=True, search_paths=True, 
+    allow_remote_uri=True, allow_local_path=True,
+    search_subdirs=True, input_dir=""
+):
     try:
-        type_matched_params_by_run_id, params_by_run_id, configs, metadata = import_from_xls(sheet_file, validate_paths, search_paths, search_subdirs, input_dir, default_run_id)
+        type_matched_params_by_run_id, params_by_run_id, configs, metadata = import_from_xls(sheet_file, validate_uris, search_paths, search_subdirs, allow_remote_uri, allow_local_path, input_dir, default_run_id)
         make_runs.write_multiple_runs(type_matched_params_by_run_id, configs, wf_type, metadata, output_dir, output_basename)
     except AssertionError as e:
         raise AssertionError( 'Failed to translate - the error was:' + str(e))
