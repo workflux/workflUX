@@ -1,24 +1,18 @@
-class PathValAndSearch extends React.Component{
+class ParamValidationOptions extends React.Component{
     constructor(props){
         super(props);
         // props.jobName
-        // props.validatePaths
+        // props.validateURIs
         // props.searchPaths
         // props.searchDir
         // props.changeSearchDir
         // props.includeSubbDirsForSearching
         // props.changeIncludeSubDirsForSearching
-        // props.changePathValAndSearch
+        // props.changeEnableUriValidation
+        // props.changeEnablePathSearching
         // props.prevPath
         // props.changePrevPath
         this.handleChangeSearchDir = this.handleChangeSearchDir.bind(this);
-        this.handleChangeValAndSearch = this.handleChangeValAndSearch.bind(this);
-    }
-
-    handleChangeValAndSearch(event){
-        const searchPaths = event.currentTarget.value == "val_search"
-        const validatePaths = event.currentTarget.value == "val_search" || event.currentTarget.value == "val"
-        this.props.changePathValAndSearch(searchPaths, validatePaths)
     }
 
     handleChangeSearchDir(event){
@@ -27,93 +21,105 @@ class PathValAndSearch extends React.Component{
     
 
     render(){
-        const validate_or_search = this.props.validatePaths ? (
-            this.props.searchPaths ? (
-                "val_search"
-            ) : (
-                "val"
-            )
-        ) : (
-            "no"
-        )
-
-        const info_and_advanced_options = {
-            "val_search": (
-                <span>
-                    <br/>
-                    With this option, you may:
-                    <ul>
-                        <li>
-                            specify absolute paths for a file or directory parameter (paths are validated)
-                        </li>
-                        <li>
-                            or provide a character string that uniquely identifies 
-                            the file/directory name in the following search directory 
-                            (globbing patterns are allowed)
-                        </li>
-                    </ul>
-                    <span className="w3-text-green">Search directory: </span>
-                    <BrowseDirTextField
-                        name="select_input_dir"
-                        value={this.props.searchDir}
-                        onChange={this.handleChangeSearchDir}
-                        ignoreFiles={false}
-                        fileExts={[]}
-                        showOnlyHits={false}
-                        selectDir={true}
-                        allowInput={true}
-                        allowUpload={false}
-                        allowDownload={false}
-                        defaultBaseDir="DEFAULT_INPUT_DIR"
-                        prevPath={this.props.prevPath}
-                        changePrevPath={this.props.changePrevPath}
-                    />
-                    <br/>
-                    <span className="w3-text-green">Include sub-directories for searching: </span>
-                    no &nbsp;
-                    <BooleanSlider
-                        name="include_subdirs_for_searching"
-                        value="include_subdirs_for_searching"
-                        onChange={this.props.changeIncludeSubDirsForSearching}
-                        checked={this.props.includeSubbDirsForSearching}
-                        doNotSendValue={true}
-                    />
-                    &nbsp; yes
-                </span>
-
-            ),
-            "val": (
-                <p>
-                    With this option, you have to specify absolute paths for file or directory parameters.
-                    The paths will be validated.
-                </p>
-            ),
-            "no": (
-                <p>
-                    With this option, you have to specify absolute paths for file or directory parameters.
-                    The paths will not be validated.
-                </p>
-            )
-
+        let fileInstructions = []
+        if (inputSources.URL) {
+            fileInstructions.push("via public or presigned URLs")
         }
+        else if (inputSources.local_file_system) {
+            fileInstructions.push(
+                "by selecting a path on the servers file system. " +
+                "You may also provide a character string that uniquely identifies " +
+                "the file/directory name within a search directory " +
+                "(see below)"
+            )
+        }
+
         return(
             <div>
-                <h3>Path Validation and Searching:</h3>
+                <h3>Parameter Validation:</h3>
                 <p>
-                    Please select how paths of file or directory parameters should be treated.
+                    All parameters are automatically validated to match the expected type.
                 </p>
-                <span className="w3-text-green">Options: </span>
-                <select className="w3-button w3-white w3-border" 
-                    name="path_validation_and_search"
-                    onChange={this.handleChangeValAndSearch}
-                    value={validate_or_search}
-                    >
-                    <option value="val_search">validate and search</option>
-                    <option value="val">only validate</option>
-                    <option value="no">do not validate or search</option>
-                </select>
+
+                <Message type="hint">
+                    Please note: You may provide files {fileInstructions.join(" or ")}.
+                </Message>
+
                 <div className="w3-container">
-                    {info_and_advanced_options[validate_or_search]}
+                    <div>
+                        <BooleanSlider
+                            name="enable_uri_validation"
+                            value="enable_uri_validation"
+                            onChange={this.props.changeEnableUriValidation}
+                            checked={this.props.validateURIs}
+                            doNotSendValue={true}
+                        />
+                        &nbsp;
+                        enable validation of file/directory URIs
+                    </div>
+                    {inputSources.local_file_system && this.props.validateURIs && (
+                        <div 
+                            className="w3-container"
+                            style={ {
+                                paddingLeft: "48px", 
+                                paddingTop: "10px", 
+                                paddingBottom: "10px"
+                            }}
+                        >
+                            <div>
+                                <BooleanSlider
+                                    name="enable_search_paths"
+                                    value="enable_search_paths"
+                                    onChange={this.props.changeEnablePathSearching}
+                                    checked={this.props.searchPaths}
+                                    doNotSendValue={true}
+                                />
+                                &nbsp;
+                                Enable searching for paths
+                            </div>
+                            {this.props.searchPaths && (
+                                <div 
+                                    className="w3-container"
+                                    style={ {
+                                        paddingLeft: "48px", 
+                                        paddingTop: "5px", 
+                                        paddingBottom: "5px"
+                                    }}
+                                >
+                                    <div className="vertical_container_item">
+                                        <span className="w3-text-green">Search directory: </span>
+                                        <BrowseDirTextField
+                                            name="select_input_dir"
+                                            value={this.props.searchDir}
+                                            onChange={this.handleChangeSearchDir}
+                                            ignoreFiles={false}
+                                            fileExts={[]}
+                                            showOnlyHits={false}
+                                            selectDir={true}
+                                            allowInput={true}
+                                            allowUpload={false}
+                                            allowDownload={false}
+                                            defaultBaseDir="DEFAULT_INPUT_DIR"
+                                            prevPath={this.props.prevPath}
+                                            changePrevPath={this.props.changePrevPath}
+                                        />
+                                    </div>
+                                    <div className="vertical_container_item">
+                                        <span className="w3-text-green">Include sub-directories for searching: </span>
+                                        no &nbsp;
+                                        <BooleanSlider
+                                                name="include_subdirs_for_searching"
+                                                value="include_subdirs_for_searching"
+                                                onChange={this.props.changeIncludeSubDirsForSearching}
+                                                checked={this.props.includeSubbDirsForSearching}
+                                                doNotSendValue={true}
+                                        />
+                                        &nbsp; yes
+                                    </div>
+                                </div>
+                            )}
+                        </div>
+                    )}
                 </div>
             </div>
         )
@@ -868,8 +874,9 @@ class JobParamFormHTML extends React.Component {
         // props.jobName
         // props.changeSearchDir
         // props.changeIncludeSubDirsForSearching
-        // props.changePathValAndSearch
-        // props.validatePaths
+        // props.changeEnableUriValidation
+        // props.changeEnablePathSearching
+        // props.validateURIs
         // props.searchPaths
         // props.searchDir
         // props.includeSubbDirsForSearching
@@ -960,7 +967,7 @@ class JobParamFormHTML extends React.Component {
                 param_configs: this.state.paramConfigs,
                 wf_target: this.props.cwlTarget,
                 job_name: this.props.jobName,
-                validate_paths: this.props.validatePaths,
+                validate_uris: this.props.validateURIs,
                 search_paths: this.props.searchPaths,
                 search_dir: this.props.searchDir,
                 include_subdirs_for_searching: this.props.includeSubbDirsForSearching
@@ -1090,9 +1097,10 @@ class JobParamFormHTML extends React.Component {
                     <DisplayServerMessages messages={this.state.serverMessages} />
                     <PathValAndSearch
                         jobName={this.props.jobName}
-                        validatePaths={this.props.validatePaths}
+                        validateURIs={this.props.validateURIs}
                         searchPaths={this.props.searchPaths}
-                        changePathValAndSearch={this.props.changePathValAndSearch}
+                        changeEnableUriValidation={this.props.changeEnableUriValidation}
+                        changeEnablePathSearching={this.props.changeEnablePathSearching}
                         searchDir={this.props.searchDir}
                         changeSearchDir={this.props.changeSearchDir}
                         includeSubbDirsForSearching={this.props.includeSubbDirsForSearching}
@@ -1127,7 +1135,7 @@ class JobParamFormHTML extends React.Component {
                                     changePrevPath={this.props.changePrevPath}
                                 />
                             }
-                            <br/>
+                            <hr/>
                         </span>
                     }
                     {(this.state.modeExists["run_single"] || this.state.modeExists["run_array"]) &&
@@ -1159,7 +1167,7 @@ class JobParamFormHTML extends React.Component {
                                     changePrevPath={this.props.changePrevPath}
                                 />
                             }
-                            <br/>
+                            <hr/>
                         </span>
                     }
 
@@ -1191,8 +1199,9 @@ class JobParamFormSpreadsheet extends React.Component {
         // props.jobName
         // props.changeSearchDir
         // props.changeIncludeSubDirsForSearching
-        // props.changePathValAndSearch
-        // props.validatePaths
+        // props.changeEnableUriValidation
+        // props.changeEnablePathSearching
+        // props.validateURIs
         // props.searchPaths
         // props.searchDir
         // props.includeSubbDirsForSearching
@@ -1240,9 +1249,10 @@ class JobParamFormSpreadsheet extends React.Component {
             <div>
                 <PathValAndSearch
                     jobName={this.props.jobName}
-                    validatePaths={this.props.validatePaths}
+                    validateURIs={this.props.validateURIs}
                     searchPaths={this.props.searchPaths}
-                    changePathValAndSearch={this.props.changePathValAndSearch}
+                    changeEnableUriValidation={this.props.changeEnableUriValidation}
+                    changeEnablePathSearching={this.props.changeEnablePathSearching}
                     searchDir={this.props.searchDir}
                     changeSearchDir={this.props.changeSearchDir}
                     includeSubbDirsForSearching={this.props.includeSubbDirsForSearching}
@@ -1283,7 +1293,7 @@ class JobParamFormSpreadsheet extends React.Component {
                     metaData={ 
                         {
                             job_name: this.props.jobName,
-                            validate_paths: this.props.validatePaths,
+                            validate_uris: this.props.validateURIs,
                             search_paths: this.props.searchPaths,
                             search_dir: this.props.searchDir,
                             include_subdirs_for_searching: this.props.includeSubbDirsForSearching
@@ -1320,7 +1330,7 @@ class JobCreationPrep extends React.Component {
             param_modes: paramModes,
             job_name: "new_job",
             display: "prep", // one of prep, form_ssheet, from_html
-            validatePaths: true,
+            validateURIs: true,
             searchPaths: false,
             searchDir: "Please fill",
             includeSubbDirsForSearching: true,
@@ -1347,7 +1357,8 @@ class JobCreationPrep extends React.Component {
         this.toggleParamForm = this.toggleParamForm.bind(this);
         this.changeSearchDir = this.changeSearchDir.bind(this)
         this.changeIncludeSubDirsForSearching = this.changeIncludeSubDirsForSearching.bind(this)
-        this.changePathValAndSearch = this.changePathValAndSearch.bind(this)
+        this.changeEnableUriValidation = this.changeEnableUriValidation.bind(this)
+        this.changeEnablePathSearching = this.changeEnablePathSearching.bind(this)
         this.changePrevPath = this.changePrevPath.bind(this)
         this.ajaxRequest = ajaxRequest.bind(this)
     }
@@ -1389,10 +1400,15 @@ class JobCreationPrep extends React.Component {
         this.setState({includeSubbDirsForSearching:include})
     }
 
-    changePathValAndSearch(searchPaths, validatePaths){
+    changeEnableUriValidation(validateURIs){
         this.setState({
-            searchPaths: searchPaths,
-            validatePaths: validatePaths
+            validateURIs: validateURIs
+        })
+    }
+    
+    changeEnablePathSearching(searchPaths){
+        this.setState({
+            searchPaths: searchPaths
         })
     }
 
@@ -1577,8 +1593,9 @@ class JobCreationPrep extends React.Component {
                                     jobName={this.jobNameNum + "_" + this.state.job_name}
                                     changeSearchDir={this.changeSearchDir}
                                     changeIncludeSubDirsForSearching={this.changeIncludeSubDirsForSearching}
-                                    changePathValAndSearch={this.changePathValAndSearch}
-                                    validatePaths={this.state.validatePaths}
+                                    changeEnableUriValidation={this.changeEnableUriValidation}
+                                    changeEnablePathSearching={this.changeEnablePathSearching}
+                                    validateURIs={this.state.validateURIs}
                                     searchPaths={this.state.searchPaths}
                                     searchDir={this.state.searchDir}
                                     includeSubbDirsForSearching={this.state.includeSubbDirsForSearching}
@@ -1596,8 +1613,9 @@ class JobCreationPrep extends React.Component {
                                     jobName={this.jobNameNum + "_" + this.state.job_name}
                                     changeSearchDir={this.changeSearchDir}
                                     changeIncludeSubDirsForSearching={this.changeIncludeSubDirsForSearching}
-                                    changePathValAndSearch={this.changePathValAndSearch}
-                                    validatePaths={this.state.validatePaths}
+                                    changeEnableUriValidation={this.changeEnableUriValidation}
+                                    changeEnablePathSearching={this.changeEnablePathSearching}
+                                    validateURIs={this.state.validateURIs}
                                     searchPaths={this.state.searchPaths}
                                     searchDir={this.state.searchDir}
                                     includeSubbDirsForSearching={this.state.includeSubbDirsForSearching}

@@ -2,9 +2,9 @@
     white-space: nowrap !important
 }
 
-.padding-side-10 {
-    padding-left: 10px;
-    padding-right: 10px
+.vertical_container_item {
+  padding-top: 5px;
+  padding-bottom: 5px
 }
 
 .large_loader {

@@ -57,9 +57,11 @@ def create_job(job_name, username, job_param_sheet=None, run_inputs=None, wf_tar
             wf_type=wf_type,
             output_basename="",
             output_dir=runs_yaml_dir,
-            validate_paths=validate_paths, 
+            validate_uris=validate_uris, 
             search_paths=search_paths, 
-            search_subdirs=search_subdirs, 
+            search_subdirs=search_subdirs,
+            allow_remote_uri=app.config["INPUT_SOURCES"]["URL"], 
+            allow_local_path=app.config["INPUT_SOURCES"]["local_file_system"], 
             input_dir=search_dir
         )
     else:

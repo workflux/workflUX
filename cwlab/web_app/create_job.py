@@ -173,7 +173,7 @@ def create_job_from_param_form_sheet():
         import_filepath = os.path.join(temp_dir, f"param_sheet.{sheet_format}")
         import_file.save(import_filepath)
 
-        validate_paths = metadata["validate_paths"]
+        validate_uris = metadata["validate_uris"]
         search_paths = metadata["search_paths"]
         search_dir = os.path.abspath(remove_non_printable_characters(metadata["search_dir"]))
         include_subdirs_for_searching = metadata["include_subdirs_for_searching"] 
@@ -188,9 +188,11 @@ def create_job_from_param_form_sheet():
         # validate the uploaded form sheet:
         validation_result = only_validate_xls(
             sheet_file=import_filepath,
-            validate_paths=validate_paths, 
+            validate_uris=validate_uris, 
             search_paths=search_paths, 
             search_subdirs=include_subdirs_for_searching, 
+            allow_remote_uri=app.config["INPUT_SOURCES"]["URL"], 
+            allow_local_path=app.config["INPUT_SOURCES"]["local_file_system"], 
             input_dir=search_dir
         )
         assert validation_result == "VALID", "The provided form failed validation: {}".format(validation_result)
@@ -201,7 +203,7 @@ def create_job_from_param_form_sheet():
             job_name=job_name,
             username=username,
             job_param_sheet=import_filepath,
-            validate_paths=validate_paths,
+            validate_uris=validate_uris,
             search_paths=search_paths,
             search_subdirs=include_subdirs_for_searching,
             search_dir=search_dir,
@@ -245,7 +247,7 @@ def create_job_from_param_values():
         job_name = data_req["job_name"]
         import_filepath = os.path.join(temp_dir, "param_sheet.xlsx")
 
-        validate_paths = data_req["validate_paths"]
+        validate_uris = data_req["validate_uris"]
         search_paths = data_req["search_paths"]
         search_dir = os.path.abspath(remove_non_printable_characters(data_req["search_dir"]))
         include_subdirs_for_searching = data_req["include_subdirs_for_searching"] 
@@ -262,9 +264,11 @@ def create_job_from_param_values():
                 param_values=param_values,
                 configs=param_configs,
                 output_file=import_filepath,
-                validate_paths=validate_paths, 
+                validate_uris=validate_uris, 
                 search_paths=search_paths, 
                 search_subdirs=include_subdirs_for_searching, 
+                allow_remote_uri=app.config["INPUT_SOURCES"]["URL"], 
+                allow_local_path=app.config["INPUT_SOURCES"]["local_file_system"], 
                 input_dir=search_dir,
                 metadata={"workflow_name": wf_target}
             )
@@ -277,7 +281,7 @@ def create_job_from_param_values():
             job_name=job_name,
             username=username,
             job_param_sheet=import_filepath,
-            validate_paths=validate_paths,
+            validate_uris=validate_uris,
             search_paths=search_paths,
             search_subdirs=include_subdirs_for_searching,
             search_dir=search_dir,

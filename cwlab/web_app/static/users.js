@@ -593,12 +593,19 @@ class UserAccount extends React.Component {
                     <span><i className="fas fa-sign-out-alt"/>&nbsp;Logout</span>
                 ]
             ) : (
-                [
-                    <span><i className="fas fa-user"/>&nbsp;User/Session Info</span>,
-                    <span><i className="fas fa-lock"/>&nbsp;Change Password</span>,
-                    <span><i className="fas fa-trash-alt"/>&nbsp;Delete Account</span>,
-                    <span><i className="fas fa-sign-out-alt"/>&nbsp;Logout</span>
-                ]
+                userOIDC ? (
+                    [
+                        <span><i className="fas fa-user"/>&nbsp;General Info</span>,
+                        <span><i className="fas fa-sign-out-alt"/>&nbsp;Logout</span>
+                    ]
+                ) : (  
+                    [
+                        <span><i className="fas fa-user"/>&nbsp;General Info</span>,
+                        <span><i className="fas fa-lock"/>&nbsp;Change Password</span>,
+                        <span><i className="fas fa-trash-alt"/>&nbsp;Delete Account</span>,
+                        <span><i className="fas fa-sign-out-alt"/>&nbsp;Logout</span>
+                    ]
+                )
             )
             
         this.itemContents = {
