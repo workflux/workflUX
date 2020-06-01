@@ -40,7 +40,7 @@ def search_file_or_dir(glob_pattern, is_dir=False, input_dir="", search_subdirs=
 def get_file_or_dir_uri(uri_str, is_dir=False, search_paths=True, search_subdirs=True, 
     validate_uris=True, allow_remote_uri=True, allow_local_path=True, input_dir=None
 ):
-    if input_dir=="": input_dir_abs = ""
+    if input_dir is None: input_dir_abs = ""
     else: input_dir_abs = os.path.abspath(input_dir)
     if validate_uris:
         if allow_remote_uri and remote_uri_exists(uri_str):
@@ -74,7 +74,7 @@ def class_file(value_string, secondary_files, validate_uris=True, search_paths=T
             search_subdirs=search_subdirs,
             validate_uris=validate_uris, 
             allow_remote_uri=allow_remote_uri,
-            allow_local_path=allow_local_path
+            allow_local_path=allow_local_path,
             input_dir=input_dir
         )
     except AssertionError as e:
@@ -114,7 +114,7 @@ def class_directory(value_string, validate_uris=True, search_paths=True, search_
             search_subdirs=search_subdirs,
             validate_uris=validate_uris, 
             allow_remote_uri=allow_remote_uri,
-            allow_local_path=allow_local_path
+            allow_local_path=allow_local_path,
             input_dir=input_dir
         )
     except AssertionError as e:
