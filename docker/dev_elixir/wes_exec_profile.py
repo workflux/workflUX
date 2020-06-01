@@ -50,17 +50,18 @@ class WES(PyExecProfile):
                 'Authorization': 'Bearer ' + self.ACCESS_TOKEN
             }
 
+        ## write job info to log
         with open(self.LOG_FILE, "wt") as log:
-
-            ## write job info to log
             log.write(
-                "> Sending job to {}\n:".format(host_url) + 
+                "> Sending job to {}\n:".format(host_url) +
                 "\tData: {}\n".format(data) +
                 "\tFiles: {}\n".format(files) +
                 "\tHeaders: {}\n".format(headers)
             )
 
-            ## submit job to wes endpoint:
+
+        ## submit job to wes endpoint:
+        try:
             try:
                 post_run_response = requests.post(
                     "{}/ga4gh/wes/v1/runs".format(host_url), 
@@ -68,130 +69,98 @@ class WES(PyExecProfile):
                     files=files,
                     headers=headers
                 )
-                assert hasattr(post_run_response, "status_code") and post_run_response.status_code, \
-                    "POST response has no or invalid attribute status_code"
             except Exception as e:
-                self.ERR_MESSAGE = f"""
-                Exception while submitting job to WES endpoint: 
-                {str(e)}
-                """
-                log.write(f"> ERROR OCCURED: {self.ERR_MESSAGE}\n> Terminating\n")
-                self.SUCCESS = False
-                return()
+                raise AssertionError(f"Exception while submitting job to WES endpoint: {str(e)}")
+            
+            assert hasattr(post_run_response, "status_code") and post_run_response.status_code, \
+                "POST response has no or invalid attribute status_code"
 
-            if post_run_response.status_code == 200:
-                post_run_response_data = post_run_response.json()
-                if "run_id" in post_run_response_data.keys():
-                    self.run_id = post_run_response.json()["run_id"]
-                    log.write(f"> Run successfully submitted with id: {self.run_id}\n" )
-                else:
-                    self.ERR_MESSAGE = """
-                    Post responce from WES endpoint did not contain
-                    a \"run_id\" attribute.\n
-                    """
-                    log.write(f"> ERROR OCCURED: {self.ERR_MESSAGE}\n> Terminating\n")
-                    self.SUCCESS = False
-                    return()
-            else:
-                self.ERR_MESSAGE = f"""
-                Could not submit ost run to WES endpoint.
-                Post request resulted in status code: {post_run_response.status_code}\n
-                """
-                log.write(f"> ERROR OCCURED: {self.ERR_MESSAGE}\n> Terminating\n")
-                self.SUCCESS = False
-                return()
+            assert post_run_response.status_code == 200, \
+                f"Post request resulted in status code: {post_run_response.status_code}\n"
 
+            post_run_response_data = post_run_response.json()
 
-            ## periodically check run status:
+            assert "run_id" in post_run_response_data.keys(), \
+                "Post response did not contain a \"run_id\" attribute.\n"
+                
+
+            self.run_id = post_run_response.json()["run_id"]
+            with open(self.LOG_FILE, "a") as log:
+                log.write(f"> Run successfully submitted with id: {self.run_id}\n" )
+        except AssertionError as e:
+            with open(self.LOG_FILE, "a") as log:
+                log.write(f"> ERROR OCCURED: {str(e)}\n> Terminating\n" )
+            self.SUCCESS = False
+            return()
+            
+
+        ## periodically check run status:
+        with open(self.LOG_FILE, "a") as log:
             log.write(
-                f"""
-                >>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>
-                Checking status of run periodically:
-                """
+                "\n>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>\n"
+                "Checking status of run periodically:\n\n"
             )
-            n_errors_in_a_row = 0
-            max_errors_in_a_row = 10
-            status_finished = ["EXECUTOR_ERROR", "SYSTEM_ERROR", "CANCELED", "CANCELING", "COMPLETE"]
-            self.status = "NONE"
-            self.get_update_response_data = None
-            while self.status not in status_finished:
-
-                if n_errors_in_a_row > max_errors_in_a_row:
-                    log.write(
-                        f"""
-                        > Exceeded allowed number of unsuccessful status checks: {self.ERR_MESSAGE}\n
-                        > Terminating
-                        """
-                    )
-                    self.SUCCESS = False
-                    return()
-
+        n_errors_in_a_row = 0
+        max_errors_in_a_row = 20
+        status_finished = ["EXECUTOR_ERROR", "SYSTEM_ERROR", "CANCELED", "CANCELING", "COMPLETE"]
+        self.status = "NONE"
+        self.get_update_response_data = None
+        while self.status not in status_finished:
+            try:
                 time.sleep(5)
                 try:
                     get_update_response = requests.get(
                         "{}/ga4gh/wes/v1/runs/{}".format(host_url, self.run_id),
                         headers=headers
                     )
-                    assert hasattr(get_update_response, "status_code") and get_update_response.status_code, \
-                        "POST response has no or invalid attribute status_code"
                 except Exception as e:
-                    n_errors_in_a_row += 1
-                    self.ERR_MESSAGE = f"""
-                    Exception while getting status update from WES endpoint: 
-                    {str(e)}
-                    """
-                    log.write(f"> ERROR OCCURED: {self.ERR_MESSAGE}\n")
-                    continue
-                    
-
-                if not hasattr(get_update_response, "status_code"):
-                    n_errors_in_a_row += 1
-                    self.ERR_MESSAGE = f"""
-                    Could not get status update from WES endpoint.
-                    Get request had not status code status code: {get_update_response.status_code}\n
-                    """
-                    log.write(f"> ERROR OCCURED: {self.ERR_MESSAGE}\n")
-                    continue
-                elif get_update_response.status_code != 200:
-                    n_errors_in_a_row += 1
-                    self.ERR_MESSAGE = f"""
-                    Could not get status update from WES endpoint.
-                    Get request resulted in status code: {get_update_response.status_code}\n
-                    """
-                    log.write(f"> ERROR OCCURED: {self.ERR_MESSAGE}\n")
-                    continue
-                        
+                    raise AssertionError(f"Exception while getting status update from WES endpoint: {str(e)}")
+            
+                assert hasattr(get_update_response, "status_code") and get_update_response.status_code, \
+                    "Get response has no or invalid attribute status_code"
+                 
+                with open(self.LOG_FILE, "a") as log:
+                    log.write(f">> {get_update_response.status_code} ")
+                assert get_update_response.status_code == 200, \
+                    f"Get request resulted in status code: {get_update_response.status_code}\n"
 
                 self.get_update_response_data = get_update_response.json()
-                if "status" in self.get_update_response_data.keys():
-                    n_errors_in_a_row += 1
-                    self.ERR_MESSAGE = """
-                    Get responce from WES endpoint did not contain 
-                    a \"status\" attribute.
-                    """
-                    log.write(f"> ERROR OCCURED: {self.ERR_MESSAGE}\n")
-                    continue
-
-                self.status = self.get_update_response_data["status"]
-                log.write(
-                    "> {} status: {}\n".format(
-                        datetime.now().strftime("%m/%d - %H:%M:%S"),
-                        self.status
+                assert "state" in self.get_update_response_data.keys(), \
+                    (
+                        "Get response did not contain a \"state\" attribute.\n"
+                        f"The full response was:\n{json.dumps(self.get_update_response_data, indent=4)}"
                     )
-                )
 
-
-            ## print out final process status and report results/errors    
+                self.status = self.get_update_response_data["state"]
+                with open(self.LOG_FILE, "a") as log:
+                    log.write(
+                        "> {} status: {}\n".format(
+                            datetime.now().strftime("%m/%d - %H:%M:%S"),
+                            self.status
+                        )
+                    )
+            except AssertionError as e:
+                n_errors_in_a_row += 1
+                with open(self.LOG_FILE, "a") as log:
+                    log.write(f"> ERROR OCCURED: {str(e)}\n")
+                if n_errors_in_a_row > max_errors_in_a_row:
+                    with open(self.LOG_FILE, "a") as log:
+                        log.write(
+                            f"> Exceeded allowed number of unsuccessful status checks\n"
+                            "> Terminating"
+                        )
+                    self.SUCCESS = False
+                    return()
+                continue
+                
+        
+        ## print out final process status and report results/errors  
+        with open(self.LOG_FILE, "a") as log:  
             log.write(
-                f"""
-                    \n
-                    >>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>\n
-                    Final process status:{self.status}
-                    \n\n
-                """
+                "\n>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>\n"
+                f"Final process status:{self.status}\n"
             )
-                
-                
+
             if self.status == "COMPLETE":
                 if "outputs" in self.get_update_response_data.keys():
                     log.write(
@@ -200,7 +169,7 @@ class WES(PyExecProfile):
                         )
                     )
                 else:
-                    log.write("> No output attribute found in get response from WES endpoint")
+                    log.write("> No output attribute found in get response")
                 log.write("\n\n> Job execution ended successful.\n")
             else:
                 log.write(json.dumps(self.get_update_response_data, indent=4))

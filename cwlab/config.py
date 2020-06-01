@@ -65,8 +65,21 @@ class Config(object):
             False
         )
 
-        self.OIDC_CONF = self.CONFIG_FILE_content.get('OIDC_CONF') if self.USE_OIDC \
-            else None
+        self.FINAL_WEB_HOST_URL = (
+            os.environ.get(os.environ.get('CWLAB_FINAL_WEB_HOST_URL_ENV_VAR')) if os.environ.get('CWLAB_FINAL_WEB_HOST_URL_ENV_VAR') else None or
+            os.environ.get(self.CONFIG_FILE_content.get('FINAL_WEB_HOST_URL_ENV_VAR')) if self.CONFIG_FILE_content.get('FINAL_WEB_HOST_URL_ENV_VAR') else None or
+            os.environ.get('CWLAB_FINAL_WEB_HOST_URL') or
+            self.CONFIG_FILE_content.get('FINAL_WEB_HOST_URL') or  
+            None
+        )
+
+        if self.CONFIG_FILE_content.get('OIDC_CONF'):
+            self.OIDC_CONF = self.CONFIG_FILE_content.get('OIDC_CONF')
+            for key in self.OIDC_CONF.keys():
+                if isinstance(self.OIDC_CONF[key], str):
+                    self.OIDC_CONF[key] = self.OIDC_CONF[key].replace("<final_web_host_url>", self.FINAL_WEB_HOST_URL)
+        else:
+            self.OIDC_CONF = None
 
         self.DEFAULT_EMAIL = (
             os.environ.get('CWLAB_DEFAULT_EMAIL') or 
@@ -146,12 +159,59 @@ class Config(object):
 
         if self.DEBUG:
             print("Debug mode turned on, don't use this on production machines.", file=sys.stderr)
+        
+        database_username_env_name = (
+            os.environ.get('CWLAB_DATABASE_USERNAME_ENVVAR') or
+            self.CONFIG_FILE_content.get('DATABASE_USERNAME_ENVVAR') or  
+            None
+        )
 
+        database_username = (
+            (os.environ.get(database_username_env_name) if database_username_env_name else None) or
+            os.environ.get('CWLAB_DATABASE_USERNAME') or
+            self.CONFIG_FILE_content.get('DATABASE_USERNAME') or  
+            None
+        )
+            
+        database_password_env_name = (
+            os.environ.get('CWLAB_DATABASE_PASSWORD_ENVVAR') or
+            self.CONFIG_FILE_content.get('DATABASE_PASSWORD_ENVVAR') or  
+            None
+        )
+
+        database_password = (
+            (os.environ.get(database_password_env_name) if database_password_env_name else None) or
+            os.environ.get('CWLAB_DATABASE_PASSWORD') or
+            self.CONFIG_FILE_content.get('DATABASE_PASSWORD') or  
+            None
+        )
+
+        database_host_env_name = (
+            os.environ.get('CWLAB_DATABASE_HOST_ENVVAR') or
+            self.CONFIG_FILE_content.get('DATABASE_HOST_ENVVAR') or  
+            None
+        )
+
+        database_host = (
+            (os.environ.get(database_host_env_name) if database_host_env_name else None) or
+            os.environ.get('CWLAB_DATABASE_HOST') or
+            self.CONFIG_FILE_content.get('DATABASE_HOST') or  
+            None
+        )
+        
         self.SQLALCHEMY_DATABASE_URI = (
             os.environ.get('CWLAB_DATABASE_URL') or
             self.CONFIG_FILE_content.get('DATABASE_URL') or  
             ('sqlite:///' + os.path.join(self.DB_DIR, 'cwlab.db'))
         )
+        if isinstance(self.SQLALCHEMY_DATABASE_URI, str) and \
+            isinstance(database_password, str) and \
+            isinstance(database_username, str):
+            print("Found username and password environment variables for DB.")
+            self.SQLALCHEMY_DATABASE_URI = self.SQLALCHEMY_DATABASE_URI \
+                .replace("<host>", str(database_host)) \
+                .replace("<password>", str(database_password)) \
+                .replace("<password>", str(database_password))
         
         self.SQLALCHEMY_TRACK_MODIFICATIONS = (
             os.environ.get('CWLAB_DATABASE_TRACK_MODIFICATIONS') or
