@@ -36,7 +36,7 @@ def make_job_dir_tree(job_id):
         os.mkdir(job_wf_dir)
 
 def create_job(job_id, job_param_sheet=None, run_inputs=None, wf_target=None,
-    validate_paths=True, search_paths=False, search_subdirs=False, search_dir=None, sheet_format="xlsx"):
+    validate_uris=True, search_paths=False, search_subdirs=False, search_dir=None, sheet_format="xlsx"):
     assert not (job_param_sheet is None and (run_inputs is None or wf_target is None)), "You have to either provide a job_param_sheet or a list of run_inputs plus a wf_target document"
 
     runs_yaml_dir = get_path("runs_yaml_dir", job_id=job_id)
@@ -57,9 +57,11 @@ def create_job(job_id, job_param_sheet=None, run_inputs=None, wf_target=None,
             wf_type=wf_type,
             output_basename="",
             output_dir=runs_yaml_dir,
-            validate_paths=validate_paths, 
+            validate_uris=validate_uris, 
             search_paths=search_paths, 
-            search_subdirs=search_subdirs, 
+            search_subdirs=search_subdirs,
+            allow_remote_uri=app.config["INPUT_SOURCES"]["URL"], 
+            allow_local_path=app.config["INPUT_SOURCES"]["local_file_system"], 
             input_dir=search_dir
         )
     else:

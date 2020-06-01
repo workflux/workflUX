@@ -173,7 +173,7 @@ def create_job_from_param_form_sheet():
         import_filepath = os.path.join(temp_dir, f"param_sheet.{sheet_format}")
         import_file.save(import_filepath)
 
-        validate_paths = metadata["validate_paths"]
+        validate_uris = metadata["validate_uris"]
         search_paths = metadata["search_paths"]
         search_dir = os.path.abspath(remove_non_printable_characters(metadata["search_dir"]))
         include_subdirs_for_searching = metadata["include_subdirs_for_searching"] 
@@ -188,7 +188,7 @@ def create_job_from_param_form_sheet():
         # validate the uploaded form sheet:
         validation_result = only_validate_xls(
             sheet_file=import_filepath,
-            validate_paths=validate_paths, 
+            validate_uris=validate_uris, 
             search_paths=search_paths, 
             search_subdirs=include_subdirs_for_searching, 
             input_dir=search_dir
@@ -200,7 +200,7 @@ def create_job_from_param_form_sheet():
         create_job_(
             job_id=job_id,
             job_param_sheet=import_filepath,
-            validate_paths=validate_paths,
+            validate_uris=validate_uris,
             search_paths=search_paths,
             search_subdirs=include_subdirs_for_searching,
             search_dir=search_dir,
@@ -243,7 +243,7 @@ def create_job_from_param_values():
         job_id = data_req["job_id"]
         import_filepath = os.path.join(temp_dir, "param_sheet.xlsx")
 
-        validate_paths = data_req["validate_paths"]
+        validate_uris = data_req["validate_uris"]
         search_paths = data_req["search_paths"]
         search_dir = os.path.abspath(remove_non_printable_characters(data_req["search_dir"]))
         include_subdirs_for_searching = data_req["include_subdirs_for_searching"] 
@@ -260,7 +260,7 @@ def create_job_from_param_values():
                 param_values=param_values,
                 configs=param_configs,
                 output_file=import_filepath,
-                validate_paths=validate_paths, 
+                validate_uris=validate_uris, 
                 search_paths=search_paths, 
                 search_subdirs=include_subdirs_for_searching, 
                 input_dir=search_dir,
@@ -274,7 +274,7 @@ def create_job_from_param_values():
         create_job_(
             job_id=job_id,
             job_param_sheet=import_filepath,
-            validate_paths=validate_paths,
+            validate_uris=validate_uris,
             search_paths=search_paths,
             search_subdirs=include_subdirs_for_searching,
             search_dir=search_dir,

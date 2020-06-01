@@ -967,7 +967,7 @@ class JobParamFormHTML extends React.Component {
                 param_configs: this.state.paramConfigs,
                 wf_target: this.props.cwlTarget,
                 job_id: this.props.jobId,
-                validate_paths: this.props.validateURIs,
+                validate_uris: this.props.validateURIs,
                 search_paths: this.props.searchPaths,
                 search_dir: this.props.searchDir,
                 include_subdirs_for_searching: this.props.includeSubbDirsForSearching
@@ -1293,7 +1293,7 @@ class JobParamFormSpreadsheet extends React.Component {
                     metaData={ 
                         {
                             job_id: this.props.jobId,
-                            validate_paths: this.props.validateURIs,
+                            validate_uris: this.props.validateURIs,
                             search_paths: this.props.searchPaths,
                             search_dir: this.props.searchDir,
                             include_subdirs_for_searching: this.props.includeSubbDirsForSearching
