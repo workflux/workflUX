@@ -25,7 +25,7 @@ class ParamValidationOptions extends React.Component{
         if (inputSources.URL) {
             fileInstructions.push("via public or presigned URLs")
         }
-        else if (inputSources.local_file_system) {
+        if (inputSources.local_file_system) {
             fileInstructions.push(
                 "by selecting a path on the servers file system. " +
                 "You may also provide a character string that uniquely identifies " +
