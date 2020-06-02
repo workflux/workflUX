@@ -80,14 +80,14 @@ def generate_param_form_sheet():    # generate param form sheet with data sent
         wf_target = data_req["wf_target"]
         param_modes = data_req["param_modes"]
         run_names = data_req["run_names"]
-        run_mode = data_req["run_mode"]
+        batch_mode = data_req["batch_mode"]
         temp_dir = make_temp_dir() # will stay, need to be cleaned up
         temp_dir_name = os.path.basename(temp_dir)
         output_file_path = os.path.join(temp_dir, f"{job_name}_inputs.{sheet_format}")
         gen_form_sheet(
             output_file_path = output_file_path,
             template_config_file_path = get_path("job_templ", wf_target=wf_target),
-            has_multiple_runs=run_mode,
+            has_multiple_runs=batch_mode,
             run_names=run_names,
             param_is_run_specific=param_modes,
             show_please_fill=True,
@@ -317,7 +317,7 @@ def get_param_values():
         param_values, configs = gen_form_sheet(
             output_file_path = None,
             template_config_file_path = get_path("job_templ", wf_target=data_req["wf_target"]),
-            has_multiple_runs= data_req["run_mode"],
+            has_multiple_runs= data_req["batch_mode"],
             run_names=data_req["run_names"],
             param_is_run_specific=data_req["param_modes"],
             show_please_fill=True,

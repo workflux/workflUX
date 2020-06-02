@@ -53,8 +53,8 @@ def gen_form_sheet(
     template_config_file_path, # basic information on params and their defaults
     output_file_path=None, # if None return configs and param_values
     has_multiple_runs=False,  # can be single or multiple
-    run_names=[],   # if run_mode is multiple, run names are provided here
-    param_is_run_specific={},  # only relevant id run_mode is multiple,
+    run_names=[],   # if batch_mode is multiple, run names are provided here
+    param_is_run_specific={},  # only relevant id batch_mode is multiple,
                     # dict with param names as keys, and true (run specific) or false (global)
                     # as values
     show_please_fill=False,
