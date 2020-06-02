@@ -30,12 +30,12 @@ def read_template_metadata(sheet_file):
         raise AssertionError(f"Could not read metadata from sheet: {sheet_file}")
     return metadata
 
-def get_param_config_info(file_path):
+def get_param_config_info(file_path, predict_run_specific=False):
     _, configs, _ = sheet_file(file_path, verbose_level=0)
     configs = fill_in_config_defaults(configs)
     param_config_info = []
     for param in configs.keys():
-        if configs[param]["split_into_runs_by"][0] == "job_id":
+        if not predict_run_specific and configs[param]["split_into_runs_by"][0] == "job_id":
             is_run_specific = True
         else:
             is_run_specific = False
@@ -47,14 +47,30 @@ def get_param_config_info(file_path):
             "is_run_specific":is_run_specific,
             "doc":configs[param]["doc"]
         })
+
+    if predict_run_specific:
+        ## try to predict which params should be run-specific:
+        if len(param_config_info) == 1:
+            # case 1: only one parameter - set it run-specific:
+            param_config_info[0]["is_run_specific"] = True
+        elif "File" in [param["type"] for param in param_config_info]:
+            # case 2: set only Files (if they exist) to run-specific:
+            for p in range(0, len(param_config_info)):
+                if param_config_info[p]["type"] == "File":
+                    param_config_info[p]["is_run_specific"] = True
+        else:
+            # case 3: set all params to run-specific
+            for p in range(0, len(param_config_info)):
+                param_config_info[p]["is_run_specific"] = True
+    
     return param_config_info
 
 def gen_form_sheet(
     template_config_file_path, # basic information on params and their defaults
     output_file_path=None, # if None return configs and param_values
     has_multiple_runs=False,  # can be single or multiple
-    run_names=[],   # if run_mode is multiple, run names are provided here
-    param_is_run_specific={},  # only relevant id run_mode is multiple,
+    run_names=[],   # if batch_mode is multiple, run names are provided here
+    param_is_run_specific={},  # only relevant id batch_mode is multiple,
                     # dict with param names as keys, and true (run specific) or false (global)
                     # as values
     show_please_fill=False,
