@@ -238,7 +238,7 @@ class Config(object):
             print("Found username and password environment variables for DB.")
             self.SQLALCHEMY_DATABASE_URI = self.SQLALCHEMY_DATABASE_URI \
                 .replace("<host>", str(database_host)) \
-                .replace("<password>", str(database_password)) \
+                .replace("<username>", str(database_username)) \
                 .replace("<password>", str(database_password))
         
         self.SQLALCHEMY_TRACK_MODIFICATIONS = (
