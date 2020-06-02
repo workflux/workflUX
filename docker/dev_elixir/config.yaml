@@ -2,17 +2,17 @@ WEB_SERVER_HOST: 0.0.0.0
 WEB_SERVER_PORT: 5000 
 FINAL_WEB_HOST_URL_ENV_VAR: "host"
 
-TEMP_DIR: '/mnt/cwlab/tmp'
-WORKFLOW_DIR: '/mnt/cwlab/worlflows'
-EXEC_DIR: '/mnt/cwlab/exec'
-INPUT_DIR: '/mnt/cwlab/input'
-DB_DIR: '/mnt/cwlab/database'
-LOG_DIR: '/mnt/cwlab/logs'
+BASE_DIR: '/mnt/cwlab'
+INCLUDE_BUILD_NUMBER_IN_BASE_DIR: True
 
 # DATABASE_URL: "mysql://<username>:<password>@<host>"
 # DATABASE_HOST_ENVVAR: "mysql-host"
 # DATABASE_USERNAME_ENVVAR: "mysql-username"
 # DATABASE_PASSWORD_ENVVAR: "mysql-password"
+
+INPUT_SOURCES:
+  local_file_system: False
+  URL: True
 
 DEBUG: False
 

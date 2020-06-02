@@ -3,13 +3,20 @@ import fnmatch
 import sys
 import re
 from copy import copy
+from urllib.request import urlopen
 
-def path_exists(path_str, is_dir=False):
+def path_exists(uri_str, is_dir=False):
     if is_dir:
-        return os.path.isdir(path_str)
+        return os.path.isdir(uri_str)
     else:
-        return os.path.isfile(path_str)
+        return os.path.isfile(uri_str)
 
+def remote_uri_exists(uri_str):
+    try:
+        _ = urlopen(uri_str)
+        return True
+    except:
+        return False
 
 def search_file_or_dir(glob_pattern, is_dir=False, input_dir="", search_subdirs=True):
     if not '*' in glob_pattern:
@@ -31,30 +38,46 @@ def search_file_or_dir(glob_pattern, is_dir=False, input_dir="", search_subdirs=
     return os.path.abspath(result[0])
 
 
-def get_file_or_dir_path(path_str, is_dir=False, search_paths=True, validate_paths=True, input_dir=""):
-    if input_dir=="": input_dir_abs = ""
+def get_file_or_dir_uri(uri_str, is_dir=False, search_paths=True, search_subdirs=True, 
+    validate_uris=True, allow_remote_uri=True, allow_local_path=True, input_dir=None
+):
+    if input_dir is None: input_dir_abs = ""
     else: input_dir_abs = os.path.abspath(input_dir)
-    if validate_paths:
-        if path_exists(path_str, is_dir): 
-            path=os.path.abspath(path_str)
-        elif path_exists(os.path.join(input_dir_abs, path_str), is_dir): 
-            path=os.path.join(input_dir_abs, path_str)
+    if validate_uris:
+        if allow_remote_uri and remote_uri_exists(uri_str):
+            uri=uri_str
+        elif allow_local_path and path_exists(uri_str, is_dir): 
+            uri=os.path.abspath(uri_str)
+        elif allow_local_path and \
+            input_dir is not None and \
+            path_exists(os.path.join(input_dir_abs, uri_str), is_dir): 
+            uri=os.path.join(input_dir_abs, uri_str)
+        elif allow_local_path and \
+            input_dir is not None and \
+            search_paths:
+            try:
+                uri=search_file_or_dir(uri_str, is_dir, input_dir, search_subdirs)
+            except AssertionError as e:
+                raise AssertionError( str(e) )        
         else:
-            if search_paths:  
-                try:
-                    path=search_file_or_dir(path_str, is_dir, input_dir)
-                except AssertionError as e:
-                    raise AssertionError( str(e) )        
-            else:
-                raise AssertionError( "the path to \"" + path_str + "\" is not valid")
+            raise AssertionError( "the path/URI to \"" + uri_str + "\" is not valid")
     else:
-        path=path_str
-    return path
+        uri=uri_str
+    return uri
 
 
-def class_file(value_string, secondary_files, validate_paths=True, search_paths=True, input_dir=""):
+def class_file(value_string, secondary_files, validate_uris=True, search_paths=True, search_subdirs=True, allow_remote_uri=True, allow_local_path=True, input_dir=None):
     try:
-        path = get_file_or_dir_path(value_string, False, search_paths, validate_paths, input_dir)
+        path = get_file_or_dir_uri(
+            uri_str=value_string, 
+            is_dir=False, 
+            search_paths=search_paths, 
+            search_subdirs=search_subdirs,
+            validate_uris=validate_uris, 
+            allow_remote_uri=allow_remote_uri,
+            allow_local_path=allow_local_path,
+            input_dir=input_dir
+        )
     except AssertionError as e:
         raise AssertionError( str(e) )
     if secondary_files[0] != "":
@@ -69,15 +92,32 @@ def class_file(value_string, secondary_files, validate_paths=True, search_paths=
             else:
                 sec_file_item_path = path + sec_ext
             try:
-                sec_file_item_path = get_file_or_dir_path(sec_file_item_path, False, False, validate_paths)
+                sec_file_item_path = get_file_or_dir_uri(
+                    uri_str=sec_file_item_path, 
+                    is_dir=False, 
+                    search_paths=False, 
+                    search_subdirs=search_subdirs,
+                    validate_uris=validate_uris, 
+                    allow_remote_uri=allow_remote_uri,
+                    allow_local_path=allow_local_path
+                )
             except AssertionError as e:
                 raise AssertionError("invalid secondary file for \"" + value_string + "\": " + str(e) )
     return path
 
 
-def class_directory(value_string, validate_paths=True, search_paths=True, input_dir=""):
+def class_directory(value_string, validate_uris=True, search_paths=True, search_subdirs=True, allow_remote_uri=True, allow_local_path=True, input_dir=None):
     try:
-        path = get_file_or_dir_path(value_string, True, search_paths, validate_paths, input_dir)
+        path = get_file_or_dir_uri(
+            uri_str=value_string, 
+            is_dir=True, 
+            search_paths=search_paths, 
+            search_subdirs=search_subdirs,
+            validate_uris=validate_uris, 
+            allow_remote_uri=allow_remote_uri,
+            allow_local_path=allow_local_path,
+            input_dir=input_dir
+        )
     except AssertionError as e:
         raise AssertionError( str(e) )
     return path
@@ -92,7 +132,7 @@ def boolean(value_string ):
         raise AssertionError( "\"" + value_string + "\" cannot be coerced into boolean")
 
 
-def match_type( param_name, all_param_values, configs, validate_paths=True, search_paths=True, search_subdirs=True, input_dir=""):
+def match_type( param_name, all_param_values, configs, validate_uris=True, search_paths=True, search_subdirs=True, allow_remote_uri=True, allow_local_path=True, input_dir=""):
     type_matching_functions = { 
         "boolean":boolean,
         "int":int,
@@ -127,9 +167,30 @@ def match_type( param_name, all_param_values, configs, validate_paths=True, sear
                 value_type_matched.append( None )
             else:
                 if configs[param_name]["type"] == "File":
-                    value_type_matched.append( class_file(value_string, configs[param_name]["secondary_files"], validate_paths, search_paths, input_dir) )
+                    value_type_matched.append( 
+                        class_file(
+                            value_string=value_string,
+                            secondary_files=configs[param_name]["secondary_files"], 
+                            validate_uris=validate_uris, 
+                            search_paths=search_paths, 
+                            search_subdirs=search_subdirs,
+                            allow_remote_uri=allow_remote_uri, 
+                            allow_local_path=allow_local_path, 
+                            input_dir=input_dir
+                        ) 
+                    )
                 elif configs[param_name]["type"] == "Directory":
-                    value_type_matched.append( class_directory(value_string, validate_paths, search_paths, input_dir) )
+                    value_type_matched.append( 
+                        class_directory(
+                            value_string=value_string,
+                            validate_uris=validate_uris, 
+                            search_paths=search_paths, 
+                            search_subdirs=search_subdirs,
+                            allow_remote_uri=allow_remote_uri, 
+                            allow_local_path=allow_local_path, 
+                            input_dir=input_dir
+                        ) 
+                    )
                 else:
                     value_type_matched.append( type_matching_functions[configs[param_name]["type"]](value_string) )
         except Exception as e:
@@ -138,7 +199,7 @@ def match_type( param_name, all_param_values, configs, validate_paths=True, sear
         value_type_matched = value_type_matched[0]
     return value_type_matched
 
-def get_type_matched_param_values( param_values, configs, validate_paths=True, search_paths=True, search_subdirs=True, input_dir=""):
+def get_type_matched_param_values( param_values, configs, validate_uris=True, search_paths=True, search_subdirs=True, allow_remote_uri=True, allow_local_path=True, input_dir=""):
     print_pref = "[match_all_param_types]:"
     param_values_type_matched = {}
     for param_name in param_values.keys():
@@ -154,7 +215,7 @@ def get_type_matched_param_values( param_values, configs, validate_paths=True, s
                     "parameter was empty but null is not allowed.")
         try:
             param_values_type_matched[param_name] = match_type(param_name, param_values, configs,
-                validate_paths, search_paths, search_subdirs, input_dir)
+                validate_uris, search_paths, search_subdirs, allow_remote_uri, allow_local_path, input_dir)
         except AssertionError as e:
             raise AssertionError( print_pref + " parameter \"" + param_name + "\" failes type matching: " + str(e) )
     return param_values_type_matched

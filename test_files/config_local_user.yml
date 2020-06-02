@@ -12,6 +12,8 @@ EXEC_DIR: './scratch/exec'
 INPUT_DIR: './scratch/input'
 DB_DIR: './scratch/database'
 
+ENABLE_USERS: True
+
 DEBUG: True
 
 EXEC_PROFILES:

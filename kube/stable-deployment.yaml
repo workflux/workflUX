@@ -21,11 +21,11 @@ spec:
       imagePullSecrets:
         - name: pipeline-docker-registry
       containers:
-      - name: cwlab-oidc
+      - name: cwlab-stable
         image: ${CICD_REGISTRY}/krini/cwlab:stable-${CICD_EXECUTION_SEQUENCE}
         env:
         - name: BUILD_NUMBER
-          value: oidc-${CICD_EXECUTION_SEQUENCE}
+          value: ${CICD_EXECUTION_SEQUENCE}
         - name: host
           value: cwlab.krini.ingress.rancher.computational.bio
         - name: mysql-host
@@ -75,7 +75,7 @@ metadata:
   namespace: cwlab-elixir-stable
 spec:
   selector:
-    app: cwlab-oidc
+    app: cwlab
     stage: stable
   ports:
     - protocol: TCP
