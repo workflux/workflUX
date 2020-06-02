@@ -35,10 +35,10 @@ class UserManager():
         retry_delays = [1, 4]
         for retry_delay in retry_delays:
             try:
-            db.session.commit()
-        except Exception as e:
-            assert retry_delay != retry_delays[-1], "Could not connect to database."
-            sleep(retry_delay + retry_delay*random())
+                db.session.commit()
+            except Exception as e:
+                assert retry_delay != retry_delays[-1], "Could not connect to database."
+                sleep(retry_delay + retry_delay*random())
 
     def store(self, user):
         db.session.add(user)
