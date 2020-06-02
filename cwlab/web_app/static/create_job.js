@@ -1407,7 +1407,7 @@ class JobCreationPrep extends React.Component {
     }
 
     changeRunMode(value, new_bool){
-        this.setState({"batchode": new_bool})
+        this.setState({"batchMode": new_bool})
     }
 
     changeRunNames(event){
@@ -1487,12 +1487,12 @@ class JobCreationPrep extends React.Component {
                         name="create_multi_run_job"
                         value="create_multi_run_job"
                         onChange={this.changeRunMode}
-                        checked={this.batchode}
+                        checked={this.batchMode}
                     />
                     &nbsp; on (multiple runs)        
                 </div>
                 
-                {this.state.batchode && (
+                {this.state.batchMode && (
                     <div className="w3-container vertical_container_item">
                         <label className="w3-text-green">Run names/IDs:</label>
                         <Message type="hint">
@@ -1513,7 +1513,7 @@ class JobCreationPrep extends React.Component {
         
         const paramTable = (
             <div style={ {maxHeight:"50vh", overflowY: "auto"} }>
-                {this.state.batchode && (
+                {this.state.batchMode && (
                     <Message type="hint">
                         Since batch mode is on, please specify which parameters you need to specify per run (<b>run-specific</b>)
                         and which parameters shall be shared between the runs (<b>global</b>).
@@ -1524,7 +1524,7 @@ class JobCreationPrep extends React.Component {
                         <tr>
                             <th>Parameter</th>
                             <th>Type</th>
-                            {this.state.batchode ? (<th>Mode</th>) : (null)}
+                            {this.state.batchMode ? (<th>Mode</th>) : (null)}
                         </tr>
                     </thead>
                     <tbody>
@@ -1552,7 +1552,7 @@ class JobCreationPrep extends React.Component {
                                         " [optional]"
                                     }
                                 </td>
-                                {this.state.batchode ? (
+                                {this.state.batchMode ? (
                                         <td>
                                             global &nbsp;
                                             <BooleanSlider
@@ -1634,7 +1634,7 @@ class JobCreationPrep extends React.Component {
                                 <JobParamFormSpreadsheet
                                     cwlTarget={this.props.cwlTarget}
                                     param_modes={this.state.param_modes}
-                                    batchode={this.state.batchode}
+                                    batchMode={this.state.batchMode}
                                     run_names={this.state.run_names}
                                     jobName={this.jobNameNum + "_" + this.state.job_name}
                                     changeSearchDir={this.changeSearchDir}
@@ -1654,7 +1654,7 @@ class JobCreationPrep extends React.Component {
                                 <JobParamFormHTML
                                     cwlTarget={this.props.cwlTarget}
                                     param_modes={this.state.param_modes}
-                                    batchode={this.state.batchode}
+                                    batchMode={this.state.batchMode}
                                     run_names={this.state.run_names}
                                     jobName={this.jobNameNum + "_" + this.state.job_name}
                                     changeSearchDir={this.changeSearchDir}
