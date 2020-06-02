@@ -30,12 +30,12 @@ def read_template_metadata(sheet_file):
         raise AssertionError(f"Could not read metadata from sheet: {sheet_file}")
     return metadata
 
-def get_param_config_info(file_path, predict_run_specific=False):
+def get_param_config_info(file_path):
     _, configs, _ = sheet_file(file_path, verbose_level=0)
     configs = fill_in_config_defaults(configs)
     param_config_info = []
     for param in configs.keys():
-        if not predict_run_specific and configs[param]["split_into_runs_by"][0] == "job_id":
+        if configs[param]["split_into_runs_by"][0] == "job_id":
             is_run_specific = True
         else:
             is_run_specific = False
@@ -48,18 +48,15 @@ def get_param_config_info(file_path, predict_run_specific=False):
             "doc":configs[param]["doc"]
         })
 
-    if predict_run_specific:
+    if not True in [param["is_run_specific"] for param in param_config_info]:
         ## try to predict which params should be run-specific:
-        if len(param_config_info) == 1:
-            # case 1: only one parameter - set it run-specific:
-            param_config_info[0]["is_run_specific"] = True
-        elif "File" in [param["type"] for param in param_config_info]:
-            # case 2: set only Files (if they exist) to run-specific:
+        if "File" in [param["type"] for param in param_config_info]:
+            # case 1: set only Files (if they exist) to run-specific:
             for p in range(0, len(param_config_info)):
                 if param_config_info[p]["type"] == "File":
                     param_config_info[p]["is_run_specific"] = True
         else:
-            # case 3: set all params to run-specific
+            # case 2: set all params to run-specific
             for p in range(0, len(param_config_info)):
                 param_config_info[p]["is_run_specific"] = True
     
