@@ -45,9 +45,31 @@ class Config(object):
         cwlab_fallback_dir = os.path.join(os.path.expanduser("~"), "cwlab")
 
         # parameters:
+        self.BUILD_NUMBER = ( 
+            os.environ.get("BUILD_NUMBER") or
+            "none"
+        )
+        
         self.CORRECT_SYMLINKS = self.CONFIG_FILE_content.get('CORRECT_SYMLINKS') \
             if not self.CONFIG_FILE_content.get('CORRECT_SYMLINKS') is None \
             else True
+
+        self.BASE_DIR = normalize_path( # overwrites the fallback dir
+            os.environ.get('CWLAB_BASE_DIR') or
+            self.CONFIG_FILE_content.get('BASE_DIR') or  
+            cwlab_fallback_dir,
+            correct_symlinks=self.CORRECT_SYMLINKS
+        )
+
+        include_build_number_in_base_dir = ( # usefull for continuous deployment
+            os.environ.get('CWLAB_INCLUDE_BUILD_NUMBER_IN_BASE_DIR') or
+            self.CONFIG_FILE_content.get('INCLUDE_BUILD_NUMBER_IN_BASE_DIR') or  
+            False
+        )
+
+        if include_build_number_in_base_dir:
+            self.BASE_DIR = os.path.join(self.BASE_DIR, self.BUILD_NUMBER)
+
             
         self.ENABLE_USERS = (
             os.environ.get('CWLAB_ENABLE_USERS') or
@@ -55,10 +77,6 @@ class Config(object):
             False
         )
 
-        self.BUILD_NUMBER = ( 
-            os.environ.get("BUILD_NUMBER") or
-            "none"
-        )
         self.USE_OIDC = (
             os.environ.get('CWLAB_USE_OIDC') or
             self.CONFIG_FILE_content.get('USE_OIDC') or  
@@ -100,37 +118,37 @@ class Config(object):
         self.TEMP_DIR = normalize_path(
             os.environ.get('CWLAB_TEMP_DIR') or
             self.CONFIG_FILE_content.get('TEMP_DIR') or  
-            os.path.join( cwlab_fallback_dir, "temp"),
+            os.path.join( self.BASE_DIR, "temp"),
             correct_symlinks=self.CORRECT_SYMLINKS
         )
         self.LOG_DIR = normalize_path(
             os.environ.get('CWLAB_LOG_DIR') or
             self.CONFIG_FILE_content.get('LOG_DIR') or  
-            os.path.join(cwlab_fallback_dir, "logs"),
+            os.path.join(self.BASE_DIR, "logs"),
             correct_symlinks=self.CORRECT_SYMLINKS
         )
         self.WORKFLOW_DIR = normalize_path(
             os.environ.get('CWLAB_WORKFLOW_DIR') or  
             self.CONFIG_FILE_content.get('WORKFLOW_DIR') or  
-            os.path.join( cwlab_fallback_dir, "CWL"),
+            os.path.join( self.BASE_DIR, "CWL"),
             correct_symlinks=self.CORRECT_SYMLINKS
         )
         self.EXEC_DIR = normalize_path(
             os.environ.get('CWLAB_EXEC_DIR') or 
             self.CONFIG_FILE_content.get('EXEC_DIR') or   
-            os.path.join( cwlab_fallback_dir, "exec"),
+            os.path.join( self.BASE_DIR, "exec"),
             correct_symlinks=self.CORRECT_SYMLINKS
         )
         self.DEFAULT_INPUT_DIR = normalize_path(
             os.environ.get('CWLAB_DEFAULT_INPUT_DIR') or 
             self.CONFIG_FILE_content.get('DEFAULT_INPUT_DIR') or  
-            os.path.join( cwlab_fallback_dir, "input"),
+            os.path.join( self.BASE_DIR, "input"),
             correct_symlinks=self.CORRECT_SYMLINKS
         )
         self.DB_DIR = normalize_path(
             os.environ.get('CWLAB_DB_DIR') or 
             self.CONFIG_FILE_content.get('DB_DIR') or  
-            os.path.join( cwlab_fallback_dir, "database"),
+            os.path.join( self.BASE_DIR, "database"),
             correct_symlinks=self.CORRECT_SYMLINKS
         )
         self.ADD_INPUT_DIRS = normalize_path_dict(
@@ -143,6 +161,16 @@ class Config(object):
             {},
             correct_symlinks=self.CORRECT_SYMLINKS
         )
+
+        self.INPUT_SOURCES = {
+            "local_file_system": True,
+            "URL": True
+        }
+        user_defined_input_sources = (
+            self.CONFIG_FILE_content.get('INPUT_SOURCES') or
+            {}
+        )
+        self.INPUT_SOURCES.update(user_defined_input_sources)
 
         self.UPLOAD_ALLOWED = self.CONFIG_FILE_content.get('UPLOAD_ALLOWED') \
             if not self.CONFIG_FILE_content.get('UPLOAD_ALLOWED') is None \
@@ -209,6 +237,12 @@ class Config(object):
             os.environ.get('CWLAB_DATABASE_TRACK_MODIFICATIONS') or
             self.CONFIG_FILE_content.get('DATABASE_TRACK_MODIFICATIONS') or  
             False
+        )
+
+        self.SQLALCHEMY_ACCESS_TOKEN_EXPIRES_AFTER = ( # duration of validy of an access token in seconds
+            os.environ.get('SQLALCHEMY_ACCESS_TOKEN_EXPIRES_AFTER') or
+            self.CONFIG_FILE_content.get('SQLALCHEMY_ACCESS_TOKEN_EXPIRES_AFTER') or  
+            86400 # 24h
         )
         
         self.READ_MAX_CHARS_FROM_FILE = (

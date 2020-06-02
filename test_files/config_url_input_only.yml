@@ -12,7 +12,17 @@ EXEC_DIR: './scratch/exec'
 INPUT_DIR: './scratch/input'
 DB_DIR: './scratch/database'
 
+# TEMP_DIR: '/home/epicwl/CWLab/scratch/temp'
+# WORKFLOW_DIR: '/home/epicwl/CWLab/scratch/CWL'
+# EXEC_DIR: '/home/epicwl/CWLab/scratch/exec'
+# INPUT_DIR: '/home/epicwl/CWLab/scratch/input'
+# DB_DIR: '/home/epicwl/CWLab/scratch/database'
+
 DEBUG: True
+
+INPUT_SOURCES:
+  local_file_system: False
+  URL: True
 
 EXEC_PROFILES:
   cwltool_local_test: # name of the exec profile

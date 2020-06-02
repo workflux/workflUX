@@ -68,7 +68,7 @@ class ImportJanisFile extends React.Component{
                 "translate_to_cwl": this.state.translateToCWL,
                 "translate_to_wdl": this.state.translateToWDL,
                 "wf_name_in_script": this.state.wfNameSelectedForImport,
-                "access_token": await get_user_info("accessToken")
+                "access_token": await getUserInfo("accessToken")
             }))
             fetch(
                 event.currentTarget.value == "list_contained_workflows" ? (
@@ -428,7 +428,7 @@ class ImportWfFile extends React.Component{
             formData.append("meta", JSON.stringify({
                 "import_name": this.state.importName,
                 "wf_type": this.props.wfType,
-                "access_token": await get_user_info("accessToken")
+                "access_token": await getUserInfo("accessToken")
             }))
             fetch(routeUploadWf, {
                 method: "POST",

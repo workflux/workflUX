@@ -1,24 +1,18 @@
-class PathValAndSearch extends React.Component{
+class ParamValidationOptions extends React.Component{
     constructor(props){
         super(props);
-        // props.jobId
-        // props.validatePaths
+        // props.jobName
+        // props.validateURIs
         // props.searchPaths
         // props.searchDir
         // props.changeSearchDir
         // props.includeSubbDirsForSearching
         // props.changeIncludeSubDirsForSearching
-        // props.changePathValAndSearch
+        // props.changeEnableUriValidation
+        // props.changeEnablePathSearching
         // props.prevPath
         // props.changePrevPath
         this.handleChangeSearchDir = this.handleChangeSearchDir.bind(this);
-        this.handleChangeValAndSearch = this.handleChangeValAndSearch.bind(this);
-    }
-
-    handleChangeValAndSearch(event){
-        const searchPaths = event.currentTarget.value == "val_search"
-        const validatePaths = event.currentTarget.value == "val_search" || event.currentTarget.value == "val"
-        this.props.changePathValAndSearch(searchPaths, validatePaths)
     }
 
     handleChangeSearchDir(event){
@@ -27,93 +21,105 @@ class PathValAndSearch extends React.Component{
     
 
     render(){
-        const validate_or_search = this.props.validatePaths ? (
-            this.props.searchPaths ? (
-                "val_search"
-            ) : (
-                "val"
-            )
-        ) : (
-            "no"
-        )
-
-        const info_and_advanced_options = {
-            "val_search": (
-                <span>
-                    <br/>
-                    With this option, you may:
-                    <ul>
-                        <li>
-                            specify absolute paths for a file or directory parameter (paths are validated)
-                        </li>
-                        <li>
-                            or provide a character string that uniquely identifies 
-                            the file/directory name in the following search directory 
-                            (globbing patterns are allowed)
-                        </li>
-                    </ul>
-                    <span className="w3-text-green">Search directory: </span>
-                    <BrowseDirTextField
-                        name="select_input_dir"
-                        value={this.props.searchDir}
-                        onChange={this.handleChangeSearchDir}
-                        ignoreFiles={false}
-                        fileExts={[]}
-                        showOnlyHits={false}
-                        selectDir={true}
-                        allowInput={true}
-                        allowUpload={false}
-                        allowDownload={false}
-                        defaultBaseDir="DEFAULT_INPUT_DIR"
-                        prevPath={this.props.prevPath}
-                        changePrevPath={this.props.changePrevPath}
-                    />
-                    <br/>
-                    <span className="w3-text-green">Include sub-directories for searching: </span>
-                    no &nbsp;
-                    <BooleanSlider
-                        name="include_subdirs_for_searching"
-                        value="include_subdirs_for_searching"
-                        onChange={this.props.changeIncludeSubDirsForSearching}
-                        checked={this.props.includeSubbDirsForSearching}
-                        doNotSendValue={true}
-                    />
-                    &nbsp; yes
-                </span>
-
-            ),
-            "val": (
-                <p>
-                    With this option, you have to specify absolute paths for file or directory parameters.
-                    The paths will be validated.
-                </p>
-            ),
-            "no": (
-                <p>
-                    With this option, you have to specify absolute paths for file or directory parameters.
-                    The paths will not be validated.
-                </p>
-            )
-
+        let fileInstructions = []
+        if (inputSources.URL) {
+            fileInstructions.push("via public or presigned URLs")
         }
+        if (inputSources.local_file_system) {
+            fileInstructions.push(
+                "by selecting a path on the servers file system. " +
+                "You may also provide a character string that uniquely identifies " +
+                "the file/directory name within a search directory " +
+                "(see below)"
+            )
+        }
+
         return(
             <div>
-                <h3>Path Validation and Searching:</h3>
+                <h3>Parameter Validation:</h3>
                 <p>
-                    Please select how paths of file or directory parameters should be treated.
+                    All parameters are automatically validated to match the expected type.
                 </p>
-                <span className="w3-text-green">Options: </span>
-                <select className="w3-button w3-white w3-border" 
-                    name="path_validation_and_search"
-                    onChange={this.handleChangeValAndSearch}
-                    value={validate_or_search}
-                    >
-                    <option value="val_search">validate and search</option>
-                    <option value="val">only validate</option>
-                    <option value="no">do not validate or search</option>
-                </select>
+
+                <Message type="hint">
+                    Please note: You may provide files {fileInstructions.join(" or ")}.
+                </Message>
+
                 <div className="w3-container">
-                    {info_and_advanced_options[validate_or_search]}
+                    <div>
+                        <BooleanSlider
+                            name="enable_uri_validation"
+                            value="enable_uri_validation"
+                            onChange={this.props.changeEnableUriValidation}
+                            checked={this.props.validateURIs}
+                            doNotSendValue={true}
+                        />
+                        &nbsp;
+                        enable validation of file/directory URIs
+                    </div>
+                    {inputSources.local_file_system && this.props.validateURIs && (
+                        <div 
+                            className="w3-container"
+                            style={ {
+                                paddingLeft: "48px", 
+                                paddingTop: "10px", 
+                                paddingBottom: "10px"
+                            }}
+                        >
+                            <div>
+                                <BooleanSlider
+                                    name="enable_search_paths"
+                                    value="enable_search_paths"
+                                    onChange={this.props.changeEnablePathSearching}
+                                    checked={this.props.searchPaths}
+                                    doNotSendValue={true}
+                                />
+                                &nbsp;
+                                Enable searching for paths
+                            </div>
+                            {this.props.searchPaths && (
+                                <div 
+                                    className="w3-container"
+                                    style={ {
+                                        paddingLeft: "48px", 
+                                        paddingTop: "5px", 
+                                        paddingBottom: "5px"
+                                    }}
+                                >
+                                    <div className="vertical_container_item">
+                                        <span className="w3-text-green">Search directory: </span>
+                                        <BrowseDirTextField
+                                            name="select_input_dir"
+                                            value={this.props.searchDir}
+                                            onChange={this.handleChangeSearchDir}
+                                            ignoreFiles={false}
+                                            fileExts={[]}
+                                            showOnlyHits={false}
+                                            selectDir={true}
+                                            allowInput={true}
+                                            allowUpload={false}
+                                            allowDownload={false}
+                                            defaultBaseDir="DEFAULT_INPUT_DIR"
+                                            prevPath={this.props.prevPath}
+                                            changePrevPath={this.props.changePrevPath}
+                                        />
+                                    </div>
+                                    <div className="vertical_container_item">
+                                        <span className="w3-text-green">Include sub-directories for searching: </span>
+                                        no &nbsp;
+                                        <BooleanSlider
+                                                name="include_subdirs_for_searching"
+                                                value="include_subdirs_for_searching"
+                                                onChange={this.props.changeIncludeSubDirsForSearching}
+                                                checked={this.props.includeSubbDirsForSearching}
+                                                doNotSendValue={true}
+                                        />
+                                        &nbsp; yes
+                                    </div>
+                                </div>
+                            )}
+                        </div>
+                    )}
                 </div>
             </div>
         )
@@ -215,7 +221,7 @@ class ParamField extends React.Component{
         // props.name
         // props.index for array params
         // props.isNull
-        // props.jobId
+        // props.jobName
         // props.prevPath
         // props.allowedSelection
         // props.changePrevPath
@@ -330,45 +336,75 @@ class ParamField extends React.Component{
                     }
                     break;
                 case "input_file":
-                    return(
-                        <BrowseDirTextField
-                            name={"input_" + this.key}
-                            value={this.props.paramValue}
-                            onChange={this.handleChange}
-                            disabled={disableInput}
-                            ignoreFiles={false}
-                            fileExts={[]}
-                            showOnlyHits={false}
-                            selectDir={false}
-                            allowInput={true}
-                            allowUpload={true}
-                            allowDownload={false}
-                            defaultBaseDir="DEFAULT_INPUT_DIR"
-                            prevPath={this.props.prevPath}
-                            changePrevPath={this.props.changePrevPath}
-                            smallSize={true}
-                        />
-                    )
+                    if (inputSources.local_file_system){
+                        return(
+                            <BrowseDirTextField
+                                name={"input_" + this.key}
+                                value={this.props.paramValue}
+                                onChange={this.handleChange}
+                                disabled={disableInput}
+                                ignoreFiles={false}
+                                fileExts={[]}
+                                showOnlyHits={false}
+                                selectDir={false}
+                                allowInput={true}
+                                allowUpload={true}
+                                allowDownload={false}
+                                defaultBaseDir="DEFAULT_INPUT_DIR"
+                                prevPath={this.props.prevPath}
+                                changePrevPath={this.props.changePrevPath}
+                                smallSize={true}
+                            />
+                        )
+                    }
+                    else {
+                        return(
+                            <input
+                                className="param-input"
+                                type="text"
+                                name={"input_" + this.key}
+                                value={this.props.paramValue}
+                                onChange={this.handleChange}
+                                required={true}
+                                disabled={disableInput}
+                            />
+                        )
+                    }
                     break;
                 case "input_dir":
-                    return(
-                        <BrowseDirTextField
-                            name={"input_" + this.key}
-                            value={this.props.paramValue}
-                            onChange={this.handleChange}
-                            ignoreFiles={false}
-                            fileExts={[]}
-                            showOnlyHits={false}
-                            selectDir={true}
-                            allowInput={true}
-                            allowUpload={true}
-                            allowDownload={false}
-                            defaultBaseDir="DEFAULT_INPUT_DIR"
-                            prevPath={this.props.prevPath}
-                            changePrevPath={this.props.changePrevPath}
-                            smallSize={true}
-                        />
-                    )
+                    if (inputSources.local_file_system){
+                        return(
+                            <BrowseDirTextField
+                                name={"input_" + this.key}
+                                value={this.props.paramValue}
+                                onChange={this.handleChange}
+                                ignoreFiles={false}
+                                fileExts={[]}
+                                showOnlyHits={false}
+                                selectDir={true}
+                                allowInput={true}
+                                allowUpload={true}
+                                allowDownload={false}
+                                defaultBaseDir="DEFAULT_INPUT_DIR"
+                                prevPath={this.props.prevPath}
+                                changePrevPath={this.props.changePrevPath}
+                                smallSize={true}
+                            />
+                        )
+                    }
+                    else {
+                        return(
+                            <input
+                                className="param-input"
+                                type="text"
+                                name={"input_" + this.key}
+                                value={this.props.paramValue}
+                                onChange={this.handleChange}
+                                required={true}
+                                disabled={disableInput}
+                            />
+                        )
+                    }
                     break;
             }
         }
@@ -384,7 +420,7 @@ class ParamNullCheckbox extends React.Component{
         // props.isNull
         // props.nullValue
         // props.refersTo
-        // props.indexOrRunId
+        // props.indexOrrunName
         // props.mode
         // props.toggleNull
         // props.size
@@ -399,7 +435,7 @@ class ParamNullCheckbox extends React.Component{
             !event.currentTarget.checked,
             this.props.nullValue,
             this.props.refersTo,
-            typeof this.props.indexOrRunId === "undefined" ? (null) : (this.props.indexOrRunId)
+            typeof this.props.indexOrrunName === "undefined" ? (null) : (this.props.indexOrrunName)
         )
     }
 
@@ -429,7 +465,7 @@ class ParamAddOrRemove extends React.Component{
         super(props);
         // props.mode
         // props.name
-        // props.runId only for run array form
+        // props.runName only for run array form
         // props.handleAddOrRemove
         // props.disabled
         // props.disabledRemove
@@ -441,7 +477,7 @@ class ParamAddOrRemove extends React.Component{
             event.currentTarget.value == "add", 
             this.props.mode, 
             this.props.name,
-            this.props.runId ? (this.props.runId) : (null)
+            this.props.runName ? (this.props.runName) : (null)
         )
     }
 
@@ -481,15 +517,15 @@ class ParamForm extends React.Component{
         // props.paramValues
         // props.paramsConfigs
         // props.paramsHelperValues only for run array
-        // props.runIds
+        // props.runNames
         // props.changeParamValue
         // props.toggleNull
-        // props.jobId
+        // props.jobName
         // props.prevPath
         // props.changePrevPath
         
         this.state = {
-            whichRunIdFocus: null
+            whichrunNameFocus: null
         }
 
         this.columnWidth = "250px"
@@ -498,14 +534,14 @@ class ParamForm extends React.Component{
 
         this.checkIfNull = this.checkIfNull.bind(this);
         this.fieldBackgroundclassName = this.fieldBackgroundclassName.bind(this);
-        this.changeRunIdFocus = this.changeRunIdFocus.bind(this);
+        this.changerunNameFocus = this.changerunNameFocus.bind(this);
     }
 
-    checkIfNull(indexByRunId){
+    checkIfNull(indexByrunName){
         let isNull = {}
         Object.keys(this.props.paramValues).map( (p) => {
-            let paramValues = indexByRunId ? (
-                this.props.paramValues[p].filter( (v, i) => indexByRunId[p].indexOf(i) != -1)
+            let paramValues = indexByrunName ? (
+                this.props.paramValues[p].filter( (v, i) => indexByrunName[p].indexOf(i) != -1)
                 ) : (
                 this.props.paramValues[p]
             )
@@ -520,8 +556,8 @@ class ParamForm extends React.Component{
         )
     }
 
-    changeRunIdFocus(newFocus){
-        this.setState({whichRunIdFocus: newFocus})
+    changerunNameFocus(newFocus){
+        this.setState({whichrunNameFocus: newFocus})
     }
 }
 
@@ -565,7 +601,7 @@ class ParamFormGlobalSingle extends ParamForm{
                                         paramValue={this.props.paramValues[p][0]}
                                         onChange={this.props.changeParamValue}
                                         isNull={isNull[p]}
-                                        jobId={this.props.jobId}
+                                        jobName={this.props.jobName}
                                         prevPath={this.props.prevPath}
                                         changePrevPath={this.props.changePrevPath}
                                         allowedSelection={this.props.paramConfigs[p].allowed_selection}
@@ -631,7 +667,7 @@ class ParamFormGlobalArray extends ParamForm{
                                                                 isNull={this.props.paramValues[p][index]=="itemNull"}
                                                                 refersTo="item"
                                                                 nullValue="itemNull"
-                                                                indexOrRunId={index}
+                                                                indexOrrunName={index}
                                                                 mode="global_array"
                                                                 toggleNull={this.props.toggleNull}
                                                                 size="10px"
@@ -645,7 +681,7 @@ class ParamFormGlobalArray extends ParamForm{
                                                             isNull={isNull[p]}
                                                             itemNullAllowed={this.props.paramConfigs[p].null_items_allowed}
                                                             index={index}
-                                                            jobId={this.props.jobId}
+                                                            jobName={this.props.jobName}
                                                             prevPath={this.props.prevPath}
                                                             changePrevPath={this.props.changePrevPath}
                                                             allowedSelection={this.props.paramConfigs[p].allowed_selection}
@@ -694,10 +730,10 @@ class ParamFormRunSingle extends ParamForm{
                                                 />
                                             </td>
                                         </tr>
-                                        {[...Array(this.props.runIds.length).keys()].map( (index) => (
+                                        {[...Array(this.props.runNames.length).keys()].map( (index) => (
                                             <tr key={index}>
                                                 <td>
-                                                    {this.props.runIds[index]}
+                                                    {this.props.runNames[index]}
                                                 </td>
                                                 <td style={ {minWidth: this.columnWidth} }>
                                                     {this.props.paramConfigs[p].null_allowed &&
@@ -706,7 +742,7 @@ class ParamFormRunSingle extends ParamForm{
                                                             isNull={this.props.paramValues[p][index]=="null"}
                                                             refersTo="item"
                                                             nullValue="null"
-                                                            indexOrRunId={index}
+                                                            indexOrrunName={index}
                                                             mode="run_single"
                                                             toggleNull={this.props.toggleNull}
                                                             size="10px"
@@ -720,7 +756,7 @@ class ParamFormRunSingle extends ParamForm{
                                                         isNull={this.props.paramValues[p][index]=="null"}
                                                         itemNullAllowed={this.props.paramConfigs[p].null_allowed}
                                                         index={index}
-                                                        jobId={this.props.jobId}
+                                                        jobName={this.props.jobName}
                                                         prevPath={this.props.prevPath}
                                                         changePrevPath={this.props.changePrevPath}
                                                         allowedSelection={this.props.paramConfigs[p].allowed_selection}
@@ -740,33 +776,33 @@ class ParamFormRunSingle extends ParamForm{
 
 class ParamFormRunArray extends ParamForm{
     render(){
-        const whichRunIdFocus = this.state.whichRunIdFocus ? (
-                this.state.whichRunIdFocus
+        const whichrunNameFocus = this.state.whichrunNameFocus ? (
+                this.state.whichrunNameFocus
             ) : (
-                this.props.runIds[0]
+                this.props.runNames[0]
             )
 
-        let indexByRunId = {}
+        let indexByrunName = {}
         Object.keys(this.props.paramValues).forEach( (p) => {
-            indexByRunId[p] = []
-            let runIdHelper = this.props.paramHelperValues[this.props.paramConfigs[p].split_into_runs_by[0]]
+            indexByrunName[p] = []
+            let runNameHelper = this.props.paramHelperValues[this.props.paramConfigs[p].split_into_runs_by[0]]
             this.props.paramValues[p].forEach( (value, index) => {
-                if(runIdHelper[index] == whichRunIdFocus){
-                    indexByRunId[p].push(index)
+                if(runNameHelper[index] == whichrunNameFocus){
+                    indexByrunName[p].push(index)
                 }
             })
         })
 
-        const isNull = this.checkIfNull(indexByRunId)
+        const isNull = this.checkIfNull(indexByrunName)
 
         return(
                 <div style={ {overflow:"auto"} }>
                     <h5>Lists:</h5>
                     <TabPanel
                         title="Run IDs:"
-                        tabs={this.props.runIds}
-                        whichFocus={whichRunIdFocus}
-                        changeFocus={this.changeRunIdFocus}
+                        tabs={this.props.runNames}
+                        whichFocus={whichrunNameFocus}
+                        changeFocus={this.changerunNameFocus}
                     >
                         <table style={ {borderSpacing: "8px 0px"} }><tbody>
                             <tr>
@@ -790,9 +826,9 @@ class ParamFormRunArray extends ParamForm{
                                                                 name={p}
                                                                 isNull={isNull[p]}
                                                                 nullValue="null"
-                                                                refersTo="runId"
+                                                                refersTo="runName"
                                                                 mode="run_array"
-                                                                indexOrRunId={whichRunIdFocus}
+                                                                indexOrrunName={whichrunNameFocus}
                                                                 toggleNull={this.props.toggleNull}
                                                                 size="20px"
                                                             />
@@ -800,7 +836,7 @@ class ParamFormRunArray extends ParamForm{
                                                     }
                                                 </td>
                                             </tr>
-                                            {[...Array(indexByRunId[p].length).keys()].map( (index) => (
+                                            {[...Array(indexByrunName[p].length).keys()].map( (index) => (
                                                 <tr key={index}>
                                                     <td>
                                                         {index}
@@ -810,11 +846,11 @@ class ParamFormRunArray extends ParamForm{
                                                             <ParamNullCheckbox
                                                                 name={p}
                                                                 isNull={this.props.paramValues[p][
-                                                                    indexByRunId[p][index]
+                                                                    indexByrunName[p][index]
                                                                 ]=="itemNull"}
                                                                 refersTo="item"
                                                                 nullValue="itemNull"
-                                                                indexOrRunId={indexByRunId[p][index]}
+                                                                indexOrrunName={indexByrunName[p][index]}
                                                                 mode="run_array"
                                                                 toggleNull={this.props.toggleNull}
                                                                 size="10px"
@@ -825,13 +861,13 @@ class ParamFormRunArray extends ParamForm{
                                                             name={p}
                                                             type={this.props.paramConfigs[p].type}
                                                             paramValue={this.props.paramValues[p][
-                                                                indexByRunId[p][index]
+                                                                indexByrunName[p][index]
                                                             ]}
-                                                            index={indexByRunId[p][index]}
+                                                            index={indexByrunName[p][index]}
                                                             onChange={this.props.changeParamValue}
                                                             isNull={isNull[p]}
                                                             itemNullAllowed={this.props.paramConfigs[p].null_items_allowed}
-                                                            jobId={this.props.jobId}
+                                                            jobName={this.props.jobName}
                                                             prevPath={this.props.prevPath}
                                                             changePrevPath={this.props.changePrevPath}
                                                             allowedSelection={this.props.paramConfigs[p].allowed_selection}
@@ -843,10 +879,10 @@ class ParamFormRunArray extends ParamForm{
                                         <ParamAddOrRemove
                                             name={p}
                                             mode="run_array"
-                                            runId={whichRunIdFocus}
+                                            runName={whichrunNameFocus}
                                             handleAddOrRemove={this.props.addOrRemoveItem}
                                             disabled={isNull[p]}
-                                            disabledRemove={indexByRunId[p].length <= 1}
+                                            disabledRemove={indexByrunName[p].length <= 1}
                                         />
                                     </td>
                                 ))}
@@ -865,11 +901,12 @@ class JobParamFormHTML extends React.Component {
         // props.param_modes
         // props.run_mode
         // props.run_names
-        // props.jobId
+        // props.jobName
         // props.changeSearchDir
         // props.changeIncludeSubDirsForSearching
-        // props.changePathValAndSearch
-        // props.validatePaths
+        // props.changeEnableUriValidation
+        // props.changeEnablePathSearching
+        // props.validateURIs
         // props.searchPaths
         // props.searchDir
         // props.includeSubbDirsForSearching
@@ -952,15 +989,15 @@ class JobParamFormHTML extends React.Component {
         Object.assign(paramValues, this.state.paramHelperValues)
         
         this.ajaxRequest({
-            statusVar: "status",
+            statusVar: "actionStatus",
             statusValueDuringRequest: "create_job",
             messageVar: "createJobMessages",
             sendData: {
                 param_values: paramValues,
                 param_configs: this.state.paramConfigs,
                 wf_target: this.props.cwlTarget,
-                job_id: this.props.jobId,
-                validate_paths: this.props.validatePaths,
+                job_name: this.props.jobName,
+                validate_uris: this.props.validateURIs,
                 search_paths: this.props.searchPaths,
                 search_dir: this.props.searchDir,
                 include_subdirs_for_searching: this.props.includeSubbDirsForSearching
@@ -974,9 +1011,9 @@ class JobParamFormHTML extends React.Component {
         this.setState({paramValuesByMode: paramValuesByMode})
     }
 
-    dissectParamValuesByRunId(mode, name, runID){
-        const runIdParamName = this.state.paramConfigs[name].split_into_runs_by[0]
-        const runIdIndexes = this.state.paramHelperValues[runIdParamName]
+    dissectParamValuesByrunName(mode, name, runName){
+        const runNameParamName = this.state.paramConfigs[name].split_into_runs_by[0]
+        const runNameIndexes = this.state.paramHelperValues[runNameParamName]
         let dissectedParamValues = {
             before: {
                 indexes: [],
@@ -993,18 +1030,18 @@ class JobParamFormHTML extends React.Component {
         }
         const paramValues = this.state.paramValuesByMode[mode][name]
         let before=true
-        for (let r=0; r < runIdIndexes.length; r++){
-            if(runIdIndexes[r] == runID){
+        for (let r=0; r < runNameIndexes.length; r++){
+            if(runNameIndexes[r] == runName){
                 before=false
-                dissectedParamValues.match.indexes.push(runIdIndexes[r])
+                dissectedParamValues.match.indexes.push(runNameIndexes[r])
                 dissectedParamValues.match.values.push(paramValues[r])
             }
             else if(before){
-                dissectedParamValues.before.indexes.push(runIdIndexes[r])
+                dissectedParamValues.before.indexes.push(runNameIndexes[r])
                 dissectedParamValues.before.values.push(paramValues[r])
             }
             else {
-                dissectedParamValues.after.indexes.push(runIdIndexes[r])
+                dissectedParamValues.after.indexes.push(runNameIndexes[r])
                 dissectedParamValues.after.values.push(paramValues[r])
             }
         }
@@ -1012,23 +1049,23 @@ class JobParamFormHTML extends React.Component {
         return(dissectedParamValues)
     }
 
-    toggleNull(mode, name, setNull, nullValue, refersTo, indexOrRunId){
+    toggleNull(mode, name, setNull, nullValue, refersTo, indexOrrunName){
         let paramValuesByMode = this.state.paramValuesByMode
         let paramHelperValues = this.state.paramHelperValues
         if (refersTo == "all"){
             paramValuesByMode[mode][name] = setNull ? ([nullValue]) : (this.state.paramConfigs[name].default_value)
         }
         else if (refersTo == "item"){
-            paramValuesByMode[mode][name][indexOrRunId] = setNull ? (nullValue) : (this.state.paramConfigs[name].default_value[0])
+            paramValuesByMode[mode][name][indexOrrunName] = setNull ? (nullValue) : (this.state.paramConfigs[name].default_value[0])
         } 
-        else if (refersTo == "runId"){
-            const dissectParamValues = this.dissectParamValuesByRunId(mode, name, indexOrRunId)
-            const runIdParamName = this.state.paramConfigs[name].split_into_runs_by[0]
+        else if (refersTo == "runName"){
+            const dissectParamValues = this.dissectParamValuesByrunName(mode, name, indexOrrunName)
+            const runNameParamName = this.state.paramConfigs[name].split_into_runs_by[0]
             let newParamValues = setNull ? ([nullValue]) : (this.state.paramConfigs[name].default_value)
             paramValuesByMode[mode][name] = dissectParamValues.before.values
                 .concat(newParamValues).concat(dissectParamValues.after.values)
-            paramHelperValues[runIdParamName] = dissectParamValues.before.indexes.
-                concat([indexOrRunId]).concat(dissectParamValues.after.indexes)
+            paramHelperValues[runNameParamName] = dissectParamValues.before.indexes.
+                concat([indexOrrunName]).concat(dissectParamValues.after.indexes)
         }
 
         this.setState({
@@ -1037,19 +1074,19 @@ class JobParamFormHTML extends React.Component {
         })
     }
 
-    addOrRemoveItem(add, mode, name, runId){
+    addOrRemoveItem(add, mode, name, runName){
         let paramValuesByMode = this.state.paramValuesByMode
-        if (runId){
+        if (runName){
             let paramHelperValues = this.state.paramHelperValues
-            const runIdParamName = this.state.paramConfigs[name].split_into_runs_by[0]
-            const dissectParamValues = this.dissectParamValuesByRunId(mode, name, runId)
+            const runNameParamName = this.state.paramConfigs[name].split_into_runs_by[0]
+            const dissectParamValues = this.dissectParamValuesByrunName(mode, name, runName)
             let newParamValues
             let newParamHelperValues
             if(add){
                 newParamValues = dissectParamValues.match.values
                     .concat([this.state.paramConfigs[name].default_value[0]])
                 newParamHelperValues = dissectParamValues.match.indexes
-                    .concat([runId])
+                    .concat([runName])
             } 
             else {
                 newParamValues = dissectParamValues.match.values.slice(0,-1)
@@ -1057,7 +1094,7 @@ class JobParamFormHTML extends React.Component {
             }
             paramValuesByMode[mode][name] = dissectParamValues.before.values
                 .concat(newParamValues).concat(dissectParamValues.after.values)
-            paramHelperValues[runIdParamName] = dissectParamValues.before.indexes.
+            paramHelperValues[runNameParamName] = dissectParamValues.before.indexes.
                 concat(newParamHelperValues).concat(dissectParamValues.after.indexes)
             this.setState({
                 paramValuesByMode: paramValuesByMode,
@@ -1088,11 +1125,12 @@ class JobParamFormHTML extends React.Component {
             return(
                 <div>
                     <DisplayServerMessages messages={this.state.serverMessages} />
-                    <PathValAndSearch
-                        jobId={this.props.jobId}
-                        validatePaths={this.props.validatePaths}
+                    <ParamValidationOptions
+                        jobName={this.props.jobName}
+                        validateURIs={this.props.validateURIs}
                         searchPaths={this.props.searchPaths}
-                        changePathValAndSearch={this.props.changePathValAndSearch}
+                        changeEnableUriValidation={this.props.changeEnableUriValidation}
+                        changeEnablePathSearching={this.props.changeEnablePathSearching}
                         searchDir={this.props.searchDir}
                         changeSearchDir={this.props.changeSearchDir}
                         includeSubbDirsForSearching={this.props.includeSubbDirsForSearching}
@@ -1110,7 +1148,7 @@ class JobParamFormHTML extends React.Component {
                                     paramConfigs={this.state.paramConfigs}
                                     changeParamValue={(name, index, newValue) => this.changeParamValue("global_single", name, index, newValue)}
                                     toggleNull={this.toggleNull}
-                                    jobId={this.props.jobId}
+                                    jobName={this.props.jobName}
                                     prevPath={this.props.prevPath}
                                     changePrevPath={this.props.changePrevPath}
                                 />
@@ -1122,12 +1160,12 @@ class JobParamFormHTML extends React.Component {
                                     changeParamValue={(name, index, newValue) => this.changeParamValue("global_array", name, index, newValue)}
                                     toggleNull={this.toggleNull}
                                     addOrRemoveItem={this.addOrRemoveItem}
-                                    jobId={this.props.jobId}
+                                    jobName={this.props.jobName}
                                     prevPath={this.props.prevPath}
                                     changePrevPath={this.props.changePrevPath}
                                 />
                             }
-                            <br/>
+                            <hr/>
                         </span>
                     }
                     {(this.state.modeExists["run_single"] || this.state.modeExists["run_array"]) &&
@@ -1137,10 +1175,10 @@ class JobParamFormHTML extends React.Component {
                                 <ParamFormRunSingle
                                     paramValues={this.state.paramValuesByMode["run_single"]}
                                     paramConfigs={this.state.paramConfigs}
-                                    runIds={this.props.run_names}
+                                    runNames={this.props.run_names}
                                     changeParamValue={(name, index, newValue) => this.changeParamValue("run_single", name, index, newValue)}
                                     toggleNull={this.toggleNull}
-                                    jobId={this.props.jobId}
+                                    jobName={this.props.jobName}
                                     prevPath={this.props.prevPath}
                                     changePrevPath={this.props.changePrevPath}
                                 />
@@ -1150,16 +1188,16 @@ class JobParamFormHTML extends React.Component {
                                     paramValues={this.state.paramValuesByMode["run_array"]}
                                     paramConfigs={this.state.paramConfigs}
                                     paramHelperValues={this.state.paramHelperValues}
-                                    runIds={this.props.run_names}
+                                    runNames={this.props.run_names}
                                     changeParamValue={(name, index, newValue) => this.changeParamValue("run_array", name, index, newValue)}
                                     toggleNull={this.toggleNull}
                                     addOrRemoveItem={this.addOrRemoveItem}
-                                    jobId={this.props.jobId}
+                                    jobName={this.props.jobName}
                                     prevPath={this.props.prevPath}
                                     changePrevPath={this.props.changePrevPath}
                                 />
                             }
-                            <br/>
+                            <hr/>
                         </span>
                     }
 
@@ -1188,11 +1226,12 @@ class JobParamFormSpreadsheet extends React.Component {
         // props.param_modes
         // props.run_mode
         // props.run_names
-        // props.jobId
+        // props.jobName
         // props.changeSearchDir
         // props.changeIncludeSubDirsForSearching
-        // props.changePathValAndSearch
-        // props.validatePaths
+        // props.changeEnableUriValidation
+        // props.changeEnablePathSearching
+        // props.validateURIs
         // props.searchPaths
         // props.searchDir
         // props.includeSubbDirsForSearching
@@ -1224,7 +1263,7 @@ class JobParamFormSpreadsheet extends React.Component {
                 param_modes: this.props.param_modes,
                 run_mode: this.props.run_mode, 
                 run_names: this.props.run_names.filter((r) => r != ""),
-                job_id: this.props.jobId,
+                job_name: this.props.jobName,
                 sheet_format: this.state.sheetFormat
             },
             route: routeGenParamFormSheet,
@@ -1238,11 +1277,12 @@ class JobParamFormSpreadsheet extends React.Component {
     render() {
         return(
             <div>
-                <PathValAndSearch
-                    jobId={this.props.jobId}
-                    validatePaths={this.props.validatePaths}
+                <ParamValidationOptions
+                    jobName={this.props.jobName}
+                    validateURIs={this.props.validateURIs}
                     searchPaths={this.props.searchPaths}
-                    changePathValAndSearch={this.props.changePathValAndSearch}
+                    changeEnableUriValidation={this.props.changeEnableUriValidation}
+                    changeEnablePathSearching={this.props.changeEnablePathSearching}
                     searchDir={this.props.searchDir}
                     changeSearchDir={this.props.changeSearchDir}
                     includeSubbDirsForSearching={this.props.includeSubbDirsForSearching}
@@ -1282,8 +1322,8 @@ class JobParamFormSpreadsheet extends React.Component {
                     disabled={this.state.file_transfer_status != "none"}
                     metaData={ 
                         {
-                            job_id: this.props.jobId,
-                            validate_paths: this.props.validatePaths,
+                            job_name: this.props.jobName,
+                            validate_uris: this.props.validateURIs,
                             search_paths: this.props.searchPaths,
                             search_dir: this.props.searchDir,
                             include_subdirs_for_searching: this.props.includeSubbDirsForSearching
@@ -1320,14 +1360,14 @@ class JobCreationPrep extends React.Component {
             param_modes: paramModes,
             job_name: "new_job",
             display: "prep", // one of prep, form_ssheet, from_html
-            validatePaths: true,
+            validateURIs: true,
             searchPaths: false,
             searchDir: "Please fill",
             includeSubbDirsForSearching: true,
             prevPath: null
         }
 
-        // construct job_id:
+        // construct job_name:
         const date = new Date()
         let year = date.getFullYear().toString()
         let month = date.getMonth() + 1
@@ -1337,7 +1377,7 @@ class JobCreationPrep extends React.Component {
         const dateString = year + month + day
         let randomNumber = Math.round(Math.random()*1000)
         randomNumber = (randomNumber < 100) ? ("0" + randomNumber.toString()) : (randomNumber.toString())
-        this.jobIdNum = dateString + "_" + randomNumber
+        this.jobNameNum = dateString + "_" + randomNumber
         
 
         this.changeJobName = this.changeJobName.bind(this);
@@ -1347,7 +1387,8 @@ class JobCreationPrep extends React.Component {
         this.toggleParamForm = this.toggleParamForm.bind(this);
         this.changeSearchDir = this.changeSearchDir.bind(this)
         this.changeIncludeSubDirsForSearching = this.changeIncludeSubDirsForSearching.bind(this)
-        this.changePathValAndSearch = this.changePathValAndSearch.bind(this)
+        this.changeEnableUriValidation = this.changeEnableUriValidation.bind(this)
+        this.changeEnablePathSearching = this.changeEnablePathSearching.bind(this)
         this.changePrevPath = this.changePrevPath.bind(this)
         this.ajaxRequest = ajaxRequest.bind(this)
     }
@@ -1389,10 +1430,15 @@ class JobCreationPrep extends React.Component {
         this.setState({includeSubbDirsForSearching:include})
     }
 
-    changePathValAndSearch(searchPaths, validatePaths){
+    changeEnableUriValidation(validateURIs){
         this.setState({
-            searchPaths: searchPaths,
-            validatePaths: validatePaths
+            validateURIs: validateURIs
+        })
+    }
+    
+    changeEnablePathSearching(searchPaths){
+        this.setState({
+            searchPaths: searchPaths
         })
     }
 
@@ -1459,12 +1505,12 @@ class JobCreationPrep extends React.Component {
             </div>
         )
 
-        const jobIdForm = (
+        const jobNameForm = (
             <div>
                 <p>
                     <span className="w3-text-green">Job ID:</span>&nbsp;
                     <IneditableValueField>
-                        {this.jobIdNum + "_" + this.state.job_name }
+                        {this.jobNameNum + "_" + this.state.job_name }
                     </IneditableValueField>
                 </p>
                 <p>
@@ -1523,7 +1569,7 @@ class JobCreationPrep extends React.Component {
                         </span>
                     )}
                     <h3>Job ID:</h3>
-                    {jobIdForm}
+                    {jobNameForm}
                     <hr/>
                     <h3>Number of runs:</h3>
                     {runNumberForm}
@@ -1574,11 +1620,12 @@ class JobCreationPrep extends React.Component {
                                     param_modes={this.state.param_modes}
                                     run_mode={this.state.run_mode}
                                     run_names={this.state.run_names}
-                                    jobId={this.jobIdNum + "_" + this.state.job_name}
+                                    jobName={this.jobNameNum + "_" + this.state.job_name}
                                     changeSearchDir={this.changeSearchDir}
                                     changeIncludeSubDirsForSearching={this.changeIncludeSubDirsForSearching}
-                                    changePathValAndSearch={this.changePathValAndSearch}
-                                    validatePaths={this.state.validatePaths}
+                                    changeEnableUriValidation={this.changeEnableUriValidation}
+                                    changeEnablePathSearching={this.changeEnablePathSearching}
+                                    validateURIs={this.state.validateURIs}
                                     searchPaths={this.state.searchPaths}
                                     searchDir={this.state.searchDir}
                                     includeSubbDirsForSearching={this.state.includeSubbDirsForSearching}
@@ -1593,11 +1640,12 @@ class JobCreationPrep extends React.Component {
                                     param_modes={this.state.param_modes}
                                     run_mode={this.state.run_mode}
                                     run_names={this.state.run_names}
-                                    jobId={this.jobIdNum + "_" + this.state.job_name}
+                                    jobName={this.jobNameNum + "_" + this.state.job_name}
                                     changeSearchDir={this.changeSearchDir}
                                     changeIncludeSubDirsForSearching={this.changeIncludeSubDirsForSearching}
-                                    changePathValAndSearch={this.changePathValAndSearch}
-                                    validatePaths={this.state.validatePaths}
+                                    changeEnableUriValidation={this.changeEnableUriValidation}
+                                    changeEnablePathSearching={this.changeEnablePathSearching}
+                                    validateURIs={this.state.validateURIs}
                                     searchPaths={this.state.searchPaths}
                                     searchDir={this.state.searchDir}
                                     includeSubbDirsForSearching={this.state.includeSubbDirsForSearching}
