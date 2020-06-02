@@ -25,7 +25,7 @@ spec:
         image: ${CICD_REGISTRY}/krini/cwlab:stable-${CICD_EXECUTION_SEQUENCE}
         env:
         - name: BUILD_NUMBER
-          value: ${CICD_EXECUTION_SEQUENCE}
+          value: stable-${CICD_EXECUTION_SEQUENCE}
         - name: host
           value: cwlab.krini.ingress.rancher.computational.bio
         - name: mysql-host
