@@ -5,10 +5,10 @@ FINAL_WEB_HOST_URL_ENV_VAR: "host"
 BASE_DIR: '/mnt/cwlab'
 INCLUDE_BUILD_NUMBER_IN_BASE_DIR: True
 
-DATABASE_URL: "mysql+pymysql://<username>:<password>@<host>:3306/cwlab"
-DATABASE_HOST_ENVVAR: "mysql-host"
-DATABASE_USERNAME_ENVVAR: "mysql-username"
-DATABASE_PASSWORD_ENVVAR: "mysql-password"
+# DATABASE_URL: "mysql+pymysql://<username>:<password>@<host>:3306/cwlab"
+# DATABASE_HOST_ENVVAR: "mysql-host"
+# DATABASE_USERNAME_ENVVAR: "mysql-username"
+# DATABASE_PASSWORD_ENVVAR: "mysql-password"
 
 INPUT_SOURCES:
   local_file_system: False
