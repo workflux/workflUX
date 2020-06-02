@@ -582,7 +582,11 @@ class UserAccount extends React.Component {
         this.itemValues = this.props.userInfo.admin ? (
                 ["user_and_session_info", "admin_dashboard", "change_password", "delete_account", "logout"]
             ):(
-                ["user_and_session_info", "change_password", "delete_account", "logout"]
+                useOIDC ? (
+                    ["user_and_session_info", "logout"]
+                ) : (
+                    ["user_and_session_info", "change_password", "delete_account", "logout"]
+                )
             )
         this.itemNames = this.props.userInfo.admin ? (
                 [
