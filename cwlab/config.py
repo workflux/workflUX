@@ -11,7 +11,6 @@ def normalize_path(path, correct_symlinks=True):
         return os.path.realpath(path)
     else:
         return os.path.abspath(path)
-        
 
 def normalize_path_dict(dict, correct_symlinks=True):
     norm_dict = {}
@@ -49,6 +48,13 @@ class Config(object):
             os.environ.get("BUILD_NUMBER") or
             "none"
         )
+        
+        self.DEMO = (
+            self.CONFIG_FILE_content.get('DEMO') or  
+            False
+        )
+        # Display that this instance is only for demonstation purposes.
+        # Lock: workflow import, reset/delete/terminate for execs
         
         self.CORRECT_SYMLINKS = self.CONFIG_FILE_content.get('CORRECT_SYMLINKS') \
             if not self.CONFIG_FILE_content.get('CORRECT_SYMLINKS') is None \
@@ -130,7 +136,7 @@ class Config(object):
         self.WORKFLOW_DIR = normalize_path(
             os.environ.get('CWLAB_WORKFLOW_DIR') or  
             self.CONFIG_FILE_content.get('WORKFLOW_DIR') or  
-            os.path.join( self.BASE_DIR, "CWL"),
+            os.path.join( self.BASE_DIR, "wf_dir"),
             correct_symlinks=self.CORRECT_SYMLINKS
         )
         self.EXEC_DIR = normalize_path(

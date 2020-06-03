@@ -10,6 +10,19 @@ class Welcome extends React.Component {
                     An open-source framework for simplified deployment of the 
                     Common Workflow Language using a graphical web interface
                 </p>
+                {demo && (
+                    <Message type="info">
+                        <span className="w3-text-black w3-center">
+                            <p>
+                                <b>Please note: </b>
+                            </p> 
+                            <p>
+                                This is instance is for demonstration purposes only and some functionalites are locked.
+                                Please do not submit large-scale workflow executions.
+                            </p>
+                        </span>
+                    </Message>
+                )}
             </div>
         )
     }

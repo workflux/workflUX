@@ -146,7 +146,7 @@ class ImportJanisFile extends React.Component{
                     loading={this.state.actionStatus == "list_contained_workflows"} 
                     onAction={this.upload}
                     forwardEvent={true}
-                    disabled={this.state.actionStatus != "none"}
+                    disabled={this.state.actionStatus != "none" || demo}
                 />
                 {this.state.availableWfNames.length > 0 && (
                     <div>
@@ -210,7 +210,8 @@ class ImportJanisFile extends React.Component{
                             forwardEvent={true}
                             disabled={
                                 this.state.actionStatus != "none" ||
-                                ((! this.state.translateToCWL) && (! this.state.translateToWDL))
+                                ((! this.state.translateToCWL) && (! this.state.translateToWDL)) ||
+                                demo
                             }
                         />
                     </div>
@@ -305,6 +306,7 @@ class ImportCwlZip extends React.Component{
                     requestRoute={routeUploadCwlZip}
                     buttonLabel="extract content"
                     onUploadCompletion={this.onUploadCompletion}
+                    disabled={demo}
                 />
                 {this.state.extractedTmpDir && (
                     <span>
@@ -319,7 +321,7 @@ class ImportCwlZip extends React.Component{
                             onAction={this.browseContent}
                             label="browse and select"
                             loading={this.state.actionStatus == "browse"}
-                            disabled={this.state.actionStatus != "none"}
+                            disabled={this.state.actionStatus != "none" || demo}
                         />&nbsp;
                         <IneditableValueField>
                             {this.state.cwlPath ? (
@@ -360,7 +362,7 @@ class ImportCwlZip extends React.Component{
                                     onAction={this.importCWLPath}
                                     label="import using selected name"
                                     loading={this.state.actionStatus == "import"}
-                                    disabled={this.state.actionStatus != "none"}
+                                    disabled={this.state.actionStatus != "none" || demo}
                                 />
                                 <DisplayServerMessages messages={this.state.importMessages} />
                             </span>
@@ -546,7 +548,7 @@ class ImportWfFile extends React.Component{
                     label="import"
                     loading={this.state.actionStatus == "uploading"} 
                     onAction={this.upload}
-                    disabled={this.state.actionStatus != "none"}
+                    disabled={this.state.actionStatus != "none" || demo}
                 />
                 <DisplayServerMessages messages={this.state.serverMessages} />
             </div>
@@ -636,7 +638,7 @@ class ImportCwlUrl extends React.Component{
                     onAction={this.importCWLUrl}
                     label="import using selected name"
                     loading={this.state.actionStatus == "import"}
-                    disabled={this.state.actionStatus != "none"}
+                    disabled={this.state.actionStatus != "none" || demo}
                 />
                 <DisplayServerMessages messages={this.state.importMessages} />
             </div>
@@ -689,6 +691,22 @@ class ImportCWLRoot extends React.Component {
         return(
             <div className="w3-panel">
                 <h3>Import a Tool or Workflow</h3>
+                {demo && (
+                    <Message type="info">
+                        <span className="w3-text-black">
+                            <b>
+                                Please note:
+                            </b>
+                            <p>
+                                Since this is a demonstration instance &nbsp;
+                                <b>upload of custom workflows is disabled</b>. 
+                                Please use the pre-existing workflows.
+                                <br/>
+                                Therefore, head over to "Create Job" in the top bar.
+                            </p>
+                        </span>
+                    </Message>
+                )}
                 <select className="w3-button w3-white w3-border w3-padding-small" 
                     name="importMethod"
                     onChange={this.changeInputField}
