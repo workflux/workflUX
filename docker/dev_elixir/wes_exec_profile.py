@@ -193,27 +193,35 @@ class WES(PyExecProfile):
         ftp_username = os.environ.get('ftp-username')
         ftp_password = os.environ.get('ftp-password')
         
-        ftp_shema = "ftp://"
-        for out in self.outputs:
-            if self.outputs[out]['class'] == 'File' and \
-                isinstance(self.outputs[out]['location'], str) and \
-                self.outputs[out]['location'].startswith(ftp_shema):
+        try:
+            ftp_shema = "ftp://"
+            for out in self.outputs:
+                if self.outputs[out]['class'] == 'File' and \
+                    isinstance(self.outputs[out]['location'], str) and \
+                    self.outputs[out]['location'].startswith(ftp_shema):
 
-                with open(self.LOG_FILE, "a") as log:  
-                    log.write(
-                        f">> Downloading output: {out}\n"
+                    with open(self.LOG_FILE, "a") as log:  
+                        log.write(
+                            f">> Downloading output: {out}\n"
+                        )
+
+                    ftp_url = self.outputs[out]['location'].replace(
+                        ftp_shema, 
+                        f"{ftp_shema}{ftp_username}:{ftp_password}@"
                     )
 
-                ftp_url = self.outputs[out]['location'].replace(
-                    ftp_shema, 
-                    f"{ftp_shema}{ftp_username}:{ftp_password}@"
+                    target_path = os.path.join(self.OUTPUT_DIR, self.outputs[out]["basename"])
+
+                    with closing(request.urlopen(ftp_url)) as remote_file:
+                        with open(target_path, 'wb') as local_file:
+                            shutil.copyfileobj(remote_file, local_file)
+        except Exception as e:
+            with open(self.LOG_FILE, "a") as log:
+                log.write(
+                    f"> Downloading output data failed.\n"
                 )
+            raise AssertionError(str(e))
 
-                target_path = os.path.join(self.OUTPUT_DIR, self.outputs[out]["basename"])
-
-                with closing(request.urlopen(ftp_url)) as remote_file:
-                    with open(target_path, 'wb') as local_file:
-                        shutil.copyfileobj(remote_file, local_file)
                       
 
 class WES_localhost(WES):
