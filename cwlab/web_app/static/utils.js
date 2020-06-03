@@ -1562,10 +1562,11 @@ class FileUploadComponent extends React.Component {
         else{
             let metaData = this.props.metaData ? this.props.metaData : {}
             metaData["access_token"] = await getUserInfo("accessToken")
+            console.log(metaData)
             this.setState({status:"uploading"})
             let formData = new FormData()
             formData.append("file", fileToUpload)
-            formData.append("meta", JSON.stringify(this.props.metaData))
+            formData.append("meta", JSON.stringify(metaData))
 
             if (this.props.showProgress){let request = new XMLHttpRequest()
                 request.upload.addEventListener("progress", event => {
