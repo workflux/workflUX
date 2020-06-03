@@ -42,7 +42,7 @@ async function getUserInfo(
                 name: user.profile.name,
                 username: user.profile.preferred_username,
                 email: user.profile.email,
-                expired: user.expires_in,
+                expired: user.expired,
                 expiresAt: user.expires_at,
                 expires_in: user.expires_in,
                 admin: false
