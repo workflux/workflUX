@@ -28,7 +28,7 @@ async function getUserInfo(
         email: null,
         expired: null,
         expiresAt: null,
-        expires_in: null,
+        expiresIn: null,
         admin: false
     }
     if (useOIDC){
@@ -44,7 +44,7 @@ async function getUserInfo(
                 email: user.profile.email,
                 expired: user.expired,
                 expiresAt: user.expires_at,
-                expires_in: user.expires_in,
+                expiresIn: user.expires_in,
                 admin: false
             }
         }
