@@ -17,12 +17,8 @@ INPUT_SOURCES:
 
 DEMO: True
 DEBUG: False
-CUSTOM_LOGIN_ICON_HTML: |
-  <img 
-    src="https://raw.githubusercontent.com/elixir-cloud-aai/elixir-cloud-aai/dev/images/logo-elixir.png" 
-    alt="elixir icon" 
-    style="width:20px;height:20px;"
-  >
+
+WEB_AUTO_REFRESH_INTERVAL: 4
 
 ENABLE_USERS: True
 USE_OIDC: True
@@ -41,6 +37,12 @@ OIDC_CONF: {
     jwks_uri: 'https://login.elixir-czech.org/oidc/jwk'
   }
 }
+CUSTOM_LOGIN_ICON_HTML: |
+<img 
+  src="https://raw.githubusercontent.com/elixir-cloud-aai/elixir-cloud-aai/dev/images/logo-elixir.png" 
+  alt="elixir icon" 
+  style="width:20px;height:20px;"
+>
 
 
 EXEC_PROFILES:
