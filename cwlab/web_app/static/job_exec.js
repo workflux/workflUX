@@ -240,9 +240,34 @@ class RunList extends React.Component {
             execProfile: "Exec. Profile",
             details: "Details"
         }
+
+        this.statusClassName = {
+            "Loading": "w3-grey",
+            "not started yet": "w3-grey",
+            "waiting to queue": "w3-grey",
+            "queued": "w3-grey",
+            "preparing": "w3-amber",
+            "executing": "w3-amber",
+            "evaluating": "w3-amber",
+            "finalizing": "w3-amber",
+            "finished": "w3-green",
+        }
+
+        this.nonProblematicStatusList = [
+            "Loading",
+            "not started yet",
+            "waiting to queue",
+            "queued",
+            "preparing",
+            "executing",
+            "evaluating",
+            "finalizing",
+            "finished"
+        ]
+
         this.getRunInfo = this.getRunInfo.bind(this)
         this.getDurationString = this.getDurationString.bind(this)
-        this.getStatusColor = this.getStatusColor.bind(this)
+        this.getStatus = this.getStatus.bind(this)
         this.ajaxRequest = ajaxRequest.bind(this)
     }
 
@@ -284,22 +309,26 @@ class RunList extends React.Component {
         this.mounted = false
     }
 
-    getStatusColor(status){
-        const statusclassName = {
-            "Loading": "w3-grey",
-            "not started yet": "w3-grey",
-            "waiting to queue": "w3-grey",
-            "queued": "w3-grey",
-            "preparing": "w3-amber",
-            "executing": "w3-amber",
-            "evaluating": "w3-amber",
-            "finalizing": "w3-amber",
-            "finished": "w3-green",
+    getStatus(runInfo, returnColorClass=false){
+        if (runInfo.custom_status && this.nonProblematicStatusList.includes(runInfo.status)){
+            if (returnColorClass){
+                return("w3-" + runInfo.custom_status_color)
+            }
+            else {
+                return(runInfo.custom_status)
+            }
         }
-        if (Object.keys(statusclassName).includes(status)){
-            return(statusclassName[status])
-        } else{
-            return("w3-red")
+        else {
+            if (returnColorClass){
+                if (Object.keys(this.statusClassName).includes(runInfo.status)){
+                    return(this.statusClassName[runInfo.status])
+                } else{
+                    return("w3-red")
+                }
+            }
+            else {
+                return(runInfo.status)
+            }
         }
     }
 
@@ -336,14 +365,14 @@ class RunList extends React.Component {
                 status: {
                     value: (
                         <span>
-                            {runInfo[r].status}
+                            {this.getStatus(runInfo[r])}
                             {
                                 runInfo[r].retry_count > 0 && 
                                     ' (retry: ' + runInfo[r].retry_count.toString() + ')'
                             }
                         </span>
                     ),
-                    className: this.getStatusColor(runInfo[r].status)
+                    className: this.getStatus(runInfo[r], true)
                 },
                 duration: {value: this.getDurationString(runInfo[r].duration)},
                 execProfile: {value: runInfo[r].exec_profile},

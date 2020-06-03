@@ -68,6 +68,11 @@ class ExecSessionBase():
                 "eval":"evaluating",
                 "finalize":"finishing",
             }
+    
+    def set_custom_status(self, status, color):
+        self.exec_db_entry.custom_status = status
+        self.exec_db_entry.custom_status_color = color
+        self.commit()
 
 
 class ExecSessionShell(ExecSessionBase):
@@ -182,13 +187,14 @@ class ExecSessionShell(ExecSessionBase):
         except Exception as e:
             print(">>> could not terminate shell session: \n " + str(e))
 
-
 class PyExecProfile():
     def __init__(
         self,
-        session_vars :dict
+        session_vars :dict,
+        set_custom_status_function
     ):
         [setattr(self, str(key), session_vars[key]) for key in session_vars.keys()]
+        self.set_custom_status = set_custom_status_function
     
     # steps prepare, eval, and finalize are optional:
 
@@ -200,6 +206,7 @@ class PyExecProfile():
     
     def finalize(self):
         pass
+
 
 class ExecSessionPython(ExecSessionBase):
     def __init__(self, *args, **kwargs):
@@ -214,7 +221,10 @@ class ExecSessionPython(ExecSessionBase):
         py_exec_profile_module = importlib.util.module_from_spec(spec)
         spec.loader.exec_module(py_exec_profile_module)
         PyExecProfile = getattr(py_exec_profile_module, self.exec_profile["py_class"])
-        self.py_exec_profile = PyExecProfile(session_vars=self.session_vars)
+        self.py_exec_profile = PyExecProfile(
+            session_vars=self.session_vars,
+            set_custom_status_function=self.set_custom_status
+        )
 
     def run(self):
         try:

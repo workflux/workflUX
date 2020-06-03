@@ -120,6 +120,8 @@ class Exec(db.Model):
     out_dir = db.Column(db.String(4096))
     global_temp_dir = db.Column(db.String(4096))
     status = db.Column(db.String(64))
+    custom_status = db.Column(db.String(64))
+    custom_status_color = db.Column(db.String(24))
     err_message = db.Column(db.String(1500))
     retry_count = db.Column(db.Integer())
     time_started = db.Column(db.DateTime())

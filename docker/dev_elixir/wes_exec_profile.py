@@ -12,9 +12,11 @@ from contextlib import closing
 class PyExecProfile():
     def __init__(
         self,
-        session_vars :dict
+        session_vars :dict,
+        set_custom_status_function
     ):
         [setattr(self, str(key), session_vars[key]) for key in session_vars.keys()]
+        self.set_custom_status = set_custom_status_function
     
     # steps prepare, eval, and finalize are optional:
 
@@ -31,6 +33,8 @@ class PyExecProfile():
 class WES(PyExecProfile):
     def exec(self, host_url):
         self.outputs = {}
+
+        self.set_custom_status("WES: submitting", "amber")
 
         ## read in run parameters:
         with open(self.RUN_INPUT) as run_input:
@@ -96,8 +100,9 @@ class WES(PyExecProfile):
                 log.write(f"> ERROR OCCURED: {str(e)}\n> Terminating\n" )
             self.SUCCESS = False
             return()
-            
 
+        self.set_custom_status("WES: waiting for status", "amber")
+            
         ## periodically check run status:
         with open(self.LOG_FILE, "a") as log:
             log.write(
@@ -110,6 +115,8 @@ class WES(PyExecProfile):
         self.status = "NONE"
         self.get_update_response_data = None
         while self.status not in status_finished:
+            if self.status != "NONE":
+                self.set_custom_status(f"WES: {self.status}", "amber")
             try:
                 time.sleep(5)
                 try:
@@ -143,6 +150,7 @@ class WES(PyExecProfile):
                             self.status
                         )
                     )
+                
             except AssertionError as e:
                 n_errors_in_a_row += 1
                 with open(self.LOG_FILE, "a") as log:
@@ -176,36 +184,46 @@ class WES(PyExecProfile):
                 else:
                     log.write("> No output attribute found in get response")
                 log.write("\n\n> Job execution ended successful.\n")
+                self.set_custom_status(f"WES: {self.status}", "green")
             else:
                 log.write(json.dumps(self.get_update_response_data, indent=4))
                 log.write("\n\n> Job execution failed.\n")
+                self.set_custom_status(f"WES: {self.status}", "red")
 
 
     def finalize(self):
         ftp_username = os.environ.get('ftp-username')
         ftp_password = os.environ.get('ftp-password')
         
-        ftp_shema = "ftp://"
-        for out in self.outputs:
-            if self.outputs[out]['class'] == 'File' and \
-                isinstance(self.outputs[out]['location'], str) and \
-                self.outputs[out]['location'].startswith(ftp_shema):
+        try:
+            ftp_shema = "ftp://"
+            for out in self.outputs:
+                if self.outputs[out]['class'] == 'File' and \
+                    isinstance(self.outputs[out]['location'], str) and \
+                    self.outputs[out]['location'].startswith(ftp_shema):
 
-                with open(self.LOG_FILE, "a") as log:  
-                    log.write(
-                        f">> Downloading output: {out}\n"
+                    with open(self.LOG_FILE, "a") as log:  
+                        log.write(
+                            f">> Downloading output: {out}\n"
+                        )
+
+                    ftp_url = self.outputs[out]['location'].replace(
+                        ftp_shema, 
+                        f"{ftp_shema}{ftp_username}:{ftp_password}@"
                     )
 
-                ftp_url = self.outputs[out]['location'].replace(
-                    ftp_shema, 
-                    f"{ftp_shema}{ftp_username}:{ftp_password}@"
+                    target_path = os.path.join(self.OUTPUT_DIR, self.outputs[out]["basename"])
+
+                    with closing(request.urlopen(ftp_url)) as remote_file:
+                        with open(target_path, 'wb') as local_file:
+                            shutil.copyfileobj(remote_file, local_file)
+        except Exception as e:
+            with open(self.LOG_FILE, "a") as log:
+                log.write(
+                    f"> Downloading output data failed.\n"
                 )
+            raise AssertionError(str(e))
 
-                target_path = os.path.join(self.OUTPUT_DIR, self.outputs[out]["basename"])
-
-                with closing(request.urlopen(ftp_url)) as remote_file:
-                    with open(target_path, 'wb') as local_file:
-                        shutil.copyfileobj(remote_file, local_file)
                       
 
 class WES_localhost(WES):

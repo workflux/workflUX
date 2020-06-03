@@ -223,6 +223,8 @@ def get_runs_info(job_name, run_names, return_pid=False):
             run = {
                 "pid": None,
                 "status": "not started yet",
+                "custom_status": None,
+                "custom_status_color": "grey",
                 "time_started": "-",
                 "time_finished": "-",
                 "duration": "-",
