@@ -130,7 +130,7 @@ class Config(object):
         self.WORKFLOW_DIR = normalize_path(
             os.environ.get('CWLAB_WORKFLOW_DIR') or  
             self.CONFIG_FILE_content.get('WORKFLOW_DIR') or  
-            os.path.join( self.BASE_DIR, "CWL"),
+            os.path.join( self.BASE_DIR, "wf_dir"),
             correct_symlinks=self.CORRECT_SYMLINKS
         )
         self.EXEC_DIR = normalize_path(
