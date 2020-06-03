@@ -68,6 +68,11 @@ class ExecSessionBase():
                 "eval":"evaluating",
                 "finalize":"finishing",
             }
+    
+    def set_custom_status(self, status, color):
+        self.exec_db_entry.custom_status = status
+        self.exec_db_entry.custom_status_color = color
+        self.commit()
 
 
 class ExecSessionShell(ExecSessionBase):
