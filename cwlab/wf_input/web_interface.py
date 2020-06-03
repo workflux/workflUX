@@ -47,14 +47,27 @@ def get_param_config_info(file_path):
             "is_run_specific":is_run_specific,
             "doc":configs[param]["doc"]
         })
+
+    if not True in [param["is_run_specific"] for param in param_config_info]:
+        ## try to predict which params should be run-specific:
+        if "File" in [param["type"] for param in param_config_info]:
+            # case 1: set only Files (if they exist) to run-specific:
+            for p in range(0, len(param_config_info)):
+                if param_config_info[p]["type"] == "File":
+                    param_config_info[p]["is_run_specific"] = True
+        else:
+            # case 2: set all params to run-specific
+            for p in range(0, len(param_config_info)):
+                param_config_info[p]["is_run_specific"] = True
+    
     return param_config_info
 
 def gen_form_sheet(
     template_config_file_path, # basic information on params and their defaults
     output_file_path=None, # if None return configs and param_values
     has_multiple_runs=False,  # can be single or multiple
-    run_names=[],   # if run_mode is multiple, run names are provided here
-    param_is_run_specific={},  # only relevant id run_mode is multiple,
+    run_names=[],   # if batch_mode is multiple, run names are provided here
+    param_is_run_specific={},  # only relevant id batch_mode is multiple,
                     # dict with param names as keys, and true (run specific) or false (global)
                     # as values
     show_please_fill=False,

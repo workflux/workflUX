@@ -5,6 +5,9 @@ import yaml
 import sys
 import time
 from datetime import datetime
+import shutil
+import urllib.request as request
+from contextlib import closing
 
 class PyExecProfile():
     def __init__(
@@ -27,6 +30,7 @@ class PyExecProfile():
 
 class WES(PyExecProfile):
     def exec(self, host_url):
+        self.outputs = {}
 
         ## read in run parameters:
         with open(self.RUN_INPUT) as run_input:
@@ -163,9 +167,10 @@ class WES(PyExecProfile):
 
             if self.status == "COMPLETE":
                 if "outputs" in self.get_update_response_data.keys():
+                    self.outputs = self.get_update_response_data["outputs"]
                     log.write(
                         "> Run produced following outputs:\n{}\n".format(
-                            json.dumps(self.get_update_response_data["outputs"], indent=4)
+                            json.dumps(self.outputs, indent=4)
                         )
                     )
                 else:
@@ -175,6 +180,33 @@ class WES(PyExecProfile):
                 log.write(json.dumps(self.get_update_response_data, indent=4))
                 log.write("\n\n> Job execution failed.\n")
 
+
+    def finalize(self):
+        ftp_username = os.environ.get('ftp-username')
+        ftp_password = os.environ.get('ftp-password')
+        
+        ftp_shema = "ftp://"
+        for out in self.outputs:
+            if self.outputs[out]['class'] == 'File' and \
+                isinstance(self.outputs[out]['location'], str) and \
+                self.outputs[out]['location'].startswith(ftp_shema):
+
+                with open(self.LOG_FILE, "a") as log:  
+                    log.write(
+                        f">> Downloading output: {out}\n"
+                    )
+
+                ftp_url = self.outputs[out]['location'].replace(
+                    ftp_shema, 
+                    f"{ftp_shema}{ftp_username}:{ftp_password}@"
+                )
+
+                target_path = os.path.join(self.OUTPUT_DIR, self.outputs[out]["basename"])
+
+                with closing(request.urlopen(ftp_url)) as remote_file:
+                    with open(target_path, 'wb') as local_file:
+                        shutil.copyfileobj(remote_file, local_file)
+                      
 
 class WES_localhost(WES):
     def exec(self):

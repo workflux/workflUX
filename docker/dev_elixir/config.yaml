@@ -5,7 +5,7 @@ FINAL_WEB_HOST_URL_ENV_VAR: "host"
 BASE_DIR: '/mnt/cwlab'
 INCLUDE_BUILD_NUMBER_IN_BASE_DIR: True
 
-# DATABASE_URL: "mysql://<username>:<password>@<host>"
+# DATABASE_URL: "mysql+pymysql://<username>:<password>@<host>:3306/cwlab"
 # DATABASE_HOST_ENVVAR: "mysql-host"
 # DATABASE_USERNAME_ENVVAR: "mysql-username"
 # DATABASE_PASSWORD_ENVVAR: "mysql-password"
@@ -36,20 +36,7 @@ OIDC_CONF: {
 
 
 EXEC_PROFILES:
-
-  cwltool_no_container: 
-    shell: bash
-    max_retries: 0
-    max_parallel_exec: 8
-
-    timeout:
-      pre_exec: 120
-      exec: 2592000
-      post_exec: 600
-
-    exec: |
-      "${PYTHON_PATH}" -m cwltool --debug --no-container --outdir "${OUTPUT_DIR}" "${WORKFLOW}" "${RUN_INPUT}" >> "${LOG_FILE}" 2>&1
-
+  
   ELIXIR_FI_WES_1: 
     type: python
     max_retries: 0
