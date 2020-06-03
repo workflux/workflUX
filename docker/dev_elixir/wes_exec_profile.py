@@ -201,7 +201,7 @@ class WES(PyExecProfile):
                     f"{ftp_shema}{ftp_username}:{ftp_password}@"
                 )
 
-                target_path = os.path.join(self.OUTDIR, self.outputs[out]["basename"])
+                target_path = os.path.join(self.OUTPUT_DIR, self.outputs[out]["basename"])
 
                 with closing(request.urlopen(ftp_url)) as remote_file:
                     with open(target_path, 'wb') as local_file:
