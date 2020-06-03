@@ -233,6 +233,15 @@ class Config(object):
             ('sqlite:///' + os.path.join(self.DB_DIR, 'cwlab.db'))
         )
         
+        if isinstance(self.SQLALCHEMY_DATABASE_URI, str) and \
+            isinstance(database_password, str) and \
+            isinstance(database_username, str):
+            print("Found username and password environment variables for DB.")
+            self.SQLALCHEMY_DATABASE_URI = self.SQLALCHEMY_DATABASE_URI \
+                .replace("<host>", str(database_host)) \
+                .replace("<username>", str(database_username)) \
+                .replace("<password>", str(database_password))
+        
         self.SQLALCHEMY_TRACK_MODIFICATIONS = (
             os.environ.get('CWLAB_DATABASE_TRACK_MODIFICATIONS') or
             self.CONFIG_FILE_content.get('DATABASE_TRACK_MODIFICATIONS') or  

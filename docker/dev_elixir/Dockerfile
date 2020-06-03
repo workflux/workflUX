@@ -31,20 +31,14 @@ RUN apt-get install -qq -y \
 	libseccomp-dev \
 	pkg-config \
 	git
+	
+RUN python3 -m pip install \
+		cwltool==1.0.20191022103248 \
+		pymysql
 
 # Install cwlab:
 COPY . /src/cwlab
-RUN python3 -m pip install cwltool==1.0.20191022103248 \
-	&& python3 -m pip install -e /src/cwlab
-
-# Configure cwlab:
-RUN mkdir -p \
-        /cwlab/tmp \
-        /cwlab/worlflows \
-        /cwlab/exec \
-        /cwlab/input \
-        /cwlab/database && \
-    chmod -R 777 /cwlab
+RUN python3 -m pip install -e /src/cwlab
 
 COPY docker/dev_elixir/config.yaml /cwlab/config.yaml
 COPY docker/dev_elixir/wes_exec_profile.py /cwlab/wes_exec_profile.py

@@ -81,7 +81,7 @@ class User(BaseUser, db.Model):
 
 class AccessToken(db.Model):
     id = db.Column(db.Integer(), primary_key=True)
-    token = db.Column(db.String(64), index=True, unique=True)
+    token = db.Column(db.String(1000), index=True, unique=True)
     user_id = db.Column(db.Integer, db.ForeignKey('user.id'))
     expires_at = db.Column(db.DateTime())
     expires_after = db.Column(db.Integer())
@@ -120,6 +120,8 @@ class Exec(db.Model):
     out_dir = db.Column(db.String(4096))
     global_temp_dir = db.Column(db.String(4096))
     status = db.Column(db.String(64))
+    custom_status = db.Column(db.String(64))
+    custom_status_color = db.Column(db.String(24))
     err_message = db.Column(db.String(1500))
     retry_count = db.Column(db.Integer())
     time_started = db.Column(db.DateTime())
@@ -131,7 +133,7 @@ class Exec(db.Model):
     exec_profile_name = db.Column(db.String(64))
     add_exec_info = db.Column(db.JSON(none_as_null=True))
     user_email = db.Column(db.String(64))
-    access_token = db.Column(db.String(64))
+    access_token = db.Column(db.String(1000))
 
     def __repr__(self):
         return '<Exec {}>'.format({self.id, self.status, self.run_name, self.job_name})
