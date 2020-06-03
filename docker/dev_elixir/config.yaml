@@ -15,6 +15,12 @@ INPUT_SOURCES:
   URL: True
 
 DEBUG: False
+CUSTOM_LOGIN_ICON_HTML: |
+  <img 
+    src="https://raw.githubusercontent.com/elixir-cloud-aai/elixir-cloud-aai/dev/images/logo-elixir.png" 
+    alt="elixir icon" 
+    style="width:20px;height:20px;"
+  >
 
 ENABLE_USERS: True
 USE_OIDC: True

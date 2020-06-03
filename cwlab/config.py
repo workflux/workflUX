@@ -83,6 +83,12 @@ class Config(object):
             False
         )
 
+        self.CUSTOM_LOGIN_ICON_HTML = (
+            os.environ.get('CWLAB_CUSTOM_LOGIN_ICON_HTML') or
+            self.CONFIG_FILE_content.get('CUSTOM_LOGIN_ICON_HTML') or  
+            None
+        )
+
         self.FINAL_WEB_HOST_URL = (
             os.environ.get(os.environ.get('CWLAB_FINAL_WEB_HOST_URL_ENV_VAR')) if os.environ.get('CWLAB_FINAL_WEB_HOST_URL_ENV_VAR') else None or
             os.environ.get(self.CONFIG_FILE_content.get('FINAL_WEB_HOST_URL_ENV_VAR')) if self.CONFIG_FILE_content.get('FINAL_WEB_HOST_URL_ENV_VAR') else None or
