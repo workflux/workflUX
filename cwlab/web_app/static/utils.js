@@ -18,16 +18,6 @@ function cleanSessionInfo(){
     localStorage.clear()
 }
 
-function logout(){
-    if (useOIDC){
-        oidcUserManager.signoutRedirect()
-    }
-    else {
-        cleanSessionInfo()
-        window.location.reload(true)
-    }
-}
-
 function getSessionInfo(param_list){
     let param_obj = {}
     param_list.map( (param) => {

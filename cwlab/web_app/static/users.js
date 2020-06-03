@@ -1,18 +1,33 @@
 
 const inputStyle = {width: "100%", maxWidth: "400px", minWidth: "100px"}
 
+function logout(){
+    if (useOIDC){
+        oidcUserManager.signoutRedirect()
+    }
+    else {
+        cleanSessionInfo()
+        window.location.reload(true)
+    }
+}
+
 function changeInputField(event){
     this.setState({[event.currentTarget.name]: event.currentTarget.value})
 }
 
-function uponUserExpiration(){
-    alert("Your access token expired. Please login again to continue.")
+function refreshAccessToken(){
     if (useOIDC) {
         oidcUserManager.signinRedirect()
     }
     else {
+        cleanSessionInfo()
         window.location.reload(true)
     }
+}
+
+function uponUserExpiration(){
+    alert("Your access token expired. Please login again to continue.")
+    refreshAccessToken()
 }
 
 async function getUserInfo(
@@ -149,6 +164,14 @@ class UserAndSessionInfo extends React.Component {
                         please contact the authentication authority.
                     </p>
                 )}
+                <p> 
+                    <ActionButton
+                        name="refresh_access_token"
+                        value="refresh_access_token"
+                        label="refresh access token"
+                        onAction={refreshAccessToken}
+                    />
+                </p>
             </div>
         )
     }
