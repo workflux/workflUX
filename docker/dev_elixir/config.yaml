@@ -40,7 +40,7 @@ OIDC_CONF: {
 }
 CUSTOM_LOGIN_ICON_HTML: |
   <img 
-    src="https://raw.githubusercontent.com/elixir-cloud-aai/elixir-cloud-aai/dev/images/logo-elixir.png" 
+    src="https://raw.githubusercontent.com/CompEpigen/CWLab/master/resources/elixir_logo.png" 
     alt="elixir icon" 
     style="width:20px;height:20px;"
   >
