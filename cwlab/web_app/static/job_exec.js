@@ -514,19 +514,32 @@ class JobContent extends React.Component {
     }
 
     async execRuns(){
-        this.ajaxRequest({
-            statusVar: "actionStatus",
-            statusValueDuringRequest: "starting",
-            messageVar: "actionRunExecMessages",
-            sendData: {
-                job_name: this.props.jobName,
-                run_names: this.state.runSelection,
-                exec_profile: this.state.execProfile,
-                parallel_exec: this.state.parallelExec
-            },
-            route: routeStartExec
-        })
+        const userInfo = await getUserInfo("all")
+        if (loginEnabled && userInfo.expiresIn <= min_remaining_access_token_time_for_exec) {
+            const response = confirm(`
+                Your access token is about to expire.
+                
+                Please login in again to continue.
+            `)
 
+            if (response) {
+                refreshAccessToken()
+            }
+        }
+        else {
+            this.ajaxRequest({
+                statusVar: "actionStatus",
+                statusValueDuringRequest: "starting",
+                messageVar: "actionRunExecMessages",
+                sendData: {
+                    job_name: this.props.jobName,
+                    run_names: this.state.runSelection,
+                    exec_profile: this.state.execProfile,
+                    parallel_exec: this.state.parallelExec
+                },
+                route: routeStartExec
+            })
+        }
     }
 
     async terminateRuns(mode="terminate"){

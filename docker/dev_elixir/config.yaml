@@ -19,6 +19,7 @@ DEMO: True
 DEBUG: False
 
 WEB_AUTO_REFRESH_INTERVAL: 4
+MIN_REMAINING_ACCESS_TOKEN_TIME_FOR_EXEC: 1200
 
 ENABLE_USERS: True
 USE_OIDC: True
@@ -38,11 +39,11 @@ OIDC_CONF: {
   }
 }
 CUSTOM_LOGIN_ICON_HTML: |
-<img 
-  src="https://raw.githubusercontent.com/elixir-cloud-aai/elixir-cloud-aai/dev/images/logo-elixir.png" 
-  alt="elixir icon" 
-  style="width:20px;height:20px;"
->
+  <img 
+    src="https://raw.githubusercontent.com/elixir-cloud-aai/elixir-cloud-aai/dev/images/logo-elixir.png" 
+    alt="elixir icon" 
+    style="width:20px;height:20px;"
+  >
 
 
 EXEC_PROFILES:

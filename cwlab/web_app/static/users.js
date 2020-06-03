@@ -26,7 +26,11 @@ function refreshAccessToken(){
 }
 
 function uponUserExpiration(){
-    alert("Your access token expired. Please login again to continue.")
+    alert(`
+        Your access token expired. 
+        
+        Please login again to continue.
+    `)
     refreshAccessToken()
 }
 
