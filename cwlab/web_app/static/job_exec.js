@@ -320,8 +320,8 @@ class RunList extends React.Component {
         }
         else {
             if (returnColorClass){
-                if (Object.keys(this.statusClassName).includes(status)){
-                    return(this.statusClassName[status])
+                if (Object.keys(this.statusClassName).includes(runInfo.status)){
+                    return(this.statusClassName[runInfo.status])
                 } else{
                     return("w3-red")
                 }
