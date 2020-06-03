@@ -372,7 +372,7 @@ class RunList extends React.Component {
                             }
                         </span>
                     ),
-                    className: this.getStatus(runInfo[r], returnColorClass=true)
+                    className: this.getStatus(runInfo[r], true)
                 },
                 duration: {value: this.getDurationString(runInfo[r].duration)},
                 execProfile: {value: runInfo[r].exec_profile},
