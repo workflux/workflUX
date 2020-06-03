@@ -899,7 +899,7 @@ class JobParamFormHTML extends React.Component {
         super(props);
         // props.cwlTarget
         // props.param_modes
-        // props.run_mode
+        // props.batchMode
         // props.run_names
         // props.jobName
         // props.changeSearchDir
@@ -944,7 +944,7 @@ class JobParamFormHTML extends React.Component {
                 sendData: {
                     wf_target: this.props.cwlTarget,
                     param_modes: this.props.param_modes,
-                    run_mode: this.props.run_mode, 
+                    batch_mode: this.props.batchMode, 
                     run_names: this.props.run_names.filter((r) => r != "")
                 },
                 route: routeGetParamValues,
@@ -957,7 +957,7 @@ class JobParamFormHTML extends React.Component {
                         run_array: {}
                     }
                     paramNames.forEach((p) =>{
-                        let run_or_global = this.props.run_mode ? (
+                        let run_or_global = this.props.batchMode ? (
                                 this.props.param_modes[p] ? ("run") : ("global")
                             ) : (
                                 "global"
@@ -1224,7 +1224,7 @@ class JobParamFormSpreadsheet extends React.Component {
         super(props);
         // props.cwlTarget
         // props.param_modes
-        // props.run_mode
+        // props.batchMode
         // props.run_names
         // props.jobName
         // props.changeSearchDir
@@ -1261,7 +1261,7 @@ class JobParamFormSpreadsheet extends React.Component {
             sendData: {
                 wf_target: this.props.cwlTarget,
                 param_modes: this.props.param_modes,
-                run_mode: this.props.run_mode, 
+                batch_mode: this.props.batchMode, 
                 run_names: this.props.run_names.filter((r) => r != ""),
                 job_name: this.props.jobName,
                 sheet_format: this.state.sheetFormat
@@ -1355,7 +1355,7 @@ class JobCreationPrep extends React.Component {
         this.state = {
             actionStatus: "none",
             serverMessages: [],
-            run_mode: false, 
+            batchMode: false, 
             run_names: ["run1", "run2", "run3"],
             param_modes: paramModes,
             job_name: "new_job",
@@ -1407,7 +1407,7 @@ class JobCreationPrep extends React.Component {
     }
 
     changeRunMode(value, new_bool){
-        this.setState({"run_mode": new_bool})
+        this.setState({"batchMode": new_bool})
     }
 
     changeRunNames(event){
@@ -1450,14 +1450,81 @@ class JobCreationPrep extends React.Component {
 
 
     render() {
+
+        const jobNameForm = (
+            <div>
+                <p>
+                    <span className="w3-text-green">Job ID:</span>&nbsp;
+                    <IneditableValueField>
+                        {this.jobNameNum + "_" + this.state.job_name }
+                    </IneditableValueField>
+                </p>
+                <p>
+                    <label className="w3-text-green">Job name:</label><br/>
+                    Please enter a job name (no whitespaces allowed).<br/>
+                    <input type="text"
+                        className="w3-input w3-border"
+                        name="job_name"
+                        value={this.state.job_name}
+                        onChange={this.changeJobName}
+                    />
+                </p>
+            </div>
+        )
+
+        const batchForm = (
+            <div>
+                <div className="vertical_container_item">
+                    If you would like to perform multiple iterations over the same workflow or tool (e.g. due to multiple samples),
+                    you can submit multiple runs as batch. 
+                    The advantage is that you have to specify parameter all runs have in common only once.
+                </div>
+
+                <div className="vertical_container_item">
+                    <span className="w3-text-green">Batch mode:</span>&nbsp;
+                    off (single run) &nbsp;
+                    <BooleanSlider
+                        name="create_multi_run_job"
+                        value="create_multi_run_job"
+                        onChange={this.changeRunMode}
+                        checked={this.batchMode}
+                    />
+                    &nbsp; on (multiple runs)        
+                </div>
+                
+                {this.state.batchMode && (
+                    <div className="w3-container vertical_container_item">
+                        <label className="w3-text-green">Run names/IDs:</label>
+                        <Message type="hint">
+                            Please enter a comma-seperated list of unique IDs, one for each run of the the batch. <br/>
+                            (No whitespaces allowed, if inserted they will be automatically converted to "_".) <br/>
+                            Hint: you may copy&paste cells from an excel file.
+                        </Message>
+                        <textarea className="w3-input w3-border"
+                            rows="2"
+                            name="create_multi_run_job" 
+                            value={this.state.run_names.join(", ").trim()}
+                            onChange={this.changeRunNames}
+                        />
+                    </div>
+                )}
+            </div>
+        )
+        
         const paramTable = (
             <div style={ {maxHeight:"50vh", overflowY: "auto"} }>
+                {this.state.batchMode && (
+                    <Message type="hint">
+                        Since batch mode is on, please specify which parameters you need to specify per run (<b>run-specific</b>)
+                        and which parameters shall be shared between the runs (<b>global</b>).
+                    </Message>
+                )}
                 <table className="w3-table w3-bordered w3-border">
                     <thead className="w3-text-green">
                         <tr>
                             <th>Parameter</th>
                             <th>Type</th>
-                            {this.state.run_mode ? (<th>Mode</th>) : (null)}
+                            {this.state.batchMode ? (<th>Mode</th>) : (null)}
                         </tr>
                     </thead>
                     <tbody>
@@ -1485,7 +1552,7 @@ class JobCreationPrep extends React.Component {
                                         " [optional]"
                                     }
                                 </td>
-                                {this.state.run_mode ? (
+                                {this.state.batchMode ? (
                                         <td>
                                             global &nbsp;
                                             <BooleanSlider
@@ -1505,57 +1572,6 @@ class JobCreationPrep extends React.Component {
             </div>
         )
 
-        const jobNameForm = (
-            <div>
-                <p>
-                    <span className="w3-text-green">Job ID:</span>&nbsp;
-                    <IneditableValueField>
-                        {this.jobNameNum + "_" + this.state.job_name }
-                    </IneditableValueField>
-                </p>
-                <p>
-                    <label className="w3-text-green">Job name:</label><br/>
-                    Please enter a job name (no whitespaces allowed).<br/>
-                    <input type="text"
-                        className="w3-input w3-border"
-                        name="job_name"
-                        value={this.state.job_name}
-                        onChange={this.changeJobName}
-                    />
-                </p>
-            </div>
-        )
-
-        const runNumberForm = (
-            <div>
-                <span className="w3-text-green">Runs per job:</span>&nbsp;
-                single run &nbsp;
-                <BooleanSlider
-                    name="create_multi_run_job"
-                    value="create_multi_run_job"
-                    onChange={this.changeRunMode}
-                    checked={this.run_mode}
-                />
-                &nbsp; multiple runs
-                {this.state.run_mode ? (
-                    <span>
-                        <Message type="hint">Please choose parameter modes in the above table.</Message>
-                        <label className="w3-text-green">Run names/IDs:</label><br/>
-                        Please enter unique, comma-seperated IDs.
-                        No whitespaces allowed (if inserted will be automatically converted to "_"). 
-                        Hint: you may copy&paste cells from an excel file.
-                        <textarea className="w3-input w3-border"
-                            rows="2"
-                            name="create_multi_run_job" 
-                            value={this.state.run_names.join(", ").trim()}
-                            onChange={this.changeRunNames}
-                        />
-                    </span>
-                    ) : (null)
-                }
-            </div>
-        )
-        
         if (this.state.display == "prep"){
             return(
                 <div>
@@ -1571,8 +1587,8 @@ class JobCreationPrep extends React.Component {
                     <h3>Job ID:</h3>
                     {jobNameForm}
                     <hr/>
-                    <h3>Number of runs:</h3>
-                    {runNumberForm}
+                    <h3>Batch Submission:</h3>
+                    {batchForm}
                     <hr/>
                     <h3>Input parameters:</h3>
                     {paramTable}
@@ -1618,7 +1634,7 @@ class JobCreationPrep extends React.Component {
                                 <JobParamFormSpreadsheet
                                     cwlTarget={this.props.cwlTarget}
                                     param_modes={this.state.param_modes}
-                                    run_mode={this.state.run_mode}
+                                    batchMode={this.state.batchMode}
                                     run_names={this.state.run_names}
                                     jobName={this.jobNameNum + "_" + this.state.job_name}
                                     changeSearchDir={this.changeSearchDir}
@@ -1638,7 +1654,7 @@ class JobCreationPrep extends React.Component {
                                 <JobParamFormHTML
                                     cwlTarget={this.props.cwlTarget}
                                     param_modes={this.state.param_modes}
-                                    run_mode={this.state.run_mode}
+                                    batchMode={this.state.batchMode}
                                     run_names={this.state.run_names}
                                     jobName={this.jobNameNum + "_" + this.state.job_name}
                                     changeSearchDir={this.changeSearchDir}
