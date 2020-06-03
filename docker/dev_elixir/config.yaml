@@ -36,20 +36,7 @@ OIDC_CONF: {
 
 
 EXEC_PROFILES:
-
-  cwltool_no_container: 
-    shell: bash
-    max_retries: 0
-    max_parallel_exec: 8
-
-    timeout:
-      pre_exec: 120
-      exec: 2592000
-      post_exec: 600
-
-    exec: |
-      "${PYTHON_PATH}" -m cwltool --debug --no-container --outdir "${OUTPUT_DIR}" "${WORKFLOW}" "${RUN_INPUT}" >> "${LOG_FILE}" 2>&1
-
+  
   ELIXIR_FI_WES_1: 
     type: python
     max_retries: 0
