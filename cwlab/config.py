@@ -55,6 +55,13 @@ class Config(object):
         )
         # Display that this instance is only for demonstation purposes.
         # Lock: workflow import, reset/delete/terminate for execs
+
+        # how long needs the access token be valid to allow execution:
+        self.MIN_REMAINING_ACCESS_TOKEN_TIME_FOR_EXEC =( 
+            os.environ.get('CWLAB_MIN_REMAINING_ACCESS_TOKEN_TIME_FOR_EXEC') or
+            self.CONFIG_FILE_content.get('MIN_REMAINING_ACCESS_TOKEN_TIME_FOR_EXEC') or  
+            120
+        )
         
         self.CORRECT_SYMLINKS = self.CONFIG_FILE_content.get('CORRECT_SYMLINKS') \
             if not self.CONFIG_FILE_content.get('CORRECT_SYMLINKS') is None \
@@ -87,6 +94,12 @@ class Config(object):
             os.environ.get('CWLAB_USE_OIDC') or
             self.CONFIG_FILE_content.get('USE_OIDC') or  
             False
+        )
+
+        self.CUSTOM_LOGIN_ICON_HTML = (
+            os.environ.get('CWLAB_CUSTOM_LOGIN_ICON_HTML') or
+            self.CONFIG_FILE_content.get('CUSTOM_LOGIN_ICON_HTML') or  
+            None
         )
 
         self.FINAL_WEB_HOST_URL = (
