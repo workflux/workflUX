@@ -73,8 +73,18 @@ class TopBar extends React.Component { // controlled by Root Component
                                         style={ {display: "inline-block"} }
                                         key={key} 
                                         onClick={this.handleClick.bind(this, key)}>
-                                        {this.props.modules[key].icon != "" &&
-                                            <i className={this.props.modules[key].icon} style={ {paddingLeft: "10px", paddingRight: "10px"} }></i>
+                                        {this.props.modules[key].hasOwnProperty("customIconHTML") && this.props.modules[key].customIconHTML ? (
+                                                <span dangerouslySetInnerHTML={ {__html: this.props.modules[key].customIconHTML} } style={ {height: "20px"} } />
+                                            ) : (
+                                                <span>    
+                                                    {this.props.modules[key].icon != "" ? (
+                                                            <i className={this.props.modules[key].icon} style={ {paddingLeft: "10px", paddingRight: "10px"} }></i>
+                                                        ) : (
+                                                            <span/>
+                                                        )
+                                                    }
+                                                </span>
+                                            )
                                         }
                                         {this.props.modules[key].text}
                                     </a>
@@ -154,6 +164,7 @@ class Root extends React.Component {
                     "login / register"
                 ),
                 icon: "fas fa-user",
+                customIconHTML: customLoginIconHTML,
                 content: (<UserRoot />),
                 align: "right",
                 disabled: !loginEnabled
