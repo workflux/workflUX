@@ -12,9 +12,11 @@ from contextlib import closing
 class PyExecProfile():
     def __init__(
         self,
-        session_vars :dict
+        session_vars :dict,
+        set_custom_status_function
     ):
         [setattr(self, str(key), session_vars[key]) for key in session_vars.keys()]
+        self.set_custom_status = set_custom_status_function
     
     # steps prepare, eval, and finalize are optional:
 
