@@ -60,6 +60,7 @@
             const useOIDC = "{{ config.USE_OIDC }}" === "True"
             const buildNumber = "{{ config.BUILD_NUMBER }}"
             const inputSources = JSON.parse('{{ config.INPUT_SOURCES | tojson | safe }}')
+            const demo = "{{ config.DEMO }}" === "True"
 
             // other global params:
             Oidc.Log.logger = console;

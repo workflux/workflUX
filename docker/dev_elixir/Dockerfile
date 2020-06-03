@@ -38,16 +38,9 @@ RUN python3 -m pip install cwltool==1.0.20191022103248 \
 	&& python3 -m pip install -e /src/cwlab
 
 # Configure cwlab:
-RUN mkdir -p \
-        /cwlab/tmp \
-        /cwlab/worlflows \
-        /cwlab/exec \
-        /cwlab/input \
-        /cwlab/database && \
-    chmod -R 777 /cwlab
-
-COPY docker/dev_elixir/config.yaml /cwlab/config.yaml
-COPY docker/dev_elixir/wes_exec_profile.py /cwlab/wes_exec_profile.py
+COPY ./docker/dev_elixir/workflows /cwlab/wf_dir
+COPY ./docker/dev_elixir/config.yaml /cwlab/config.yaml
+COPY ./docker/dev_elixir/wes_exec_profile.py /cwlab/wes_exec_profile.py
 
 # Default command when starting:
 CMD ["cwlab", "up", "-c", "/cwlab/config.yaml"]
