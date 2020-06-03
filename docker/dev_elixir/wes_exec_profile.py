@@ -5,7 +5,6 @@ import yaml
 import sys
 import time
 from datetime import datetime
-
 class PyExecProfile():
     def __init__(
         self,
@@ -27,6 +26,8 @@ class PyExecProfile():
 
 class WES(PyExecProfile):
     def exec(self, host_url):
+
+        self.set_custom_status("WES: submitting", "amber")
 
         ## read in run parameters:
         with open(self.RUN_INPUT) as run_input:
@@ -92,8 +93,9 @@ class WES(PyExecProfile):
                 log.write(f"> ERROR OCCURED: {str(e)}\n> Terminating\n" )
             self.SUCCESS = False
             return()
-            
 
+        self.set_custom_status("WES: waiting for status", "amber")
+            
         ## periodically check run status:
         with open(self.LOG_FILE, "a") as log:
             log.write(
@@ -106,6 +108,8 @@ class WES(PyExecProfile):
         self.status = "NONE"
         self.get_update_response_data = None
         while self.status not in status_finished:
+            if self.status != "NONE":
+                self.set_custom_status(f"WES: {self.status}", "amber")
             try:
                 time.sleep(5)
                 try:
@@ -139,6 +143,7 @@ class WES(PyExecProfile):
                             self.status
                         )
                     )
+                
             except AssertionError as e:
                 n_errors_in_a_row += 1
                 with open(self.LOG_FILE, "a") as log:
@@ -171,9 +176,11 @@ class WES(PyExecProfile):
                 else:
                     log.write("> No output attribute found in get response")
                 log.write("\n\n> Job execution ended successful.\n")
+                self.set_custom_status(f"WES: {self.status}", "green")
             else:
                 log.write(json.dumps(self.get_update_response_data, indent=4))
                 log.write("\n\n> Job execution failed.\n")
+                self.set_custom_status(f"WES: {self.status}", "red")
 
 
 class WES_localhost(WES):
