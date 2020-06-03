@@ -17,7 +17,7 @@ class Welcome extends React.Component {
                                 <b>Please note: </b>
                             </p> 
                             <p>
-                                This is instance is for demonstration purposes only and some functionalites are locked.
+                                This instance is for demonstration purposes only and some functionalites are locked.
                                 Please do not submit large-scale workflow executions.
                             </p>
                         </span>
