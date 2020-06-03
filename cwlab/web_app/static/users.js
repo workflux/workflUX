@@ -5,6 +5,16 @@ function changeInputField(event){
     this.setState({[event.currentTarget.name]: event.currentTarget.value})
 }
 
+function uponUserExpiration(){
+    alert("Your access token expired. Please login again to continue.")
+    if (useOIDC) {
+        oidcUserManager.signinRedirect()
+    }
+    else {
+        window.location.reload(true)
+    }
+}
+
 async function getUserInfo(
     what // can be one of "all", "accessToken", or "username"
 ){
@@ -18,7 +28,7 @@ async function getUserInfo(
         email: null,
         expired: null,
         expiresAt: null,
-        expires_in: null,
+        expiresIn: null,
         admin: false
     }
     if (useOIDC){
@@ -32,9 +42,9 @@ async function getUserInfo(
                 name: user.profile.name,
                 username: user.profile.preferred_username,
                 email: user.profile.email,
-                expired: user.expires_in,
+                expired: user.expired,
                 expiresAt: user.expires_at,
-                expires_in: user.expires_in,
+                expiresIn: user.expires_in,
                 admin: false
             }
         }
@@ -56,6 +66,10 @@ async function getUserInfo(
             userInfo.username = null
             userInfo.accessToken = "none"
         }
+    }
+   
+    if (userInfo.expired){
+        uponUserExpiration()
     }
 
     if (what == "accessToken"){
