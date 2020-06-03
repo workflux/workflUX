@@ -65,6 +65,7 @@
             ) : (
                 `{{ config.CUSTOM_LOGIN_ICON_HTML | safe}}`
             )
+            const demo = "{{ config.DEMO }}" === "True"
 
             // other global params:
             Oidc.Log.logger = console;
