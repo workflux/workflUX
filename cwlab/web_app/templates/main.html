@@ -59,6 +59,7 @@
             const registrationInstruction = "{{ config.REGISTRATION_INSTRUCTION }}"
             const useOIDC = "{{ config.USE_OIDC }}" === "True"
             const buildNumber = "{{ config.BUILD_NUMBER }}"
+            const min_remaining_access_token_time_for_exec = parseInt("{{ config.MIN_REMAINING_ACCESS_TOKEN_TIME_FOR_EXEC }}")
             const inputSources = JSON.parse('{{ config.INPUT_SOURCES | tojson | safe }}')
             const customLoginIconHTML = `{{ config.CUSTOM_LOGIN_ICON_HTML | safe}}` == "None" ? (
                 null
