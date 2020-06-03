@@ -63,6 +63,8 @@ class JobManager():
             global_temp_dir=global_temp_dir,
             log=log,
             status=status,
+            custom_status=None,
+            custom_status_color="grey",
             err_message=err_message,
             retry_count=retry_count,
             time_started=time_started,
@@ -131,6 +133,8 @@ class JobManager():
         return {
             "pid": exec_.pid,
             "status": exec_.status,
+            "custom_status": exec_.custom_status,
+            "custom_status_color": exec_.custom_status_color,
             "time_started": exec_.time_started,
             "time_finished": exec_.time_finished,
             "exec_profile": exec_.exec_profile_name,
