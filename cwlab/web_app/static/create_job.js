@@ -1578,13 +1578,14 @@ class JobCreationPrep extends React.Component {
         )
 
         if (this.state.display == "prep"){
+            // eval of string should be changed
             return(
                 <div>
                     {this.props.configData.templ_meta.doc && (
                         <span>
                             <h3>Workflow info:</h3>
-                            <p style={ {whiteSpace: "pre-line"} }>
-                                {this.props.configData.templ_meta.doc}
+                            <p style={ {whiteSpace: "pre-wrap"} } >
+                                {eval("String(\"" + this.props.configData.templ_meta.doc+ "\")")}
                             </p>
                             <hr/>
                         </span>
