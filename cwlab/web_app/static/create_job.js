@@ -1139,6 +1139,11 @@ class JobParamFormHTML extends React.Component {
                         changePrevPath={this.props.changePrevPath}
                     />
                     <hr/>
+                    <Message type="hint">
+                        <b>Hint</b>
+                        <br/>
+                        Please click on the <Tooltip disabled={true} > </Tooltip> buttons to get information on parameters.
+                    </Message>
                     {(this.state.modeExists["global_single"] || this.state.modeExists["global_array"]) &&
                         <span>
                             <h3>Globally-defined Parameters:</h3>
@@ -1573,13 +1578,14 @@ class JobCreationPrep extends React.Component {
         )
 
         if (this.state.display == "prep"){
+            // eval of string should be changed
             return(
                 <div>
                     {this.props.configData.templ_meta.doc && (
                         <span>
                             <h3>Workflow info:</h3>
-                            <p style={ {whiteSpace: "pre-line"} }>
-                                {this.props.configData.templ_meta.doc}
+                            <p style={ {whiteSpace: "pre-wrap"} } >
+                                {eval("String(\"" + this.props.configData.templ_meta.doc+ "\")")}
                             </p>
                             <hr/>
                         </span>
