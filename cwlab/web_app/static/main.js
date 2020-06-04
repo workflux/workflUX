@@ -10,6 +10,19 @@ class Welcome extends React.Component {
                     An open-source framework for simplified deployment of the 
                     Common Workflow Language using a graphical web interface
                 </p>
+                {demo && (
+                    <Message type="info">
+                        <span className="w3-text-black w3-center">
+                            <p>
+                                <b>Please note: </b>
+                            </p> 
+                            <p>
+                                This instance is for demonstration purposes only and some functionalites are locked.
+                                Please do not submit large-scale workflow executions.
+                            </p>
+                        </span>
+                    </Message>
+                )}
             </div>
         )
     }
@@ -60,8 +73,18 @@ class TopBar extends React.Component { // controlled by Root Component
                                         style={ {display: "inline-block"} }
                                         key={key} 
                                         onClick={this.handleClick.bind(this, key)}>
-                                        {this.props.modules[key].icon != "" &&
-                                            <i className={this.props.modules[key].icon} style={ {paddingLeft: "10px", paddingRight: "10px"} }></i>
+                                        {this.props.modules[key].hasOwnProperty("customIconHTML") && this.props.modules[key].customIconHTML ? (
+                                                <span dangerouslySetInnerHTML={ {__html: this.props.modules[key].customIconHTML} } style={ {height: "20px"} } />
+                                            ) : (
+                                                <span>    
+                                                    {this.props.modules[key].icon != "" ? (
+                                                            <i className={this.props.modules[key].icon} style={ {paddingLeft: "10px", paddingRight: "10px"} }></i>
+                                                        ) : (
+                                                            <span/>
+                                                        )
+                                                    }
+                                                </span>
+                                            )
                                         }
                                         {this.props.modules[key].text}
                                     </a>
@@ -141,6 +164,7 @@ class Root extends React.Component {
                     "login / register"
                 ),
                 icon: "fas fa-user",
+                customIconHTML: customLoginIconHTML,
                 content: (<UserRoot />),
                 align: "right",
                 disabled: !loginEnabled

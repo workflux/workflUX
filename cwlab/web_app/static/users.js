@@ -1,8 +1,37 @@
 
 const inputStyle = {width: "100%", maxWidth: "400px", minWidth: "100px"}
 
+function logout(){
+    if (useOIDC){
+        oidcUserManager.signoutRedirect()
+    }
+    else {
+        cleanSessionInfo()
+        window.location.reload(true)
+    }
+}
+
 function changeInputField(event){
     this.setState({[event.currentTarget.name]: event.currentTarget.value})
+}
+
+function refreshAccessToken(){
+    if (useOIDC) {
+        oidcUserManager.signinRedirect()
+    }
+    else {
+        cleanSessionInfo()
+        window.location.reload(true)
+    }
+}
+
+function uponUserExpiration(){
+    alert(`
+        Your access token expired. 
+        
+        Please login again to continue.
+    `)
+    refreshAccessToken()
 }
 
 async function getUserInfo(
@@ -18,7 +47,7 @@ async function getUserInfo(
         email: null,
         expired: null,
         expiresAt: null,
-        expires_in: null,
+        expiresIn: null,
         admin: false
     }
     if (useOIDC){
@@ -32,9 +61,9 @@ async function getUserInfo(
                 name: user.profile.name,
                 username: user.profile.preferred_username,
                 email: user.profile.email,
-                expired: user.expires_in,
+                expired: user.expired,
                 expiresAt: user.expires_at,
-                expires_in: user.expires_in,
+                expiresIn: user.expires_in,
                 admin: false
             }
         }
@@ -57,6 +86,10 @@ async function getUserInfo(
             userInfo.accessToken = "none"
         }
     }
+   
+    if (userInfo.expired){
+        uponUserExpiration()
+    }
 
     if (what == "accessToken"){
         return(userInfo.accessToken)
@@ -72,7 +105,11 @@ async function getUserInfo(
 class UserAndSessionInfo extends React.Component {
     constructor(props){
         super(props);
-        // props.userInfo
+        
+        this.state = {
+            userInfo: {},
+            actionStatus: "loading"
+        }
 
         this.paramsToShow = [
             "name",
@@ -91,50 +128,92 @@ class UserAndSessionInfo extends React.Component {
             userId: "User ID",
             accessToken: "Access Token"
         }
+
+        this.updateUserInfo = this.updateUserInfo.bind(this)
+    }
+
+    async updateUserInfo(){
+        this.setState({
+            userInfo: await getUserInfo("all"),
+            actionStatus: "none"
+        })
+    }
+    
+    async componentDidMount(){
+        // setup timer to automatically update
+        this.updateUserInfo()
+        this.timerId = setInterval(
+            () => {
+                this.updateUserInfo()
+            },
+            autoRefreshInterval
+          );
+    }
+
+    componentWillUnmount() {
+        clearInterval(this.timerId);
     }
 
     render(){
         return(
             <div>
-                <h3>You are logged in.</h3>
-                {this.props.userInfo.expiresIn && (
-                    <p>
-                        Please note, your access token will expire in&nbsp;
-                        <span className="w3-text-green">
-                            {seconds_to_duration_str(this.props.userInfo.expiresIn)}
-                        </span>
-                        .
-                    </p>
-                )}
-                <table>
-                    <tbody>
-                        {useOIDC && (
-                            <tr>
-                                <td className="w3-text-green">Authority:</td>
-                                <td>{oidcConf.authority}</td>
-                            </tr>
-                        )}
-                        {this.paramsToShow
-                            .filter( (p) => (this.props.userInfo[p] != null))
-                            .map( (p) => (
-                                <tr key={p}>
-                                    <td className="w3-text-green" style={ {whiteSpace: "nowrap"} }>
-                                        {this.labels[p]}:
-                                    </td>
-                                    <td>
-                                        {String(this.props.userInfo[p])}
-                                    </td>
-                                </tr>
-                            )
-                        )}
-                    </tbody>
-                </table>
-                {useOIDC && (
-                    <p>
-                        For changes at your user profile,
-                        please contact the authentication authority.
-                    </p>
-                )}
+                { this.state.actionStatus == "loading" ? (
+                        <LoadingIndicator
+                            size="large"
+                            message="Loading user info."
+                        />
+                    ) : (
+                        <div>
+                            <h3>You are logged in.</h3>
+                            {this.state.userInfo.expiresIn && (
+                                <p>
+                                    Please note, your access token will expire in&nbsp;
+                                    <span className="w3-text-green">
+                                        {seconds_to_duration_str(this.state.userInfo.expiresIn)}
+                                    </span>
+                                    .
+                                </p>
+                            )}
+                            <table>
+                                <tbody>
+                                    {useOIDC && (
+                                        <tr>
+                                            <td className="w3-text-green">Authority:</td>
+                                            <td>{oidcConf.authority}</td>
+                                        </tr>
+                                    )}
+                                    {this.paramsToShow
+                                        .filter( (p) => (this.state.userInfo[p] != null))
+                                        .map( (p) => (
+                                            <tr key={p}>
+                                                <td className="w3-text-green" style={ {whiteSpace: "nowrap"} }>
+                                                    {this.labels[p]}:
+                                                </td>
+                                                <td>
+                                                    {String(this.state.userInfo[p])}
+                                                </td>
+                                            </tr>
+                                        )
+                                    )}
+                                </tbody>
+                            </table>
+                            {useOIDC && (
+                                <p>
+                                    For changes at your user profile,
+                                    please contact the authentication authority.
+                                </p>
+                            )}
+                            <p> 
+                                <ActionButton
+                                    name="refresh_access_token"
+                                    value="refresh_access_token"
+                                    label="refresh access token"
+                                    onAction={refreshAccessToken}
+                                />
+                            </p>
+                        </div>
+                    )
+                }
             </div>
         )
     }
@@ -613,7 +692,7 @@ class UserAccount extends React.Component {
             )
             
         this.itemContents = {
-            user_and_session_info: <UserAndSessionInfo userInfo={this.props.userInfo} />,
+            user_and_session_info: <UserAndSessionInfo />,
             admin_dashboard: <AdminDashboard />,
             change_password: <ChangePassword username={this.props.userInfo.username}/>,
             delete_account: <DeleteAccount />,

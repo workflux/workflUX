@@ -11,7 +11,6 @@ def normalize_path(path, correct_symlinks=True):
         return os.path.realpath(path)
     else:
         return os.path.abspath(path)
-        
 
 def normalize_path_dict(dict, correct_symlinks=True):
     norm_dict = {}
@@ -50,6 +49,20 @@ class Config(object):
             "none"
         )
         
+        self.DEMO = (
+            self.CONFIG_FILE_content.get('DEMO') or  
+            False
+        )
+        # Display that this instance is only for demonstation purposes.
+        # Lock: workflow import, reset/delete/terminate for execs
+
+        # how long needs the access token be valid to allow execution:
+        self.MIN_REMAINING_ACCESS_TOKEN_TIME_FOR_EXEC =( 
+            os.environ.get('CWLAB_MIN_REMAINING_ACCESS_TOKEN_TIME_FOR_EXEC') or
+            self.CONFIG_FILE_content.get('MIN_REMAINING_ACCESS_TOKEN_TIME_FOR_EXEC') or  
+            120
+        )
+        
         self.CORRECT_SYMLINKS = self.CONFIG_FILE_content.get('CORRECT_SYMLINKS') \
             if not self.CONFIG_FILE_content.get('CORRECT_SYMLINKS') is None \
             else True
@@ -81,6 +94,12 @@ class Config(object):
             os.environ.get('CWLAB_USE_OIDC') or
             self.CONFIG_FILE_content.get('USE_OIDC') or  
             False
+        )
+
+        self.CUSTOM_LOGIN_ICON_HTML = (
+            os.environ.get('CWLAB_CUSTOM_LOGIN_ICON_HTML') or
+            self.CONFIG_FILE_content.get('CUSTOM_LOGIN_ICON_HTML') or  
+            None
         )
 
         self.FINAL_WEB_HOST_URL = (
@@ -130,7 +149,7 @@ class Config(object):
         self.WORKFLOW_DIR = normalize_path(
             os.environ.get('CWLAB_WORKFLOW_DIR') or  
             self.CONFIG_FILE_content.get('WORKFLOW_DIR') or  
-            os.path.join( self.BASE_DIR, "CWL"),
+            os.path.join( self.BASE_DIR, "wf_dir"),
             correct_symlinks=self.CORRECT_SYMLINKS
         )
         self.EXEC_DIR = normalize_path(
