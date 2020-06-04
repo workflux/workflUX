@@ -6,10 +6,10 @@ BASE_DIR: '/mnt/cwlab'
 WORKFLOW_DIR: '/cwlab/wf_dir'
 INCLUDE_BUILD_NUMBER_IN_BASE_DIR: True
 
-# DATABASE_URL: "mysql+pymysql://<username>:<password>@<host>:3306/cwlab"
-# DATABASE_HOST_ENVVAR: "mysql-host"
-# DATABASE_USERNAME_ENVVAR: "mysql-username"
-# DATABASE_PASSWORD_ENVVAR: "mysql-password"
+DATABASE_URL: "mysql+pymysql://<username>:<password>@<host>:3306/cwlab"
+DATABASE_HOST_ENVVAR: "mysql-host"
+DATABASE_USERNAME_ENVVAR: "mysql-username"
+DATABASE_PASSWORD_ENVVAR: "mysql-password"
 
 INPUT_SOURCES:
   local_file_system: False
@@ -17,6 +17,7 @@ INPUT_SOURCES:
 
 DEMO: True
 DEBUG: False
+CHECK_EXEC_PID: False
 
 WEB_AUTO_REFRESH_INTERVAL: 4
 MIN_REMAINING_ACCESS_TOKEN_TIME_FOR_EXEC: 1200

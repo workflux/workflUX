@@ -235,7 +235,8 @@ def get_runs_info(job_name, run_names, return_pid=False):
             # check if background process still running:
             cleanup_zombie_process(run["pid"])
             
-            if (not isinstance(run["time_finished"], datetime)) and \
+            if app.config["CHECK_EXEC_PID"] and \
+                (not isinstance(run["time_finished"], datetime)) and \
                 (not run["pid"] == -1) and \
                 (not pid_exists(run["pid"])):
                 run["status"] = "process ended unexpectedly"
@@ -260,27 +261,30 @@ def get_runs_info(job_name, run_names, return_pid=False):
 def kill_proc_tree(pid, include_parent=True,
                    timeout=1, on_terminate=None):
     # adapted from: https://psutil.readthedocs.io/en/latest/#kill-process-tree
-    assert pid != os.getpid(), "won't kill myself"
-    parent = Process(pid)
-    children = parent.children(recursive=True)
-    if include_parent:
-        children.append(parent)
-    for p in children:
-        try:
-            p.terminate()
-        except Exception as e:
-            pass
-    _, survived_terminate = wait_procs(children, timeout=timeout,
-                                    callback=on_terminate)
-    for p in survived_terminate:
-        try:
-            p.kill()
-        except Exception as e:
-            pass
-    _, survived_kill = wait_procs(survived_terminate, timeout=timeout,
-                                    callback=on_terminate)
-    if len(survived_kill) > 0:
-        return False
+    if pid_exists(pid):
+        assert pid != os.getpid(), "won't kill myself"
+        parent = Process(pid)
+        children = parent.children(recursive=True)
+        if include_parent:
+            children.append(parent)
+        for p in children:
+            try:
+                p.terminate()
+            except Exception as e:
+                pass
+        _, survived_terminate = wait_procs(children, timeout=timeout,
+                                        callback=on_terminate)
+        for p in survived_terminate:
+            try:
+                p.kill()
+            except Exception as e:
+                pass
+        _, survived_kill = wait_procs(survived_terminate, timeout=timeout,
+                                        callback=on_terminate)
+        if len(survived_kill) > 0:
+            return False
+        else:
+            return True
     else:
         return True
 
