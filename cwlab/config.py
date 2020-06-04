@@ -207,6 +207,12 @@ class Config(object):
         if self.DEBUG:
             print("Debug mode turned on, don't use this on production machines.", file=sys.stderr)
             
+        self.CHECK_EXEC_PID = ( # check upon exec status request if corresponding pid is still running
+            os.environ.get('CWLAB_CHECK_EXEC_PID') == "True" or
+            self.CONFIG_FILE_content.get('CHECK_EXEC_PID') or
+            True
+        )
+
         database_username_env_name = (
             os.environ.get('CWLAB_DATABASE_USERNAME_ENVVAR') or
             self.CONFIG_FILE_content.get('DATABASE_USERNAME_ENVVAR') or  
