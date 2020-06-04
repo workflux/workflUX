@@ -1139,6 +1139,11 @@ class JobParamFormHTML extends React.Component {
                         changePrevPath={this.props.changePrevPath}
                     />
                     <hr/>
+                    <Message type="hint">
+                        <b>Hint</b>
+                        <br/>
+                        Please click on the <Tooltip disabled={true} > </Tooltip> buttons to get information on parameters.
+                    </Message>
                     {(this.state.modeExists["global_single"] || this.state.modeExists["global_array"]) &&
                         <span>
                             <h3>Globally-defined Parameters:</h3>

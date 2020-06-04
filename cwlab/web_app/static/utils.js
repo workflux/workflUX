@@ -396,6 +396,7 @@ class Tooltip extends React.Component {
         // props.children
         // props.preview
         // props.title
+        // props.disable
         this.state = {
             showTopPanel: false
         }
@@ -425,9 +426,10 @@ class Tooltip extends React.Component {
         }
         return(
             <div 
-                className="tooltip"
+                className={this.props.disabled ? "" : "tooltip"}
+                style = { {display: "inline-block"} }
             >
-                {this.state.showTopPanel ? (
+                {this.state.showTopPanel && !this.props.disabled ? (
                         <TopPanel>
                             <div 
                                 className="w3-bar"
@@ -461,7 +463,7 @@ class Tooltip extends React.Component {
                         </span>   
                     )
                 }
-                {this.props.hoverButton ? (
+                {this.props.hoverButton && !this.props.disabled ? (
                         this.props.hoverButton
                     ) : (
                         <a
