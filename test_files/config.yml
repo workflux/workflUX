@@ -13,6 +13,7 @@ INPUT_DIR: './scratch/input'
 DB_DIR: './scratch/database'
 
 DEBUG: True
+CHECK_EXEC_PID: False
 
 EXEC_PROFILES:
   cwltool_local_test: # name of the exec profile
