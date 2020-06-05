@@ -207,11 +207,13 @@ class Config(object):
         if self.DEBUG:
             print("Debug mode turned on, don't use this on production machines.", file=sys.stderr)
             
-        self.CHECK_EXEC_PID = ( # check upon exec status request if corresponding pid is still running
-            os.environ.get('CWLAB_CHECK_EXEC_PID') == "True" or
-            self.CONFIG_FILE_content.get('CHECK_EXEC_PID') or
-            True
-        )
+        # check upon exec status request if corresponding pid is still running:
+        if os.environ.get('CWLAB_CHECK_EXEC_PID') is not None:
+            self.CHECK_EXEC_PID = os.environ.get('CWLAB_CHECK_EXEC_PID') == "True"
+        elif self.CONFIG_FILE_content.get('CHECK_EXEC_PID') is not None:
+            self.CHECK_EXEC_PID = self.CONFIG_FILE_content.get('CHECK_EXEC_PID')
+        else:
+            self.CHECK_EXEC_PID = True
 
         database_username_env_name = (
             os.environ.get('CWLAB_DATABASE_USERNAME_ENVVAR') or
@@ -305,6 +307,7 @@ class Config(object):
             "workflow_type": "CWL",
             "type": "bash",
             "max_retries": 2,
+            "enable_queueing": True,
             "max_parallel_exec": 4, # if exceeded, jobs will be queued
             "allow_user_decrease_max_parallel_exec": True,
             "max_queue_duration": 864000,

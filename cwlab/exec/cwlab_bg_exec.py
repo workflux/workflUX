@@ -127,43 +127,41 @@ print(">>> Run's pid: " + str(pid))
 exec_db_entry.pid = pid
 commit()
 
-
-# create dictionary of needed variables:
-
 # wait until number of running jobs decreases below max_parallel_exec:
-db_retry_delay_queue = [1]
-wait = True
-def wait_queue():
-    sleep(exec_profile["wait_in_queue_period"] + exec_profile["wait_in_queue_period"]*random())
-def calc_duration(time_a, time_b):
-    delta = time_b - time_a
-    delta_second = delta.seconds + delta.days*86400
-    return delta_second
-while wait:
-    if calc_duration(time_started, datetime.now()) > exec_profile["max_queue_duration"]:
-        exec_db_entry.status = "queued too long" 
-        exec_db_entry.err_message = "Max queueing duration exceeded."
-        exec_db_entry.time_finished = datetime.now()
-        commit()
-        raise AssertionError(exec_db_entry.err_message)
-    running_exec = query_info_from_db("running_exec", db_retry_delay_queue, no_error=True)
-    if running_exec == "":
-        wait_queue()
-        continue
-    if not running_exec is None:
-        number_running_exec = running_exec.count()
-        max_parallel_exec_running = 0
-        for exec_ in running_exec.all():
-            if exec_.exec_profile["max_parallel_exec"] > max_parallel_exec_running:
-                max_parallel_exec_running = exec_.exec_profile["max_parallel_exec"]
-        if number_running_exec >= max(exec_profile["max_parallel_exec"], max_parallel_exec_running):
+if exec_profile["enable_queueing"]:
+    db_retry_delay_queue = [1]
+    wait = True
+    def wait_queue():
+        sleep(exec_profile["wait_in_queue_period"] + exec_profile["wait_in_queue_period"]*random())
+    def calc_duration(time_a, time_b):
+        delta = time_b - time_a
+        delta_second = delta.seconds + delta.days*86400
+        return delta_second
+    while wait:
+        if calc_duration(time_started, datetime.now()) > exec_profile["max_queue_duration"]:
+            exec_db_entry.status = "queued too long" 
+            exec_db_entry.err_message = "Max queueing duration exceeded."
+            exec_db_entry.time_finished = datetime.now()
+            commit()
+            raise AssertionError(exec_db_entry.err_message)
+        running_exec = query_info_from_db("running_exec", db_retry_delay_queue, no_error=True)
+        if running_exec == "":
             wait_queue()
             continue
-    next_in_queue = query_info_from_db("next_in_queue", db_retry_delay_queue, no_error=True)
-    if next_in_queue == "" or next_in_queue.id != exec_db_id:
-        wait_queue()
-        continue
-    wait=False
+        if not running_exec is None:
+            number_running_exec = running_exec.count()
+            max_parallel_exec_running = 0
+            for exec_ in running_exec.all():
+                if exec_.exec_profile["max_parallel_exec"] > max_parallel_exec_running:
+                    max_parallel_exec_running = exec_.exec_profile["max_parallel_exec"]
+            if number_running_exec >= max(exec_profile["max_parallel_exec"], max_parallel_exec_running):
+                wait_queue()
+                continue
+        next_in_queue = query_info_from_db("next_in_queue", db_retry_delay_queue, no_error=True)
+        if next_in_queue == "" or next_in_queue.id != exec_db_id:
+            wait_queue()
+            continue
+        wait=False
 
 exec_db_entry.time_started = datetime.now()
 commit()
