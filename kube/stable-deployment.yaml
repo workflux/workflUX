@@ -7,7 +7,6 @@ metadata:
     app: cwlab
     stage: stable
 spec:
-  replicas: 1
   selector:
     matchLabels:
       app: cwlab
