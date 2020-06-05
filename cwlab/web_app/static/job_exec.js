@@ -246,6 +246,7 @@ class RunList extends React.Component {
             "not started yet": "w3-grey",
             "waiting to queue": "w3-grey",
             "queued": "w3-grey",
+            "submitting": "w3-grey",
             "preparing": "w3-amber",
             "executing": "w3-amber",
             "evaluating": "w3-amber",
