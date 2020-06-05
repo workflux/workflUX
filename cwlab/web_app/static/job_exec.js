@@ -250,6 +250,7 @@ class RunList extends React.Component {
             "executing": "w3-amber",
             "evaluating": "w3-amber",
             "finalizing": "w3-amber",
+            "finishing": "w3-amber",
             "finished": "w3-green",
         }
 
