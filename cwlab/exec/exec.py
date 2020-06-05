@@ -177,7 +177,7 @@ def exec_runs(
             out_dir=get_path("run_out_dir", job_name=job_name, run_name=run_name),
             global_temp_dir=app.config["TEMP_DIR"],
             log=get_path("run_log", job_name=job_name, run_name=run_name),
-            status="queued",
+            status="submitting",
             err_message="",
             retry_count=0,
             time_started=datetime.now(),

@@ -49,6 +49,7 @@ def get_job_list():
             "workflow_type": app.config["EXEC_PROFILES"][exec_profile_name]["workflow_type"],
             "max_retries": app.config["EXEC_PROFILES"][exec_profile_name]["max_retries"],
             "max_parallel_exec": app.config["EXEC_PROFILES"][exec_profile_name]["max_parallel_exec"],
+            "enable_queueing": app.config["EXEC_PROFILES"][exec_profile_name]["enable_queueing"],
             "allow_user_decrease_max_parallel_exec": app.config["EXEC_PROFILES"][exec_profile_name]["allow_user_decrease_max_parallel_exec"],
         }
 
