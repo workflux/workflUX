@@ -428,6 +428,7 @@ class JobContent extends React.Component {
             parallelExec: this.props.execProfileParams[this.props.execProfiles[0]]["max_parallel_exec"],
             maxRetries: this.props.execProfileParams[this.props.execProfiles[0]]["max_retries"],
             maxParallelExec: this.props.execProfileParams[this.props.execProfiles[0]]["max_parallel_exec"],
+            enableQueueing: this.props.execProfileParams[this.props.execProfiles[0]]["enable_queueing"],
             allowUserDecreaseMaxParallelExec: this.props.execProfileParams[this.props.execProfiles[0]]["allow_user_decrease_max_parallel_exec"],
             runDangerZoneUnlocked: false,
             globalDangerZoneUnlocked: false,
@@ -486,6 +487,7 @@ class JobContent extends React.Component {
                 parallelExec: this.props.execProfileParams[event.currentTarget.value]["max_parallel_exec"],
                 maxRetries: this.props.execProfileParams[event.currentTarget.value]["max_retries"],
                 maxParallelExec: this.props.execProfileParams[event.currentTarget.value]["max_parallel_exec"],
+                enableQueueing: this.props.execProfileParams[event.currentTarget.value]["enable_queueing"],
                 allowUserDecreaseMaxParallelExec: this.props.execProfileParams[event.currentTarget.value]["allow_user_decrease_max_parallel_exec"]
             })
         }
@@ -636,7 +638,7 @@ class JobContent extends React.Component {
                                     </select> 
                                 </label>
                             </p>
-                            {this.state.allowUserDecreaseMaxParallelExec && (
+                            {this.state.enableQueueing && this.state.allowUserDecreaseMaxParallelExec && (
                                 <p>
                                     <label>
                                         Select how many runs may execute in parallel: &nbsp;

@@ -305,6 +305,7 @@ class Config(object):
             "workflow_type": "CWL",
             "type": "bash",
             "max_retries": 2,
+            "enable_queueing": True,
             "max_parallel_exec": 4, # if exceeded, jobs will be queued
             "allow_user_decrease_max_parallel_exec": True,
             "max_queue_duration": 864000,
