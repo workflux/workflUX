@@ -1554,8 +1554,8 @@ class FileUploadComponent extends React.Component {
         else{
             let metaData = this.props.metaData ? this.props.metaData : {}
             const userInfo = await getUserInfo("all")
-            metaData["access_token"] = userInfo[accessToken]
-            metaData["username"] = userInfo[username]
+            metaData["access_token"] = userInfo.accessToken
+            metaData["username"] = userInfo.username
             this.setState({status:"uploading"})
             let formData = new FormData()
             formData.append("file", fileToUpload)
