@@ -72,11 +72,20 @@ def import_from_xls(sheet_file,
 
 def only_validate_xls(sheet_file,
     validate_uris=True, search_paths=True, 
+    search_subdirs=True,
     allow_remote_uri=True, allow_local_path=True,
     search_subdirs=True, input_dir=""
 ):
     try:
-        type_matched_params_by_run_id, params_by_run_id, configs, metadata = import_from_xls(sheet_file, validate_uris, search_paths, allow_remote_uri, allow_local_path, search_subdirs, input_dir)
+        type_matched_params_by_run_id, params_by_run_id, configs, metadata = import_from_xls(
+            sheet_file, 
+            validate_uris, 
+            search_paths, 
+            search_subdirs,
+            allow_remote_uri, 
+            allow_local_path, 
+            input_dir
+        )
     except AssertionError as e:
         return 'INVALID:' + str(e)
     return "VALID"
