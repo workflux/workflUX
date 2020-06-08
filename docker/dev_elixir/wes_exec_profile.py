@@ -212,7 +212,7 @@ class WES(PyExecProfile):
                         ftp_shema, 
                         f"{ftp_shema}{ftp_username}:{ftp_password}@"
                     )
-                    ftp_url = re.sub("/", "//", ftp_url, count=3)
+                    ftp_url = re.sub(r'([^/])(/)([^/])', r'\1//\3', ftp_url, count=1)
 
                     target_path = os.path.join(self.OUTPUT_DIR, self.outputs[out]["basename"])
 
