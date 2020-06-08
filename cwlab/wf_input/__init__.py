@@ -74,7 +74,7 @@ def only_validate_xls(sheet_file,
     validate_uris=True, search_paths=True, 
     search_subdirs=True,
     allow_remote_uri=True, allow_local_path=True,
-    search_subdirs=True, input_dir=""
+    input_dir=""
 ):
     try:
         type_matched_params_by_run_id, params_by_run_id, configs, metadata = import_from_xls(
