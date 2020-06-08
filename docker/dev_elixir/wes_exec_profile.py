@@ -4,6 +4,7 @@ import json
 import yaml
 import sys
 import time
+import re
 from datetime import datetime
 import shutil
 import urllib.request as request
@@ -211,6 +212,7 @@ class WES(PyExecProfile):
                         ftp_shema, 
                         f"{ftp_shema}{ftp_username}:{ftp_password}@"
                     )
+                    ftp_url = re.sub("/", "//", ftp_url, count=3)
 
                     target_path = os.path.join(self.OUTPUT_DIR, self.outputs[out]["basename"])
 
@@ -222,6 +224,7 @@ class WES(PyExecProfile):
                 log.write(
                     f"> Downloading output data failed.\n"
                 )
+            self.set_custom_status(f"downloading output failed", "red")
             raise AssertionError(str(e))
 
                       
