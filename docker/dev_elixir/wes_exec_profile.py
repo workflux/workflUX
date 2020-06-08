@@ -225,7 +225,7 @@ class WES(PyExecProfile):
                     f"> Downloading output data failed.\n"
                 )
             self.set_custom_status(f"downloading output failed", "red")
-            raise AssertionError(str(e))
+            return()
 
                       
 
