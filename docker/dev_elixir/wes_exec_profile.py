@@ -119,7 +119,7 @@ class WES(PyExecProfile):
             if self.status != "NONE":
                 self.set_custom_status(f"WES: {self.status}", "amber")
             try:
-                time.sleep(5)
+                time.sleep(10)
                 try:
                     get_update_response = requests.get(
                         "{}/ga4gh/wes/v1/runs/{}".format(host_url, self.run_id),
