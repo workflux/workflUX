@@ -102,6 +102,7 @@ class ParamValidationOptions extends React.Component{
                                             defaultBaseDir="DEFAULT_INPUT_DIR"
                                             prevPath={this.props.prevPath}
                                             changePrevPath={this.props.changePrevPath}
+                                            placeholder="Please fill"
                                         />
                                     </div>
                                     <div className="vertical_container_item">
@@ -261,6 +262,8 @@ class ParamField extends React.Component{
     render(){
         const isItemNull = (this.props.paramValue == "itemNull" && this.props.itemNullAllowed)
         const disableInput = isItemNull || this.props.isNull 
+        const paramValue = this.props.paramValue == "Please fill" ? ("") : (this.props.paramValue)
+
 
         const inputType = this.inputTypes.hasOwnProperty(this.props.type) ? (
             this.inputTypes[this.props.type]
@@ -274,7 +277,7 @@ class ParamField extends React.Component{
                 <select
                     className="param-input"
                     name={"input_" + this.key}
-                    value={this.props.paramValue}
+                    value={paramValue}
                     onChange={this.handleChange}
                     required={true}
                     disabled={disableInput}
@@ -298,10 +301,11 @@ class ParamField extends React.Component{
                             className="param-input"
                             type="text"
                             name={"input_" + this.key}
-                            value={this.props.paramValue}
+                            value={paramValue}
                             onChange={this.handleChange}
                             required={true}
                             disabled={disableInput}
+                            placeholder="Please fill"
                         />
                     )
                     break;
@@ -312,7 +316,7 @@ class ParamField extends React.Component{
                                 className="param-input"
                                 type="text"
                                 name={"input_" + this.key}
-                                value={this.props.paramValue}
+                                value={paramValue}
                                 onChange={this.handleChange}
                                 required={true}
                                 disabled={true}
@@ -325,7 +329,7 @@ class ParamField extends React.Component{
                                 false&nbsp;
                                 <BooleanSlider
                                     name={"input_" + this.key}
-                                    value={this.props.paramValue}
+                                    value={paramValue}
                                     onChange={this.handleChange}
                                     checked={["Yes","yes", "True", "true", "1"].includes(this.props.paramValue)}
                                     forwardEvent={true}
@@ -340,7 +344,7 @@ class ParamField extends React.Component{
                         return(
                             <BrowseDirTextField
                                 name={"input_" + this.key}
-                                value={this.props.paramValue}
+                                value={paramValue}
                                 onChange={this.handleChange}
                                 disabled={disableInput}
                                 ignoreFiles={false}
@@ -354,6 +358,7 @@ class ParamField extends React.Component{
                                 prevPath={this.props.prevPath}
                                 changePrevPath={this.props.changePrevPath}
                                 smallSize={true}
+                                placeholder="Please fill"
                             />
                         )
                     }
@@ -363,10 +368,11 @@ class ParamField extends React.Component{
                                 className="param-input"
                                 type="text"
                                 name={"input_" + this.key}
-                                value={this.props.paramValue}
+                                value={paramValue}
                                 onChange={this.handleChange}
                                 required={true}
                                 disabled={disableInput}
+                                placeholder="Please fill"
                             />
                         )
                     }
@@ -376,7 +382,7 @@ class ParamField extends React.Component{
                         return(
                             <BrowseDirTextField
                                 name={"input_" + this.key}
-                                value={this.props.paramValue}
+                                value={paramValue}
                                 onChange={this.handleChange}
                                 ignoreFiles={false}
                                 fileExts={[]}
@@ -389,6 +395,7 @@ class ParamField extends React.Component{
                                 prevPath={this.props.prevPath}
                                 changePrevPath={this.props.changePrevPath}
                                 smallSize={true}
+                                placeholder="Please fill"
                             />
                         )
                     }
@@ -398,7 +405,7 @@ class ParamField extends React.Component{
                                 className="param-input"
                                 type="text"
                                 name={"input_" + this.key}
-                                value={this.props.paramValue}
+                                value={paramValue}
                                 onChange={this.handleChange}
                                 required={true}
                                 disabled={disableInput}
