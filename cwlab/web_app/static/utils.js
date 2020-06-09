@@ -1416,6 +1416,7 @@ class BrowseDirTextField extends React.Component {
         // props.prevPath
         // props.changePrevPath
         // props.smallSize
+        // props.placeholder
 
 
         this.state = {
@@ -1461,6 +1462,7 @@ class BrowseDirTextField extends React.Component {
                     onChange={this.props.onChange}
                     required={true}
                     disabled={this.props.disabled}
+                    placeholder={this.props.placeholder}
                 />
                 <ActionButton
                     name="browse"
