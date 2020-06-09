@@ -69,3 +69,11 @@ EXEC_PROFILES:
     enable_queueing: False
     py_module: ./wes_exec_profile.py
     py_class: ELIXIR_CZ_WES_1
+  
+  ELIXIR_GR_WES_1: 
+    type: python
+    max_retries: 0
+    enable_queueing: False
+    py_module: ./wes_exec_profile.py
+    py_class: ELIXIR_GR_WES_1
+  
