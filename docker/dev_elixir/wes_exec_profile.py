@@ -4,6 +4,7 @@ import json
 import yaml
 import sys
 import time
+import re
 from datetime import datetime
 import shutil
 import urllib.request as request
@@ -118,7 +119,7 @@ class WES(PyExecProfile):
             if self.status != "NONE":
                 self.set_custom_status(f"WES: {self.status}", "amber")
             try:
-                time.sleep(5)
+                time.sleep(10)
                 try:
                     get_update_response = requests.get(
                         "{}/ga4gh/wes/v1/runs/{}".format(host_url, self.run_id),
@@ -211,9 +212,14 @@ class WES(PyExecProfile):
                         ftp_shema, 
                         f"{ftp_shema}{ftp_username}:{ftp_password}@"
                     )
+                    ftp_url = re.sub(r'([^/])(/)([^/])', r'\1//\3', ftp_url, count=1)
 
                     target_path = os.path.join(self.OUTPUT_DIR, self.outputs[out]["basename"])
 
+                    with open(self.LOG_FILE, "a") as log:
+                        log.write(
+                            f"> ftp_url: {ftp_url}\n"
+                        )
                     with closing(request.urlopen(ftp_url)) as remote_file:
                         with open(target_path, 'wb') as local_file:
                             shutil.copyfileobj(remote_file, local_file)
@@ -222,7 +228,8 @@ class WES(PyExecProfile):
                 log.write(
                     f"> Downloading output data failed.\n"
                 )
-            raise AssertionError(str(e))
+            self.set_custom_status(f"downloading output failed", "red")
+            return()
 
                       
 
@@ -245,3 +252,8 @@ class ELIXIR_CZ_WES_1(WES):
     def exec(self):
         host_url="https://elixir-wes1.cerit-sc.cz"
         super(ELIXIR_CZ_WES_1, self).exec(host_url)
+
+class ELIXIR_GR_WES_1(WES):
+    def exec(self):
+        host_url="http://62.217.83.202:31654"
+        super(ELIXIR_GR_WES_1, self).exec(host_url)
