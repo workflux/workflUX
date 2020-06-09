@@ -216,10 +216,6 @@ class WES(PyExecProfile):
 
                     target_path = os.path.join(self.OUTPUT_DIR, self.outputs[out]["basename"])
 
-                    with open(self.LOG_FILE, "a") as log:
-                        log.write(
-                            f"> ftp_url: {ftp_url}\n"
-                        )
                     with closing(request.urlopen(ftp_url)) as remote_file:
                         with open(target_path, 'wb') as local_file:
                             shutil.copyfileobj(remote_file, local_file)
