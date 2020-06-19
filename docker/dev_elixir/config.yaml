@@ -49,19 +49,19 @@ CUSTOM_LOGIN_ICON_HTML: |
 
 EXEC_PROFILES:
   
-  # ELIXIR_FI_WES_1: 
-  #   type: python
-  #   max_retries: 0
-  #   enable_queueing: False
-  #   py_module: ./wes_exec_profile.py
-  #   py_class: ELIXIR_FI_WES_1
+  ELIXIR_FI_WES_1: 
+    type: python
+    max_retries: 0
+    enable_queueing: False
+    py_module: ./wes_exec_profile.py
+    py_class: ELIXIR_FI_WES_1
     
-  # ELIXIR_FI_WES_2: 
-  #   type: python
-  #   max_retries: 0
-  #   enable_queueing: False
-  #   py_module: ./wes_exec_profile.py
-  #   py_class: ELIXIR_FI_WES_2
+  ELIXIR_FI_WES_2: 
+    type: python
+    max_retries: 0
+    enable_queueing: False
+    py_module: ./wes_exec_profile.py
+    py_class: ELIXIR_FI_WES_2
     
   ELIXIR_CZ_WES_1: 
     type: python
