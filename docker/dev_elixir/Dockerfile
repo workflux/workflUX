@@ -46,4 +46,4 @@ COPY ./docker/dev_elixir/config.yaml /cwlab/config.yaml
 COPY ./docker/dev_elixir/wes_exec_profile.py /cwlab/wes_exec_profile.py
 
 # Default command when starting:
-CMD ["cwlab", "up", "-c", "/cwlab/config.yaml"]
+CMD ["/src/cwlab/cwlab.py", "up", "-c", "/cwlab/config.yaml"]
