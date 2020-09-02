@@ -43,7 +43,8 @@ setup(
                       'psutil',
                       'miniwdl>=0.0.5',
                       'requests',
-                      'path<13.2.0'               
+                      'path<13.2.0',
+                      'shema_salad>=7.0.20200811075006'         
                       ],
     classifiers=[
         'Development Status :: 4 - Beta',
