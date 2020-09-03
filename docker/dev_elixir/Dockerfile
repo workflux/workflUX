@@ -33,7 +33,6 @@ RUN apt-get install -qq -y \
 	git
 	
 RUN python3 -m pip install \
-		cwltool==1.0.20191022103248 \
 		pymysql
 
 # Install cwlab:
