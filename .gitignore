@@ -8,4 +8,4 @@ test
 /cwlab.egg-info
 /build
 /scratch_
-/venv
+/.venv
