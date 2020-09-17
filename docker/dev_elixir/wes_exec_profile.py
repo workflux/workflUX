@@ -251,5 +251,5 @@ class ELIXIR_CZ_WES_1(WES):
 
 class ELIXIR_GR_WES_1(WES):
     def exec(self):
-        host_url="http://62.217.83.202:31654"
+        host_url="https://wes-eu.egci-endpoints.imsi.athenarc.gr"
         super(ELIXIR_GR_WES_1, self).exec(host_url)
