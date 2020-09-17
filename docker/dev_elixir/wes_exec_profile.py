@@ -246,7 +246,7 @@ class ELIXIR_FI_WES_2(WES):
         
 class ELIXIR_CZ_WES_1(WES):
     def exec(self):
-        host_url="https://elixir-wes1.cerit-sc.cz"
+        host_url="https://elixir-wes.cerit-sc.cz"
         super(ELIXIR_CZ_WES_1, self).exec(host_url)
 
 class ELIXIR_GR_WES_1(WES):
