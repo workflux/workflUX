@@ -55,7 +55,7 @@ def normalize_path(path):
     else:
         return os.path.abspath(path)
 
-def vaidate_url(url):
+def validate_url(url):
     try:
         _ = urlopen(url)
     except Exception:
