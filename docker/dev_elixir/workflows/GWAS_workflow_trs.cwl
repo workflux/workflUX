@@ -6,13 +6,13 @@
             "hints": [
                 {
                     "class": "DockerRequirement",
-                    "dockerPull": "biocontainers/gwas-fasp:vv1.0.0_cv1"
+                    "dockerPull": "trs://api.biocontainers.pro/gwas-fasp/versions/gwas-fasp-vv1.0.0"
                 },
                 {
                     "class": "ResourceRequirement",
                     "coresMin": 2,
                     "ramMin": 1024,
-                    "outdirMin": 1024
+                    "outdirMin": 25600
                 }
             ],
             "inputs": [
@@ -164,13 +164,13 @@
             "hints": [
                 {
                     "class": "DockerRequirement",
-                    "dockerPull": "biocontainers/gwas-fasp:vv1.0.0_cv1"
+                    "dockerPull": "trs://api.biocontainers.pro/gwas-fasp/versions/gwas-fasp-vv1.0.0"
                 },
                 {
                     "class": "ResourceRequirement",
                     "coresMin": 1,
                     "ramMin": 1024,
-                    "outdirMin": 1024
+                    "outdirMin": 25600
                 }
             ],
             "inputs": [
@@ -227,13 +227,13 @@
             "hints": [
                 {
                     "class": "DockerRequirement",
-                    "dockerPull": "biocontainers/gwas-fasp:vv1.0.0_cv1"
+                    "dockerPull": "trs://api.biocontainers.pro/gwas-fasp/versions/gwas-fasp-vv1.0.0"
                 },
                 {
                     "class": "ResourceRequirement",
                     "coresMin": 1,
                     "ramMin": 1024,
-                    "outdirMin": 1024
+                    "outdirMin": 25600
                 }
             ],
             "inputs": [
