@@ -2,7 +2,7 @@ apiVersion: apps/v1
 kind: Deployment
 metadata:
   name: cwlabdeployment
-  namespace: cwlab-elixir-stable
+  namespace: cwlab-elixir-demo
   labels:
     app: cwlab
     stage: stable
@@ -71,7 +71,7 @@ apiVersion: v1
 kind: Service
 metadata:
   name: cwlabservice-stable
-  namespace: cwlab-elixir-stable
+  namespace: cwlab-elixir-demo
 spec:
   selector:
     app: cwlab
@@ -85,7 +85,7 @@ apiVersion: extensions/v1beta1
 kind: Ingress
 metadata:
   name: cwlabingress-stable
-  namespace: cwlab-elixir-stable
+  namespace: cwlab-elixir-demo
   annotations:
     cert-manager.io/issuer: letsencrypt-prod
 spec:
@@ -99,5 +99,5 @@ spec:
         path: /
   tls: # < placing a host in the TLS config will indicate a certificate should be created
   - hosts:
-    - cwlab.krini.ingress.rancher.computational.bio
+    - demo.cwlab.krini.ingress.rancher.computational.bio
     secretName: cwlab-letsencrypt-prod-private-cert # < cert-manager will store the created certificate in this secret.
