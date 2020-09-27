@@ -266,7 +266,7 @@ def import_wf_by_trs_uri():
         trs_uri = data_req["trs_uri"]
         import_name = data_req["import_name"]
         
-        assert validate_trs_uri(uri=trs_uri, access_token=access_token),
+        assert validate_trs_uri(uri=trs_uri, access_token=access_token), \
             "TRS URI is not valid."
 
         import_worflow_by_trs(
