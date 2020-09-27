@@ -1,8 +1,11 @@
-import os
+import os, typing
 from .utils import make_temp_dir, import_cwl
 
 
-def validate_trs_uri(uri:str):
+def validate_trs_uri(
+    uri:str, 
+    access_token:typing.Optional(str)=None
+):
     """
     Validates a trs URI and returns
     - True = valid
@@ -13,7 +16,11 @@ def validate_trs_uri(uri:str):
     retun(True)
 
 
-def import_worflow_by_trs(uri:str, name:str):
+def import_worflow_by_trs(
+    uri:str, 
+    name:str,
+    access_token:typing.Optional(str)=None
+):
     """
     Downloads and imports a workflow from a 
     TRS endpoint.

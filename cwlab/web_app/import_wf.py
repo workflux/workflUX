@@ -266,10 +266,14 @@ def import_wf_by_trs_uri():
         trs_uri = data_req["trs_uri"]
         import_name = data_req["import_name"]
         
-        assert validate_trs_uri(uri=trs_uri),
+        assert validate_trs_uri(uri=trs_uri, access_token=access_token),
             "TRS URI is not valid."
 
-        import_worflow_by_trs(uri=wf_path, name=import_name, wf_type=wf_type)
+        import_worflow_by_trs(
+            uri=wf_path, 
+            name=import_name, 
+            access_token=access_token
+        )
 
         messages.append( { 
             "time": get_time_string(),
