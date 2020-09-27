@@ -17,8 +17,14 @@ RUN apt-get install -y build-essential \
 	libtool \
 	libz-dev \
     libssl-dev \
-	libcurl4-openssl-dev \
-	libreadline-gplv2-dev \
+	libcurl4-openssl-dev
+
+
+RUN echo "console-setup   console-setup/charmap47 select  UTF-8" > encoding.conf && \
+	debconf-set-selections encoding.conf && \
+	rm encoding.conf
+
+RUN apt-get install -y libreadline-gplv2-dev \
 	libncursesw5-dev \
     libsqlite3-dev \
 	tk-dev \
@@ -26,8 +32,7 @@ RUN apt-get install -y build-essential \
 	libc6-dev \
 	libbz2-dev \
 	libffi-dev \
-	zlib1g-dev \
-	python3-pip
+	zlib1g-dev
 
 # Install Python 3.7:
 RUN cd /usr/src && \
@@ -38,17 +43,14 @@ RUN cd /usr/src && \
 	make altinstall	
 
 
-RUN echo "console-setup   console-setup/charmap47 select  UTF-8" > encoding.conf && \
-	debconf-set-selections encoding.conf && \
-	rm encoding.conf
-
 RUN apt-get install -qq -y \
 	squashfs-tools \
 	uuid-dev \
 	libgpgme11-dev \
 	libseccomp-dev \
 	pkg-config \
-	git
+	git \
+	python3-pip
 	
 RUN python3.7 -m pip install \
 		pymysql
