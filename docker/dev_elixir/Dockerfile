@@ -20,9 +20,7 @@ RUN apt-get install -y build-essential \
 	libcurl4-openssl-dev
 
 
-RUN echo "console-setup   console-setup/charmap47 select  UTF-8" > encoding.conf && \
-	debconf-set-selections encoding.conf && \
-	rm encoding.conf
+RUN echo 'debconf debconf/frontend select Noninteractive' | debconf-set-selections
 
 RUN apt-get install -y libreadline-gplv2-dev \
 	libncursesw5-dev \
