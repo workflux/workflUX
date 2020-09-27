@@ -24,6 +24,7 @@ def import_worflow_by_trs(uri:str, name:str):
     # save workflow to a temporary cwl file
     temp_dir = make_temp_dir()
     cwl_file = os.path.join(temp_dir, "temp.cwl")
+    pass
 
     # import workflow:
     import_cwl(
