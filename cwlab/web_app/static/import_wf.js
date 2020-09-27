@@ -690,8 +690,8 @@ class ImportTrsUri extends React.Component{
                 <span className="w3-text-green">1. Provide a TRS URI:</span>&nbsp;
                 <Message type="hint">
                     <span>
-                        TRS URIs look like this "..." 
-                        (e.g. "...")
+                        TRS URIs look for instance like this:
+                        "trs://trs-filer-test.c03.k8s-popup.csc.fi/gwas-fasp/versions/e214485"
                     </span>
                 </Message>
                 <input type="text"

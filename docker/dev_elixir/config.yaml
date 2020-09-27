@@ -15,7 +15,9 @@ INPUT_SOURCES:
   local_file_system: False
   URL: True
 
-DEMO: True
+  PERMANENTLY_DISABLE_INPUT_VALIDATION: True
+
+DEMO: False
 DEBUG: False
 CHECK_EXEC_PID: False
 

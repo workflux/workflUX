@@ -1004,7 +1004,7 @@ class JobParamFormHTML extends React.Component {
                 param_configs: this.state.paramConfigs,
                 wf_target: this.props.cwlTarget,
                 job_name: this.props.jobName,
-                validate_uris: this.props.validateURIs,
+                validate_uris: this.props.validateURIs && !permanetlyDisableInputValidation,
                 search_paths: this.props.searchPaths,
                 search_dir: this.props.searchDir,
                 include_subdirs_for_searching: this.props.includeSubbDirsForSearching
@@ -1132,20 +1132,24 @@ class JobParamFormHTML extends React.Component {
             return(
                 <div>
                     <DisplayServerMessages messages={this.state.serverMessages} />
-                    <ParamValidationOptions
-                        jobName={this.props.jobName}
-                        validateURIs={this.props.validateURIs}
-                        searchPaths={this.props.searchPaths}
-                        changeEnableUriValidation={this.props.changeEnableUriValidation}
-                        changeEnablePathSearching={this.props.changeEnablePathSearching}
-                        searchDir={this.props.searchDir}
-                        changeSearchDir={this.props.changeSearchDir}
-                        includeSubbDirsForSearching={this.props.includeSubbDirsForSearching}
-                        changeIncludeSubDirsForSearching={this.props.changeIncludeSubDirsForSearching}
-                        prevPath={this.props.prevPath}
-                        changePrevPath={this.props.changePrevPath}
-                    />
-                    <hr/>
+                    {! permanetlyDisableInputValidation &&
+                        <div>
+                            <ParamValidationOptions
+                                jobName={this.props.jobName}
+                                validateURIs={this.props.validateURIs}
+                                searchPaths={this.props.searchPaths}
+                                changeEnableUriValidation={this.props.changeEnableUriValidation}
+                                changeEnablePathSearching={this.props.changeEnablePathSearching}
+                                searchDir={this.props.searchDir}
+                                changeSearchDir={this.props.changeSearchDir}
+                                includeSubbDirsForSearching={this.props.includeSubbDirsForSearching}
+                                changeIncludeSubDirsForSearching={this.props.changeIncludeSubDirsForSearching}
+                                prevPath={this.props.prevPath}
+                                changePrevPath={this.props.changePrevPath}
+                            />
+                            <hr/>
+                        </div>
+                    }
                     <Message type="hint">
                         <b>Hint</b>
                         <br/>
