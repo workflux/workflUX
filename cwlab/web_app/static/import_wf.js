@@ -647,15 +647,97 @@ class ImportCwlUrl extends React.Component{
 }
 
 
+class ImportTrsUri extends React.Component{
+    constructor(props){
+        super(props);
+        this.state = {
+            importName: "",
+            trsUri: "",
+            actionStatus: "none",
+            importMessages: []
+        }
+
+        this.changeInputField = this.changeInputField.bind(this);
+        this.importTrsUri = this.importTrsUri.bind(this);
+        this.ajaxRequest = ajaxRequest.bind(this);
+    }
+
+    changeInputField(event){
+        this.setState({
+            [event.currentTarget.name]: event.currentTarget.value
+        })
+    }
+
+    async importTrsUri(){
+        this.ajaxRequest({
+            statusVar: "actionStatus",
+            statusValueDuringRequest: "import",
+            messageVar: "importMessages",
+            sendData: {
+                trs_uri: this.state.trsUri,
+                import_name: this.state.importName
+            },
+            route: routeImportCwlByPathOrUrl
+        })
+    }
+
+    render(){
+        return(
+            <div className="w3-panel">
+                <p>
+                    Import a workflow via a Tool Repository Service (TRS) URI.
+                </p>
+                <span className="w3-text-green">1. Provide a TRS URI:</span>&nbsp;
+                <Message type="hint">
+                    <span>
+                        TRS URIs look like this "..." 
+                        (e.g. "...")
+                    </span>
+                </Message>
+                <input type="text"
+                    className="w3-input w3-border"
+                    name="trsUri"
+                    style={ {width: "50%"} }
+                    value={this.state.trsUri}
+                    onChange={this.changeInputField}
+                />
+                <br/>
+                <span className="w3-text-green">2. Choose a name:</span>&nbsp;
+                <input type="text"
+                    className="w3-input w3-border"
+                    name="importName"
+                    style={ {width: "50%"} }
+                    value={this.state.importName}
+                    onChange={this.changeInputField}
+                />
+                <br/>
+                <ActionButton
+                    name="import"
+                    value="import"
+                    onAction={this.importTrsUri}
+                    label="import using selected name"
+                    loading={this.state.actionStatus == "import"}
+                    disabled={this.state.actionStatus != "none" || demo}
+                />
+                <DisplayServerMessages messages={this.state.importMessages} />
+            </div>
+        )
+    }
+}
+
 
 class ImportCWLRoot extends React.Component {
     constructor(props){
         super(props);
         this.state = {
-            importMethod: "cwlUrl"
+            importMethod: "trsUrl"
         }
 
         this.importMethods = {
+            trsUrl: {
+                descr: "Tool Repository Service (TRS) URI",
+                component: <ImportTrsUri />
+            },
             cwlUrl: {
                 descr: "URL to public CWL document (e.g. from github)",
                 component: <ImportCwlUrl />
