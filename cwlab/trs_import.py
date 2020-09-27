@@ -20,6 +20,12 @@ def import_worflow_by_trs(uri:str, name:str):
     """
     # download the workflow:
     pass
+    wf_type = "cwl" # please set this to one of: cwl, wdl, or Janis
+
+    # currently only cwl is supported:
+    assert wf_type == "cwl", \
+        f"The TRS URI you specified points to worklfows of type \"{wf_type}\". " + \
+        "However, currently, only CWL workflows are supported."
 
     # save workflow to a temporary cwl file
     temp_dir = make_temp_dir()
