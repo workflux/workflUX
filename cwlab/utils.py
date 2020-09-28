@@ -289,10 +289,10 @@ def pack_cwl(cwl_path):
         loadingContext, workflowobj, uri = fetch_document(cwl_path)
         loadingContext.do_update = False
         loadingContext, uri = resolve_and_validate_document(loadingContext, workflowobj, uri)
-        processobj = loadingContext.loader.resolve_ref(uri)[0]
         if StrictVersion(cwltool_version) >= StrictVersion("3.0.0"):
-            packed_cwl = json.loads(print_pack(document_loader, uri))
+            packed_cwl = json.loads(print_pack(loadingContext, uri))
         else:
+            processobj = loadingContext.loader.resolve_ref(uri)[0]
             packed_cwl = json.loads(print_pack(loadingContext.loader, processobj, uri, loadingContext.metadata))
     else:
         from cwltool.load_tool import validate_document
