@@ -295,7 +295,11 @@ def pack_cwl(cwl_path):
         from cwltool.load_tool import validate_document
         document_loader, workflowobj, uri = fetch_document(cwl_path)
         document_loader, _, processobj, metadata, uri = validate_document(document_loader, workflowobj, uri, [], {})
-        packed_cwl = json.loads(print_pack(document_loader, processobj, uri, metadata))
+        if StrictVersion(cwltool_version) >= StrictVersion("3.0.0"):
+            packed_cwl = json.loads(print_pack(document_loader, uri))
+        else:
+            packed_cwl = json.loads(print_pack(document_loader, processobj, uri, metadata))
+
     return packed_cwl
 
 def import_cwl(wf_path, name):
