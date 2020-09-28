@@ -51,8 +51,11 @@ RUN apt-get install -qq -y \
 	python3-pip
 	
 RUN python3.7 -m pip install \
-		pymysql \
-    trs-cli==0.3.0
+	pymysql \
+	requests \
+	pydantic \
+	urllib3 \
+    trs-cli==0.3.1
 
 # Install cwlab:
 COPY . /src/cwlab
