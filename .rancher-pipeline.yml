@@ -19,6 +19,16 @@ stages:
     branch:
       include:
       - master
+- name: build-demo
+  steps:
+  - publishImageConfig:
+      dockerfilePath: ./docker/dev_elixir/Dockerfile
+      buildContext: .
+      tag: krini/cwlab:demo-${CICD_EXECUTION_SEQUENCE}
+  when:
+    branch:
+      include:
+      - demo
 - name: build-testing
   steps:
   - publishImageConfig:
@@ -53,5 +63,13 @@ stages:
     branch:
       include:
       - feature/testing
+- name: deploy-demo
+  steps:
+  - applyYamlConfig:
+      path: ./kube/demo-deployment.yaml
+  when:
+    branch:
+      include:
+      - feature/demo
 timeout: 60
 notification: {}
