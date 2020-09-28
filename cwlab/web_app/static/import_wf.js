@@ -677,7 +677,7 @@ class ImportTrsUri extends React.Component{
                 trs_uri: this.state.trsUri,
                 import_name: this.state.importName
             },
-            route: routeImportCwlByPathOrUrl
+            route: routeImportCwlByTrsUri
         })
     }
 
