@@ -4,7 +4,7 @@ from .utils import make_temp_dir, import_cwl
 
 def validate_trs_uri(
     uri:str, 
-    access_token:typing.Optional(str)=None
+    access_token:typing.Optional[str]=None
 ):
     """
     Validates a trs URI and returns
@@ -19,7 +19,7 @@ def validate_trs_uri(
 def import_worflow_by_trs(
     uri:str, 
     name:str,
-    access_token:typing.Optional(str)=None
+    access_token:typing.Optional[str]=None
 ):
     """
     Downloads and imports a workflow from a 

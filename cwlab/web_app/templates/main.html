@@ -62,6 +62,7 @@
             const buildNumber = "{{ config.BUILD_NUMBER }}"
             const min_remaining_access_token_time_for_exec = parseInt("{{ config.MIN_REMAINING_ACCESS_TOKEN_TIME_FOR_EXEC }}")
             const inputSources = JSON.parse('{{ config.INPUT_SOURCES | tojson | safe }}')
+            const permanetlyDisableInputValidation = "{{ config.PERMANENTLY_DISABLE_INPUT_VALIDATION }}" === "True"
             const customLoginIconHTML = `{{ config.CUSTOM_LOGIN_ICON_HTML | safe}}` == "None" ? (
                 null
             ) : (
