@@ -7,7 +7,7 @@ from flask import current_app as app
 from cwlab.utils import is_allowed_file, allowed_extensions_by_type, get_path, \
     make_temp_dir, import_wf as import_wf_, unzip_dir, get_allowed_base_dirs, \
     check_if_path_in_dirs, download_file, validate_url, get_time_string
-from cwlab.trs_import import validate_trs_uri, import_worflow_by_trs
+from cwlab.trs_import import import_worflow_by_trs
 from cwlab.wf_input import generate_xls_from_wf as generate_job_template_from_cwl
 from cwlab.users.manage import login_required
 from shutil import rmtree
@@ -266,9 +266,6 @@ def import_wf_by_trs_uri():
         trs_uri = data_req["trs_uri"]
         import_name = data_req["import_name"]
         
-        assert validate_trs_uri(uri=trs_uri, access_token=access_token), \
-            "TRS URI is not valid."
-
         import_worflow_by_trs(
             uri=wf_path, 
             name=import_name, 
