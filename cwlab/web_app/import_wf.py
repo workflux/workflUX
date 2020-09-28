@@ -267,7 +267,7 @@ def import_wf_by_trs_uri():
         import_name = data_req["import_name"]
         
         import_worflow_by_trs(
-            uri=wf_path, 
+            uri=trs_uri, 
             name=import_name, 
             access_token=access_token
         )
