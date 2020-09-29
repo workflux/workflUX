@@ -62,7 +62,6 @@ COPY . /src/cwlab
 RUN python3.7 -m pip install -e /src/cwlab
 
 # Configure cwlab:
-COPY ./docker/dev_elixir/workflows /cwlab/wf_dir
 COPY ./docker/dev_elixir/config.yaml /cwlab/config.yaml
 COPY ./docker/dev_elixir/wes_exec_profile.py /cwlab/wes_exec_profile.py
 
