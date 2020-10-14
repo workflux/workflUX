@@ -29,6 +29,7 @@
             const routeListAvailWfsInJanis = "{{ url_for('list_avail_wfs_in_janis') }}"
             const routeUploadCwlZip = "{{ url_for('upload_cwl_zip') }}"
             const routeImportCwlByPathOrUrl = "{{ url_for('import_wf_by_path_or_url') }}"
+            const routeImportCwlByTrsUri = "{{ url_for('import_wf_by_trs_uri') }}"
             const routeGetJobTemplList = "{{ url_for('get_job_templ_list') }}"
             const routeGetJobTemplConfigInfo = "{{ url_for('get_job_templ_config_info') }}"
             const routeGetParamValues = "{{ url_for('get_param_values') }}"
@@ -61,6 +62,7 @@
             const buildNumber = "{{ config.BUILD_NUMBER }}"
             const min_remaining_access_token_time_for_exec = parseInt("{{ config.MIN_REMAINING_ACCESS_TOKEN_TIME_FOR_EXEC }}")
             const inputSources = JSON.parse('{{ config.INPUT_SOURCES | tojson | safe }}')
+            const permanetlyDisableInputValidation = "{{ config.PERMANENTLY_DISABLE_INPUT_VALIDATION }}" === "True"
             const customLoginIconHTML = `{{ config.CUSTOM_LOGIN_ICON_HTML | safe}}` == "None" ? (
                 null
             ) : (

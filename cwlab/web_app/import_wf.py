@@ -6,7 +6,8 @@ from werkzeug.utils import secure_filename
 from flask import current_app as app
 from cwlab.utils import is_allowed_file, allowed_extensions_by_type, get_path, \
     make_temp_dir, import_wf as import_wf_, unzip_dir, get_allowed_base_dirs, \
-    check_if_path_in_dirs, download_file, vaidate_url, get_time_string
+    check_if_path_in_dirs, download_file, validate_url, get_time_string
+from cwlab.trs_import import import_worflow_by_trs
 from cwlab.wf_input import generate_xls_from_wf as generate_job_template_from_cwl
 from cwlab.users.manage import login_required
 from shutil import rmtree
@@ -226,7 +227,7 @@ def import_wf_by_path_or_url():
         wf_type = data_req["wf_type"] if "wf_type" in data_req.keys() else None
 
         if is_url:
-            vaidate_url(wf_path)
+            validate_url(wf_path)
         else:
             allowed_dirs = get_allowed_base_dirs(
                 allow_input=True,
@@ -239,6 +240,37 @@ def import_wf_by_path_or_url():
                 "Path does not exist or you have no permission to enter it."
 
         import_wf_(wf_path=wf_path, name=import_name, wf_type=wf_type)
+
+        messages.append( { 
+            "time": get_time_string(),
+            "type":"success", 
+            "text": import_name + " successfully imported."
+        } )
+
+    except AssertionError as e:
+        messages.append( handle_known_error(e, return_front_end_message=True))
+    except Exception as e:
+        messages.append(handle_unknown_error(e, return_front_end_message=True))
+    
+    return jsonify({"data":data,"messages":messages})
+
+
+@app.route('/import_wf_by_trs_uri/', methods=['POST'])
+def import_wf_by_trs_uri():
+    messages = []
+    data = []
+    try:
+        data_req = request.get_json()
+        access_token = data_req["access_token"]
+        login_required(access_token=access_token)
+        trs_uri = data_req["trs_uri"]
+        import_name = data_req["import_name"]
+        
+        import_worflow_by_trs(
+            uri=trs_uri, 
+            name=import_name, 
+            access_token=access_token
+        )
 
         messages.append( { 
             "time": get_time_string(),

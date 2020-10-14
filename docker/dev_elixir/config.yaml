@@ -3,7 +3,7 @@ WEB_SERVER_PORT: 5000
 FINAL_WEB_HOST_URL_ENV_VAR: "host"
 
 BASE_DIR: '/mnt/cwlab/permanent'
-WORKFLOW_DIR: '/cwlab/wf_dir'
+WORKFLOW_DIR: '/mnt/cwlab/permanent/wf_dir'
 # INCLUDE_BUILD_NUMBER_IN_BASE_DIR: True
 
 DATABASE_URL: "mysql+pymysql://<username>:<password>@<host>:3306/cwlab"
@@ -15,7 +15,9 @@ INPUT_SOURCES:
   local_file_system: False
   URL: True
 
-DEMO: True
+PERMANENTLY_DISABLE_INPUT_VALIDATION: True
+
+DEMO: False
 DEBUG: False
 CHECK_EXEC_PID: False
 

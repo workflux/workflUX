@@ -55,7 +55,7 @@ def normalize_path(path):
     else:
         return os.path.abspath(path)
 
-def vaidate_url(url):
+def validate_url(url):
     try:
         _ = urlopen(url)
     except Exception:
@@ -289,13 +289,17 @@ def pack_cwl(cwl_path):
         loadingContext, workflowobj, uri = fetch_document(cwl_path)
         loadingContext.do_update = False
         loadingContext, uri = resolve_and_validate_document(loadingContext, workflowobj, uri)
-        processobj = loadingContext.loader.resolve_ref(uri)[0]
-        packed_cwl = json.loads(print_pack(loadingContext.loader, processobj, uri, loadingContext.metadata))
+        if StrictVersion(cwltool_version) >= StrictVersion("3.0.0"):
+            packed_cwl = json.loads(print_pack(loadingContext, uri))
+        else:
+            processobj = loadingContext.loader.resolve_ref(uri)[0]
+            packed_cwl = json.loads(print_pack(loadingContext.loader, processobj, uri, loadingContext.metadata))
     else:
         from cwltool.load_tool import validate_document
         document_loader, workflowobj, uri = fetch_document(cwl_path)
         document_loader, _, processobj, metadata, uri = validate_document(document_loader, workflowobj, uri, [], {})
         packed_cwl = json.loads(print_pack(document_loader, processobj, uri, metadata))
+
     return packed_cwl
 
 def import_cwl(wf_path, name):
