@@ -44,7 +44,7 @@ setup(
         'requests',
         'path<13.2.0',
         'schema-salad>=7.0.20200811075006',
-        'trs-cli'>=0.3.1
+        'trs-cli>=0.3.1'
     ],
     classifiers=[
         'Development Status :: 4 - Beta',
