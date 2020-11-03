@@ -1,11 +1,15 @@
-FROM ubuntu:18.04
+FROM ubuntu:20.04
 
 LABEL author="Kersten Breuer, Cancer Epigenomics, Plass Team, DKFZ 2020" \
     maintainer="kersten-breuer@outlook.com"
 
 # Package versions/links:
-ENV CWLTOOL_VERSION 1.0.20181012180214
-ENV SINGULARITY_VERSION 3.3.0
+ENV CWLTOOL_VERSION 3.0.20200807132242
+ENV SINGULARITY_VERSION 3.6.4
+ENV DEBIAN_FRONTEND noninteractive
+RUN echo "console-setup   console-setup/charmap47 select  UTF-8" > encoding.conf && \
+	debconf-set-selections encoding.conf && \
+	rm encoding.conf
 
 # Install essential dependencies:
 RUN apt-get update -qq -y --fix-missing
@@ -22,10 +26,6 @@ RUN apt-get install -y build-essential \
 	libcurl4-openssl-dev
 
 # Install singularity:
-ENV DEBCONF_FRONTEND noninteractive
-RUN echo "console-setup   console-setup/charmap47 select  UTF-8" > encoding.conf && \
-	debconf-set-selections encoding.conf && \
-	rm encoding.conf
 RUN apt-get install -qq -y \
 	squashfs-tools \
 	uuid-dev \
@@ -34,11 +34,12 @@ RUN apt-get install -qq -y \
 	pkg-config \
 	git
 
+ENV GO_VERSION 1.14.9
 ENV GOPATH /usr/local/go_path
 ENV PATH /usr/local/go/bin:${PATH}:${GOPATH}/bin
-RUN wget https://dl.google.com/go/go1.12.7.linux-amd64.tar.gz && \
-	tar -C /usr/local -xzvf go1.12.7.linux-amd64.tar.gz && \
-    rm go1.12.7.linux-amd64.tar.gz && \
+RUN wget https://dl.google.com/go/go${GO_VERSION}.linux-amd64.tar.gz && \
+	tar -C /usr/local -xzvf go${GO_VERSION}.linux-amd64.tar.gz && \
+    rm go${GO_VERSION}.linux-amd64.tar.gz && \
 	go get -u github.com/golang/dep/cmd/dep
 
 RUN cd /usr/local/ && \
