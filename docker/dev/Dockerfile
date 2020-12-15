@@ -67,6 +67,11 @@ RUN mkdir -p \
     chmod -R 777 /cwlab
 
 COPY docker/dev/config.yaml /etc/cwlab/config.yaml
+
+RUN groupadd -g 1000 cwlab && \
+    useradd -u 1000 -g 1000 -m cwlab && \
+    chown -R cwlab:cwlab /cwlab
+USER cwlab:cwlab
 WORKDIR /cwlab
 
 # Default command when starting:
