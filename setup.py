@@ -38,7 +38,7 @@ setup(
         'PyYAML>=5.1',
         'pexpect',
         'janis-pipelines',
-        'cwltool==3.0.20200807132242',
+        'cwltool==3.0.20201203173111',
         'psutil',
         'miniwdl>=0.0.5',
         'requests',

@@ -4,35 +4,33 @@ LABEL author="Kersten Breuer, Cancer Epigenomics, Plass Team, DKFZ 2020" \
     maintainer="kersten-breuer@outlook.com"
 
 # Package versions/links:
-ENV CWLTOOL_VERSION 3.0.20200807132242
 ENV SINGULARITY_VERSION 3.6.4
-ENV DEBIAN_FRONTEND noninteractive
-RUN echo "console-setup   console-setup/charmap47 select  UTF-8" > encoding.conf && \
-	debconf-set-selections encoding.conf && \
-	rm encoding.conf
 
 # Install essential dependencies:
-RUN apt-get update -qq -y --fix-missing
-RUN apt-get install -y build-essential \
-    python3-dev \
+RUN apt-get update -qq -y --fix-missing && \
+    echo "console-setup   console-setup/charmap47 select  UTF-8" > encoding.conf && \
+	debconf-set-selections encoding.conf && \
+	rm encoding.conf && \
+    DEBIAN_FRONTEND=noninteractive apt-get install -y build-essential \
+        python3-dev \
 	python3-pip \
-    wget \
-    nodejs \
-    tar \
+        wget \
+        nodejs \
+        tar \
 	curl \
 	libtool \
 	libz-dev \
-    libssl-dev \
+        libssl-dev \
 	libcurl4-openssl-dev
 
 # Install singularity:
 RUN apt-get install -qq -y \
-	squashfs-tools \
-	uuid-dev \
-	libgpgme11-dev \
-	libseccomp-dev \
-	pkg-config \
-	git
+            squashfs-tools \
+            uuid-dev \
+            libgpgme11-dev \
+            libseccomp-dev \
+            pkg-config \
+            git
 
 ENV GO_VERSION 1.14.9
 ENV GOPATH /usr/local/go_path
@@ -53,23 +51,23 @@ RUN cd /usr/local/ && \
 
 ENV PATH /usr/local/singularity/:${PATH}
 
+COPY . /cwlab/src/
 # Install cwlab:
-RUN python3 -m pip install cwltool==${CWLTOOL_VERSION}  && \
-	mkdir /cwlab && \
-	git clone -b development https://github.com/CompEpigen/CWLab.git /cwlab/src && \
-	cd /cwlab/src && \
-	python3 -m pip install .
+RUN cd /cwlab/src && \
+    python3 -m pip install .
 
 # Configure cwlab:
 RUN mkdir -p \
         /cwlab/tmp \
-        /cwlab/worlflows \
+        /cwlab/workflows \
         /cwlab/exec \
         /cwlab/input \
-        /cwlab/database && \
+        /cwlab/database \
+        /cwlab/.singularity/tmp && \
     chmod -R 777 /cwlab
 
-COPY config.yaml /cwlab/config.yaml
+COPY docker/dev/config.yaml /etc/cwlab/config.yaml
+WORKDIR /cwlab
 
 # Default command when starting:
-CMD ["cwlab", "up", "-c", "/cwlab/config.yaml"]
+CMD ["cwlab", "up", "-c", "/etc/cwlab/config.yaml"]
