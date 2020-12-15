@@ -23,6 +23,7 @@ EXEC_PROFILES:
 
     prepare: |
       export SINGULARITY_TMPDIR=/cwlab/.singularity/tmp
+      if [ ! -e $SINGULARITY_TMPDIR ]; then mkdir -p $SINGULARITY_TMPDIR; fi
       TMP_DIR="${OUTPUT_DIR}/tmp"
       TMP_OUT_DIR="${OUTPUT_DIR}/tmp_out"
       mkdir -p "${TMP_DIR}" "${TMP_OUT_DIR}"
@@ -50,6 +51,7 @@ EXEC_PROFILES:
 
     prepare: |
       export SINGULARITY_TMPDIR=/cwlab/.singularity/tmp
+      if [ ! -e $SINGULARITY_TMPDIR ]; then mkdir -p $SINGULARITY_TMPDIR; fi
       TMP_DIR="${OUTPUT_DIR}/tmp"
       CACHE_DIR="${OUTPUT_DIR}/cache"
       mkdir -p "${TMP_DIR}" "${CACHE_DIR}"
