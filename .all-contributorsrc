@@ -1,0 +1,25 @@
+{
+  "files": [
+    "README.md"
+  ],
+  "imageSize": 100,
+  "commit": false,
+  "contributors": [
+    {
+      "login": "KerstenBreuer",
+      "name": "Kersten Breuer",
+      "avatar_url": "https://avatars3.githubusercontent.com/u/28008309?v=4",
+      "profile": "https://github.com/KerstenBreuer",
+      "contributions": [
+        "code",
+        "design"
+      ]
+    }
+  ],
+  "contributorsPerLine": 7,
+  "projectName": "CWLab",
+  "projectOwner": "CompEpigen",
+  "repoType": "github",
+  "repoHost": "https://github.com",
+  "skipCi": true
+}
