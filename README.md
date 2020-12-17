@@ -371,6 +371,7 @@ Thanks goes to these wonderful people ([emoji key](https://allcontributors.org/d
     <td align="center"><a href="https://github.com/lukasjelonek"><img src="https://avatars0.githubusercontent.com/u/6919146?v=4" width="100px;" alt=""/><br /><sub><b>Lukas Jelonek</b></sub></a><br /><a href="https://github.com/CompEpigen/CWLab/commits?author=lukasjelonek" title="Code">💻</a></td>
     <td align="center"><a href="https://github.com/lutsik"><img src="https://avatars0.githubusercontent.com/u/10563886?v=4" width="100px;" alt=""/><br /><sub><b>Pavlo Lutsik</b></sub></a><br /><a href="https://github.com/CompEpigen/CWLab/commits?author=lutsik" title="Code">💻</a> <a href="#ideas-lutsik" title="Ideas, Planning, & Feedback">🤔</a> <a href="#financial-lutsik" title="Financial">💵</a></td>
     <td align="center"><a href="https://github.com/illusional"><img src="https://avatars1.githubusercontent.com/u/22381693?v=4" width="100px;" alt=""/><br /><sub><b>Michael Franklin</b></sub></a><br /><a href="https://github.com/CompEpigen/CWLab/commits?author=illusional" title="Code">💻</a></td>
+    <td align="center"><a href="https://git.scicore.unibas.ch/kanitz"><img src="https://avatars3.githubusercontent.com/u/10855418?v=4" width="100px;" alt=""/><br /><sub><b>Alex Kanitz</b></sub></a><br /><a href="https://github.com/CompEpigen/CWLab/commits?author=uniqueg" title="Code">💻</a></td>
   </tr>
 </table>
 
