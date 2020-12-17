@@ -14,6 +14,15 @@
         "code",
         "design"
       ]
+    },
+    {
+      "login": "svedziok",
+      "name": "Sven Twardziok",
+      "avatar_url": "https://avatars0.githubusercontent.com/u/17719296?v=4",
+      "profile": "https://github.com/svedziok",
+      "contributions": [
+        "code"
+      ]
     }
   ],
   "contributorsPerLine": 7,
