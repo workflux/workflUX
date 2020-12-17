@@ -71,6 +71,15 @@
       "contributions": [
         "code"
       ]
+    },
+    {
+      "login": "YoannPa",
+      "name": "Yoann PAGEAUD",
+      "avatar_url": "https://avatars3.githubusercontent.com/u/12813932?v=4",
+      "profile": "https://fr.linkedin.com/in/yoannpageaud",
+      "contributions": [
+        "code"
+      ]
     }
   ],
   "contributorsPerLine": 7,
