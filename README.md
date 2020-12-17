@@ -1,6 +1,6 @@
 [![PyPI status](https://img.shields.io/pypi/status/cwlab.svg)](https://pypi.python.org/pypi/cwlab/)
 <!-- ALL-CONTRIBUTORS-BADGE:START - Do not remove or modify this section -->
-[![All Contributors](https://img.shields.io/badge/all_contributors-3-orange.svg?style=flat-square)](#contributors-)
+[![All Contributors](https://img.shields.io/badge/all_contributors-4-orange.svg?style=flat-square)](#contributors-)
 <!-- ALL-CONTRIBUTORS-BADGE:END -->
 [![PyPI version shields.io](https://img.shields.io/pypi/v/cwlab.svg)](https://pypi.python.org/pypi/cwlab/)
 [![PyPI pyversions](https://img.shields.io/pypi/pyversions/cwlab.svg)](https://pypi.python.org/pypi/cwlab/)
@@ -368,6 +368,7 @@ Thanks goes to these wonderful people ([emoji key](https://allcontributors.org/d
     <td align="center"><a href="https://github.com/KerstenBreuer"><img src="https://avatars3.githubusercontent.com/u/28008309?v=4" width="100px;" alt=""/><br /><sub><b>Kersten Breuer</b></sub></a><br /><a href="https://github.com/CompEpigen/CWLab/commits?author=KerstenBreuer" title="Code">💻</a> <a href="#design-KerstenBreuer" title="Design">🎨</a></td>
     <td align="center"><a href="https://github.com/svedziok"><img src="https://avatars0.githubusercontent.com/u/17719296?v=4" width="100px;" alt=""/><br /><sub><b>Sven Twardziok</b></sub></a><br /><a href="https://github.com/CompEpigen/CWLab/commits?author=svedziok" title="Code">💻</a></td>
     <td align="center"><a href="https://github.com/MariusDieckmann"><img src="https://avatars0.githubusercontent.com/u/13437264?v=4" width="100px;" alt=""/><br /><sub><b>Marius</b></sub></a><br /><a href="https://github.com/CompEpigen/CWLab/commits?author=MariusDieckmann" title="Code">💻</a></td>
+    <td align="center"><a href="https://github.com/lukasjelonek"><img src="https://avatars0.githubusercontent.com/u/6919146?v=4" width="100px;" alt=""/><br /><sub><b>Lukas Jelonek</b></sub></a><br /><a href="https://github.com/CompEpigen/CWLab/commits?author=lukasjelonek" title="Code">💻</a></td>
   </tr>
 </table>
 
