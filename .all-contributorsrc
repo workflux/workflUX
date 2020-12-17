@@ -16,6 +16,17 @@
       ]
     },
     {
+      "login": "lutsik",
+      "name": "Pavlo Lutsik",
+      "avatar_url": "https://avatars0.githubusercontent.com/u/10563886?v=4",
+      "profile": "https://github.com/lutsik",
+      "contributions": [
+        "code",
+        "ideas",
+        "financial"
+      ]
+    },
+    {
       "login": "svedziok",
       "name": "Sven Twardziok",
       "avatar_url": "https://avatars0.githubusercontent.com/u/17719296?v=4",
@@ -41,17 +52,6 @@
       "profile": "https://github.com/lukasjelonek",
       "contributions": [
         "code"
-      ]
-    },
-    {
-      "login": "lutsik",
-      "name": "Pavlo Lutsik",
-      "avatar_url": "https://avatars0.githubusercontent.com/u/10563886?v=4",
-      "profile": "https://github.com/lutsik",
-      "contributions": [
-        "code",
-        "ideas",
-        "financial"
       ]
     },
     {
