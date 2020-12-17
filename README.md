@@ -3,7 +3,7 @@
 [![PyPI pyversions](https://img.shields.io/pypi/pyversions/cwlab.svg)](https://pypi.python.org/pypi/cwlab/)
 [![DOI](https://zenodo.org/badge/180648493.svg)](https://zenodo.org/badge/latestdoi/180648493)
 <!-- ALL-CONTRIBUTORS-BADGE:START - Do not remove or modify this section -->
-[![All Contributors](https://img.shields.io/badge/all_contributors-8-orange.svg?style=flat-square)](#contributors-)
+[![All Contributors](https://img.shields.io/badge/all_contributors-9-orange.svg?style=flat-square)](#contributors-)
 <!-- ALL-CONTRIBUTORS-BADGE:END -->
 
 
@@ -366,7 +366,7 @@ Thanks goes to these wonderful people ([emoji key](https://allcontributors.org/d
 <table>
   <tr>
     <td align="center"><a href="https://github.com/KerstenBreuer"><img src="https://avatars3.githubusercontent.com/u/28008309?v=4" width="100px;" alt=""/><br /><sub><b>Kersten Breuer</b></sub></a><br /><a href="https://github.com/CompEpigen/CWLab/commits?author=KerstenBreuer" title="Code">💻</a> <a href="#design-KerstenBreuer" title="Design">🎨</a></td>
-   <td align="center"><a href="https://github.com/lutsik"><img src="https://avatars0.githubusercontent.com/u/10563886?v=4" width="100px;" alt=""/><br /><sub><b>Pavlo Lutsik</b></sub></a><br /><a href="https://github.com/CompEpigen/CWLab/commits?author=lutsik" title="Code">💻</a> <a href="#ideas-lutsik" title="Ideas, Planning, & Feedback">🤔</a> <a href="#financial-lutsik" title="Financial">💵</a></td>
+    <td align="center"><a href="https://github.com/lutsik"><img src="https://avatars0.githubusercontent.com/u/10563886?v=4" width="100px;" alt=""/><br /><sub><b>Pavlo Lutsik</b></sub></a><br /><a href="https://github.com/CompEpigen/CWLab/commits?author=lutsik" title="Code">💻</a> <a href="#ideas-lutsik" title="Ideas, Planning, & Feedback">🤔</a> <a href="#financial-lutsik" title="Financial">💵</a></td>
     <td align="center"><a href="https://github.com/svedziok"><img src="https://avatars0.githubusercontent.com/u/17719296?v=4" width="100px;" alt=""/><br /><sub><b>Sven Twardziok</b></sub></a><br /><a href="https://github.com/CompEpigen/CWLab/commits?author=svedziok" title="Code">💻</a></td>
     <td align="center"><a href="https://github.com/MariusDieckmann"><img src="https://avatars0.githubusercontent.com/u/13437264?v=4" width="100px;" alt=""/><br /><sub><b>Marius</b></sub></a><br /><a href="https://github.com/CompEpigen/CWLab/commits?author=MariusDieckmann" title="Code">💻</a> <a href="#infra-MariusDieckmann" title="Infrastructure (Hosting, Build-Tools, etc)">🚇</a></td>
     <td align="center"><a href="https://github.com/lukasjelonek"><img src="https://avatars0.githubusercontent.com/u/6919146?v=4" width="100px;" alt=""/><br /><sub><b>Lukas Jelonek</b></sub></a><br /><a href="https://github.com/CompEpigen/CWLab/commits?author=lukasjelonek" title="Code">💻</a></td>
@@ -375,6 +375,7 @@ Thanks goes to these wonderful people ([emoji key](https://allcontributors.org/d
   </tr>
   <tr>
     <td align="center"><a href="https://fr.linkedin.com/in/yoannpageaud"><img src="https://avatars3.githubusercontent.com/u/12813932?v=4" width="100px;" alt=""/><br /><sub><b>Yoann PAGEAUD</b></sub></a><br /><a href="https://github.com/CompEpigen/CWLab/commits?author=YoannPa" title="Code">💻</a></td>
+    <td align="center"><a href="https://github.com/yxomo"><img src="https://avatars2.githubusercontent.com/u/8003345?v=4" width="100px;" alt=""/><br /><sub><b>Yassen Assenov</b></sub></a><br /><a href="#ideas-yxomo" title="Ideas, Planning, & Feedback">🤔</a></td>
   </tr>
 </table>
 
