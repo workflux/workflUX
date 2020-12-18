@@ -1,8 +1,9 @@
+[![Build Status](https://dev.azure.com/ComputationalEpigenomics/workflux/_apis/build/status/CompEpigen.CWLab?branchName=master)](https://dev.azure.com/ComputationalEpigenomics/workflux/_build/latest?definitionId=2&branchName=master)
 [![PyPI status](https://img.shields.io/pypi/status/cwlab.svg)](https://pypi.python.org/pypi/cwlab/)
 [![PyPI version shields.io](https://img.shields.io/pypi/v/cwlab.svg)](https://pypi.python.org/pypi/cwlab/)
 [![PyPI pyversions](https://img.shields.io/pypi/pyversions/cwlab.svg)](https://pypi.python.org/pypi/cwlab/)
 [![DOI](https://zenodo.org/badge/180648493.svg)](https://zenodo.org/badge/latestdoi/180648493)
-
+[![All Contributors](https://img.shields.io/badge/all_contributors-9-orange.svg?style=flat-square)](#contributors-)
 
 
 # CWLab - An open-source framework for simplified deployment of the Common Workflow Language using a graphical web interface
@@ -339,16 +340,35 @@ EXEC_PROFILES:
 
 **Please note: A much more detailed documentation is on the way. In the meantime, please notify us if you have any questions (see the "Contact and Contribution" section). We are happy to help.**
 
-## Contact and Contribution:
-If you have any question or are experiencing problems with CWLab, please contact us at ``k.breuer@dkfz.de`` or open an issue in Github.
-
-If you would like to contribute to the development and like to extend the functionality of CWLab to meet your requirements, you are more than welcome. We will do our best to support you and your contribution will be acknowledged.
-
-## About Us:
-CWLab is developed with love at the Division of Cancer Epigenomics of the German Cancer Research Center (DKFZ) in the beautiful university city of Heidelberg. We are an interdisciplinary team with wet-lab scientists and bioinformaticians working closely together. Our DNA sequencing-driven methodologies produce challenging amounts of data. CWLab helps us by giving all members of our team the ability to perform common bioinformatic analyses autonomously without having to acquire programming skills. This allows our bioinformatic staff to focus on method development and interpretation of computationally complex data.
-
-If you like to know more about us, please visit our website https://www.dkfz.de/en/CanEpi/contact.html.
-
 ## Licence:
 This package is free to use and modify under the Apache 2.0 Licence.
 
+
+## Contributors ✨
+
+Thanks goes to these wonderful people ([emoji key](https://allcontributors.org/docs/en/emoji-key)):
+
+<!-- ALL-CONTRIBUTORS-LIST:START - Do not remove or modify this section -->
+<!-- prettier-ignore-start -->
+<!-- markdownlint-disable -->
+<table>
+  <tr>
+    <td align="center"><a href="https://github.com/KerstenBreuer"><img src="https://avatars3.githubusercontent.com/u/28008309?v=4" width="100px;" alt=""/><br /><sub><b>Kersten Breuer</b></sub></a><br /><a href="https://github.com/CompEpigen/CWLab/commits?author=KerstenBreuer" title="Code">💻</a> <a href="#design-KerstenBreuer" title="Design">🎨</a></td>
+    <td align="center"><a href="https://github.com/lutsik"><img src="https://avatars0.githubusercontent.com/u/10563886?v=4" width="100px;" alt=""/><br /><sub><b>Pavlo Lutsik</b></sub></a><br /><a href="https://github.com/CompEpigen/CWLab/commits?author=lutsik" title="Code">💻</a> <a href="#ideas-lutsik" title="Ideas, Planning, & Feedback">🤔</a> <a href="#financial-lutsik" title="Financial">💵</a></td>
+    <td align="center"><a href="https://github.com/svedziok"><img src="https://avatars0.githubusercontent.com/u/17719296?v=4" width="100px;" alt=""/><br /><sub><b>Sven Twardziok</b></sub></a><br /><a href="https://github.com/CompEpigen/CWLab/commits?author=svedziok" title="Code">💻</a></td>
+    <td align="center"><a href="https://github.com/MariusDieckmann"><img src="https://avatars0.githubusercontent.com/u/13437264?v=4" width="100px;" alt=""/><br /><sub><b>Marius</b></sub></a><br /><a href="https://github.com/CompEpigen/CWLab/commits?author=MariusDieckmann" title="Code">💻</a> <a href="#infra-MariusDieckmann" title="Infrastructure (Hosting, Build-Tools, etc)">🚇</a></td>
+    <td align="center"><a href="https://github.com/lukasjelonek"><img src="https://avatars0.githubusercontent.com/u/6919146?v=4" width="100px;" alt=""/><br /><sub><b>Lukas Jelonek</b></sub></a><br /><a href="https://github.com/CompEpigen/CWLab/commits?author=lukasjelonek" title="Code">💻</a></td>
+    <td align="center"><a href="https://github.com/illusional"><img src="https://avatars1.githubusercontent.com/u/22381693?v=4" width="100px;" alt=""/><br /><sub><b>Michael Franklin</b></sub></a><br /><a href="https://github.com/CompEpigen/CWLab/commits?author=illusional" title="Code">💻</a></td>
+    <td align="center"><a href="https://git.scicore.unibas.ch/kanitz"><img src="https://avatars3.githubusercontent.com/u/10855418?v=4" width="100px;" alt=""/><br /><sub><b>Alex Kanitz</b></sub></a><br /><a href="https://github.com/CompEpigen/CWLab/commits?author=uniqueg" title="Code">💻</a></td>
+  </tr>
+  <tr>
+    <td align="center"><a href="https://fr.linkedin.com/in/yoannpageaud"><img src="https://avatars3.githubusercontent.com/u/12813932?v=4" width="100px;" alt=""/><br /><sub><b>Yoann PAGEAUD</b></sub></a><br /><a href="https://github.com/CompEpigen/CWLab/commits?author=YoannPa" title="Code">💻</a></td>
+    <td align="center"><a href="https://github.com/yxomo"><img src="https://avatars2.githubusercontent.com/u/8003345?v=4" width="100px;" alt=""/><br /><sub><b>Yassen Assenov</b></sub></a><br /><a href="#ideas-yxomo" title="Ideas, Planning, & Feedback">🤔</a></td>
+  </tr>
+</table>
+
+<!-- markdownlint-enable -->
+<!-- prettier-ignore-end -->
+<!-- ALL-CONTRIBUTORS-LIST:END -->
+
+This project follows the [all-contributors](https://github.com/all-contributors/all-contributors) specification. Contributions of any kind welcome!
