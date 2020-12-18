@@ -7,7 +7,7 @@ trigger:
 - main
 
 pool:
-  vmImage: 'ubuntu-latest'
+  vmImage: 'Ubuntu-20.04'
 strategy:
   matrix:
     Python37:
@@ -27,6 +27,10 @@ steps:
     python -m pip install --upgrade pip
     pip install -r requirements.txt
   displayName: 'Install dependencies'
+  
+- script: |
+    python -c "import cwlab"
+  displayName: 'Check if CWLab can be loaded'
 
 # - script: |
 #     pip install pytest pytest-azurepipelines
