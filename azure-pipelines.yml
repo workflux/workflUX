@@ -29,7 +29,7 @@ steps:
   displayName: 'Install dependencies'
   
 - script: |
-    python -c "import cwlab"
+    python -c "import cwlab; import sdfgdsf"
   displayName: 'Check if CWLab can be loaded'
 
 # - script: |
