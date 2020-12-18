@@ -193,7 +193,7 @@ class Config(object):
 
         self.PERMANENTLY_DISABLE_INPUT_VALIDATION = self.CONFIG_FILE_content.get('PERMANENTLY_DISABLE_INPUT_VALIDATION') \
             if not self.CONFIG_FILE_content.get('PERMANENTLY_DISABLE_INPUT_VALIDATION') is None \
-            else FALSE
+            else False
         
         self.UPLOAD_ALLOWED = self.CONFIG_FILE_content.get('UPLOAD_ALLOWED') \
             if not self.CONFIG_FILE_content.get('UPLOAD_ALLOWED') is None \

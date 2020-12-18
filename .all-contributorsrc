@@ -1,0 +1,100 @@
+{
+  "files": [
+    "README.md"
+  ],
+  "imageSize": 100,
+  "commit": false,
+  "contributors": [
+    {
+      "login": "KerstenBreuer",
+      "name": "Kersten Breuer",
+      "avatar_url": "https://avatars3.githubusercontent.com/u/28008309?v=4",
+      "profile": "https://github.com/KerstenBreuer",
+      "contributions": [
+        "code",
+        "design"
+      ]
+    },
+    {
+      "login": "lutsik",
+      "name": "Pavlo Lutsik",
+      "avatar_url": "https://avatars0.githubusercontent.com/u/10563886?v=4",
+      "profile": "https://github.com/lutsik",
+      "contributions": [
+        "code",
+        "ideas",
+        "financial"
+      ]
+    },
+    {
+      "login": "svedziok",
+      "name": "Sven Twardziok",
+      "avatar_url": "https://avatars0.githubusercontent.com/u/17719296?v=4",
+      "profile": "https://github.com/svedziok",
+      "contributions": [
+        "code"
+      ]
+    },
+    {
+      "login": "MariusDieckmann",
+      "name": "Marius",
+      "avatar_url": "https://avatars0.githubusercontent.com/u/13437264?v=4",
+      "profile": "https://github.com/MariusDieckmann",
+      "contributions": [
+        "code",
+        "infra"
+      ]
+    },
+    {
+      "login": "lukasjelonek",
+      "name": "Lukas Jelonek",
+      "avatar_url": "https://avatars0.githubusercontent.com/u/6919146?v=4",
+      "profile": "https://github.com/lukasjelonek",
+      "contributions": [
+        "code"
+      ]
+    },
+    {
+      "login": "illusional",
+      "name": "Michael Franklin",
+      "avatar_url": "https://avatars1.githubusercontent.com/u/22381693?v=4",
+      "profile": "https://github.com/illusional",
+      "contributions": [
+        "code"
+      ]
+    },
+    {
+      "login": "uniqueg",
+      "name": "Alex Kanitz",
+      "avatar_url": "https://avatars3.githubusercontent.com/u/10855418?v=4",
+      "profile": "https://git.scicore.unibas.ch/kanitz",
+      "contributions": [
+        "code"
+      ]
+    },
+    {
+      "login": "YoannPa",
+      "name": "Yoann PAGEAUD",
+      "avatar_url": "https://avatars3.githubusercontent.com/u/12813932?v=4",
+      "profile": "https://fr.linkedin.com/in/yoannpageaud",
+      "contributions": [
+        "code"
+      ]
+    },
+    {
+      "login": "yxomo",
+      "name": "Yassen Assenov",
+      "avatar_url": "https://avatars2.githubusercontent.com/u/8003345?v=4",
+      "profile": "https://github.com/yxomo",
+      "contributions": [
+        "ideas"
+      ]
+    }
+  ],
+  "contributorsPerLine": 7,
+  "projectName": "CWLab",
+  "projectOwner": "CompEpigen",
+  "repoType": "github",
+  "repoHost": "https://github.com",
+  "skipCi": true
+}

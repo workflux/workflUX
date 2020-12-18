@@ -56,7 +56,7 @@ def query_info_from_db(what, db_retry_delays_=None, no_error=False):
             elif what == "next_in_queue":
                 db_request = session.query(Exec).filter(Exec.status == "queued").filter(Exec.exec_profile_name == exec_profile_name).order_by(Exec.id.asc()).first()
             elif what == "running_exec":
-                db_request = session.query(Exec).filter(Exec.time_finished == None).filter(Exec.status != "queued").filter(Exec.exec_profile_name == exec_profile_name)
+                db_request = session.query(Exec).filter(Exec.time_finished == None).filter(Exec.status != "queued").filter(Exec.status != "submitting").filter(Exec.exec_profile_name == exec_profile_name)
             break
         except Exception as e:
             if db_retry_delay == db_retry_delays[-1]:
@@ -129,6 +129,8 @@ commit()
 
 # wait until number of running jobs decreases below max_parallel_exec:
 if exec_profile["enable_queueing"]:
+    exec_db_entry.status = "queued"
+    commit()
     db_retry_delay_queue = [1]
     wait = True
     def wait_queue():
