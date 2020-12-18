@@ -28,6 +28,10 @@ steps:
     pip install -r requirements.txt
   displayName: 'Install dependencies'
 
+- script: |
+    python -m cwlab up
+  displayName: 'Start Flask Server'
+
 # - script: |
 #     pip install pytest pytest-azurepipelines
 #     pytest
