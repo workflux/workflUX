@@ -89,6 +89,16 @@
       "contributions": [
         "ideas"
       ]
+    },
+    {
+      "login": "ifishlin",
+      "name": "YuYu Lin",
+      "avatar_url": "https://avatars3.githubusercontent.com/u/9721827?v=4",
+      "profile": "https://github.com/ifishlin",
+      "contributions": [
+        "code",
+        "plugin"
+      ]
     }
   ],
   "contributorsPerLine": 7,

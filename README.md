@@ -364,6 +364,7 @@ Thanks goes to these wonderful people ([emoji key](https://allcontributors.org/d
   <tr>
     <td align="center"><a href="https://fr.linkedin.com/in/yoannpageaud"><img src="https://avatars3.githubusercontent.com/u/12813932?v=4" width="100px;" alt=""/><br /><sub><b>Yoann PAGEAUD</b></sub></a><br /><a href="https://github.com/CompEpigen/CWLab/commits?author=YoannPa" title="Code">💻</a></td>
     <td align="center"><a href="https://github.com/yxomo"><img src="https://avatars2.githubusercontent.com/u/8003345?v=4" width="100px;" alt=""/><br /><sub><b>Yassen Assenov</b></sub></a><br /><a href="#ideas-yxomo" title="Ideas, Planning, & Feedback">🤔</a></td>
+    <td align="center"><a href="https://github.com/ifishlin"><img src="https://avatars3.githubusercontent.com/u/9721827?v=4" width="100px;" alt=""/><br /><sub><b>YuYu Lin</b></sub></a><br /><a href="https://github.com/CompEpigen/CWLab/commits?author=ifishlin" title="Code">💻</a> <a href="#plugin-ifishlin" title="Plugin/utility libraries">🔌</a></td>
   </tr>
 </table>
 
