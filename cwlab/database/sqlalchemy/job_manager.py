@@ -2,6 +2,7 @@ from cwlab.database.connector import db
 from cwlab.database.sqlalchemy.models import User, Exec, Job, Run
 import sqlalchemy
 from datetime import datetime
+from time import sleep
 
 class JobManager():
     def create_job(
