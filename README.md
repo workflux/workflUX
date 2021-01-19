@@ -11,10 +11,8 @@
 **Packaging:**
 [![PyPI status](https://img.shields.io/pypi/status/cwlab.svg)](https://pypi.python.org/pypi/cwlab/)
 [![PyPI version shields.io](https://img.shields.io/pypi/v/cwlab.svg)](https://pypi.python.org/pypi/cwlab/)
-[![Docker Cloud Automated build](https://img.shields.io/docker/cloud/automated/compepigen/cwlab)](https://hub.docker.com/r/compepigen/cwlab/builds)
-  
-**Major Dependencies:**
 [![PyPI pyversions](https://img.shields.io/pypi/pyversions/cwlab.svg)](https://pypi.python.org/pypi/cwlab/)
+[![Docker Cloud Automated build](https://img.shields.io/docker/cloud/automated/compepigen/cwlab)](https://hub.docker.com/r/compepigen/cwlab/builds)
   
 **Citation & Contribution:**
 [![DOI](https://zenodo.org/badge/180648493.svg)](https://zenodo.org/badge/latestdoi/180648493)
