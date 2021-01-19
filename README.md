@@ -1,9 +1,10 @@
 [badges-health-cwlab-master]: <https://img.shields.io/website?url=https%3A%2F%2Fcwlab.krini.ingress.rancher.computational.bio%2F>
 [depl-ui-cwlab-dkfz-master]: <https://cwlab.krini.ingress.rancher.computational.bio/>
 
-# CWLab - An open-source, cloud-ready web application for simplified deployment of the Common Workflow Language
+# CWLab
 
-## Dev at a Glance:
+An open-source, cloud-ready web application for simplified deployment of the Common Workflow Language.
+
 **CI/CD:**
 [![Build Status](https://dev.azure.com/ComputationalEpigenomics/workflux/_apis/build/status/CompEpigen.CWLab?branchName=master)](https://dev.azure.com/ComputationalEpigenomics/workflux/_build/latest?definitionId=2&branchName=master)
 [![Status][badges-health-cwlab-master]][depl-ui-cwlab-dkfz-master]
