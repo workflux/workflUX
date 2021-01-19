@@ -1,12 +1,19 @@
+# CWLab - An open-source, cloud-ready web application for simplified deployment of the Common Workflow Language
+
+## Dev at a Glance:
+**CI/CD:**
 [![Build Status](https://dev.azure.com/ComputationalEpigenomics/workflux/_apis/build/status/CompEpigen.CWLab?branchName=master)](https://dev.azure.com/ComputationalEpigenomics/workflux/_build/latest?definitionId=2&branchName=master)
+  
+**Packaging:**
 [![PyPI status](https://img.shields.io/pypi/status/cwlab.svg)](https://pypi.python.org/pypi/cwlab/)
 [![PyPI version shields.io](https://img.shields.io/pypi/v/cwlab.svg)](https://pypi.python.org/pypi/cwlab/)
+  
+**Major Dependencies:**
 [![PyPI pyversions](https://img.shields.io/pypi/pyversions/cwlab.svg)](https://pypi.python.org/pypi/cwlab/)
+  
+**Citation & Contribution:**
 [![DOI](https://zenodo.org/badge/180648493.svg)](https://zenodo.org/badge/latestdoi/180648493)
 [![All Contributors](https://img.shields.io/badge/all_contributors-9-orange.svg?style=flat-square)](#contributors-)
-
-
-# CWLab - An open-source framework for simplified deployment of the Common Workflow Language using a graphical web interface
 
 ## Background and Scope:
 The Common Workflow Language (CWL) allows to wrap and link up bioinformatic software in a standardized and portable way. However, setting up and operating a CWL-based workflow management system can be a labor-intensive challenge for many data-driven laboratories. To this end, we developed CWLab: a framework for simplified, graphical deployment of CWL.
