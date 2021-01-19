@@ -3,7 +3,6 @@
 
 # CWLab - An open-source, cloud-ready web application for simplified deployment of the Common Workflow Language
 
-## Dev at a Glance:
 **CI/CD:**
 [![Build Status](https://dev.azure.com/ComputationalEpigenomics/workflux/_apis/build/status/CompEpigen.CWLab?branchName=master)](https://dev.azure.com/ComputationalEpigenomics/workflux/_build/latest?definitionId=2&branchName=master)
 [![Status][badges-health-cwlab-master]][depl-ui-cwlab-dkfz-master]
@@ -11,10 +10,8 @@
 **Packaging:**
 [![PyPI status](https://img.shields.io/pypi/status/cwlab.svg)](https://pypi.python.org/pypi/cwlab/)
 [![PyPI version shields.io](https://img.shields.io/pypi/v/cwlab.svg)](https://pypi.python.org/pypi/cwlab/)
-![Docker Cloud Automated build](https://img.shields.io/docker/cloud/automated/compepigen/cwlab)
-  
-**Major Dependencies:**
 [![PyPI pyversions](https://img.shields.io/pypi/pyversions/cwlab.svg)](https://pypi.python.org/pypi/cwlab/)
+[![Docker Cloud Automated build](https://img.shields.io/docker/cloud/automated/compepigen/cwlab)](https://hub.docker.com/r/compepigen/cwlab/builds)
   
 **Citation & Contribution:**
 [![DOI](https://zenodo.org/badge/180648493.svg)](https://zenodo.org/badge/latestdoi/180648493)
