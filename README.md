@@ -6,7 +6,7 @@
 [![All Contributors](https://img.shields.io/badge/all_contributors-9-orange.svg?style=flat-square)](#contributors-)
 
 
-# CWLab - An open-source framework for simplified deployment of the Common Workflow Language using a graphical web interface
+# CWLab - An open-source, cloud-ready web application for simplified deployment of the Common Workflow Language
 
 ## Background and Scope:
 The Common Workflow Language (CWL) allows to wrap and link up bioinformatic software in a standardized and portable way. However, setting up and operating a CWL-based workflow management system can be a labor-intensive challenge for many data-driven laboratories. To this end, we developed CWLab: a framework for simplified, graphical deployment of CWL.
