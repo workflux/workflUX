@@ -11,6 +11,7 @@
 **Packaging:**
 [![PyPI status](https://img.shields.io/pypi/status/cwlab.svg)](https://pypi.python.org/pypi/cwlab/)
 [![PyPI version shields.io](https://img.shields.io/pypi/v/cwlab.svg)](https://pypi.python.org/pypi/cwlab/)
+![Docker Cloud Automated build](https://img.shields.io/docker/cloud/automated/compepigen/cwlab)
   
 **Major Dependencies:**
 [![PyPI pyversions](https://img.shields.io/pypi/pyversions/cwlab.svg)](https://pypi.python.org/pypi/cwlab/)
