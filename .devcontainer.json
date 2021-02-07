@@ -16,6 +16,7 @@
 		"eamodio.gitlens",
 		"formulahendry.terminal",
 		"tyriar.terminal-tabs",
-		"alexcvzz.vscode-sqlite"
+		"alexcvzz.vscode-sqlite",
+		"njpwerner.autodocstring"
 	]
 }

@@ -231,13 +231,13 @@ def import_wf_by_path_or_url():
         else:
             allowed_dirs = get_allowed_base_dirs(
                 allow_input=True,
-                allow_upload=True,
+                allow_upload=False,
                 allow_download=False,
-                include_tmp_dir=True
+                include_tmp_dir=False
             )
             assert os.path.isfile(wf_path) and \
                 check_if_path_in_dirs(wf_path, allowed_dirs) is not None, \
-                "Path does not exist or you have no permission to enter it."
+                f"Path does not exist or you have no permission to enter it.{allowed_dirs}"
 
         import_wf_(wf_path=wf_path, name=import_name, wf_type=wf_type)
 

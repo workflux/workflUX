@@ -1,0 +1,15 @@
+EXEC_PROFILES:
+
+  cwltool_singularity:
+    type: bash
+    max_retries: 0
+    exec: |
+      ${PYTHON_PATH} -m cwltool --singularity --outdir "${OUTPUT_DIR}" "${WORKFLOW}" "${RUN_INPUT}" \
+        >> "${LOG_FILE}" 2>&1
+        
+  cwltool_no_container:
+    type: bash
+    max_retries: 0
+    exec: |
+      ${PYTHON_PATH} -m cwltool --no-container --outdir "${OUTPUT_DIR}" "${WORKFLOW}" "${RUN_INPUT}" \
+        >> "${LOG_FILE}" 2>&1

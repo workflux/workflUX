@@ -1,0 +1,50 @@
+{
+    "param_values": {
+      "filename": ["test"]
+    },
+    "param_configs": {
+      "filename": {
+        "additional_validation_methods": [
+          ""
+        ],
+        "aligned_to": "",
+        "allowed_characters": [
+          ""
+        ],
+        "allowed_selection": [
+          ""
+        ],
+        "default_value": [
+          "test"
+        ],
+        "doc": "Filename",
+        "forbidden_characters": [
+          ""
+        ],
+        "group_by": [
+          ""
+        ],
+        "is_array": false,
+        "manipulate_value": [
+          ""
+        ],
+        "null_allowed": false,
+        "null_items_allowed": false,
+        "parameter_sheet_name": "parameters",
+        "secondary_files": [
+          ""
+        ],
+        "split_into_runs_by": [
+          ""
+        ],
+        "type": "string"
+      }
+    },
+    "validate_uris": true,
+    "search_paths": false,
+    "search_subdirs": true,
+    "allow_remote_uri": true,
+    "allow_local_path": true,
+    "include_subdirs_for_searching": false,
+    "search_dir": ""
+  }

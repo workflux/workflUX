@@ -9,3 +9,4 @@ test
 /build
 /scratch_
 /.venv
+/tests/temp
