@@ -32,7 +32,7 @@ steps:
     python -c "import cwlab"
   displayName: 'Check if CWLab can be loaded'
 
-# - script: |
-#     pip install pytest pytest-azurepipelines
-#     pytest
-#   displayName: 'pytest'
+- script: |
+    pip install pytest pytest-azurepipelines
+    pytest .
+  displayName: 'pytest'
