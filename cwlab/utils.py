@@ -506,6 +506,10 @@ def get_allowed_base_dirs(job_name=None, run_name=None, allow_input=True, allow_
             "path": app.config["EXEC_DIR"],
             "mode": "input"
         }
+        allowed_dirs["DEFAULT_INPUT_DIR"] = {
+            "path": app.config["DEFAULT_INPUT_DIR"],
+            "mode": "input"
+        }
         for dir_ in app.config["ADD_INPUT_DIRS"].keys():
             if dir_ not in allowed_dirs.keys():
                 allowed_dirs[dir_] = {
