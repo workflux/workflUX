@@ -45,7 +45,8 @@ setup(
         'path<13.2.0',
         'schema-salad>=7.0.20200811075006',
         'trs-cli>=0.3.1',
-        'pydantic'
+        'pydantic',
+        "cwlformat<=2020.5.19"
     ],
     classifiers=[
         'Development Status :: 4 - Beta',

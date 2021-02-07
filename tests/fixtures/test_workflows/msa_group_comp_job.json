@@ -1,0 +1,330 @@
+{
+    "param_values": {
+      "fasta_1": [
+        "https://raw.githubusercontent.com/CompEpigen/msa_group_compare/master/example_job/data/china_2019_covid_surf_prot_seq.fasta"
+      ],
+      "fasta_2": [
+        "https://raw.githubusercontent.com/CompEpigen/msa_group_compare/master/example_job/data/europe_2020_covid_surf_prot_seq.fasta "
+      ],
+      "group_name_1": [
+        "group1"
+      ],
+      "group_name_2": [
+        "group2"
+      ],
+      "homology_method": [
+        "identity"
+      ],
+      "msa_method": [
+        "ClustalW"
+      ],
+      "seq_type": [
+        "protein"
+      ],
+      "tree_color_by_group": [
+        "true"
+      ]
+    },
+    "param_configs": {
+      "fasta_1": {
+        "additional_validation_methods": [
+          ""
+        ],
+        "aligned_to": "",
+        "allowed_characters": [
+          ""
+        ],
+        "allowed_selection": [
+          ""
+        ],
+        "default_value": [
+          ""
+        ],
+        "doc": "Protein / DNA / RNA sequences of first group in fasta format.",
+        "forbidden_characters": [
+          ""
+        ],
+        "group_by": [
+          ""
+        ],
+        "is_array": false,
+        "manipulate_value": [
+          ""
+        ],
+        "null_allowed": false,
+        "null_items_allowed": false,
+        "parameter_sheet_name": "parameters",
+        "secondary_files": [
+          ""
+        ],
+        "split_into_runs_by": [
+          ""
+        ],
+        "type": "File"
+      },
+      "fasta_2": {
+        "additional_validation_methods": [
+          ""
+        ],
+        "aligned_to": "",
+        "allowed_characters": [
+          ""
+        ],
+        "allowed_selection": [
+          ""
+        ],
+        "default_value": [
+          ""
+        ],
+        "doc": "Protein / DNA / RNA sequences of second group in fasta format.",
+        "forbidden_characters": [
+          ""
+        ],
+        "group_by": [
+          ""
+        ],
+        "is_array": false,
+        "manipulate_value": [
+          ""
+        ],
+        "null_allowed": false,
+        "null_items_allowed": false,
+        "parameter_sheet_name": "parameters",
+        "secondary_files": [
+          ""
+        ],
+        "split_into_runs_by": [
+          ""
+        ],
+        "type": "File"
+      },
+      "group_name_1": {
+        "additional_validation_methods": [
+          ""
+        ],
+        "aligned_to": "",
+        "allowed_characters": [
+          ""
+        ],
+        "allowed_selection": [
+          ""
+        ],
+        "default_value": [
+          "group1"
+        ],
+        "doc": "Name of first group.",
+        "forbidden_characters": [
+          ""
+        ],
+        "group_by": [
+          ""
+        ],
+        "is_array": false,
+        "manipulate_value": [
+          ""
+        ],
+        "null_allowed": true,
+        "null_items_allowed": false,
+        "parameter_sheet_name": "parameters",
+        "secondary_files": [
+          ""
+        ],
+        "split_into_runs_by": [
+          ""
+        ],
+        "type": "string"
+      },
+      "group_name_2": {
+        "additional_validation_methods": [
+          ""
+        ],
+        "aligned_to": "",
+        "allowed_characters": [
+          ""
+        ],
+        "allowed_selection": [
+          ""
+        ],
+        "default_value": [
+          "group2"
+        ],
+        "doc": "Name of second group.",
+        "forbidden_characters": [
+          ""
+        ],
+        "group_by": [
+          ""
+        ],
+        "is_array": false,
+        "manipulate_value": [
+          ""
+        ],
+        "null_allowed": true,
+        "null_items_allowed": false,
+        "parameter_sheet_name": "parameters",
+        "secondary_files": [
+          ""
+        ],
+        "split_into_runs_by": [
+          ""
+        ],
+        "type": "string"
+      },
+      "homology_method": {
+        "additional_validation_methods": [
+          ""
+        ],
+        "aligned_to": "",
+        "allowed_characters": [
+          ""
+        ],
+        "allowed_selection": [
+          "identity",
+          "similarity"
+        ],
+        "default_value": [
+          "identity"
+        ],
+        "doc": "Which distance measure to use. Either \"similarity\" or \"identity\".",
+        "forbidden_characters": [
+          ""
+        ],
+        "group_by": [
+          ""
+        ],
+        "is_array": false,
+        "manipulate_value": [
+          ""
+        ],
+        "null_allowed": true,
+        "null_items_allowed": false,
+        "parameter_sheet_name": "parameters",
+        "secondary_files": [
+          ""
+        ],
+        "split_into_runs_by": [
+          ""
+        ],
+        "type": "string"
+      },
+      "msa_method": {
+        "additional_validation_methods": [
+          ""
+        ],
+        "aligned_to": "",
+        "allowed_characters": [
+          ""
+        ],
+        "allowed_selection": [
+          "ClustalW",
+          "ClustalOmega",
+          "Muscle"
+        ],
+        "default_value": [
+          "ClustalW"
+        ],
+        "doc": "Which multiple sequence alignment algorithm to use. One of \"ClustalW\", \"ClustalOmega\", or \"Muscle\". For more information see: https://www.ebi.ac.uk/Tools/msa/",
+        "forbidden_characters": [
+          ""
+        ],
+        "group_by": [
+          ""
+        ],
+        "is_array": false,
+        "manipulate_value": [
+          ""
+        ],
+        "null_allowed": true,
+        "null_items_allowed": false,
+        "parameter_sheet_name": "parameters",
+        "secondary_files": [
+          ""
+        ],
+        "split_into_runs_by": [
+          ""
+        ],
+        "type": "string"
+      },
+      "seq_type": {
+        "additional_validation_methods": [
+          ""
+        ],
+        "aligned_to": "",
+        "allowed_characters": [
+          ""
+        ],
+        "allowed_selection": [
+          "protein",
+          "dna",
+          "rna"
+        ],
+        "default_value": [
+          "protein"
+        ],
+        "doc": "The type of sequence. One of \"protein\", \"dna\", or \"rna\".",
+        "forbidden_characters": [
+          ""
+        ],
+        "group_by": [
+          ""
+        ],
+        "is_array": false,
+        "manipulate_value": [
+          ""
+        ],
+        "null_allowed": true,
+        "null_items_allowed": false,
+        "parameter_sheet_name": "parameters",
+        "secondary_files": [
+          ""
+        ],
+        "split_into_runs_by": [
+          ""
+        ],
+        "type": "string"
+      },
+      "tree_color_by_group": {
+        "additional_validation_methods": [
+          ""
+        ],
+        "aligned_to": "",
+        "allowed_characters": [
+          ""
+        ],
+        "allowed_selection": [
+          ""
+        ],
+        "default_value": [
+          "true"
+        ],
+        "doc": "Whether to color the phylogenetic tree by group.",
+        "forbidden_characters": [
+          ""
+        ],
+        "group_by": [
+          ""
+        ],
+        "is_array": false,
+        "manipulate_value": [
+          ""
+        ],
+        "null_allowed": true,
+        "null_items_allowed": false,
+        "parameter_sheet_name": "parameters",
+        "secondary_files": [
+          ""
+        ],
+        "split_into_runs_by": [
+          ""
+        ],
+        "type": "boolean"
+      }
+    },
+    "validate_uris": true,
+    "search_paths": false,
+    "search_subdirs": true,
+    "allow_remote_uri": true,
+    "allow_local_path": true,
+    "include_subdirs_for_searching": false,
+    "search_dir": ""
+  }
