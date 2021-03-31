@@ -1,7 +1,6 @@
 *.pyc
 /migrations
 /scratch
-.vscode
 test
 /scratch/temp
 /dist
@@ -9,4 +8,5 @@ test
 /build
 /scratch_
 /.venv
-/tests/temp
+/tests/fixtures/temp
+.vscode/settings.json
