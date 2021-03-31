@@ -10,7 +10,7 @@ else:
 from pexpect import TIMEOUT, EOF
 from time import sleep
 from datetime import datetime, timedelta
-import importlib.util
+import importlib
 from contextlib import contextmanager
 import traceback
 
@@ -214,12 +214,19 @@ class ExecSessionPython(ExecSessionBase):
         self.py_exec_profile = None
 
     def setup(self):
-        spec = importlib.util.spec_from_file_location(
-            "py_exec_profile_module", 
-            self.exec_profile["py_module"]
-        )
-        py_exec_profile_module = importlib.util.module_from_spec(spec)
-        spec.loader.exec_module(py_exec_profile_module)
+        try:
+            # first try to import module by name
+            py_exec_profile_module = importlib.import_module(self.exec_profile["py_module"])
+        except ModuleNotFoundError:
+            # if that fails try to import by file path:
+            spec = importlib.util.spec_from_file_location(
+                "py_exec_profile_module", 
+                self.exec_profile["py_module"]
+            )
+            py_exec_profile_module = importlib.util.module_from_spec(spec)
+            spec.loader.exec_module(py_exec_profile_module)
+        
+        # get the PyExecProfile Class:
         PyExecProfile = getattr(py_exec_profile_module, self.exec_profile["py_class"])
         self.py_exec_profile = PyExecProfile(
             session_vars=self.session_vars,

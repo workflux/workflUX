@@ -3,3 +3,13 @@ EXEC_PROFILES:
     type: bash
     exec: |
       "${PYTHON_PATH}" -m cwltool --debug --no-container --outdir "${OUTPUT_DIR}" "${WORKFLOW}" "${RUN_INPUT}" >> "${LOG_FILE}" 2>&1
+
+  cwltool_pyexec: 
+    type: python
+    py_module: cwlab.exec.default_exec_profiles
+    py_class: CwltoolLocal
+
+  cwltool_external_pyexec: 
+    type: python
+    py_module: ./external_pyexec_profile.py
+    py_class: CwltoolLocal
