@@ -1,5 +1,5 @@
 [badges-health-cwlab-master]: <https://img.shields.io/website?url=https%3A%2F%2Fcwlab.krini.ingress.rancher.computational.bio%2F>
-[depl-ui-cwlab-dkfz-master]: <https://cwlab.krini.ingress.rancher.computational.bio/>
+[depl-ui-cwlab-dkfz-master]: <https://cwlab.dev.krini.ingress.rancher.computational.bio/>
 
 # CWLab - An open-source, cloud-ready web application for simplified deployment of the Common Workflow Language
 

@@ -5,7 +5,7 @@
     "version": "0.2.0",
     "configurations": [
         {
-            "name": "Python: Flask",
+            "name": "default testing",
             "type": "python",
             "request": "launch",
             "module": "cwlab",
