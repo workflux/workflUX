@@ -6,5 +6,5 @@ EXEC_PROFILES:
 
   cwltool_pyexec: 
     type: python
-    py_module: cwlab.exec.default_exec_profile
+    py_module: cwlab.exec.default_exec_profiles
     py_class: CwltoolLocal
