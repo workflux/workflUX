@@ -8,5 +8,5 @@ test
 /build
 /scratch_
 /.venv
-/tests/temp
+/tests/fixtures/temp
 .vscode/settings.json
