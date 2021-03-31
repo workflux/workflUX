@@ -10,7 +10,9 @@
             "request": "launch",
             "module": "cwlab",
             "args": [
-                "up"
+                "up",
+                "-c",
+                ".devcontainer/dev_config.yaml"
             ],
             "jinja": false
         }
