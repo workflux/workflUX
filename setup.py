@@ -23,6 +23,11 @@ setup(
             "cwlab=cwlab.__main__:main",
         ]
     },
+    extras_require={
+        'testing': [
+            'pytest',
+        ],
+    },
     install_requires=[
         'werkzeug>=0.15.2,<=0.16.0',
         'flask',
