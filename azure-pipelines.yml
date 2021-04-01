@@ -4,7 +4,9 @@
 # https://docs.microsoft.com/azure/devops/pipelines/languages/python
 
 trigger:
-- main
+- master
+- development
+- releases/*
 
 pool:
   vmImage: 'Ubuntu-20.04'
