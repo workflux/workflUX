@@ -7,7 +7,7 @@ README = os.path.join(SETUP_DIR, 'README.rst')
 
 setup(
     name='cwlab',
-    version='0.3.2',    
+    version='0.4.1',    
     description='A platform-agnostic, cloud-ready framework for simplified deployment of the Common Workflow Language using a graphical web interface',
     long_description=open(README).read(),
     long_description_content_type="text/x-rst",
@@ -17,7 +17,7 @@ setup(
     author_email='k.breuer@dkfz.de',
     license='Apache 2.0',
     include_package_data=True,
-    packages=find_packages(exclude=("scratchs")),
+    packages=find_packages(),
     entry_points={
         "console_scripts": [
             "cwlab=cwlab.__main__:main",
