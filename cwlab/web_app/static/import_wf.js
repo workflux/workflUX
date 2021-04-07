@@ -607,8 +607,8 @@ class ImportCwlUrl extends React.Component{
                                 </td>
                                 <td>
                                     You can directly use a URL from github. However, please make sure to provide the URL to the raw file, e.g.:<br/>
-                                    <a href="https://raw.githubusercontent.com/CompEpigen/ATACseq_workflows/1.2.92/CWL/workflows/ATACseq.cwl">
-                                    https://raw.githubusercontent.com/CompEpigen/ATACseq_workflows/1.2.92/CWL/workflows/ATACseq.cwl
+                                    <a href="https://raw.githubusercontent.com/CompEpigen/ChIPseq_workflows/master/CWL/workflows/ACTseq.cwl">
+                                    https://raw.githubusercontent.com/CompEpigen/ChIPseq_workflows/master/CWL/workflows/ACTseq.cwl
                                     </a>
                                 </td>
                             </tr>
