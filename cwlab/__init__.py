@@ -1,6 +1,6 @@
 from __future__ import absolute_import
 
-__version__ = "0.3.2"
+__version__ = "0.4.0"
 
 import os
 from flask import Flask
