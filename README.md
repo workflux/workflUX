@@ -82,16 +82,15 @@ You should see a Welcome page like this:
 CWLab can be used to run any workflow or tool that has been wrapped using the Common Workflow Language. Of course, you can write workflows or tool wrappers yourself (we recommend rabix-composer https://rabix.io/), however, for many especially bioinformatic tasks, existing CWL solutions are publicly available. Check the CWL website as a starting point:  
 https://www.commonwl.org/#Repositories_of_CWL_Tools_and_Workflows.
 
-To import a CWL document:  
-- Click on the button "Import CWL Workflow/Tool" in the top bar
-- Choose a CWL document (workflow or tool)\*
-- Press the import button
+To import a CWL document click on the button "Import CWL Workflow/Tool" in the top bar. You have multiple options:
+- using a Tool Repository Service (TRS) URI to a GA4GH-complient TRS server
+- using a publicly accessible URL (e.g. to a workflow on GitHub)
+- upload a CWL tool/workflow as single packed file (see [here](https://github.com/common-workflow-language/cwltool#combining-parts-of-a-workflow-into-a-single-document) for instructions on how to pack)
+- upload a ZIP archive containing CWL workflows and its dependencies
+- from a [Janis](https://github.com/PMCC-BioinformaticsCore/janis) script which will be automatically transpiled to CWL
 
 The workflow will be automatically validated:  
 ![import screenshot](https://github.com/CompEpigen/CWLab/blob/master/screenshots/import.png?raw=true)
-
-*\*Please note: Currently, workflows can only be imported in the "packed" format. We will add support for the unpacked format soon. To pack a CWL workflow, use:*  
-`cwltool --pack my_workflow.cwl > my_workflow_packed.cwl`
 
 
 ### Create a new Job:
