@@ -5,7 +5,6 @@
 
 **CI/CD:**
 [![Build Status](https://dev.azure.com/ComputationalEpigenomics/workflux/_apis/build/status/CompEpigen.CWLab?branchName=master)](https://dev.azure.com/ComputationalEpigenomics/workflux/_build/latest?definitionId=2&branchName=master)
-[![Status][badges-health-cwlab-master]][depl-ui-cwlab-dkfz-master]
 
 **Packaging:**
 [![PyPI status](https://img.shields.io/pypi/status/cwlab.svg)](https://pypi.python.org/pypi/cwlab/)
