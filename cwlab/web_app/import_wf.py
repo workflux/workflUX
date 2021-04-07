@@ -57,7 +57,7 @@ def upload_wf():
             else import_wf_filename
         import_wf_(
             wf_path=imported_wf_filepath, 
-            name=import_name,
+            name=os.path.splitext(import_name)[0],
             wf_type=wf_type, 
             wf_imports_zip_path=wf_imports_zip_filepath,
             translate_to_cwl=translate_to_cwl,
