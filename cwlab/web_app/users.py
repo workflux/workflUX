@@ -3,12 +3,12 @@ import os
 import pprint
 from flask import render_template, jsonify, redirect, flash, url_for, request, current_app as app
 from werkzeug.urls import url_parse
-from cwlab.users.manage import get_all_users_info as get_all_users_info_, \
+from workflux.users.manage import get_all_users_info as get_all_users_info_, \
     change_user_status_or_level, get_user_by_username, \
     has_user_been_activated, login_required, check_oidc_token
-from cwlab import db_connector
-from cwlab.log import handle_known_error, handle_unknown_error
-from cwlab.utils import get_time_string
+from workflux import db_connector
+from workflux.log import handle_known_error, handle_unknown_error
+from workflux.utils import get_time_string
 
 user_manager = db_connector.user_manager
 

@@ -6,13 +6,13 @@ SETUP_DIR = os.path.dirname(__file__)
 README = os.path.join(SETUP_DIR, 'README.rst')
 
 setup(
-    name='cwlab',
+    name='workflux',
     version='0.4.1',    
     description='A platform-agnostic, cloud-ready framework for simplified deployment of the Common Workflow Language using a graphical web interface',
     long_description=open(README).read(),
     long_description_content_type="text/x-rst",
-    url='https://github.com/CompEpigen/CWLab',
-    download_url="https://github.com/CompEpigen/CWLab",
+    url='https://github.com/CompEpigen/workflUX',
+    download_url="https://github.com/CompEpigen/workflUX",
     author='Kersten Henrik Breuer',
     author_email='k.breuer@dkfz.de',
     license='Apache 2.0',
@@ -20,7 +20,7 @@ setup(
     packages=find_packages(),
     entry_points={
         "console_scripts": [
-            "cwlab=cwlab.__main__:main",
+            "workflux=workflux.__main__:main",
         ]
     },
     extras_require={

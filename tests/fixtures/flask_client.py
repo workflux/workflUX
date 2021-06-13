@@ -1,7 +1,7 @@
 import os, shutil
 import tempfile
 import pytest
-import cwlab
+import workflux
 from . import test_workflows_dir
 
 @pytest.fixture
@@ -26,7 +26,7 @@ def client():
     )
     os.environ['CWLAB_DEFAULT_INPUT_DIR'] = test_workflows_dir
 
-    test_app = cwlab.create_app(webapp=False)
+    test_app = workflux.create_app(webapp=False)
     test_app.config['TESTING'] = True
 
     with test_app.test_client() as client:

@@ -2,7 +2,7 @@ import requests
 import pprint
 import json
 
-from cwlab import db_connector
+from workfluxlux import db_connector
 from flask import current_app as app
 from getpass import getpass
 from time import sleep

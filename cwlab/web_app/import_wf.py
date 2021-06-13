@@ -4,16 +4,16 @@ from flask import render_template, jsonify, redirect, flash, url_for, request
 from werkzeug.urls import url_parse
 from werkzeug.utils import secure_filename
 from flask import current_app as app
-from cwlab.utils import is_allowed_file, allowed_extensions_by_type, get_path, \
+from workflux.utils import is_allowed_file, allowed_extensions_by_type, get_path, \
     make_temp_dir, import_wf as import_wf_, unzip_dir, get_allowed_base_dirs, \
     check_if_path_in_dirs, download_file, validate_url, get_time_string
-from cwlab.trs_import import import_worflow_by_trs
-from cwlab.wf_input import generate_xls_from_wf as generate_job_template_from_cwl
-from cwlab.users.manage import login_required
+from workflux.trs_import import import_worflow_by_trs
+from workflux.wf_input import generate_xls_from_wf as generate_job_template_from_cwl
+from workflux.users.manage import login_required
 from shutil import rmtree
 from json import loads as json_loads
-from cwlab.log import handle_known_error, handle_unknown_error
-from cwlab.wf_input.read_janis import list_workflows_in_file as list_workflows_in_janis_file
+from workflux.log import handle_known_error, handle_unknown_error
+from workflux.wf_input.read_janis import list_workflows_in_file as list_workflows_in_janis_file
 
 @app.route('/upload_wf/', methods=['POST'])
 def upload_wf():

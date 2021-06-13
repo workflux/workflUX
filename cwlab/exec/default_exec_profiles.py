@@ -1,6 +1,6 @@
 #!/usr/bin/env python3
-from cwlab.api import PyExecProfile
-# from cwlab.exec.session import redirect_to_log
+from workflux.api import PyExecProfile
+# from workflux.exec.session import redirect_to_log
 import cwltool.context
 import cwltool.factory
 import yaml

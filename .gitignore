@@ -4,7 +4,7 @@
 test
 /scratch/temp
 /dist
-/cwlab.egg-info
+/workflux.egg-info
 /build
 /scratch_
 /.venv

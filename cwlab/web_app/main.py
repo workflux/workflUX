@@ -4,9 +4,9 @@ import os
 from flask import render_template, jsonify, redirect, flash, url_for, request
 from werkzeug.urls import url_parse
 from flask import current_app as app
-from cwlab.users.manage import load_user, check_oidc_token
+from workflux.users.manage import load_user, check_oidc_token
 from json import dumps
-from cwlab.log import handle_known_error, handle_unknown_error
+from workflux.log import handle_known_error, handle_unknown_error
 
 
 

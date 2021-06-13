@@ -57,13 +57,13 @@ RUN python3.7 -m pip install \
 	urllib3 \
     trs-cli==0.3.1
 
-# Install cwlab:
-COPY . /src/cwlab
-RUN python3.7 -m pip install -e /src/cwlab
+# Install workflux:
+COPY . /src/workflux
+RUN python3.7 -m pip install -e /src/workflux
 
-# Configure cwlab:
-COPY ./docker/dev_elixir/config.yaml /cwlab/config.yaml
-COPY ./docker/dev_elixir/wes_exec_profile.py /cwlab/wes_exec_profile.py
+# Configure workflux:
+COPY ./docker/dev_elixir/config.yaml /workflux/config.yaml
+COPY ./docker/dev_elixir/wes_exec_profile.py /workflux/wes_exec_profile.py
 
 # Default command when starting:
-CMD ["python3.7", "-m", "cwlab", "up", "-c", "/cwlab/config.yaml"]
+CMD ["python3.7", "-m", "workflux", "up", "-c", "/workflux/config.yaml"]

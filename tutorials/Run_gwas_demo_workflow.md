@@ -1,11 +1,11 @@
-# Tutorial: GWAS Workflow with CWLab
+# Tutorial: GWAS Workflow with workflUX
 
 TODO general introduction to the workflow
 * What does it do?
 * How does it work (tools etc.)?
 * What are the results?
 
-In order to execute the workflow you need access to a cwlab-instance. You can
+In order to execute the workflow you need access to a workflux-instance. You can
 run an instance on your own computer with docker (see Step 0).
 
 ## Step 0: Start the docker container
@@ -13,7 +13,7 @@ run an instance on your own computer with docker (see Step 0).
 1. Install docker on your machine. See https://docs.docker.com/get-docker/ for
    detailed instructions
 2. Open a terminal on your computer and start a container with 
-   `docker run -it --rm --privileged -p 8080:5000 compepigen/cwlab:latest`
+   `docker run -it --rm --privileged -p 8080:5000 compepigen/workflux:latest`
    This container will print its output to your terminal and will be automatically deleted when it ends.
 
 ## Step 1: Import the workflow

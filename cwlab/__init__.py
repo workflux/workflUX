@@ -5,7 +5,7 @@ __version__ = "0.4.1"
 import os
 from flask import Flask
 from .config import Config
-from cwlab.database.connector import Connector
+from workflux.database.connector import Connector
 
 basedir = os.path.abspath(os.path.dirname(__file__))
 
@@ -41,7 +41,7 @@ def create_app(config_file=None, webapp=True):
     with app.app_context():
         from .web_app import main, import_wf, create_job, job_exec, users, browse
         if app.config['ENABLE_USERS']:
-            from cwlab.users.manage import get_users, interactively_add_user
+            from workflux.users.manage import get_users, interactively_add_user
             if not app.config['USE_OIDC']:
                 admin_users = get_users(only_admins=True)
                 if len(admin_users) == 0:
