@@ -4,11 +4,10 @@ class Welcome extends React.Component {
         return(
             <div className="w3-panel">
                 <p style={ {fontSize: 40} } className="w3-center">
-                    Welcome to CW<span className="w3-text-green">Lab</span>
+                    Welcome to workfl<span className="w3-text-green">UX</span>
                 </p>
                 <p style={ {fontSize: 20} } className="w3-center">
-                    An open-source framework for simplified deployment of the 
-                    Common Workflow Language using a graphical web interface
+                    The Workflow User eXperience.
                 </p>
                 {demo && (
                     <Message type="info">
@@ -126,7 +125,7 @@ class Root extends React.Component {
             home: {
                 text: (
                     <span>
-                        CW<span className="w3-text-green">Lab</span>
+                        workfl<span className="w3-text-green">UX</span>
                         {buildNumber != "none" && (<span className="w3-text-orange">&nbsp;build {buildNumber}</span>)}
                     </span>
                 ),
