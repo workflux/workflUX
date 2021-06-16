@@ -83,7 +83,7 @@ def wait_until_run_succeeds(
     client,
     job_name:str,
     run_name:str="run",
-    max_retries:int=60
+    max_retries:int=10
 ):
     retries = 0
     while True:
