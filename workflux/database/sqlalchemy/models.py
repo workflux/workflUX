@@ -1,4 +1,4 @@
-from cwlab.database.connector import db
+from workflux.database.connector import db
 from string import ascii_letters, digits
 from werkzeug.security import generate_password_hash, check_password_hash
 from flask_login import UserMixin

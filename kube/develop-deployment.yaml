@@ -1,46 +1,46 @@
 apiVersion: apps/v1
 kind: Deployment
 metadata:
-  name: cwlabdeployment-develop
-  namespace: cwlab-elixir-develop
+  name: workfluxdeployment-develop
+  namespace: workflux-elixir-develop
   labels:
-    app: cwlab
+    app: workflux
     stage: develop
 spec:
   selector:
     matchLabels:
-      app: cwlab
+      app: workflux
       stage: develop
   template:
     metadata:
       labels:
-        app: cwlab
+        app: workflux
         stage: develop
     spec:
       imagePullSecrets:
         - name: pipeline-docker-registry
       containers:
-      - name: cwlab-oidc
-        image: ${CICD_REGISTRY}/krini/cwlab:dev-${CICD_EXECUTION_SEQUENCE}
+      - name: workflux-oidc
+        image: ${CICD_REGISTRY}/krini/workflux:dev-${CICD_EXECUTION_SEQUENCE}
         env:
         - name: BUILD_NUMBER
           value: oidc-${CICD_EXECUTION_SEQUENCE}
         - name: host
-          value: cwlab.dev.krini.ingress.rancher.computational.bio
+          value: workflux.dev.krini.ingress.rancher.computational.bio
         - name: mysql-host
           valueFrom:
             secretKeyRef:
-              name: mysql-cwlab-develop
+              name: mysql-workflux-develop
               key: mysql-host
         - name: mysql-password
           valueFrom:
             secretKeyRef:
-              name: mysql-cwlab-develop
+              name: mysql-workflux-develop
               key: mysql-password
         - name: mysql-username
           valueFrom:
             secretKeyRef:
-              name: mysql-cwlab-develop
+              name: mysql-workflux-develop
               key: mysql-username
         - name: ftp-host
           valueFrom:
@@ -61,7 +61,7 @@ spec:
         - containerPort: 5000
         volumeMounts:
         - name: shared-pv
-          mountPath: /mnt/cwlab
+          mountPath: /mnt/workflux
       volumes:
         - name: shared-pv
           persistentVolumeClaim:
@@ -70,11 +70,11 @@ spec:
 apiVersion: v1
 kind: Service
 metadata:
-  name: cwlabservice-develop
-  namespace: cwlab-elixir-develop
+  name: workfluxservice-develop
+  namespace: workflux-elixir-develop
 spec:
   selector:
-    app: cwlab
+    app: workflux
     stage: develop
   ports:
     - protocol: TCP
@@ -84,20 +84,20 @@ spec:
 apiVersion: extensions/v1beta1
 kind: Ingress
 metadata:
-  name: cwlabingress-develop
-  namespace: cwlab-elixir-develop
+  name: workfluxingress-develop
+  namespace: workflux-elixir-develop
   annotations:
     cert-manager.io/issuer: letsencrypt-prod
 spec:
   rules:
-  - host: cwlab.dev.krini.ingress.rancher.computational.bio
+  - host: workflux.dev.krini.ingress.rancher.computational.bio
     http:
       paths:
       - backend:
-          serviceName: cwlabservice-develop
+          serviceName: workfluxservice-develop
           servicePort: 80
         path: /
   tls: # < placing a host in the TLS config will indicate a certificate should be created
   - hosts:
-    - cwlab.dev.krini.ingress.rancher.computational.bio
-    secretName: cwlab-develop-letsencrypt-prod-private-cert # < cert-manager will store the created certificate in this secret.
+    - workflux.dev.krini.ingress.rancher.computational.bio
+    secretName: workflux-develop-letsencrypt-prod-private-cert # < cert-manager will store the created certificate in this secret.

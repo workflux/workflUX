@@ -4,7 +4,7 @@ import json
 import yaml
 from subprocess import Popen, PIPE
 
-from cwlab.exec.session import PyExecProfile
+from workflux.exec.session import PyExecProfile
 
 class CwltoolLocal(PyExecProfile):
     def exec(self):

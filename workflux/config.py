@@ -41,7 +41,7 @@ class Config(object):
             except YAMLError as exc:
                 raise AssertionError("Error while reading the config.yaml: " + exc)
 
-        cwlab_fallback_dir = os.path.join(os.path.expanduser("~"), "cwlab")
+        workflux_fallback_dir = os.path.join(os.path.expanduser("~"), "workflux")
 
         # parameters:
         self.BUILD_NUMBER = ( 
@@ -70,7 +70,7 @@ class Config(object):
         self.BASE_DIR = normalize_path( # overwrites the fallback dir
             os.environ.get('CWLAB_BASE_DIR') or
             self.CONFIG_FILE_content.get('BASE_DIR') or  
-            cwlab_fallback_dir,
+            workflux_fallback_dir,
             correct_symlinks=self.CORRECT_SYMLINKS
         )
 
@@ -261,7 +261,7 @@ class Config(object):
         self.SQLALCHEMY_DATABASE_URI = (
             os.environ.get('CWLAB_DATABASE_URL') or
             self.CONFIG_FILE_content.get('DATABASE_URL') or  
-            ('sqlite:///' + os.path.join(self.DB_DIR, 'cwlab.db'))
+            ('sqlite:///' + os.path.join(self.DB_DIR, 'workflux.db'))
         )
         
         if isinstance(self.SQLALCHEMY_DATABASE_URI, str) and \

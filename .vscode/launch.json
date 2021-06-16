@@ -8,7 +8,7 @@
             "name": "default testing",
             "type": "python",
             "request": "launch",
-            "module": "cwlab",
+            "module": "workflux",
             "args": [
                 "up",
                 "-c",

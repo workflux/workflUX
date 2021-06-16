@@ -3,7 +3,7 @@ import os
 import json
 import yaml
 
-from cwlab.exec.session import PyExecProfile
+from workflux.exec.session import PyExecProfile
 
 class WES(PyExecProfile):
     def exec(self):
