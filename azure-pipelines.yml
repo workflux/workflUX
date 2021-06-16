@@ -31,8 +31,8 @@ steps:
   displayName: 'Install dependencies'
   
 - script: |
-    python -c "import cwlab"
-  displayName: 'Check if CWLab can be loaded'
+    python -c "import workflux"
+  displayName: 'Check if workflUX can be loaded'
 
 - script: |
     pip install pytest pytest-azurepipelines

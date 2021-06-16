@@ -1,32 +1,32 @@
 apiVersion: apps/v1
 kind: Deployment
 metadata:
-  name: cwlabdeployment-testing
-  namespace: cwlab-elixir-testing
+  name: workfluxdeployment-testing
+  namespace: workflux-elixir-testing
   labels:
-    app: cwlab
+    app: workflux
     stage: testing
 spec:
   selector:
     matchLabels:
-      app: cwlab
+      app: workflux
       stage: testing
   template:
     metadata:
       labels:
-        app: cwlab
+        app: workflux
         stage: testing
     spec:
       imagePullSecrets:
         - name: pipeline-docker-registry
       containers:
-      - name: cwlab-oidc
-        image: ${CICD_REGISTRY}/krini/cwlab:testing-${CICD_EXECUTION_SEQUENCE}
+      - name: workflux-oidc
+        image: ${CICD_REGISTRY}/krini/workflux:testing-${CICD_EXECUTION_SEQUENCE}
         env:
         - name: BUILD_NUMBER
           value: oidc-${CICD_EXECUTION_SEQUENCE}
         - name: host
-          value: cwlab.testing.krini.ingress.rancher.computational.bio
+          value: workflux.testing.krini.ingress.rancher.computational.bio
         - name: mysql-host
           valueFrom:
             secretKeyRef:
@@ -61,7 +61,7 @@ spec:
         - containerPort: 5000
         volumeMounts:
         - name: shared-pv
-          mountPath: /mnt/cwlab
+          mountPath: /mnt/workflux
       volumes:
         - name: shared-pv
           persistentVolumeClaim:
@@ -70,11 +70,11 @@ spec:
 apiVersion: v1
 kind: Service
 metadata:
-  name: cwlabservice-testing
-  namespace: cwlab-elixir-testing
+  name: workfluxservice-testing
+  namespace: workflux-elixir-testing
 spec:
   selector:
-    app: cwlab
+    app: workflux
     stage: testing
   ports:
     - protocol: TCP
@@ -84,20 +84,20 @@ spec:
 apiVersion: extensions/v1beta1
 kind: Ingress
 metadata:
-  name: cwlabingress-testing
-  namespace: cwlab-elixir-testing
+  name: workfluxingress-testing
+  namespace: workflux-elixir-testing
   annotations:
     cert-manager.io/issuer: letsencrypt-prod
 spec:
   rules:
-  - host: cwlab.testing.krini.ingress.rancher.computational.bio
+  - host: workflux.testing.krini.ingress.rancher.computational.bio
     http:
       paths:
       - backend:
-          serviceName: cwlabservice-testing
+          serviceName: workfluxservice-testing
           servicePort: 80
         path: /
   tls: # < placing a host in the TLS config will indicate a certificate should be created
   - hosts:
-    - cwlab.testing.krini.ingress.rancher.computational.bio
-    secretName: cwlab-testing-letsencrypt-prod-private-cert # < cert-manager will store the created certificate in this secret.
+    - workflux.testing.krini.ingress.rancher.computational.bio
+    secretName: workflux-testing-letsencrypt-prod-private-cert # < cert-manager will store the created certificate in this secret.

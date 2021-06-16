@@ -8,15 +8,15 @@ from urllib.request import urlopen
 
 from pkg_resources import get_distribution
 
-from cwlab.wf_input import \
+from workflux.wf_input import \
     generate_xls_from_wf as generate_job_template_from_wf
-from cwlab.wf_input.read_janis import \
+from workflux.wf_input.read_janis import \
     get_workflow_from_file as load_and_validate_janis
-from cwlab.wf_input.read_wf import (get_workflow_type_from_file_ext,
+from workflux.wf_input.read_wf import (get_workflow_type_from_file_ext,
                                     supported_workflow_exts)
-from cwlab.wf_input.web_interface import \
+from workflux.wf_input.web_interface import \
     get_param_config_info as get_param_config_info_from_xls
-from cwlab.wf_input.web_interface import \
+from workflux.wf_input.web_interface import \
     read_template_metadata as read_template_metadata_from_xls
 from WDL import load as load_and_validate_wdl
 from werkzeug.utils import secure_filename
@@ -154,7 +154,7 @@ def read_file_content(
 
 def zip_dir(dir_path):
     dir_path = os.path.abspath(dir_path)
-    zip_path = dir_path + ".cwlab.zip"
+    zip_path = dir_path + ".workflux.zip"
     contents = os.walk(dir_path)
     zip_file = zipfile.ZipFile(zip_path, 'w', zipfile.ZIP_DEFLATED)
     for root, dirs, files in contents:
@@ -163,7 +163,7 @@ def zip_dir(dir_path):
             relative_path = os.path.relpath(absolute_path, dir_path)
             zip_file.write(absolute_path, relative_path)
         for file_ in files:
-            if file_.endswith(".cwlab.zip"):
+            if file_.endswith(".workflux.zip"):
                 continue
             absolute_path = os.path.join(root, file_)
             relative_path = os.path.relpath(absolute_path, dir_path)
@@ -461,7 +461,7 @@ def output_example_config():
     example_config_content = example_config_file.read()
     example_config_file.close()
     print("# For help, please visit: " + 
-        "https://github.com/CompEpigen/CWLab#configuration")
+        "https://github.com/CompEpigen/workflUX#configuration")
     print(example_config_content)
     
 def get_allowed_base_dirs(job_name=None, run_name=None, allow_input=True, allow_upload=True, allow_download=False, include_tmp_dir=False):

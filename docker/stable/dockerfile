@@ -53,22 +53,22 @@ RUN cd /usr/local/ && \
 
 ENV PATH /usr/local/singularity/:${PATH}
 
-# Install cwlab:
+# Install workflux:
 RUN python3 -m pip install \
     cwltool==${CWLTOOL_VERSION} \
 	werkzeug==0.16.1 \
-    cwlab==${CWLAB_VERSION}
+    workflux==${CWLAB_VERSION}
 
-# Configure cwlab:
+# Configure workflux:
 RUN mkdir -p \
-        /cwlab/tmp \
-        /cwlab/worlflows \
-        /cwlab/exec \
-        /cwlab/input \
-        /cwlab/database && \
-    chmod -R 777 /cwlab
+        /workflux/tmp \
+        /workflux/worlflows \
+        /workflux/exec \
+        /workflux/input \
+        /workflux/database && \
+    chmod -R 777 /workflux
 
-COPY config.yaml /cwlab/config.yaml
+COPY config.yaml /workflux/config.yaml
 
 # Default command when starting:
-CMD ["cwlab", "up", "-c", "/cwlab/config.yaml"]
+CMD ["workflux", "up", "-c", "/workflux/config.yaml"]

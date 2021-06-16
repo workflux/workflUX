@@ -1,17 +1,17 @@
 from flask import current_app as app
-from cwlab.utils import get_path, get_duration, read_file_content, \
+from workflux.utils import get_path, get_duration, read_file_content, \
     get_job_templ_info, get_allowed_base_dirs, check_if_path_in_dirs, fetch_files_in_dir
-from cwlab import db_connector
+from workflux import db_connector
 from datetime import datetime
 import os, sys, platform
 from subprocess import Popen, PIPE
 from time import sleep
 from random import random
 from psutil import pid_exists, Process, STATUS_ZOMBIE, wait_procs
-from cwlab.wf_input import transcode as make_runs
+from workflux.wf_input import transcode as make_runs
 from platform import system as platform_system
 from shutil import rmtree, copy, copyfile, move
-from cwlab.wf_input.read_wf import get_workflow_type_from_file_ext
+from workflux.wf_input.read_wf import get_workflow_type_from_file_ext
 basedir = os.path.abspath(os.path.dirname(__file__))
 python_interpreter = sys.executable
 
@@ -203,7 +203,7 @@ def exec_runs(
         create_background_process(
             [
                 python_interpreter,
-                os.path.join(basedir, "cwlab_bg_exec.py"),
+                os.path.join(basedir, "workflux_bg_exec.py"),
                 app.config["SQLALCHEMY_DATABASE_URI"],
                 str(exec_ids[run_name]),
                 str(app.config["DEBUG"])

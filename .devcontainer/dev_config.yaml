@@ -6,7 +6,7 @@ EXEC_PROFILES:
 
   cwltool_pyexec: 
     type: python
-    py_module: cwlab.exec.default_exec_profiles
+    py_module: workflux.exec.default_exec_profiles
     py_class: CwltoolLocal
 
   cwltool_external_pyexec: 

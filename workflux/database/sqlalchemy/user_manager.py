@@ -1,6 +1,6 @@
 from random import random
 from time import sleep
-from cwlab.database.connector import db
+from workflux.database.connector import db
 from .models import User, AccessToken
 from datetime import datetime 
 

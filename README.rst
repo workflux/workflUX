@@ -1,4 +1,4 @@
-CWLab - An open-source framework for simplified deployment of the Common Workflow Language using a graphical web interface
+workflUX - An open-source framework for simplified deployment of the Common Workflow Language using a graphical web interface
 ==========================================================================================================================
 
 Background and Scope:
@@ -8,23 +8,23 @@ The Common Workflow Language (CWL) allows to wrap and link up
 bioinformatic software in a standardized and portable way. However,
 setting up and operating a CWL-based workflow management system can be a
 labor-intensive challenge for many data-driven laboratories. To this
-end, we developed CWLab: a framework for simplified, graphical
+end, we developed workflUX: a framework for simplified, graphical
 deployment of CWL.
 
-CWLab allows life-science researchers with all levels of computational
+workflUX allows life-science researchers with all levels of computational
 proficiency to create, execute and monitor jobs for CWL-wrapped tools
 and workflows. Input parameters for large sample batches are specified
 using a simple HTML form or a spreadsheet and are automatically
 validated. The integrated webserver allows to remotely control the
 execution on clusters as well as single workstations. Moreover,
 automatic infrastructure provisioning and scaling for OpenStack-based
-clouds is being implemented. CWLab can also be used as a local desktop
+clouds is being implemented. workflUX can also be used as a local desktop
 application that supports Linux, MacOS, and Windows by leveraging Docker
 containerization. Our Python-based framework is easy to set up and, via
 a flexible API, it can be integrated with any CWL runner and adapted to
 custom software environments.
 
-With CWLab, we would like to hide the complexity of workflow management
+With workflUX, we would like to hide the complexity of workflow management
 so that scientific users can focus on their data analyses. This might
 promote the adoption of CWL in multi-professional life-science
 laboratories.
@@ -32,20 +32,20 @@ laboratories.
 Installation and Quick Start:
 -----------------------------
 
-**Attention: CWLab is in alpha state currently and not all features are
+**Attention: workflUX is in alpha state currently and not all features are
 available yet. However, the core functionalities are working and we are
 happy if you test it. We are working hard to push out a stable version
 in the coming weeks. Please press the watch button to not miss it.**
 
 | Installation can be done using pip:
-| ``python3 -m pip install cwlab``
+| ``python3 -m pip install workflux``
 
 Please see the section "Configuration" for a discussion of available
 options.
 
 | Start the webserver with your custom configuration (or leave out the
   ``--config`` flag to use the default one):
-| ``cwlab up --config config.yaml``
+| ``workflux up --config config.yaml``
 
 If you like to make use of containers for dependency management, you
 need to install `Docker <https://docs.docker.com/install/>`__ or a
@@ -63,7 +63,7 @@ scenario.
 Supported Systems:
 ------------------
 
-CWLab is written in platform-agnostic python and can therefore be
+workflUX is written in platform-agnostic python and can therefore be
 executed on:
 
 -  **Linux**
@@ -71,7 +71,7 @@ executed on:
 -  **Windows**\ \*
 
 Any CWL runner that has a command-line interface can be integrated into
-CWLab in order to execute CWL workflows or tool-wrappers, such as:
+workflUX in order to execute CWL workflows or tool-wrappers, such as:
 
 -  **cwltool** (the reference implementation) -
    https://github.com/common-workflow-language/cwltool
@@ -83,7 +83,7 @@ CWLab in order to execute CWL workflows or tool-wrappers, such as:
    (Please find a constantly updated list at:
    https://www.commonwl.org/#Implementations)
 
-Therefore, CWLab can be used on any infrastructure supported by these
+Therefore, workflUX can be used on any infrastructure supported by these
 CWL runners, including:
 
 -  **single workstations**
@@ -94,7 +94,7 @@ CWL runners, including:
 | Execution on Windows is only supported by cwltool which talks to
   docker for windows. Therefore, CWL-wrapped tools and workflows which
   where originally designed for Linux/MacOs can be executed on Windows
-  with a graphical interface provided by CWLab.
+  with a graphical interface provided by workflUX.
 
 Usage:
 ------
@@ -110,7 +110,7 @@ configuration:
 
 -  If the webserver is running on the same machine and uses port 5000 is
    used (this is the default), type: ``https://localhost:5000/``
--  If CWLab is running on a remote machine in the same network, type in
+-  If workflUX is running on a remote machine in the same network, type in
    the machine's IP address and the used port. For instance, if the IP
    address is 172.22.0.1 and port 5000 is
    used:\ ``https://172.22.0.1:5000/``
@@ -121,7 +121,7 @@ configuration:
 Import a CWL workflow or tool:
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
-| CWLab can be used to run any workflow or tool that has been wrapped
+| workflUX can be used to run any workflow or tool that has been wrapped
   using the Common Workflow Language. Of course, you can write workflows
   or tool wrappers yourself (we recommend rabix-composer
   https://rabix.io/), however, for many especially bioinformatic tasks,
@@ -146,7 +146,7 @@ Create a new Job:
 
 To run a workflow or tool with your data, you have to create a new job.
 One job may contain multiple runs (for instance multiple samples or
-conditions). CWLab will automatically present you a list of needed input
+conditions). workflUX will automatically present you a list of needed input
 parameters. For each parameter, you can choose whether to specify it
 globally (all runs of a job will get the same value) or per run.
 
@@ -162,7 +162,7 @@ globally (all runs of a job will get the same value) or per run.
    -  In the parameter list, select which parameters should be
       run-specific
 
--  CWLab will automatically create a parameter form for you to fill in:
+-  workflUX will automatically create a parameter form for you to fill in:
 
    -  Export/download the form in the desired format
    -  Open it in a spreadsheet editor (e.g. Microsoft Excel or Open
@@ -182,7 +182,7 @@ globally (all runs of a job will get the same value) or per run.
       -  ``config``: This sheet contains configuration options that only
          need adaption in advanced use cases.
 
-   -  Fill in the sheet and import/upload the edited file to CWLab
+   -  Fill in the sheet and import/upload the edited file to workflUX
       **\***
 
 -  Your parameter settings are automatically validated. (E.g. it is
@@ -226,7 +226,7 @@ Job execution:
 Configuration:
 --------------
 
-CWLab is a highly versatile package and makes almost no assumptions on
+workflUX is a highly versatile package and makes almost no assumptions on
 your hard- and software environment used for the execution of CWL. To
 adapt it to your system and use case, a set of configuration options is
 available:
@@ -238,16 +238,16 @@ available:
    -  paths of working directories
 
 -  Execution profiles:
-   This flexible API allows you to adapt CWLab to your local software
+   This flexible API allows you to adapt workflUX to your local software
    environment and to integrate a CWL runner of your choice (such as
    Cwltool, Toil, or Cromwell).
 
 | All configuration options can be specified in a single YAML file which
-  is provided to CWLab upon start:
-| ``cwlab up --config my_config.yaml``
+  is provided to workflUX upon start:
+| ``workflux up --config my_config.yaml``
 
 | To get an example config file, run the following command:
-| ``cwlab print_config > config.yaml`` (or see the example below)
+| ``workflux print_config > config.yaml`` (or see the example below)
 
 General Configs:
 ~~~~~~~~~~~~~~~~
@@ -263,20 +263,20 @@ General Configs:
 
 -  **TEMP\_DIR**:
    Directory for temporary files.
-   *Default*: a subfolder "cwlab/temp" in the home directory
+   *Default*: a subfolder "workflux/temp" in the home directory
 -  **WORKFLOW\_DIR**:
    Directory for saving CWL documents.
-   *Default*: a subfolder "cwlab/temp" in the home directory
+   *Default*: a subfolder "workflux/temp" in the home directory
 -  **EXEC\_DIR**:
    Directory for saving execution data including output files.
-   *Default*: a subfolder "cwlab/temp" in the home directory
+   *Default*: a subfolder "workflux/temp" in the home directory
 -  **DEFAULT\_INPUT\_DIR**:
    Default directory where users can search for input files. You may
    specify additional input directories using the "**ADD\_INPUT\_DIRS**"
-   parameter. *Default*: a subfolder "cwlab/temp" in the home directory
+   parameter. *Default*: a subfolder "workflux/temp" in the home directory
 -  **DB\_DIR**:
    Directory for databases.
-   *Default*: a subfolder "cwlab/temp" in the home directory
+   *Default*: a subfolder "workflux/temp" in the home directory
 -  | **ADD\_INPUT\_DIRS**:
    | In addition to "**DEFAULT\_INPUT\_DIR**", these directories can be
      searched by the user for input files.
@@ -357,7 +357,7 @@ profile, following configuration parameters are available (but only
    The exit status at the end of the *exec* step is automatically
    checked. Here you can specify shell commands to additionally evaluate
    the content of the execution log to determine if the execution
-   succeeded. To communicate failure to CWLab, set the ``SUCCESS``
+   succeeded. To communicate failure to workflUX, set the ``SUCCESS``
    variable to ``False``.
    *Optional*.
 -  **post\_exec**\ \*: Shell commands that are executed after *exec* and
@@ -378,19 +378,19 @@ profile, following configuration parameters are available (but only
    -  ``SUCCESS`` (if set to ``False`` the run will be marked as failed
       and terminated)
    -  ``PYTHON_PATH`` (the path to the python interpreter used to run
-      CWLab)
+      workflUX)
 
 -  The four steps will be executed in the same shell session and
    therefore can be treated as one connected script. (Between the steps,
-   CWLab communicates the status to the database allowing the user to
+   workflUX communicates the status to the database allowing the user to
    get status notifications via the front end).
 -  Thus you may define your own variables that will also be available in
    all downstream steps.
 -  At the end of each step. The exit code is checked. If it is non-zero,
    the run will be marked as failed. Please note, if a step consists of
    multiple commands and an intermediate command fails, this will not be
-   recognized by CWLab as long as the final command of the step will
-   succeed. To manually communicate failure to CWLab, please set the
+   recognized by workflUX as long as the final command of the step will
+   succeed. To manually communicate failure to workflUX, please set the
    ``SUCCESS`` variable to ``False``.
 -  The steps are executed using pexpect
    (https://pexpect.readthedocs.io/en/stable/overview.html), this allows
@@ -399,7 +399,7 @@ profile, following configuration parameters are available (but only
    directories specified in the input parameter YAML will not be adapted
    to the new host. We are working on solutions to achieve an automated
    path correction and/or upload functionality if the execution host is
-   not the CWLab server host.
+   not the workflUX server host.
 -  On Windows, please be aware that each code block (contained in
    ``{...}``) has to be in one line.
 
@@ -419,11 +419,11 @@ Linux / MacOs:
 
     DEBUG: False  
 
-    TEMP_DIR: '/home/cwlab_user/cwlab/temp'
-    WORKFLOW_DIR: '/home/cwlab_user/cwlab/workflows'
+    TEMP_DIR: '/home/workflux_user/workflux/temp'
+    WORKFLOW_DIR: '/home/workflux_user/workflux/workflows'
     EXEC_DIR: '/datasets/processing_out/'
-    DEFAULT_INPUT_DIR: '/home/cwlab_user/cwlab/input'
-    DB_DIR: '/home/cwlab_user/cwlab/db'
+    DEFAULT_INPUT_DIR: '/home/workflux_user/workflux/input'
+    DB_DIR: '/home/workflux_user/workflux/db'
 
     ADD_INPUT_DIRS:
         GENOMES_DIR: '/ngs_share/genomes'
@@ -465,11 +465,11 @@ Windows:
 
     DEBUG: False  
 
-    TEMP_DIR: 'C:\Users\cwlab_user\cwlab\temp'
-    WORKFLOW_DIR: 'C:\Users\cwlab_user\cwlab\workflows'
+    TEMP_DIR: 'C:\Users\workflux_user\workflux\temp'
+    WORKFLOW_DIR: 'C:\Users\workflux_user\workflux\workflows'
     EXEC_DIR: 'D:\processing_out\'
-    DEFAULT_INPUT_DIR: 'C:\Users\cwlab_user\cwlab\input'
-    DB_DIR: 'C:\Users\cwlab_user\cwlab\db'
+    DEFAULT_INPUT_DIR: 'C:\Users\workflux_user\workflux\input'
+    DB_DIR: 'C:\Users\workflux_user\workflux\db'
 
     ADD_INPUT_DIRS:
         GENOMES_DIR: 'E:\genomes'
@@ -507,23 +507,23 @@ and Contribution" section). We are happy to help.**
 Contact and Contribution:
 -------------------------
 
-If you have any question or are experiencing problems with CWLab, please
+If you have any question or are experiencing problems with workflUX, please
 contact us at ``k.breuer@dkfz.de`` or open an issue in Github.
 
 If you would like to contribute to the development and like to extend
-the functionality of CWLab to meet your requirements, you are more than
+the functionality of workflUX to meet your requirements, you are more than
 welcome. We will do our best to support you and your contribution will
 be acknowledged.
 
 About Us:
 ---------
 
-CWLab is developed with love at the Division of Cancer Epigenomics of
+workflUX is developed with love at the Division of Cancer Epigenomics of
 the German Cancer Research Center (DKFZ) in the beautiful university
 city of Heidelberg. We are an interdisciplinary team with wet-lab
 scientists and bioinformaticians working closely together. Our DNA
 sequencing-driven methodologies produce challenging amounts of data.
-CWLab helps us by giving all members of our team the ability to perform
+workflUX helps us by giving all members of our team the ability to perform
 common bioinformatic analyses autonomously without having to acquire
 programming skills. This allows our bioinformatic staff to focus on
 method development and interpretation of computationally complex data.
@@ -536,8 +536,8 @@ Licence:
 
 This package is free to use and modify under the Apache 2.0 Licence.
 
-.. |welcome screenshot| image:: https://github.com/CompEpigen/CWLab/blob/master/screenshots/welcome.png?raw=true
-.. |import screenshot| image:: https://github.com/CompEpigen/CWLab/blob/master/screenshots/import.png?raw=true
-.. |create job screenshot| image:: https://github.com/CompEpigen/CWLab/blob/master/screenshots/create_job.png?raw=true
-.. |execution screenshot| image:: https://github.com/CompEpigen/CWLab/blob/master/screenshots/execution.png?raw=true
+.. |welcome screenshot| image:: https://github.com/CompEpigen/workflUX/blob/master/screenshots/welcome.png?raw=true
+.. |import screenshot| image:: https://github.com/CompEpigen/workflUX/blob/master/screenshots/import.png?raw=true
+.. |create job screenshot| image:: https://github.com/CompEpigen/workflUX/blob/master/screenshots/create_job.png?raw=true
+.. |execution screenshot| image:: https://github.com/CompEpigen/workflUX/blob/master/screenshots/execution.png?raw=true
 

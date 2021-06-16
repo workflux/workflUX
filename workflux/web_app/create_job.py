@@ -3,19 +3,19 @@ import os
 from flask import render_template, jsonify, redirect, flash, url_for, request, send_from_directory
 from werkzeug.urls import url_parse
 from flask import current_app as app
-from cwlab.utils import fetch_files_in_dir, is_allowed_file, allowed_extensions_by_type, get_job_templates, \
+from workflux.utils import fetch_files_in_dir, is_allowed_file, allowed_extensions_by_type, get_job_templates, \
     get_job_templ_info, get_path, make_temp_dir
 import requests
-from cwlab.exec.exec import make_job_dir_tree, create_job as create_job_
+from workflux.exec.exec import make_job_dir_tree, create_job as create_job_
 from re import match
-from cwlab.wf_input.web_interface import gen_form_sheet, generate_xls_from_param_values
-from cwlab.wf_input import only_validate_xls
-from cwlab.wf_input.read_xls import remove_non_printable_characters
+from workflux.wf_input.web_interface import gen_form_sheet, generate_xls_from_param_values
+from workflux.wf_input import only_validate_xls
+from workflux.wf_input.read_xls import remove_non_printable_characters
 from time import sleep
 from shutil import move, copyfile, rmtree
 from json import loads as json_loads
-from cwlab.users.manage import login_required
-from cwlab.log import handle_known_error, handle_unknown_error
+from workflux.users.manage import login_required
+from workflux.log import handle_known_error, handle_unknown_error
 
 
 

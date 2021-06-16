@@ -823,8 +823,8 @@ class ExperimentalTag extends React.Component {
                 <b>Please Note: This feature is experimental.</b><br/>
                 If you experience any issues, 
                 please report them to&nbsp;
-                <a href="https://github.com/CompEpigen/CWLab/issues">
-                    https://github.com/CompEpigen/CWLab/issues
+                <a href="https://github.com/CompEpigen/workflUX/issues">
+                    https://github.com/CompEpigen/workflUX/issues
                 </a> or contact k.breuer@dkfz.de.
             </Message>
         )

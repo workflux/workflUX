@@ -1,11 +1,11 @@
 WEB_SERVER_HOST: 0.0.0.0
 WEB_SERVER_PORT: 5000 
 
-TEMP_DIR: '/cwlab/tmp'
-WORKFLOW_DIR: '/cwlab/workflows'
-EXEC_DIR: '/cwlab/exec'
-INPUT_DIR: '/cwlab/input'
-DB_DIR: '/cwlab/database'
+TEMP_DIR: '/workflux/tmp'
+WORKFLOW_DIR: '/workflux/workflows'
+EXEC_DIR: '/workflux/exec'
+INPUT_DIR: '/workflux/input'
+DB_DIR: '/workflux/database'
 
 DEBUG: False
 
@@ -22,7 +22,7 @@ EXEC_PROFILES:
       post_exec: 600
 
     prepare: |
-      export SINGULARITY_TMPDIR=/cwlab/.singularity/tmp
+      export SINGULARITY_TMPDIR=/workflux/.singularity/tmp
       if [ ! -e $SINGULARITY_TMPDIR ]; then mkdir -p $SINGULARITY_TMPDIR; fi
       TMP_DIR="${OUTPUT_DIR}/tmp"
       TMP_OUT_DIR="${OUTPUT_DIR}/tmp_out"
@@ -50,7 +50,7 @@ EXEC_PROFILES:
       post_exec: 600
 
     prepare: |
-      export SINGULARITY_TMPDIR=/cwlab/.singularity/tmp
+      export SINGULARITY_TMPDIR=/workflux/.singularity/tmp
       if [ ! -e $SINGULARITY_TMPDIR ]; then mkdir -p $SINGULARITY_TMPDIR; fi
       TMP_DIR="${OUTPUT_DIR}/tmp"
       CACHE_DIR="${OUTPUT_DIR}/cache"

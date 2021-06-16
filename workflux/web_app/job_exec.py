@@ -3,20 +3,20 @@ import os
 from flask import render_template, jsonify, redirect, flash, url_for, request, send_from_directory
 from werkzeug.urls import url_parse
 from flask import current_app as app 
-from cwlab.utils import fetch_files_in_dir, allowed_extensions_by_type, \
+from workflux.utils import fetch_files_in_dir, allowed_extensions_by_type, \
     get_duration, get_path, get_job_templ_info, get_time_string
 import requests
 from re import sub, match
-from cwlab.wf_input.web_interface import gen_form_sheet as gen_job_param_sheet
-from cwlab.wf_input import only_validate_xls, transcode as make_runs
-from cwlab.exec.exec import exec_runs, get_runs_info, read_run_log, read_run_input, \
+from workflux.wf_input.web_interface import gen_form_sheet as gen_job_param_sheet
+from workflux.wf_input import only_validate_xls, transcode as make_runs
+from workflux.exec.exec import exec_runs, get_runs_info, read_run_log, read_run_input, \
     terminate_runs as terminate_runs_by_name, delete_job as delete_job_by_name
 from time import sleep
 from random import random
 from shutil import move
-from cwlab.users.manage import login_required
-from cwlab.log import handle_known_error, handle_unknown_error
-from cwlab import db_connector
+from workflux.users.manage import login_required
+from workflux.log import handle_known_error, handle_unknown_error
+from workflux import db_connector
 
 job_manager = db_connector.job_manager
 
