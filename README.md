@@ -2,6 +2,7 @@
 [depl-ui-workflux-dkfz-master]: <https://cwlab.dev.krini.ingress.rancher.computational.bio/>
 
 # workflUX - The Workflow User eXperience
+(Formerly known as CWLab.)
 
 An open-source, cloud-ready web application for simplified deployment of big data workflows.
 
