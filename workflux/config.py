@@ -23,7 +23,7 @@ class Config(object):
         self.DEFAULT_CONFIG_FILE = os.path.join(basedir, "default_config.yaml")
 
         self.CONFIG_FILE = CONFIG_FILE or \
-                os.environ.get('CWLAB_CONFIG') or \
+                os.environ.get('WORKFLUX_CONFIG') or \
                 self.DEFAULT_CONFIG_FILE
 
         assert os.path.exists(self.CONFIG_FILE), (
@@ -58,7 +58,7 @@ class Config(object):
 
         # how long needs the access token be valid to allow execution:
         self.MIN_REMAINING_ACCESS_TOKEN_TIME_FOR_EXEC =( 
-            os.environ.get('CWLAB_MIN_REMAINING_ACCESS_TOKEN_TIME_FOR_EXEC') or
+            os.environ.get('WORKFLUX_MIN_REMAINING_ACCESS_TOKEN_TIME_FOR_EXEC') or
             self.CONFIG_FILE_content.get('MIN_REMAINING_ACCESS_TOKEN_TIME_FOR_EXEC') or  
             120
         )
@@ -68,14 +68,14 @@ class Config(object):
             else True
 
         self.BASE_DIR = normalize_path( # overwrites the fallback dir
-            os.environ.get('CWLAB_BASE_DIR') or
+            os.environ.get('WORKFLUX_BASE_DIR') or
             self.CONFIG_FILE_content.get('BASE_DIR') or  
             workflux_fallback_dir,
             correct_symlinks=self.CORRECT_SYMLINKS
         )
 
         include_build_number_in_base_dir = ( # usefull for continuous deployment
-            os.environ.get('CWLAB_INCLUDE_BUILD_NUMBER_IN_BASE_DIR') or
+            os.environ.get('WORKFLUX_INCLUDE_BUILD_NUMBER_IN_BASE_DIR') or
             self.CONFIG_FILE_content.get('INCLUDE_BUILD_NUMBER_IN_BASE_DIR') or  
             False
         )
@@ -85,27 +85,27 @@ class Config(object):
 
             
         self.ENABLE_USERS = (
-            os.environ.get('CWLAB_ENABLE_USERS') or
+            os.environ.get('WORKFLUX_ENABLE_USERS') or
             self.CONFIG_FILE_content.get('ENABLE_USERS') or  
             False
         )
 
         self.USE_OIDC = (
-            os.environ.get('CWLAB_USE_OIDC') or
+            os.environ.get('WORKFLUX_USE_OIDC') or
             self.CONFIG_FILE_content.get('USE_OIDC') or  
             False
         )
 
         self.CUSTOM_LOGIN_ICON_HTML = (
-            os.environ.get('CWLAB_CUSTOM_LOGIN_ICON_HTML') or
+            os.environ.get('WORKFLUX_CUSTOM_LOGIN_ICON_HTML') or
             self.CONFIG_FILE_content.get('CUSTOM_LOGIN_ICON_HTML') or  
             None
         )
 
         self.FINAL_WEB_HOST_URL = (
-            os.environ.get(os.environ.get('CWLAB_FINAL_WEB_HOST_URL_ENV_VAR')) if os.environ.get('CWLAB_FINAL_WEB_HOST_URL_ENV_VAR') else None or
+            os.environ.get(os.environ.get('WORKFLUX_FINAL_WEB_HOST_URL_ENV_VAR')) if os.environ.get('WORKFLUX_FINAL_WEB_HOST_URL_ENV_VAR') else None or
             os.environ.get(self.CONFIG_FILE_content.get('FINAL_WEB_HOST_URL_ENV_VAR')) if self.CONFIG_FILE_content.get('FINAL_WEB_HOST_URL_ENV_VAR') else None or
-            os.environ.get('CWLAB_FINAL_WEB_HOST_URL') or
+            os.environ.get('WORKFLUX_FINAL_WEB_HOST_URL') or
             self.CONFIG_FILE_content.get('FINAL_WEB_HOST_URL') or  
             None
         )
@@ -119,7 +119,7 @@ class Config(object):
             self.OIDC_CONF = None
 
         self.DEFAULT_EMAIL = (
-            os.environ.get('CWLAB_DEFAULT_EMAIL') or 
+            os.environ.get('WORKFLUX_DEFAULT_EMAIL') or 
             self.CONFIG_FILE_content.get('DEFAULT_EMAIL') or  
             None
         )
@@ -129,43 +129,43 @@ class Config(object):
             else (self.ENABLE_USERS or not self.DEFAULT_EMAIL is None)
 
         self.SECRET_KEY = (
-            os.environ.get('CWLAB_SECRET_KEY') or 
+            os.environ.get('WORKFLUX_SECRET_KEY') or 
             self.CONFIG_FILE_content.get('SECRET_KEY') or  
             strftime("%Y%m%d%H%M%S", gmtime())
         )
 
         self.TEMP_DIR = normalize_path(
-            os.environ.get('CWLAB_TEMP_DIR') or
+            os.environ.get('WORKFLUX_TEMP_DIR') or
             self.CONFIG_FILE_content.get('TEMP_DIR') or  
             os.path.join( self.BASE_DIR, "temp"),
             correct_symlinks=self.CORRECT_SYMLINKS
         )
         self.LOG_DIR = normalize_path(
-            os.environ.get('CWLAB_LOG_DIR') or
+            os.environ.get('WORKFLUX_LOG_DIR') or
             self.CONFIG_FILE_content.get('LOG_DIR') or  
             os.path.join(self.BASE_DIR, "logs"),
             correct_symlinks=self.CORRECT_SYMLINKS
         )
         self.WORKFLOW_DIR = normalize_path(
-            os.environ.get('CWLAB_WORKFLOW_DIR') or  
+            os.environ.get('WORKFLUX_WORKFLOW_DIR') or  
             self.CONFIG_FILE_content.get('WORKFLOW_DIR') or  
             os.path.join( self.BASE_DIR, "wf_dir"),
             correct_symlinks=self.CORRECT_SYMLINKS
         )
         self.EXEC_DIR = normalize_path(
-            os.environ.get('CWLAB_EXEC_DIR') or 
+            os.environ.get('WORKFLUX_EXEC_DIR') or 
             self.CONFIG_FILE_content.get('EXEC_DIR') or   
             os.path.join( self.BASE_DIR, "exec"),
             correct_symlinks=self.CORRECT_SYMLINKS
         )
         self.DEFAULT_INPUT_DIR = normalize_path(
-            os.environ.get('CWLAB_DEFAULT_INPUT_DIR') or 
+            os.environ.get('WORKFLUX_DEFAULT_INPUT_DIR') or 
             self.CONFIG_FILE_content.get('DEFAULT_INPUT_DIR') or  
             os.path.join( self.BASE_DIR, "input"),
             correct_symlinks=self.CORRECT_SYMLINKS
         )
         self.DB_DIR = normalize_path(
-            os.environ.get('CWLAB_DB_DIR') or 
+            os.environ.get('WORKFLUX_DB_DIR') or 
             self.CONFIG_FILE_content.get('DB_DIR') or  
             os.path.join( self.BASE_DIR, "database"),
             correct_symlinks=self.CORRECT_SYMLINKS
@@ -203,7 +203,7 @@ class Config(object):
             else True
         
         self.DEBUG = (
-            os.environ.get('CWLAB_DEBUG') == "True" or
+            os.environ.get('WORKFLUX_DEBUG') == "True" or
             self.CONFIG_FILE_content.get('DEBUG') or
             False
         )
@@ -212,54 +212,54 @@ class Config(object):
             print("Debug mode turned on, don't use this on production machines.", file=sys.stderr)
             
         # check upon exec status request if corresponding pid is still running:
-        if os.environ.get('CWLAB_CHECK_EXEC_PID') is not None:
-            self.CHECK_EXEC_PID = os.environ.get('CWLAB_CHECK_EXEC_PID') == "True"
+        if os.environ.get('WORKFLUX_CHECK_EXEC_PID') is not None:
+            self.CHECK_EXEC_PID = os.environ.get('WORKFLUX_CHECK_EXEC_PID') == "True"
         elif self.CONFIG_FILE_content.get('CHECK_EXEC_PID') is not None:
             self.CHECK_EXEC_PID = self.CONFIG_FILE_content.get('CHECK_EXEC_PID')
         else:
             self.CHECK_EXEC_PID = True
 
         database_username_env_name = (
-            os.environ.get('CWLAB_DATABASE_USERNAME_ENVVAR') or
+            os.environ.get('WORKFLUX_DATABASE_USERNAME_ENVVAR') or
             self.CONFIG_FILE_content.get('DATABASE_USERNAME_ENVVAR') or  
             None
         )
 
         database_username = (
             (os.environ.get(database_username_env_name) if database_username_env_name else None) or
-            os.environ.get('CWLAB_DATABASE_USERNAME') or
+            os.environ.get('WORKFLUX_DATABASE_USERNAME') or
             self.CONFIG_FILE_content.get('DATABASE_USERNAME') or  
             None
         )
             
         database_password_env_name = (
-            os.environ.get('CWLAB_DATABASE_PASSWORD_ENVVAR') or
+            os.environ.get('WORKFLUX_DATABASE_PASSWORD_ENVVAR') or
             self.CONFIG_FILE_content.get('DATABASE_PASSWORD_ENVVAR') or  
             None
         )
 
         database_password = (
             (os.environ.get(database_password_env_name) if database_password_env_name else None) or
-            os.environ.get('CWLAB_DATABASE_PASSWORD') or
+            os.environ.get('WORKFLUX_DATABASE_PASSWORD') or
             self.CONFIG_FILE_content.get('DATABASE_PASSWORD') or  
             None
         )
 
         database_host_env_name = (
-            os.environ.get('CWLAB_DATABASE_HOST_ENVVAR') or
+            os.environ.get('WORKFLUX_DATABASE_HOST_ENVVAR') or
             self.CONFIG_FILE_content.get('DATABASE_HOST_ENVVAR') or  
             None
         )
 
         database_host = (
             (os.environ.get(database_host_env_name) if database_host_env_name else None) or
-            os.environ.get('CWLAB_DATABASE_HOST') or
+            os.environ.get('WORKFLUX_DATABASE_HOST') or
             self.CONFIG_FILE_content.get('DATABASE_HOST') or  
             None
         )
         
         self.SQLALCHEMY_DATABASE_URI = (
-            os.environ.get('CWLAB_DATABASE_URL') or
+            os.environ.get('WORKFLUX_DATABASE_URL') or
             self.CONFIG_FILE_content.get('DATABASE_URL') or  
             ('sqlite:///' + os.path.join(self.DB_DIR, 'workflux.db'))
         )
@@ -274,7 +274,7 @@ class Config(object):
                 .replace("<password>", str(database_password))
         
         self.SQLALCHEMY_TRACK_MODIFICATIONS = (
-            os.environ.get('CWLAB_DATABASE_TRACK_MODIFICATIONS') or
+            os.environ.get('WORKFLUX_DATABASE_TRACK_MODIFICATIONS') or
             self.CONFIG_FILE_content.get('DATABASE_TRACK_MODIFICATIONS') or  
             False
         )
@@ -286,13 +286,13 @@ class Config(object):
         )
         
         self.READ_MAX_CHARS_FROM_FILE = (
-            os.environ.get('CWLAB_READ_MAX_CHARS_FROM_FILE') or
+            os.environ.get('WORKFLUX_READ_MAX_CHARS_FROM_FILE') or
             self.CONFIG_FILE_content.get('READ_MAX_CHARS_FROM_FILE') or  
             100000
         )
 
         self.WEB_AUTO_REFRESH_INTERVAL = (
-            os.environ.get('CWLAB_WEB_AUTO_REFRESH_INTERVAL') or
+            os.environ.get('WORKFLUX_WEB_AUTO_REFRESH_INTERVAL') or
             self.CONFIG_FILE_content.get('WEB_AUTO_REFRESH_INTERVAL') or  
             1
         )
@@ -341,24 +341,24 @@ class Config(object):
 
         # Configure web server:
         self.WEB_SERVER_HOST = (
-            os.environ.get('CWLAB_WEB_SERVER_HOST') or
+            os.environ.get('WORKFLUX_WEB_SERVER_HOST') or
             self.CONFIG_FILE_content.get('WEB_SERVER_HOST') or  
             "localhost"
         )
         self.WEB_SERVER_PORT = (
-            os.environ.get('CWLAB_WEB_SERVER_PORT') or
+            os.environ.get('WORKFLUX_WEB_SERVER_PORT') or
             self.CONFIG_FILE_content.get('WEB_SERVER_PORT') or  
             "5000"
         )
 
         # custumatize messages:
         self.LOGIN_INSTRUCTION = (
-            os.environ.get('CWLAB_LOGIN_INSTRUCTION') or
+            os.environ.get('WORKFLUX_LOGIN_INSTRUCTION') or
             self.CONFIG_FILE_content.get('LOGIN_INSTRUCTION') or  
             ""
         )
         self.REGISTRATION_INSTRUCTION = (
-            os.environ.get('CWLAB_REGISTRATION_INSTRUCTION') or
+            os.environ.get('WORKFLUX_REGISTRATION_INSTRUCTION') or
             self.CONFIG_FILE_content.get('REGISTRATION_INSTRUCTION') or  
             "Please fill in the following fields. " +
             "Your registration request will need approval by the administrator to acitivate your account."
