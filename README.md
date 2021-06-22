@@ -21,7 +21,7 @@ An open-source, cloud-ready web application for simplified deployment of big dat
 
 
 ## Installation and Quick Start:
-**Attention: workflUX is in early beta state currently and not all features are available yet. However, the core functionalities are working and we are happy if you test it.**
+**Attention: workflUX is in beta state and breaking changes might be introduced in the future. However, if you like to test it or even run in production, we will support you.**
 
 Installation can be done using pip:  
 `python3 -m pip install workflux`
@@ -62,80 +62,12 @@ Therefore, workflUX can be used on any infrastructure supported by these CWL run
 Execution on Windows is only supported by cwltool which talks to docker for windows. Therefore, CWL-wrapped tools and workflows which where originally designed for Linux/MacOs can be executed on Windows with a graphical interface provided by workflUX.
 
 ## Usage:
+Please see our [tutorial](./tutorials/Covid19_MSA_Group_Comparison.md), that walks you through an simple yet meaningful example of how workflUX can be used to compare the spike protein sequences of Covid-19 in two patient cohorts.  
 
-### Connect to the web interface:
-Open a modern browser of your choice like Chrome, Firefox, Safari, or Edge (Internet Explorer might be partially incompatible).
-
-Type in the URL of your webserver. The URL depends on your configuration:  
-
- - If the webserver is running on the same machine and uses port 5000 is used (this is the default), type:  `https://localhost:5000/`  
- - If workflUX is running on a remote machine in the same network, type in the machine's IP address and the used port. For instance, if the IP address is 172.22.0.1 and port 5000 is used:`https://172.22.0.1:5000/`
-  
-You should see a Welcome page like this:  
-![welcome screenshot](https://github.com/CompEpigen/workflUX/blob/master/screenshots/welcome.png?raw=true)  
-
-### Import a CWL workflow or tool:
-workflUX can be used to run any workflow or tool that has been wrapped using the Common Workflow Language. Of course, you can write workflows or tool wrappers yourself (we recommend rabix-composer https://rabix.io/), however, for many especially bioinformatic tasks, existing CWL solutions are publicly available. Check the CWL website as a starting point:  
-https://www.commonwl.org/#Repositories_of_CWL_Tools_and_Workflows.
-
-To import a CWL document click on the button "Import CWL Workflow/Tool" in the top bar. You have multiple options:
-- using a Tool Repository Service (TRS) URI to a GA4GH-complient TRS server
-- using a publicly accessible URL (e.g. to a workflow on GitHub)
-- upload a CWL tool/workflow as single packed file (see [here](https://github.com/common-workflow-language/cwltool#combining-parts-of-a-workflow-into-a-single-document) for instructions on how to pack)
-- upload a ZIP archive containing CWL workflows and its dependencies
-- from a [Janis](https://github.com/PMCC-BioinformaticsCore/janis) script which will be automatically transpiled to CWL
-
-The workflow will be automatically validated:  
-![import screenshot](https://github.com/CompEpigen/workflUX/blob/master/screenshots/import.png?raw=true)
-
-
-### Create a new Job:
-To run a workflow or tool with your data, you have to create a new job. One job may contain multiple runs (for instance multiple samples or conditions). workflUX will automatically present you a list of needed input parameters. For each parameter, you can choose whether to specify it globally (all runs of a job will get the same value) or per run.
-
-- Click on the button "Create New Job" in the top bar and select the desired CWL document in the sidebar
-- Specify a descriptive job name (the job ID will be composed of the date, time, and the name)
-- If the job shall contain multiple runs toggle the "runs per job" switch, then:
-    - Specify run names as a comma-separated list in the dedicated text field
-    - In the parameter list, select which parameters should be run-specific
-- workflUX will automatically create a parameter form for you to fill in:
-    - Export/download the form in the desired format
-    - Open it in a spreadsheet editor (e.g. Microsoft Excel or Open Office)
-    - The file may contain the following sheets (depends on the type of input parameters and your selections for "global"/"run-specific" specification):
-        - ``global single values``: parameters that take only one value and are defined globally (one for all runs)
-        - ``run-specific single values``: parameters that take only one value but are specified per run
-        - ``global arrays``: array parameters (takes a list of values) that are defined globally
-        -  A separate sheet will be created for each run-specific array parameter. It will be titled with the parameters name
-        - ``config``: This sheet contains configuration options that only need adaption in advanced use cases.
-    - Fill in the sheet and import/upload the edited file to workflUX **\***
-- Your parameter settings are automatically validated. (E.g. it is checked whether the specified values match the parameter's type and whether the paths of specified files or directories exist.)
-- If valid, you can press the "create job" button and head over to "Job Execution & Results" in the top bar  
-  
-
-**\* Please note:** For specifying file or directory parameters, there are two options:
-- Either specify the absolute path
-- Specify a character string that can be uniquely matched to a file/directory in the default input directory (please see the **INPUT_DIR** parameter in the config section).
-
-
-This is an example screenshot for creating a job for an ATAC-seq workflow:  
-![create job screenshot](https://github.com/CompEpigen/workflUX/blob/master/screenshots/create_job.png?raw=true)
-
-
-### Job execution:  
-
-- Click on "Job Execution & Results" in the top bar and choose the job of interest in the sidebar
-- Select the runs you want to start
-- Select an execution profile (see the "Configuration" for details) and press "start"
-- The execution status will be displayed in the run-list
-- Pressing the "DetailsResults" button will show (not implemented yet):
-    - the deployed input parameter
-    - execution logs (from the CWL runner)
-    - a QC report
-- Once finished the output can be found in the "exec" directory (set in the configuration) along with the used parameter values, CWL document, and log files
-
-
-An example screenshot of the execution interface:  
-![execution screenshot](https://github.com/CompEpigen/workflUX/blob/master/screenshots/execution.png?raw=true)
-
+Here are some apetizers:
+![welcome screenshot](./screenshots/0.0_welcome.png)  
+ 
+![create job screenshot](./screenshots/2.4_create_job.png)
 ## Configuration:
 workflUX is a highly versatile package and makes almost no assumptions on your hard- and software environment used for the execution of CWL. To adapt it to your system and use case, a set of configuration options is available:  
 
@@ -338,11 +270,6 @@ EXEC_PROFILES:
             if ($LAST_LINES.Contains("Final process status is success")){$SUCCESS="True"}
             else {$SUCCESS="False"; $ERR_MESSAGE = "cwltool failed - ${LAST_LINE}"}
 ```
-
-
-## Documentation:
-
-**Please note: A much more detailed documentation is on the way. In the meantime, please notify us if you have any questions (see the "Contact and Contribution" section). We are happy to help.**
 
 ## Licence:
 This package is free to use and modify under the Apache 2.0 Licence.

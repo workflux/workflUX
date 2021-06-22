@@ -17,14 +17,14 @@ def client():
     os.mkdir(temp_base_dir)
 
     # temp_base_dir = tempfile.TemporaryDirectory()
-    # os.environ['CWLAB_BASE_DIR'] = temp_base_dir.name
+    # os.environ['WORKFLUX_BASE_DIR'] = temp_base_dir.name
 
-    os.environ['CWLAB_BASE_DIR'] = temp_base_dir
-    os.environ['CWLAB_CONFIG'] = os.path.join(
+    os.environ['WORKFLUX_BASE_DIR'] = temp_base_dir
+    os.environ['WORKFLUX_CONFIG'] = os.path.join(
         os.path.dirname(__file__),
         "test_config.yaml"
     )
-    os.environ['CWLAB_DEFAULT_INPUT_DIR'] = test_workflows_dir
+    os.environ['WORKFLUX_DEFAULT_INPUT_DIR'] = test_workflows_dir
 
     test_app = workflux.create_app(webapp=False)
     test_app.config['TESTING'] = True

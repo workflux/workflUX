@@ -16,7 +16,6 @@ class CwltoolLocal(PyExecProfile):
             self.PYTHON_PATH,
             "-m",
             "cwltool",
-            "--no-container",
             "--debug",
             "--outdir",
             self.OUTPUT_DIR,
