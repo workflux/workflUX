@@ -3,21 +3,22 @@ import os
 from setuptools import find_packages, setup
 
 SETUP_DIR = os.path.dirname(__file__)
-README = os.path.join(SETUP_DIR, 'README.rst')
+with open(os.path.join(SETUP_DIR, 'README.md')) as file:
+    readme = file.read()
 
 setup(
     name='workflux',
     version='0.5.0',    
     description='A platform-agnostic, cloud-ready framework for simplified deployment of the Common Workflow Language using a graphical web interface',
-    long_description=open(README).read(),
-    long_description_content_type="text/x-rst",
+    long_description=readme,
+    long_description_content_type="text/markdown",
     url='https://github.com/CompEpigen/workflUX',
     download_url="https://github.com/CompEpigen/workflUX",
     author='Kersten Henrik Breuer',
     author_email='k.breuer@dkfz.de',
     license='Apache 2.0',
     include_package_data=True,
-    packages=find_packages(),
+    packages=find_packages(exclude=("tests",)),
     entry_points={
         "console_scripts": [
             "workflux=workflux.__main__:main",
