@@ -7,7 +7,7 @@
 An open-source, cloud-ready web application for simplified deployment of big data workflows.
 
 **CI/CD:**
-[![Build Status](https://dev.azure.com/ComputationalEpigenomics/cwlab/_apis/build/status/CompEpigen.cwlab?branchName=master)](https://dev.azure.com/ComputationalEpigenomics/cwlab/_build/latest?definitionId=2&branchName=master)
+[![Build Status](https://dev.azure.com/ComputationalEpigenomics/workflux/_apis/build/status/CompEpigen.CWLab?branchName=development)](https://dev.azure.com/ComputationalEpigenomics/workflux/_build/latest?definitionId=2&branchName=development)
 
 **Packaging:**
 [![PyPI status](https://img.shields.io/pypi/status/workflux.svg)](https://pypi.python.org/pypi/workflux/)
