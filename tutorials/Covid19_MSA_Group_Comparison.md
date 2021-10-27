@@ -74,7 +74,14 @@ An HTML form will appear that asks you to provide input parameters for this run.
 
 1. Provide the S-protein sequences for the two patient cohorts by copy & pasting following HTTP URLs:
 
-![fasta screenshot](../screenshots/4.4_tutorial_covid19_fasta.png) 
+![fasta screenshot](../screenshots/4.4_tutorial_covid19_fasta.PNG) 
+
+![parameter screenshot](../screenshots/4.5_tutorial_covid19_provide_parameter.png) 
+
+> **Please Note**: Your parameters are **automatically validated** to avoid bad surprises when starting the run.
+
+> Please Note: The entire parameter form has been created from the information parsed from the CWL workflow itself. No additional configuration was needed upon import.
+If you don‘t know the meaning of a parameter, please cilck on the       button to get documentation.
 
 
 
