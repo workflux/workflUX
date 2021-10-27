@@ -39,13 +39,15 @@ You should see a welcome screen like this:
 
 2. Press on ***login / register*** in the top bar.
 
-You will be forwarded to ELIXIR AAI.
+:orange_circle: :orange_circle: :orange_circle: You will be forwarded to ELIXIR AAI.
 
 ![registration screenshot](../screenshots/4.2_tutorial_covid19_registration.png) 
 
 ELIXIR AAI will ask you to register your account to be part of a specific group.
 
 3. Please fill in the registration form and submit.
+
+:orange_circle: :orange_circle: :orange_circle:
 
 Upon successful registration, you should see a message like this:
 
