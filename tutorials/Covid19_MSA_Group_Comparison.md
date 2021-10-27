@@ -31,3 +31,27 @@ https://www.ncbi.nlm.nih.gov/labs/virus/vssi/#/
 
 ### **Step 1: Register with Your ELIXIR Account**
 
+1.1 Connect to CWLab using your browser of choice: https://cwlab.krini.ingress.rancher.computational.bio/
+
+You should see a welcome screen like this:
+
+![welcome screenshot](../screenshots/4.1_tutorial_covid19_welcome.png) 
+
+1.2 Press on ***login / register*** in the top bar.
+
+You will be forwarded to ELIXIR AAI.
+
+![registration screenshot](../screenshots/4.2_tutorial_covid19_registration.png) 
+
+ELIXIR AAI will ask you to register your account to be part of a specific group.
+
+1.3 Please fill in the registration form and submit.
+
+Upon successful registration, you should see a message like this:
+
+![registered screenshot](../screenshots/4.3_tutorial_covid19_registered.png) 
+
+1.4 Please press continue to be redirected to CWLab.
+
+
+
