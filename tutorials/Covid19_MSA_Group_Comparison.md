@@ -13,3 +13,18 @@ There are two required input parameters (fasta_1 and fasta_2) that represent **t
 The workflow can be found at: https://github.com/CompEpigen/msa_group_compare
 
 For further information, please also see: https://w3id.org/cwl/view/git/93d3f03cdd9c44bdc609a11f097a4bad9451be84/CWL/workflows/msa_group_compare.cwl 
+
+## Aim of the Demo:
+
+Using the above workflow, we would like to investigate whether there has been a change in the sequence of **COVID19 surface glycoprotein** between the early outbreak in China and the subsequent **wave in Europe**.
+
+Therefore we will compare sequences from two patient cohorts:
+
+* **China**, until the end of **2019, 11 patients**
+* **Europe**, in January **2020, 10 patients**
+
+Source: NCBI Virus (04/06/2020),
+https://www.ncbi.nlm.nih.gov/labs/virus/vssi/#/
+
+
+**Please Note**: The workflow and its application presented here are intended for demonstration purposes only. We do not claim that this analysis and the produced result represent best scientific practice. 
