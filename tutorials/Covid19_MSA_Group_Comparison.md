@@ -68,9 +68,14 @@ You will be forwarded to ELIXIR AAI.
 
 2. Please provide CWLab access to the requested information.
 
-## ''Step 4: Provide Input Parameters**
+## **Step 4: Provide Input Parameters**
 
 An HTML form will appear that asks you to provide input parameters for this run. There are only **two required parameters (fasta_1 and fasta_2)**. The **remaining parameters are optional** and pre-set with their defaults, but feel free to play around.
+
+1. Provide the S-protein sequences for the two patient cohorts by copy & pasting following HTTP URLs:
+
+![fasta screenshot](../screenshots/4.4_tutorial_covid19_fasta.png) 
+
 
 
 
