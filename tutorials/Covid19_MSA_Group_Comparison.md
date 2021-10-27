@@ -28,3 +28,7 @@ https://www.ncbi.nlm.nih.gov/labs/virus/vssi/#/
 
 
 **Please Note**: The workflow and its application presented here are intended for demonstration purposes only. We do not claim that this analysis and the produced result represent best scientific practice. 
+
+<span style="color:blue">some *blue* text</span>
+Step 1: Register with Your ELIXIR Account
+
