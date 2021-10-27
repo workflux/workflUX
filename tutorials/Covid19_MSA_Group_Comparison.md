@@ -29,7 +29,7 @@ https://www.ncbi.nlm.nih.gov/labs/virus/vssi/#/
 
 > **Please Note**: The workflow and its application presented here are intended for demonstration purposes only. We do not claim that this analysis and the produced result represent best scientific practice. 
 
-### **Step 1: Register with Your ELIXIR Account**
+## **Step 1: Register with Your ELIXIR Account**
 
 1. Connect to CWLab using your browser of choice: https://cwlab.krini.ingress.rancher.computational.bio/
 
@@ -55,7 +55,7 @@ Upon successful registration, you should see a message like this:
 
 4. Please press continue to be redirected to CWLab.
 
-### **Step 2: Login with Your ELIXIR Account** 
+## **Step 2: Login with Your ELIXIR Account** 
 
 ![welcome screenshot](../screenshots/4.1_tutorial_covid19_welcome.png) 
 
@@ -63,11 +63,8 @@ Now that you have registered, you may log in.
 
 1. Please press the login / register button again.
 
-<p align="center">
-
- ![dots](../screenshots/4.0.1_tutorial_covid19_threedots.png)  You will be forwarded to ELIXIR AAI.
+![dots](../screenshots/4.0.1_tutorial_covid19_threedots.png)  You will be forwarded to ELIXIR AAI.
  
-</p>
 
 
 
