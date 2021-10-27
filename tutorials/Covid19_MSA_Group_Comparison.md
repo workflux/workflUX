@@ -139,11 +139,11 @@ Now it is time to submit your job to a WES endpoint for execution.
 
 3. Select a WES endpoint.
 
-4. Press start.
+4. Press **start**.
 
 ![select running screenshot](../screenshots/4.15_tutorial_covid19_running.png) 
 
-After a few seconds, the run status should turn to ***RUNNING***. If many executions are happening in parallel you might also see QUEUED.
+After a few seconds, the run status should turn to ***RUNNING***. If many executions are happening in parallel you might also see ***QUEUED***.
 
 Please wait
 
@@ -155,19 +155,19 @@ Once the status turned to ***RUNNING***, your execution should complete within 2
 
 Once the execution has finished, you are probably interested in retrieving and exploring the output.
 
-1. Click on Details for the completed run.
+1. Click on ***Details*** for the completed run.
 
 ![select details screenshot](../screenshots/4.17_tutorial_covid19_details.png) 
 
 2. Click on Output Files.
 
-![select output screenshot](../screenshots/4.18_tutorial_covid19_outputfiles.png) 
+![select output screenshot](../screenshots/4.18_tutorial_covid19_outputfiles.PNG) 
 
-3. Please select the **phylogenetic_tree.png**.
+3. Please select the ***phylogenetic_tree.png***.
 
-4. Press **download selected file**.
+4. Press ***download selected file***.
 
-![select output screenshot](../screenshots/4.19_tutorial_covid19_select_run.png) 
+![select output screenshot](../screenshots/4.19_tutorial_covid19_select_run.PNG) 
 
 Please open the png with an image viewer of your choice.
 
