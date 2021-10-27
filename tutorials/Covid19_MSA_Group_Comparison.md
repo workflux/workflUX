@@ -10,8 +10,6 @@ The workflow compares two sets of peptide, DNA, or RNA sequences using following
 
 There are two required input parameters (fasta_1 and fasta_2) that represent **two sets of sequences** in fasta format. Optional parameters include the sequence type, msa method, and distance type. The workflow’s main output is a plot of a **phylogenetic tree** showing the relation of the two sets.
 
-The workflow can be found at: [https://github.com/CompEpigen/msa_group_compare](https://github.com/CompEpigen/msa_group_compare)
+The workflow can be found at: https://github.com/CompEpigen/msa_group_compare
 
-For further information, please also see:
-
-https://w3id.org/cwl/view/git/93d3f03cdd9c44bdc609a11f097a4bad9451be84/CWL/workflows/msa_group_compare.cwl 
+For further information, please also see: https://w3id.org/cwl/view/git/93d3f03cdd9c44bdc609a11f097a4bad9451be84/CWL/workflows/msa_group_compare.cwl 
