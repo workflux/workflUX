@@ -16,7 +16,7 @@ For further information, please also see: https://w3id.org/cwl/view/git/93d3f03c
 
 ## Aim of the Demo:
 
-Using the above workflow, we would like to investigate whether there has been a change in the sequence of **COVID19 surface glycoprotein** between the early outbreak in China and the subsequent **wave in Europe**.
+Using the above workflow, we would like to investigate whether there has been a change in the sequence of **COVID19 surface glycoprotein** between the **early outbreak in China** and the subsequent **wave in Europe**.
 
 Therefore we will compare sequences from two patient cohorts:
 
@@ -31,7 +31,7 @@ https://www.ncbi.nlm.nih.gov/labs/virus/vssi/#/
 
 ## **Step 1: Register with Your ELIXIR Account**
 
-1. Connect to CWLab using your browser of choice: https://cwlab.krini.ingress.rancher.computational.bio/
+1. Connect to workflUX using your browser of choice: https://cwlab.krini.ingress.rancher.computational.bio/
 
 You should see a welcome screen like this:
 
@@ -52,7 +52,7 @@ Upon successful registration, you should see a message like this:
 
 ![registered screenshot](../screenshots/4.03_tutorial_covid19_registered.png) 
 
-4. Please press ***continue*** to be redirected to CWLab.
+4. Please press ***continue*** to be redirected to workflUX.
 
 ## **Step 2: Login with Your ELIXIR Account** 
 
@@ -60,13 +60,13 @@ Upon successful registration, you should see a message like this:
 
 Now that you have registered, you may log in.
 
-1. Please press the login / register button again.
+1. Please press the ***login / register*** button again.
 
 You will be forwarded to ELIXIR AAI.
  
 ![info screenshot](../screenshots/4.04_tutorial_covid19_elixir_provide_info.png) 
 
-2. Please provide CWLab access to the requested information.
+2. Please provide workflUX access to the requested information.
 
 ## **Step 3: Create a New Job**
 
@@ -90,7 +90,7 @@ In the first section, you will be informed with a workflow description.
 
 > **Please Note**: You may submit **batches of runs** at once. This greatly simplifies the specification of large sample sets.
 
-For this demo, we will leave the batch submission disabled
+For this demo, we will leave the batch submission disabled.
 
 scroll down
 
@@ -110,7 +110,7 @@ An HTML form will appear that asks you to provide input parameters for this run.
 
 > **Please Note**: Your parameters are **automatically validated** to avoid bad surprises when starting the run.
 
-> Please Note: The entire parameter form has been created from the information parsed from the CWL workflow itself. No additional configuration was needed upon import.
+> **Please Note**: The entire parameter form has been created from the information parsed from the CWL workflow itself. No additional configuration was needed upon import.
 If you don‘t know the meaning of a parameter, please cilck on the :information_source: button to get documentation.
 
 scroll down
@@ -133,7 +133,7 @@ Now it is time to submit your job to a WES endpoint for execution.
 
 1. Select the newly created job in the left panel.
 
-![select run screenshot](../screenshots/4.14_tutorial_covid19_select_run.png) 
+![select run screenshot](../screenshots/4.14_tutorial_covid19_select_run.PNG) 
 
 2. Select the run.
 
