@@ -45,14 +45,14 @@ You will be forwarded to ELIXIR AAI.
 
 ELIXIR AAI will ask you to register your account to be part of a specific group.
 
-3. Please fill in the registration form and submit.
+3. Please fill in the registration form and ***submit***.
 
 
 Upon successful registration, you should see a message like this:
 
 ![registered screenshot](../screenshots/4.03_tutorial_covid19_registered.png) 
 
-4. Please press continue to be redirected to CWLab.
+4. Please press ***continue*** to be redirected to CWLab.
 
 ## **Step 2: Login with Your ELIXIR Account** 
 
@@ -68,15 +68,45 @@ You will be forwarded to ELIXIR AAI.
 
 2. Please provide CWLab access to the requested information.
 
+## **Step 3: Create a New Job**
+
+After login, additional options will appear in the top bar.
+
+1. Please click on the ***Create Job*** button.
+
+![create job screenshot](../screenshots/4.05_tutorial_covid19_create_job.png) 
+
+2. Select the MSA comparison workflow in the left panel.
+
+![create job screenshot](../screenshots/4.06_tutorial_covid19_create_job.png) 
+
+In the first section, you will be informed with a workflow description.
+
+> **Please Note**: This description has been **directly extracted from the CWL workflow** upon import. 
+
+![title screenshot](../screenshots/4.07_tutorial_covid19_title.png) 
+
+3. Please choose a title for your analysis job.
+
+> **Please Note**: You may submit **batches of runs** at once. This greatly simplifies the specification of large sample sets.
+
+For this demo, we will leave the batch submission disabled
+
+scroll down
+
+3. To provide parameters, please select ***HTML form***.
+
+![html screenshot](../screenshots/4.08_tutorial_covid19_html.png) 
+
 ## **Step 4: Provide Input Parameters**
 
 An HTML form will appear that asks you to provide input parameters for this run. There are only **two required parameters (fasta_1 and fasta_2)**. The **remaining parameters are optional** and pre-set with their defaults, but feel free to play around.
 
 1. Provide the S-protein sequences for the two patient cohorts by copy & pasting following HTTP URLs:
 
-![fasta screenshot](../screenshots/4.05_tutorial_covid19_fasta.PNG) 
+![fasta screenshot](../screenshots/4.09_tutorial_covid19_fasta.PNG) 
 
-![parameter screenshot](../screenshots/4.06_tutorial_covid19_provide_parameter.png) 
+![parameter screenshot](../screenshots/4.10_tutorial_covid19_provide_parameter.png) 
 
 > **Please Note**: Your parameters are **automatically validated** to avoid bad surprises when starting the run.
 
@@ -85,13 +115,13 @@ If you don‘t know the meaning of a parameter, please cilck on the :information
 
 scroll down
 
-![validate screenshot](../screenshots/4.07_tutorial_covid19_validate.png) 
+![validate screenshot](../screenshots/4.11_tutorial_covid19_validata_and_create.png) 
 
 2. Click on **validate and create job**.
 
 Please wait
 
-![execute screenshot](../screenshots/4.08_tutorial_covid19_execute.png) 
+![execute screenshot](../screenshots/4.12_tutorial_covid19_job_execution.png) 
 
 3. Once a green success message occurs, you may click on **Job Execution & Results** in the top bar. 
 
@@ -99,11 +129,11 @@ Please wait
 
 Now it is time to submit your job to a WES endpoint for execution.
 
-![select job screenshot](../screenshots/4.09_tutorial_covid19_select_job.png) 
+![select job screenshot](../screenshots/4.13_tutorial_covid19_select_job.png) 
 
 1. Select the newly created job in the left panel.
 
-![select run screenshot](../screenshots/4.10_tutorial_covid19_select_run.png) 
+![select run screenshot](../screenshots/4.14_tutorial_covid19_select_run.png) 
 
 2. Select the run.
 
@@ -111,13 +141,13 @@ Now it is time to submit your job to a WES endpoint for execution.
 
 4. Press start.
 
-![select running screenshot](../screenshots/4.11_tutorial_covid19_running.png) 
+![select running screenshot](../screenshots/4.15_tutorial_covid19_running.png) 
 
 After a few seconds, the run status should turn to ***RUNNING***. If many executions are happening in parallel you might also see QUEUED.
 
 Please wait
 
-![select complete screenshot](../screenshots/4.12_tutorial_covid19_complete.png) 
+![select complete screenshot](../screenshots/4.16_tutorial_covid19_complete.png) 
 
 Once the status turned to ***RUNNING***, your execution should complete within 2-5 min.
 
@@ -127,17 +157,17 @@ Once the execution has finished, you are probably interested in retrieving and e
 
 1. Click on Details for the completed run.
 
-![select details screenshot](../screenshots/4.13_tutorial_covid19_details.png) 
+![select details screenshot](../screenshots/4.17_tutorial_covid19_details.png) 
 
 2. Click on Output Files.
 
-![select output screenshot](../screenshots/4.14_tutorial_covid19_outputfiles.png) 
+![select output screenshot](../screenshots/4.18_tutorial_covid19_outputfiles.png) 
 
 3. Please select the **phylogenetic_tree.png**.
 
 4. Press **download selected file**.
 
-![select output screenshot](../screenshots/4.15_tutorial_covid19_download.png) 
+![select output screenshot](../screenshots/4.19_tutorial_covid19_select_run.png) 
 
 Please open the png with an image viewer of your choice.
 
