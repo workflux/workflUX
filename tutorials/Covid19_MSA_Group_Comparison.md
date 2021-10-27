@@ -2,7 +2,7 @@
 
 ## Introduction to the Workflow
 
-![welcome screenshot](././screenshots/0.0_welcome.png) 
+![welcome screenshot](../screenshots/0.0_welcome.png) 
 
 The workflow compares two sets of peptide, DNA, or RNA sequences using following steps:
 1. **Multiple sequence alignment** (MSA) and calculate a distance matrix using the Bioconductor’s [msa](http://www.bioconductor.org/packages/release/bioc/html/msa.html) package.
