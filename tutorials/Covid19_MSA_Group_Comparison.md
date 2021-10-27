@@ -63,8 +63,11 @@ Now that you have registered, you may log in.
 
 1. Please press the login / register button again.
 
-> ![dots](../screenshots/4.0.1_tutorial_covid19_threedots.png)  You will be forwarded to ELIXIR AAI.
+<p align="center">
 
+ ![dots](../screenshots/4.0.1_tutorial_covid19_threedots.png)  You will be forwarded to ELIXIR AAI.
+ 
+</p>
 
 
 
