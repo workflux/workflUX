@@ -89,7 +89,7 @@ scroll down
 
 2. Click on **validate and create job**.
 
-Please wait
+			Please wait
 
 ![validate screenshot](../screenshots/4.8_execute.png) 
 
