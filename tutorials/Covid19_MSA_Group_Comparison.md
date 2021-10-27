@@ -27,7 +27,7 @@ Source: NCBI Virus (04/06/2020),
 https://www.ncbi.nlm.nih.gov/labs/virus/vssi/#/
 
 
-**Please Note**: The workflow and its application presented here are intended for demonstration purposes only. We do not claim that this analysis and the produced result represent best scientific practice. 
+> **Please Note**: The workflow and its application presented here are intended for demonstration purposes only. We do not claim that this analysis and the produced result represent best scientific practice. 
 
 ### **Step 1: Register with Your ELIXIR Account**
 
@@ -45,7 +45,7 @@ You will be forwarded to ELIXIR AAI.
 
 ELIXIR AAI will ask you to register your account to be part of a specific group.
 
-1.3 Please fill in the registration form and submit.
+* 1.3 Please fill in the registration form and submit.
 
 Upon successful registration, you should see a message like this:
 
