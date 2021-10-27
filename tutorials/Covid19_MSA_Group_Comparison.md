@@ -61,9 +61,7 @@ Now that you have registered, you may log in.
 
 1. Please press the login / register button again.
 
-:orange_circle: 
-
-You will be forwarded to ELIXIR AAI.
+:orange_circle: :orange_circle: :orange_circle: You will be forwarded to ELIXIR AAI.
 
 
 
