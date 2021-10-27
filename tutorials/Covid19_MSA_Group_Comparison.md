@@ -83,13 +83,13 @@ An HTML form will appear that asks you to provide input parameters for this run.
 > Please Note: The entire parameter form has been created from the information parsed from the CWL workflow itself. No additional configuration was needed upon import.
 If you don‘t know the meaning of a parameter, please cilck on the :information_source: button to get documentation.
 
-> scroll down
+scroll down
 
 ![validate screenshot](../screenshots/4.07_tutorial_covid19_validate.png) 
 
 2. Click on **validate and create job**.
 
-> Please wait
+Please wait
 
 ![execute screenshot](../screenshots/4.08_tutorial_covid19_execute.png) 
 
@@ -115,7 +115,7 @@ Now it is time to submit your job to a WES endpoint for execution.
 
 After a few seconds, the run status should turn to ***RUNNING***. If many executions are happening in parallel you might also see QUEUED.
 
-> Please wait
+Please wait
 
 ![select complete screenshot](../screenshots/4.12_tutorial_covid19_complete.png) 
 
@@ -145,8 +145,7 @@ Please open the png with an image viewer of your choice.
 
 You have successfully carried out an analysis based on public data using GA4GH-compliant infrastructure. All of this without a line of code. 
 
-With the obtained results, you may know try to answer the original question of this task:
-**Is there evidence for a difference in the SARS-CoV-2 S-protein sequence between the early outbreak in China and the subsequent wave in Europe?**
+With the obtained results, you may know try to answer the original question of this task: **Is there evidence for a difference in the SARS-CoV-2 S-protein sequence between the early outbreak in China and the subsequent wave in Europe?**
 
 
 
