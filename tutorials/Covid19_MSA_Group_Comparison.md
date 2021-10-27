@@ -31,9 +31,7 @@ https://www.ncbi.nlm.nih.gov/labs/virus/vssi/#/
 
 ### **Step 1: Register with Your ELIXIR Account**
 
-1.1 Connect to CWLab using your browser of choice: https://cwlab.krini.ingress.rancher.computational.bio/
-
-1.2 hebe
+1.1. Connect to CWLab using your browser of choice: https://cwlab.krini.ingress.rancher.computational.bio/
 
 You should see a welcome screen like this:
 
