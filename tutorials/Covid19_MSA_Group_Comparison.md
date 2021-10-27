@@ -83,6 +83,20 @@ An HTML form will appear that asks you to provide input parameters for this run.
 > Please Note: The entire parameter form has been created from the information parsed from the CWL workflow itself. No additional configuration was needed upon import.
 If you don‘t know the meaning of a parameter, please cilck on the :information_source: button to get documentation.
 
+scroll down
+
+![validate screenshot](../screenshots/4.7_tutorial_covid19_validate.png) 
+
+2. Click on **validate and create job**.
+
+Please wait
+
+![validate screenshot](../screenshots/4.8_execute.png) 
+
+3. Once a green success message occurs, you may click on **Job Execution & Results** in the top bar. 
+
+
+
 
 
 
