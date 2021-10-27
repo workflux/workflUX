@@ -31,13 +31,13 @@ https://www.ncbi.nlm.nih.gov/labs/virus/vssi/#/
 
 ## **Step 1: Register with Your ELIXIR Account**
 
-	1.1. Connect to CWLab using your browser of choice: https://cwlab.krini.ingress.rancher.computational.bio/
+1. Connect to CWLab using your browser of choice: https://cwlab.krini.ingress.rancher.computational.bio/
 
 You should see a welcome screen like this:
 
 ![welcome screenshot](../screenshots/4.1_tutorial_covid19_welcome.png) 
 
-	1.2. Press on ***login / register*** in the top bar.
+2. Press on ***login / register*** in the top bar.
 
 You will be forwarded to ELIXIR AAI.
 
@@ -45,14 +45,14 @@ You will be forwarded to ELIXIR AAI.
 
 ELIXIR AAI will ask you to register your account to be part of a specific group.
 
-	1.3. Please fill in the registration form and submit.
+3. Please fill in the registration form and submit.
 
 
 Upon successful registration, you should see a message like this:
 
 ![registered screenshot](../screenshots/4.3_tutorial_covid19_registered.png) 
 
-	1.4. Please press continue to be redirected to CWLab.
+4. Please press continue to be redirected to CWLab.
 
 ## **Step 2: Login with Your ELIXIR Account** 
 
@@ -60,10 +60,17 @@ Upon successful registration, you should see a message like this:
 
 Now that you have registered, you may log in.
 
-	2.1. Please press the login / register button again.
+1. Please press the login / register button again.
 
- You will be forwarded to ELIXIR AAI.
+You will be forwarded to ELIXIR AAI.
  
+![info screenshot](../screenshots/4.4_tutorial_covid19_elixir_provide_info.png) 
+
+2. Please provide CWLab access to the requested information.
+
+## ''Step 4: Provide Input Parameters**
+
+An HTML form will appear that asks you to provide input parameters for this run. There are only **two required parameters (fasta_1 and fasta_2)**. The **remaining parameters are optional** and pre-set with their defaults, but feel free to play around.
 
 
 
