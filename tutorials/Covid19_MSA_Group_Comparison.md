@@ -91,7 +91,7 @@ If you don‘t know the meaning of a parameter, please cilck on the :information
 
 > Please wait
 
-![execute screenshot](../screenshots/4.08_execute.png) 
+![execute screenshot](../screenshots/4.08_tutorial_covid19_execute.png) 
 
 3. Once a green success message occurs, you may click on **Job Execution & Results** in the top bar. 
 
