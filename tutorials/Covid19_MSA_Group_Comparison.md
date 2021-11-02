@@ -82,9 +82,9 @@ After login, additional options will appear in the top bar.
 
 In the first section, you will be informed with a workflow description.
 
-> **Please Note**: This description has been **directly extracted from the CWL workflow** upon import. 
-
 ![title screenshot](../screenshots/4.07_tutorial_covid19_title.png) 
+
+> **Please Note**: This description has been **directly extracted from the CWL workflow** upon import. 
 
 3. Please choose a title for your analysis job.
 
