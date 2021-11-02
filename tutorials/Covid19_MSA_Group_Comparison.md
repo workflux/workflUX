@@ -115,15 +115,15 @@ If you don‘t know the meaning of a parameter, please cilck on the :information
 
 scroll down
 
-![validate screenshot](../screenshots/4.11_tutorial_covid19_validata_and_create.png) 
+2. Click on ***validate and create job***.
 
-2. Click on **validate and create job**.
+![validate screenshot](../screenshots/4.11_tutorial_covid19_validata_and_create.png) 
 
 Please wait
 
-![execute screenshot](../screenshots/4.12_tutorial_covid19_job_execution.png) 
+3. Once a green success message occurs, you may click on ***Job Execution & Results*** in the top bar. 
 
-3. Once a green success message occurs, you may click on **Job Execution & Results** in the top bar. 
+![execute screenshot](../screenshots/4.12_tutorial_covid19_job_execution.png) 
 
 ## **Step 5: Submit to WES**
 
