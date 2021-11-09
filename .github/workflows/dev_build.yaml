@@ -60,7 +60,7 @@ jobs:
         id: docker_build
         with:
           push: true
-          tags: "compepigen/${{ github.event.repository.name }}:${{ needs.get_commit_version.outputs.version }},compepigen/${{ github.event.repository.name }}:${{ needs.get_commit_version.outputs.branch }}"
+          tags: "compepigen/workflux:${{ needs.get_commit_version.outputs.version }},compepigen/workflux:${{ needs.get_commit_version.outputs.branch }}"
       - name: Image digest
         run: echo ${{ steps.docker_build.outputs.digest }}
         
