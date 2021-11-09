@@ -17,4 +17,4 @@ RUN python3 -m pip install -e /src/workflux
 
 
 # Default command when starting:
-CMD ["workflux", "up", "-c", "/src/workflux/docker/dev/config.yaml"]
+CMD ["workflux", "up", "-c", "/src/workflux/docker/general/config.yaml"]
