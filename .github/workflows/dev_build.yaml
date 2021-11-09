@@ -5,7 +5,7 @@ on:
     branches:
       - "dev"
       - "master"
-      - "feature/build_ci"
+      - "test"
       # you may add other branches to
       # activate deployment for them, too.
 
