@@ -40,6 +40,7 @@ jobs:
         name: Build and push
         id: docker_build
         with:
+          file: ./docker/general/Dockerfile
           push: true
           tags: "compepigen/workflux:${{ steps.verify_version.outputs.version }},compepigen/workflux:latest"
       - name: Image digest
