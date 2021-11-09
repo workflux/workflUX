@@ -1,9 +1,11 @@
-name: build dev image
+name: build image from dev branches
 
 on:
   push:
     branches:
       - "dev"
+      - "master"
+      - "feature/build_ci"
       # you may add other branches to
       # activate deployment for them, too.
 
