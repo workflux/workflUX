@@ -129,17 +129,17 @@ Please wait
 
 Now it is time to submit your job to a WES endpoint for execution.
 
-![select job screenshot](../screenshots/4.13_tutorial_covid19_select_job.png) 
-
 1. Select the newly created job in the left panel.
 
-![select run screenshot](../screenshots/4.14_tutorial_covid19_select_run.PNG) 
+![select job screenshot](../screenshots/4.13_tutorial_covid19_select_job.png) 
 
 2. Select the run.
 
+![select run screenshot](../screenshots/4.14_tutorial_covid19_select_run.PNG) 
+
 3. Select a WES endpoint.
 
-4. Press **start**.
+4. Press ***start***.
 
 ![select running screenshot](../screenshots/4.15_tutorial_covid19_running.png) 
 
