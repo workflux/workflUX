@@ -41,7 +41,7 @@ You should see a welcome screen like this:
 
 You will be forwarded to ELIXIR AAI.
 
-![registration screenshot](../screenshots/4.02_tutorial_covid19_registration.png) 
+![registration screenshot](../screenshots/4.02_tutorial_covid19_registration.png | width=50) 
 
 ELIXIR AAI will ask you to register your account to be part of a specific group.
 
