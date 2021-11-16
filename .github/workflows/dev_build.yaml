@@ -1,0 +1,75 @@
+name: build image from dev branches
+
+on:
+  push:
+    branches:
+      - "dev"
+      - "master"
+      # you may add other branches to
+      # activate deployment for them, too.
+
+jobs:
+  get_commit_version:
+    runs-on: ubuntu-latest
+    outputs:
+      # export to be used in other jobs
+      version: ${{ steps.get_commit_version.outputs.version }}
+      branch: ${{ steps.get_commit_version.outputs.branch }}
+    steps:
+      - uses: actions/checkout@v2
+        name: Check out code
+        with:
+          # fetch the entire history
+          fetch-depth: 0
+      - id: get_commit_version
+        name: get commit version
+        run: |
+          BRANCH="$(git rev-parse --abbrev-ref HEAD)"
+          if git describe --tags
+          then
+            VERSION="$(git describe --tags)-${BRANCH}"
+          else
+            # fallback if no tag set yet:
+            COMMIT_HASH="$(git rev-parse --short HEAD)"
+            COMMIT_NUMBER="$(git rev-list --count HEAD)"
+            VERSION="0.0.0-${COMMIT_NUMBER}-${COMMIT_HASH}-${BRANCH}"
+          fi
+          # set as output:
+          echo "commit version: ${BRANCH}"
+          echo "commit version: ${VERSION}"
+          echo "::set-output name=version::${VERSION}"
+          echo "::set-output name=branch::${BRANCH}"
+  push_to_docker_hub:
+    runs-on: ubuntu-latest
+    needs: get_commit_version
+    steps:
+      - uses: actions/checkout@v2
+        name: Check out code
+      - uses: docker/setup-qemu-action@v1
+        name: Set up QEMU
+      - uses: docker/setup-buildx-action@v1
+        name: Set up Docker Buildx
+      - uses: docker/login-action@v1
+        name: Login to DockerHub
+        with:
+          username: ${{ secrets.DOCKERHUB_USERNAME }}
+          password: ${{ secrets.DOCKERHUB_TOKEN }}
+      - uses: docker/build-push-action@v2
+        name: Build and push (general purpose image)
+        id: docker_build
+        with:
+          file: ./docker/general/Dockerfile
+          push: true
+          tags: "compepigen/workflux:${{ needs.get_commit_version.outputs.version }},compepigen/workflux:${{ needs.get_commit_version.outputs.branch }}"
+      - name: Image digest
+        run: echo ${{ steps.docker_build.outputs.digest }}
+      - uses: docker/build-push-action@v2
+        name: Build and push (elixir demo image)
+        id: docker_build_elixir_demo
+        with:
+          file: ./docker/elixir_demo/Dockerfile
+          push: true
+          tags: "compepigen/workflux:elixir_demo_${{ needs.get_commit_version.outputs.version }},compepigen/workflux:elixir_demo_${{ needs.get_commit_version.outputs.branch }}"
+      - name: Image digest (elixir demo image)
+        run: echo ${{ steps.docker_build_elixir_demo.outputs.digest }}
+        

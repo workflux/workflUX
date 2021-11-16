@@ -62,8 +62,8 @@ COPY . /src/workflux
 RUN python3.7 -m pip install -e /src/workflux
 
 # Configure workflux:
-COPY ./docker/dev_elixir/config.yaml /workflux/config.yaml
-COPY ./docker/dev_elixir/wes_exec_profile.py /workflux/wes_exec_profile.py
+COPY ./docker/elixir_demo/config.yaml /workflux/config.yaml
+COPY ./docker/elixir_demo/wes_exec_profile.py /workflux/wes_exec_profile.py
 
 # Default command when starting:
 CMD ["python3.7", "-m", "workflux", "up", "-c", "/workflux/config.yaml"]
