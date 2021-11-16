@@ -104,6 +104,7 @@ An HTML form will appear that asks you to provide input parameters for this run.
 1. Provide the S-protein sequences for the two patient cohorts by copy & pasting following HTTP URLs:
 
 fasta_1: <https://raw.githubusercontent.com/CompEpigen/msa_group_compare/master/example_job/data/china_2019_covid_surf_prot_seq.fasta>
+
 fasta_2: <https://raw.githubusercontent.com/CompEpigen/msa_group_compare/master/example_job/data/europe_2020_covid_surf_prot_seq.fasta>
 
 ![parameter screenshot](../screenshots/4.10_tutorial_covid19_provide_parameter.png)
