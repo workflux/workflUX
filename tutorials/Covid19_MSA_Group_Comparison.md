@@ -41,7 +41,7 @@ You should see a welcome screen like this:
 
 You will be forwarded to ELIXIR AAI.
 
-<img src="../screenshots/4.02_tutorial_covid19_registration.png" alt="alt text" width="250" >
+<img src="../screenshots/4.02_tutorial_covid19_registration.png" alt="alt text" width="600" >
 
 ELIXIR AAI will ask you to register your account to be part of a specific group.
 
@@ -49,7 +49,7 @@ ELIXIR AAI will ask you to register your account to be part of a specific group.
 
 Upon successful registration, you should see a message like this:
 
-<img src="../screenshots/4.03_tutorial_covid19_registered.png" alt="alt text" width="250" >
+<img src="../screenshots/4.03_tutorial_covid19_registered.png" alt="alt text" width="600" >
 
 4. Please press ***continue*** to be redirected to workflUX.
 
@@ -63,7 +63,7 @@ Now that you have registered, you may log in.
 
 You will be forwarded to ELIXIR AAI.
 
-<img src="../screenshots/4.04_tutorial_covid19_elixir_provide_info.png" alt="alt text" width="250" >
+<img src="../screenshots/4.04_tutorial_covid19_elixir_provide_info.png" alt="alt text" width="600" >
 
 2. Please provide workflUX access to the requested information.
 
@@ -103,7 +103,7 @@ An HTML form will appear that asks you to provide input parameters for this run.
 
 1. Provide the S-protein sequences for the two patient cohorts by copy & pasting following HTTP URLs:
 
-<img src="../screenshots/4.09_tutorial_covid19_fasta.PNG" alt="alt text" width="400" > 
+<img src="../screenshots/4.09_tutorial_covid19_fasta.PNG" alt="alt text" width="800" > 
 
 ![parameter screenshot](../screenshots/4.10_tutorial_covid19_provide_parameter.png)
 
