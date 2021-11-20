@@ -77,7 +77,7 @@ After login, additional options will appear in the top bar.
 
 2. Provide the URL to the raw file of the workflow by copy & pasting following HTTP URL:
 
-<https://raw.githubusercontent.com/CompEpigen/msa_group_compare.cwl>
+<https://raw.githubusercontent.com/CompEpigen/msa_group_compare/tree/master/CWL/workflows/msa_group_compare.cwl>
 
 ## **Step 4: Create a New Job**
 
