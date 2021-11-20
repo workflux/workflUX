@@ -67,7 +67,7 @@ You will be forwarded to ELIXIR AAI.
 
 2. Please provide workflUX access to the requested information.
 
-## **Step 3: Import a workflow**
+## **Step 3: Import a Workflow**
 
 After login, additional options will appear in the top bar.
 
