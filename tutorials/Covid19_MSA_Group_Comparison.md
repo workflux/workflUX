@@ -67,9 +67,19 @@ You will be forwarded to ELIXIR AAI.
 
 2. Please provide workflUX access to the requested information.
 
-## **Step 3: Create a New Job**
+## **Step 3: Import a workflow**
 
 After login, additional options will appear in the top bar.
+
+1. If you use a specific workflow for the first time, please click on the  ***Import CWL Workflow/Tool*** button.
+
+![import workflow screenshot](../screenshots/4.041_import_workflow.png)
+
+2. Provide the URL to the raw file of the workflow by copy & pasting following HTTP URL:
+
+<https://raw.githubusercontent.com/CompEpigen/msa_group_compare.cwl>
+
+## **Step 4: Create a New Job**
 
 1. Please click on the ***Create Job*** button.
 
@@ -97,7 +107,7 @@ scroll down
 
 ![html screenshot](../screenshots/4.08_tutorial_covid19_html.png)
 
-## **Step 4: Provide Input Parameters**
+## **Step 5: Provide Input Parameters**
 
 An HTML form will appear that asks you to provide input parameters for this run. There are only **two required parameters (fasta_1 and fasta_2)**. The **remaining parameters are optional** and pre-set with their defaults, but feel free to play around.
 
@@ -126,7 +136,7 @@ Please wait
 
 ![execute screenshot](../screenshots/4.12_tutorial_covid19_job_execution.png)
 
-## **Step 5: Submit to WES**
+## **Step 6: Submit to WES**
 
 Now it is time to submit your job to a WES endpoint for execution.
 
@@ -152,7 +162,7 @@ Please wait
 
 Once the status turned to ***RUNNING***, your execution should complete within 2-5 min.
 
-## **Step 6: Explore the Output**
+## **Step 7: Explore the Output**
 
 Once the execution has finished, you are probably interested in retrieving and exploring the output.
 
