@@ -27,7 +27,7 @@ Therefore we will compare sequences from two patient cohorts:
 Source: NCBI Virus (04/06/2020),
 <https://www.ncbi.nlm.nih.gov/labs/virus/vssi/#/>
 
-> **Please Note**: The workflow and its application presented here are intended for demonstration purposes only. We do not claim that this analysis and the produced result represent best scientific practice.
+> **Please Note**: The workflow and its application presented here are intended for demonstration purposes only. Participants of the  We do not claim that this analysis and the produced result represent best scientific practice.
 
 ## **Step 1: Register with Your ELIXIR Account**
 
@@ -75,9 +75,13 @@ After login, additional options will appear in the top bar.
 
 ![import workflow screenshot](../screenshots/4.041_import_workflow.png)
 
-2. Provide the URL to the raw file of the workflow by copy & pasting following HTTP URL:
+2. Select in the drop-down menu ***URL to public CWL document (e.g from github)***.
 
-<https://raw.githubusercontent.com/CompEpigen/msa_group_compare/tree/master/CWL/workflows/msa_group_compare.cwl>
+3. Provide the URL to the raw file of the workflow by copy & pasting following HTTP URL:
+
+<https://raw.githubusercontent.com/CompEpigen/msa_group_compare/master/CWL/workflows/msa_group_compare.cwl>
+
+4. name the workflow: ***msa_group_compare***.
 
 ## **Step 4: Create a New Job**
 
