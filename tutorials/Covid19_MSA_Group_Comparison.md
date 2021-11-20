@@ -81,7 +81,7 @@ After login, additional options will appear in the top bar.
 
 <https://raw.githubusercontent.com/CompEpigen/msa_group_compare/master/CWL/workflows/msa_group_compare.cwl>
 
-4. name the workflow: ***msa_group_compare***.
+4. Name the workflow: ***MSA_Group_Compare***.
 
 ## **Step 4: Create a New Job**
 
