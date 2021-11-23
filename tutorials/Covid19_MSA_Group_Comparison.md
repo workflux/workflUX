@@ -27,13 +27,13 @@ Therefore we will compare sequences from two patient cohorts:
 Source: NCBI Virus (04/06/2020),
 <https://www.ncbi.nlm.nih.gov/labs/virus/vssi/#/>
 
-> **Please Note**: The workflow and its application presented here are intended for demonstration purposes only. We do not claim that this analysis and the produced result represent best scientific practice. If you wish to try using workflUX for the first time, then gain access to our DEMO workflUX instance through the ELIXIR Account and start using workflUX according to the following steps.
+> **Please Note**: The workflow and its application presented here are intended for demonstration purposes only. We do not claim that this analysis and the produced result represent best scientific practice. For this tutorial you can run the analysis on our DEMO workflUX instance, where you can get access to with an ELIXIR Account (see instructions below).  Keep in mind, that the DEMO workflUX instance is designed only to run only small workflows for testing and training purposes. 
 
 ## **Step 1: Register with Your ELIXIR Account**
 
 This step is only necessery if you want to acess the DEMO workflUX instance. If you want to acess your own installation of workflUX then connect to your own URL and continue with step 2.
 
-1. Connect to workflUX using your browser of choice: <https://cwlab.krini.ingress.rancher.computational.bio/>
+1. Connect to the DEMO version of workflUX using your browser of choice: <https://cwlab.krini.ingress.rancher.computational.bio/>
 
 You should see a welcome screen like this:
 
