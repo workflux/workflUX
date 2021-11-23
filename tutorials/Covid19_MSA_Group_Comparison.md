@@ -27,7 +27,7 @@ Therefore we will compare sequences from two patient cohorts:
 Source: NCBI Virus (04/06/2020),
 <https://www.ncbi.nlm.nih.gov/labs/virus/vssi/#/>
 
-> **Please Note**: The workflow and its application presented here are intended for demonstration purposes only. We do not claim that this analysis and the produced result represent best scientific practice. For this tutorial you can run the analysis on our DEMO workflUX instance, where you can get access to with an ELIXIR Account (see instructions below).  Keep in mind, that the DEMO workflUX instance is designed only to run only small workflows for testing and training purposes. 
+> **Please Note**: The workflow and its application presented here are intended for demonstration purposes only. We do not claim that this analysis and the produced result represent best scientific practice. For this tutorial you can run the analysis on our DEMO workflUX instance, where you can get access to with an ELIXIR Account (see instructions below).  Keep in mind, that the DEMO workflUX instance is designed to run only small workflows for testing and training purposes. 
 
 ## **Step 1: Register with Your ELIXIR Account**
 
