@@ -128,7 +128,7 @@ fasta_2: <https://raw.githubusercontent.com/CompEpigen/msa_group_compare/master/
 > **Please Note**: Your parameters are **automatically validated** to avoid bad surprises when starting the run.
 
 > **Please Note**: The entire parameter form has been created from the information parsed from the CWL workflow itself. No additional configuration was needed upon import.
-If you don‘t know the meaning of a parameter, please cilck on the :information_source: button to get documentation.
+If you don‘t know the meaning of a parameter, please click on the :information_source: button to get documentation.
 
 scroll down
 
