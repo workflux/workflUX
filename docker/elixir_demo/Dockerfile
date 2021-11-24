@@ -54,8 +54,7 @@ RUN python3.7 -m pip install \
 	pymysql \
 	requests \
 	pydantic \
-	urllib3 \
-    trs-cli==0.3.1
+	urllib3
 
 # Install workflux:
 COPY . /src/workflux
