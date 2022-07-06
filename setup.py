@@ -71,7 +71,7 @@ setup(
         "lark-parser==0.12.0",
         "lml==0.1.0",
         "lockfile==0.12.2",
-        "lxml==4.6.5",
+        "lxml==4.9.1",
         "MarkupSafe==2.0.1",
         "miniwdl==1.3.3",
         "mistune==0.8.4",
