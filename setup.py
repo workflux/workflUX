@@ -74,7 +74,7 @@ setup(
         "lxml==4.9.1",
         "MarkupSafe==2.0.1",
         "miniwdl==1.3.3",
-        "mistune==0.8.4",
+        "mistune==2.0.3",
         "msgpack==1.0.3",
         "mypy-extensions==0.4.3",
         "networkx==2.6.3",
