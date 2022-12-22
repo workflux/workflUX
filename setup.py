@@ -35,7 +35,7 @@ setup(
         "blessed==1.19.0",
         "bullet==2.2.0",
         "CacheControl==0.12.10",
-        "certifi==2021.10.8",
+        "certifi==2022.12.7",
         "chardet==4.0.0",
         "charset-normalizer==2.0.7",
         "click==8.0.3",
