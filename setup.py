@@ -121,7 +121,7 @@ setup(
         "urllib3==1.26.7",
         "wcwidth==0.2.5",
         "websocket-client==1.2.1",
-        "Werkzeug==2.0.2",
+        "Werkzeug==2.2.3",
         "WTForms==3.0.0",
         "xdg==5.1.1",
         "xlrd==2.0.1",
