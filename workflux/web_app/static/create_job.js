@@ -1,5 +1,5 @@
-class ParamValidationOptions extends React.Component{
-    constructor(props){
+class ParamValidationOptions extends React.Component {
+    constructor(props) {
         super(props);
         // props.jobName
         // props.validateURIs
@@ -13,14 +13,49 @@ class ParamValidationOptions extends React.Component{
         // props.prevPath
         // props.changePrevPath
         this.handleChangeSearchDir = this.handleChangeSearchDir.bind(this);
+        this.handleChangeInputField = this.handleChangeInputField.bind(this);
+        this.ajaxRequest = ajaxRequest.bind(this);
+        // this.state = {
+        //     s3Url: "",
+        //     s3AccessKey: "",
+        //     s3SecretKey: "",
+        //     s3BucketName: "",
+        //     s3ObjectName: "",
+        //     actionStatus: "none"
+        // }
     }
 
-    handleChangeSearchDir(event){
+    handleChangeSearchDir(event) {
         this.props.changeSearchDir(event.currentTarget.value)
     }
-    
 
-    render(){
+    handleChangeInputField(event) {
+        this.props.changeInputField(event.currentTarget.value)
+    }
+
+    // changeInputField(event) {
+    //     this.setState({
+    //         [event.currentTarget.name]: event.currentTarget.value
+    //     })
+    // }
+
+    createFilepicker() {
+        this.ajaxRequest({
+            statusVar: "actionStatus",
+            statusValueDuringRequest: "create_presigned_url",
+            messageVar: "createPresignedUrl",
+            sendData: {
+                s3_url: this.s3_url,
+                s3_access_key: this.s3_access_key,
+                s3_secret_key: this.s3_secret_key,
+                s3_bucket_name: this.s3_bucket_name,
+                s3_object_name: this.s3_object_name
+            },
+            route: routeGeneratePresignedUrl
+        })
+    }
+
+    render() {
         let fileInstructions = []
         if (inputSources.URL) {
             fileInstructions.push("via public or presigned URLs")
@@ -34,7 +69,7 @@ class ParamValidationOptions extends React.Component{
             )
         }
 
-        return(
+        return (
             <div>
                 <h3>Parameter Validation:</h3>
                 <p>
@@ -58,11 +93,11 @@ class ParamValidationOptions extends React.Component{
                         enable validation of file/directory URIs
                     </div>
                     {inputSources.local_file_system && this.props.validateURIs && (
-                        <div 
+                        <div
                             className="w3-container"
-                            style={ {
-                                paddingLeft: "48px", 
-                                paddingTop: "10px", 
+                            style={{
+                                paddingLeft: "48px",
+                                paddingTop: "10px",
                                 paddingBottom: "10px"
                             }}
                         >
@@ -78,11 +113,11 @@ class ParamValidationOptions extends React.Component{
                                 Enable searching for paths
                             </div>
                             {this.props.searchPaths && (
-                                <div 
+                                <div
                                     className="w3-container"
-                                    style={ {
-                                        paddingLeft: "48px", 
-                                        paddingTop: "5px", 
+                                    style={{
+                                        paddingLeft: "48px",
+                                        paddingTop: "5px",
                                         paddingBottom: "5px"
                                     }}
                                 >
@@ -109,11 +144,11 @@ class ParamValidationOptions extends React.Component{
                                         <span className="w3-text-green">Include sub-directories for searching: </span>
                                         no &nbsp;
                                         <BooleanSlider
-                                                name="include_subdirs_for_searching"
-                                                value="include_subdirs_for_searching"
-                                                onChange={this.props.changeIncludeSubDirsForSearching}
-                                                checked={this.props.includeSubbDirsForSearching}
-                                                doNotSendValue={true}
+                                            name="include_subdirs_for_searching"
+                                            value="include_subdirs_for_searching"
+                                            onChange={this.props.changeIncludeSubDirsForSearching}
+                                            checked={this.props.includeSubbDirsForSearching}
+                                            doNotSendValue={true}
                                         />
                                         &nbsp; yes
                                     </div>
@@ -121,14 +156,83 @@ class ParamValidationOptions extends React.Component{
                             )}
                         </div>
                     )}
+                    <div
+                        className="w3-container"
+                        style={{
+                            paddingLeft: "48px",
+                            paddingTop: "10px",
+                            paddingBottom: "10px"
+                        }}
+                    >
+                        <span className="w3-text-green">1. Provide a S3 URL:</span>&nbsp;
+                        <Message type="hint">
+                            <span>
+                                S3 URLs look for instance like this:
+                                "url.to-bucket.com"
+                            </span>
+                        </Message>
+                        <input type="text"
+                            className="w3-input w3-border"
+                            name="s3Url"
+                            style={{ width: "50%" }}
+                            value={this.props.s3Url}
+                            onChange={this.handleChangeInputField}
+                        />
+                        <br />
+                        <span className="w3-text-green">2. Provide the access key:</span>&nbsp;
+                        <input type="text"
+                            className="w3-input w3-border"
+                            name="s3AccessKey"
+                            style={{ width: "50%" }}
+                            value={this.props.s3AccessKey}
+                            onChange={this.handleChangeInputField}
+                        />
+                        <br />
+                        <span className="w3-text-green">3. Provide the secret key:</span>&nbsp;
+                        <input type="password"
+                            className="w3-input w3-border"
+                            name="s3SecretKey"
+                            style={{ width: "50%" }}
+                            value={this.props.s3SecretKey}
+                            onChange={this.handleChangeInputField}
+                        />
+                        <br />
+                        <span className="w3-text-green">4. Provide the bucket name:</span>&nbsp;
+                        <input type="text"
+                            className="w3-input w3-border"
+                            name="s3BucketName"
+                            style={{ width: "50%" }}
+                            value={this.props.s3BucketName}
+                            onChange={this.handleChangeInputField}
+                        />
+                        <br />
+                        <span className="w3-text-green">5. Provide the object name within the bucket:</span>&nbsp;
+                        <input type="text"
+                            className="w3-input w3-border"
+                            name="s3ObjectName"
+                            style={{ width: "50%" }}
+                            value={this.props.s3ObjectName}
+                            onChange={this.handleChangeInputField}
+                        />
+                        <br />
+                        <ActionButton
+                            name="generate_presigned_url"
+                            value="generatePresignedUrl"
+                            onAction={this.createFilepicker}
+                            label="generate presigned url"
+                            loading={this.actionStatus == "generate"}
+                            // disabled={this.actionStatus != "none" || demo}
+                        />
+                        <br />
+                    </div>
                 </div>
             </div>
         )
     }
 }
 
-class ParamName extends React.Component{
-    constructor(props){
+class ParamName extends React.Component {
+    constructor(props) {
         super(props);
         // props.name
         // props.config
@@ -149,62 +253,62 @@ class ParamName extends React.Component{
         }
     }
 
-    render(){
-        return(
-            <span className="w3-text-green" style={ {display: "inline-block", whiteSpace: "nowrap"} }>
+    render() {
+        return (
+            <span className="w3-text-green" style={{ display: "inline-block", whiteSpace: "nowrap" }}>
                 {this.typeIcon[this.props.config.type]}&nbsp;
                 {this.props.name}&nbsp;
                 <Tooltip
                     title={"Info ".concat(this.props.name).concat(":")}
                     preview={
                         (this.props.config.is_array ? "List of " : "") +
-                        this.props.config.type + 
+                        this.props.config.type +
                         (this.props.config.null_allowed ? " [optional]" : "") +
                         (this.props.config.null_item_allowed ? " [items optional]" : "") +
                         (this.props.config.doc ? (
-                            ", help: ".concat(this.props.config.doc.replaceAll("\\n", "\n").replaceAll("\\t", "\t")) 
-                            ) : (
-                             ", help: no info available"
-                             )
+                            ", help: ".concat(this.props.config.doc.replaceAll("\\n", "\n").replaceAll("\\t", "\t"))
+                        ) : (
+                            ", help: no info available"
+                        )
                         )
                     }
-                >   
+                >
                     <span className="w3-text-green">Type:</span>&nbsp;
                     {
                         (this.props.config.is_array ? "List of " : "") +
                         this.props.config.type
-                    }<br/>
+                    }<br />
                     <span className="w3-text-green">Optional:</span>&nbsp;
                     {this.props.config.null_allowed ? (
-                            "Yes. You may disable this parameter."
-                        ) : (
-                            "No. You have to fill in a value."
-                        )
-                    }<br/>
+                        "Yes. You may disable this parameter."
+                    ) : (
+                        "No. You have to fill in a value."
+                    )
+                    }<br />
                     {(this.props.config.null_items_allowed && this.props.is_array) && (
                         <span>
                             <span className="w3-text-green">Type:</span>&nbsp;
-                            You may disable single items of the list.<br/>
+                            You may disable single items of the list.<br />
                         </span>
                     )}
                     <span className="w3-text-green">Default:</span>&nbsp;
                     {this.props.config.default ? (
-                            this.props.config.default
-                        ) : (
-                            "no default"
-                        )
-                    }<br/>
+                        this.props.config.default
+                    ) : (
+                        "no default"
+                    )
+                    }<br />
                     <span className="w3-text-green">Help:</span>&nbsp;
                     {this.props.config.doc ? (
-                            <div 
-                                className="w3-container"
-                                style={ {whiteSpace: "pre-line"} }
-                            >
-                                {this.props.config.doc.replaceAll("\\n", "\n").replaceAll("\\t", "\t")}
-                            </div>
-                        ) : (
-                            "no info available"
-                        )
+                        <div
+                            className="w3-container"
+                            style={{ whiteSpace: "pre-line" }}
+                        >
+                            {this.props.config.doc.replaceAll("\\n", "\n").replaceAll("\\t", "\t")}
+                        </div>
+                    ) : (
+                        "no info available"
+                    )
                     }
                 </Tooltip>
             </span>
@@ -212,8 +316,8 @@ class ParamName extends React.Component{
     }
 }
 
-class ParamField extends React.Component{
-    constructor(props){
+class ParamField extends React.Component {
+    constructor(props) {
         super(props);
         // props.type
         // props.itemNullAllowed
@@ -229,39 +333,39 @@ class ParamField extends React.Component{
 
         this.key = this.props.index ? (
             this.props.name + "%" + this.props.index.toString()
-        ) :(
+        ) : (
             this.props.name
         )
 
         this.inputTypes = {
-            "string":"input_text",
-            "boolean":"input_boolean",
-            "File":"input_file",
-            "Directory":"input_dir",
+            "string": "input_text",
+            "boolean": "input_boolean",
+            "File": "input_file",
+            "Directory": "input_dir",
         }
-        
+
         this.handleChange = this.handleChange.bind(this);
     }
 
-    handleChange(event){
+    handleChange(event) {
         let paramValue = event.currentTarget.value
-        if (paramValue != "none" && paramValue != "noneItem"){
-            if (["int", "long"].includes(this.props.type)){
-                paramValue = paramValue.replace(/[^0-9\-]/g,"")
+        if (paramValue != "none" && paramValue != "noneItem") {
+            if (["int", "long"].includes(this.props.type)) {
+                paramValue = paramValue.replace(/[^0-9\-]/g, "")
             }
-            else if (["int", "long", "float", "double"].includes(this.props.type)){
-                paramValue = paramValue.replace(/[^0-9\-.]/g,"")
+            else if (["int", "long", "float", "double"].includes(this.props.type)) {
+                paramValue = paramValue.replace(/[^0-9\-.]/g, "")
             }
-            else if (this.props.type == "boolean"){
+            else if (this.props.type == "boolean") {
                 paramValue = paramValue ? "true" : "false"
             }
         }
         this.props.onChange(this.props.name, this.props.index ? (this.props.index) : (0), paramValue)
     }
 
-    render(){
+    render() {
         const isItemNull = (this.props.paramValue == "itemNull" && this.props.itemNullAllowed)
-        const disableInput = isItemNull || this.props.isNull 
+        const disableInput = isItemNull || this.props.isNull
         const paramValue = this.props.paramValue == "Please fill" ? ("") : (this.props.paramValue)
 
 
@@ -270,10 +374,10 @@ class ParamField extends React.Component{
         ) : (
             "input_text"
         )
-        
+
         let input_field
-        if ( this.props.allowedSelection[0] != "" ){
-            return(
+        if (this.props.allowedSelection[0] != "") {
+            return (
                 <select
                     className="param-input"
                     name={"input_" + this.key}
@@ -283,20 +387,20 @@ class ParamField extends React.Component{
                     disabled={disableInput}
                 >
                     {this.props.allowedSelection.map((symbol) => (
-                        <option 
+                        <option
                             key={symbol}
                             value={symbol}
                         >
                             {symbol}
                         </option>
                     ))}
-                </select> 
+                </select>
             )
         }
         else {
-            switch(inputType){
+            switch (inputType) {
                 case "input_text":
-                    return(
+                    return (
                         <input
                             className="param-input"
                             type="text"
@@ -310,8 +414,8 @@ class ParamField extends React.Component{
                     )
                     break;
                 case "input_boolean":
-                    if (disableInput){
-                        return(
+                    if (disableInput) {
+                        return (
                             <input
                                 className="param-input"
                                 type="text"
@@ -323,15 +427,15 @@ class ParamField extends React.Component{
                             />
                         )
                     }
-                    else{
-                        return(
-                            <span style={ {whiteSpace: "nowrap"} }>
+                    else {
+                        return (
+                            <span style={{ whiteSpace: "nowrap" }}>
                                 false&nbsp;
                                 <BooleanSlider
                                     name={"input_" + this.key}
                                     value={paramValue}
                                     onChange={this.handleChange}
-                                    checked={["Yes","yes", "True", "true", "1"].includes(this.props.paramValue)}
+                                    checked={["Yes", "yes", "True", "true", "1"].includes(this.props.paramValue)}
                                     forwardEvent={true}
                                 />
                                 &nbsp;true
@@ -340,8 +444,8 @@ class ParamField extends React.Component{
                     }
                     break;
                 case "input_file":
-                    if (inputSources.local_file_system){
-                        return(
+                    if (inputSources.local_file_system) {
+                        return (
                             <BrowseDirTextField
                                 name={"input_" + this.key}
                                 value={paramValue}
@@ -363,7 +467,7 @@ class ParamField extends React.Component{
                         )
                     }
                     else {
-                        return(
+                        return (
                             <input
                                 className="param-input"
                                 type="text"
@@ -378,8 +482,8 @@ class ParamField extends React.Component{
                     }
                     break;
                 case "input_dir":
-                    if (inputSources.local_file_system){
-                        return(
+                    if (inputSources.local_file_system) {
+                        return (
                             <BrowseDirTextField
                                 name={"input_" + this.key}
                                 value={paramValue}
@@ -400,7 +504,7 @@ class ParamField extends React.Component{
                         )
                     }
                     else {
-                        return(
+                        return (
                             <input
                                 className="param-input"
                                 type="text"
@@ -415,13 +519,13 @@ class ParamField extends React.Component{
                     break;
             }
         }
-        
+
     }
 }
 
 
-class ParamNullCheckbox extends React.Component{
-    constructor(props){
+class ParamNullCheckbox extends React.Component {
+    constructor(props) {
         super(props);
         // props.name
         // props.isNull
@@ -435,10 +539,10 @@ class ParamNullCheckbox extends React.Component{
         this.handleToggleNull = this.handleToggleNull.bind(this)
     }
 
-    handleToggleNull(event){
+    handleToggleNull(event) {
         this.props.toggleNull(
             this.props.mode,
-            this.props.name, 
+            this.props.name,
             !event.currentTarget.checked,
             this.props.nullValue,
             this.props.refersTo,
@@ -446,16 +550,16 @@ class ParamNullCheckbox extends React.Component{
         )
     }
 
-    render(){
-        return(
+    render() {
+        return (
             <input
                 className="w3-check"
-                style={ {
-                    height: this.props.size ? (this.props.size) : ("20px"), 
-                    width: this.props.size ? (this.props.size) : ("20px"), 
+                style={{
+                    height: this.props.size ? (this.props.size) : ("20px"),
+                    width: this.props.size ? (this.props.size) : ("20px"),
                     verticalAlign: "top",
                     display: "inline-block"
-                } }
+                }}
                 type="checkbox"
                 name={"null_checkbox_" + this.props.name}
                 value={"null_checkbox_" + this.props.name}
@@ -467,8 +571,8 @@ class ParamNullCheckbox extends React.Component{
     }
 }
 
-class ParamAddOrRemove extends React.Component{
-    constructor(props){
+class ParamAddOrRemove extends React.Component {
+    constructor(props) {
         super(props);
         // props.mode
         // props.name
@@ -479,38 +583,38 @@ class ParamAddOrRemove extends React.Component{
         this.handleAddOrRemove = this.handleAddOrRemove.bind(this);
     }
 
-    handleAddOrRemove(event){
+    handleAddOrRemove(event) {
         this.props.handleAddOrRemove(
-            event.currentTarget.value == "add", 
-            this.props.mode, 
+            event.currentTarget.value == "add",
+            this.props.mode,
             this.props.name,
             this.props.runName ? (this.props.runName) : (null)
         )
     }
 
-    render(){
-        return(
+    render() {
+        return (
             <div>
-                <button 
+                <button
                     className="w3-button"
-                    style={ {width: "50%"} }
+                    style={{ width: "50%" }}
                     name={"add_" + this.props.name}
                     value="add"
                     onClick={this.handleAddOrRemove}
                     disabled={this.props.disabled}
                 >
-                    <i className="fas fa-plus"/> &nbsp;
+                    <i className="fas fa-plus" /> &nbsp;
                     add
                 </button>
-                <button 
+                <button
                     className="w3-button"
-                    style={ {width: "50%"} }
+                    style={{ width: "50%" }}
                     name={"remove_" + this.props.name}
                     value="remove"
                     onClick={this.handleAddOrRemove}
                     disabled={this.props.disabled || this.props.disabledRemove}
                 >
-                    <i className="fas fa-minus"/>
+                    <i className="fas fa-minus" />
                     &nbsp;remove
                 </button>
             </div>
@@ -518,8 +622,8 @@ class ParamAddOrRemove extends React.Component{
     }
 }
 
-class ParamForm extends React.Component{
-    constructor(props){
+class ParamForm extends React.Component {
+    constructor(props) {
         super(props);
         // props.paramValues
         // props.paramsConfigs
@@ -530,7 +634,7 @@ class ParamForm extends React.Component{
         // props.jobName
         // props.prevPath
         // props.changePrevPath
-        
+
         this.state = {
             whichrunNameFocus: null
         }
@@ -544,12 +648,12 @@ class ParamForm extends React.Component{
         this.changerunNameFocus = this.changerunNameFocus.bind(this);
     }
 
-    checkIfNull(indexByrunName){
+    checkIfNull(indexByrunName) {
         let isNull = {}
-        Object.keys(this.props.paramValues).map( (p) => {
+        Object.keys(this.props.paramValues).map((p) => {
             let paramValues = indexByrunName ? (
-                this.props.paramValues[p].filter( (v, i) => indexByrunName[p].indexOf(i) != -1)
-                ) : (
+                this.props.paramValues[p].filter((v, i) => indexByrunName[p].indexOf(i) != -1)
+            ) : (
                 this.props.paramValues[p]
             )
             isNull[p] = paramValues == "null" && this.props.paramConfigs[p].null_allowed
@@ -557,65 +661,65 @@ class ParamForm extends React.Component{
         return isNull
     }
 
-    fieldBackgroundclassName(isNull){
-        return(
+    fieldBackgroundclassName(isNull) {
+        return (
             isNull ? ("param-field-isnull") : ("param-field-notnull")
         )
     }
 
-    changerunNameFocus(newFocus){
-        this.setState({whichrunNameFocus: newFocus})
+    changerunNameFocus(newFocus) {
+        this.setState({ whichrunNameFocus: newFocus })
     }
 }
 
 
 
-class ParamFormGlobalSingle extends ParamForm{
-    render(){
+class ParamFormGlobalSingle extends ParamForm {
+    render() {
         const isNull = this.checkIfNull()
 
-        return(
-            <div style={ {overflow:"auto"} }>
+        return (
+            <div style={{ overflow: "auto" }}>
                 <h5>Single values:</h5>
-                <table style={ {borderSpacing: "0px 8px"} }><tbody>
-                    {Object.keys(this.props.paramValues).map( (p) => (
-                            <tr 
-                                key={p} 
-                                className={this.fieldBackgroundclassName(isNull[p])} 
-                                style={ {height: this.headerHeight} }
-                            >
-                                <td style={ {padding: "8px", width: "auto"} }>
-                                    <ParamName name={p} config={this.props.paramConfigs[p]}/>
-                                </td>
-                                <td style={ {padding: "8px", width: "auto"} }>
-                                    {this.props.paramConfigs[p].null_allowed &&
-                                        <ParamNullCheckbox
-                                            name={p}
-                                            isNull={isNull[p]}
-                                            nullValue="null"
-                                            refersTo="all"
-                                            mode="global_single"
-                                            toggleNull={this.props.toggleNull}
-                                            size="20px"
-                                        />
-                                    }
-                                </td>
-                                <td style={ {padding: "8px", width: "100%", minWidth: this.columnWidth } }>
-                                    
-                                    <ParamField
+                <table style={{ borderSpacing: "0px 8px" }}><tbody>
+                    {Object.keys(this.props.paramValues).map((p) => (
+                        <tr
+                            key={p}
+                            className={this.fieldBackgroundclassName(isNull[p])}
+                            style={{ height: this.headerHeight }}
+                        >
+                            <td style={{ padding: "8px", width: "auto" }}>
+                                <ParamName name={p} config={this.props.paramConfigs[p]} />
+                            </td>
+                            <td style={{ padding: "8px", width: "auto" }}>
+                                {this.props.paramConfigs[p].null_allowed &&
+                                    <ParamNullCheckbox
                                         name={p}
-                                        type={this.props.paramConfigs[p].type}
-                                        paramValue={this.props.paramValues[p][0]}
-                                        onChange={this.props.changeParamValue}
                                         isNull={isNull[p]}
-                                        jobName={this.props.jobName}
-                                        prevPath={this.props.prevPath}
-                                        changePrevPath={this.props.changePrevPath}
-                                        allowedSelection={this.props.paramConfigs[p].allowed_selection}
+                                        nullValue="null"
+                                        refersTo="all"
+                                        mode="global_single"
+                                        toggleNull={this.props.toggleNull}
+                                        size="20px"
                                     />
-                                </td>
-                            </tr>
-                        ))
+                                }
+                            </td>
+                            <td style={{ padding: "8px", width: "100%", minWidth: this.columnWidth }}>
+
+                                <ParamField
+                                    name={p}
+                                    type={this.props.paramConfigs[p].type}
+                                    paramValue={this.props.paramValues[p][0]}
+                                    onChange={this.props.changeParamValue}
+                                    isNull={isNull[p]}
+                                    jobName={this.props.jobName}
+                                    prevPath={this.props.prevPath}
+                                    changePrevPath={this.props.changePrevPath}
+                                    allowedSelection={this.props.paramConfigs[p].allowed_selection}
+                                />
+                            </td>
+                        </tr>
+                    ))
                     }
                 </tbody></table>
             </div>
@@ -624,145 +728,256 @@ class ParamFormGlobalSingle extends ParamForm{
     }
 }
 
-class ParamFormGlobalArray extends ParamForm{
-    render(){
+class ParamFormGlobalArray extends ParamForm {
+    render() {
         const isNull = this.checkIfNull()
 
-        return(
-                <div style={ {overflow:"auto"} }>
-                    <h5>Lists:</h5>
-                    <table style={ {borderSpacing: "8px 0px"} }><tbody>
-                        <tr>
-                            {Object.keys(this.props.paramValues).map( (p) => (
-                                    <td 
-                                        key={p} 
-                                        className={this.fieldBackgroundclassName(isNull[p]) + " w3-cell-top"}
-                                        style={ {padding: "8px", minWidth: this.columnWidth} }
-                                    >
-                                        <table><tbody>
-                                            <tr style={ {height: this.headerHeight} }>
-                                                <td>#</td>
-                                                <td style={ {minWidth: this.columnWidth} }>
-                                                    <ParamName
+        return (
+            <div style={{ overflow: "auto" }}>
+                <h5>Lists:</h5>
+                <table style={{ borderSpacing: "8px 0px" }}><tbody>
+                    <tr>
+                        {Object.keys(this.props.paramValues).map((p) => (
+                            <td
+                                key={p}
+                                className={this.fieldBackgroundclassName(isNull[p]) + " w3-cell-top"}
+                                style={{ padding: "8px", minWidth: this.columnWidth }}
+                            >
+                                <table><tbody>
+                                    <tr style={{ height: this.headerHeight }}>
+                                        <td>#</td>
+                                        <td style={{ minWidth: this.columnWidth }}>
+                                            <ParamName
+                                                name={p}
+                                                config={this.props.paramConfigs[p]}
+                                            />
+                                            {this.props.paramConfigs[p].null_allowed &&
+                                                <span className="w3-right">
+                                                    <ParamNullCheckbox
                                                         name={p}
-                                                        config={this.props.paramConfigs[p]}
+                                                        isNull={isNull[p]}
+                                                        nullValue="null"
+                                                        refersTo="all"
+                                                        mode="global_array"
+                                                        toggleNull={this.props.toggleNull}
+                                                        size="20px"
                                                     />
-                                                    {this.props.paramConfigs[p].null_allowed &&
-                                                        <span className="w3-right">
-                                                            <ParamNullCheckbox
-                                                                name={p}
-                                                                isNull={isNull[p]}
-                                                                nullValue="null"
-                                                                refersTo="all"
-                                                                mode="global_array"
-                                                                toggleNull={this.props.toggleNull}
-                                                                size="20px"
-                                                            />
-                                                        </span>
-                                                    }
-                                                </td>
-                                            </tr>
-                                            {[...Array(this.props.paramValues[p].length).keys()].map( (index) => (
-                                                <tr style={ {height: this.rowHeight} } key={index}>
-                                                    <td>
-                                                        {index+1}
-                                                    </td>
-                                                    <td style={ {minWidth: this.columnWidth} }>
-                                                        {this.props.paramConfigs[p].null_items_allowed &&
-                                                            <ParamNullCheckbox
-                                                                name={p}
-                                                                isNull={this.props.paramValues[p][index]=="itemNull"}
-                                                                refersTo="item"
-                                                                nullValue="itemNull"
-                                                                indexOrrunName={index}
-                                                                mode="global_array"
-                                                                toggleNull={this.props.toggleNull}
-                                                                size="10px"
-                                                            />
-                                                        }
-                                                        <ParamField
-                                                            name={p}
-                                                            type={this.props.paramConfigs[p].type}
-                                                            paramValue={this.props.paramValues[p][index]}
-                                                            onChange={this.props.changeParamValue}
-                                                            isNull={isNull[p]}
-                                                            itemNullAllowed={this.props.paramConfigs[p].null_items_allowed}
-                                                            index={index}
-                                                            jobName={this.props.jobName}
-                                                            prevPath={this.props.prevPath}
-                                                            changePrevPath={this.props.changePrevPath}
-                                                            allowedSelection={this.props.paramConfigs[p].allowed_selection}
-                                                        />
-                                                    </td>
-                                                </tr>
-                                            ))}
-                                        </tbody></table>
-                                        <ParamAddOrRemove
-                                            name={p}
-                                            mode="global_array"
-                                            handleAddOrRemove={this.props.addOrRemoveItem}
-                                            disabled={isNull[p]}
-                                            disabledRemove={this.props.paramValues[p].length <= 1}
-                                        />
-                                    </td>
-                                ))
-                            }
-                        </tr>
-                    </tbody></table>
-                </div>
+                                                </span>
+                                            }
+                                        </td>
+                                    </tr>
+                                    {[...Array(this.props.paramValues[p].length).keys()].map((index) => (
+                                        <tr style={{ height: this.rowHeight }} key={index}>
+                                            <td>
+                                                {index + 1}
+                                            </td>
+                                            <td style={{ minWidth: this.columnWidth }}>
+                                                {this.props.paramConfigs[p].null_items_allowed &&
+                                                    <ParamNullCheckbox
+                                                        name={p}
+                                                        isNull={this.props.paramValues[p][index] == "itemNull"}
+                                                        refersTo="item"
+                                                        nullValue="itemNull"
+                                                        indexOrrunName={index}
+                                                        mode="global_array"
+                                                        toggleNull={this.props.toggleNull}
+                                                        size="10px"
+                                                    />
+                                                }
+                                                <ParamField
+                                                    name={p}
+                                                    type={this.props.paramConfigs[p].type}
+                                                    paramValue={this.props.paramValues[p][index]}
+                                                    onChange={this.props.changeParamValue}
+                                                    isNull={isNull[p]}
+                                                    itemNullAllowed={this.props.paramConfigs[p].null_items_allowed}
+                                                    index={index}
+                                                    jobName={this.props.jobName}
+                                                    prevPath={this.props.prevPath}
+                                                    changePrevPath={this.props.changePrevPath}
+                                                    allowedSelection={this.props.paramConfigs[p].allowed_selection}
+                                                />
+                                            </td>
+                                        </tr>
+                                    ))}
+                                </tbody></table>
+                                <ParamAddOrRemove
+                                    name={p}
+                                    mode="global_array"
+                                    handleAddOrRemove={this.props.addOrRemoveItem}
+                                    disabled={isNull[p]}
+                                    disabledRemove={this.props.paramValues[p].length <= 1}
+                                />
+                            </td>
+                        ))
+                        }
+                    </tr>
+                </tbody></table>
+            </div>
         )
     }
 }
 
-class ParamFormRunSingle extends ParamForm{
-    render(){
-        return(
-                <div style={ {overflow:"auto"} }>
-                    <h5>Single values:</h5>
-                    <table style={ {borderSpacing: "8px 0px"} }><tbody>
+class ParamFormRunSingle extends ParamForm {
+    render() {
+        return (
+            <div style={{ overflow: "auto" }}>
+                <h5>Single values:</h5>
+                <table style={{ borderSpacing: "8px 0px" }}><tbody>
+                    <tr>
+                        {Object.keys(this.props.paramValues).map((p) => (
+                            <td
+                                key={p}
+                                className={this.fieldBackgroundclassName(false) + " w3-cell-top"}
+                                style={{ padding: "8px", minWidth: this.columnWidth }}
+                            >
+                                <table><tbody>
+                                    <tr>
+                                        <td>Run ID</td>
+                                        <td style={{ minWidth: this.columnWidth }}>
+                                            <ParamName
+                                                name={p}
+                                                config={this.props.paramConfigs[p]}
+                                            />
+                                        </td>
+                                    </tr>
+                                    {[...Array(this.props.runNames.length).keys()].map((index) => (
+                                        <tr key={index}>
+                                            <td>
+                                                {this.props.runNames[index]}
+                                            </td>
+                                            <td style={{ minWidth: this.columnWidth }}>
+                                                {this.props.paramConfigs[p].null_allowed &&
+                                                    <ParamNullCheckbox
+                                                        name={p}
+                                                        isNull={this.props.paramValues[p][index] == "null"}
+                                                        refersTo="item"
+                                                        nullValue="null"
+                                                        indexOrrunName={index}
+                                                        mode="run_single"
+                                                        toggleNull={this.props.toggleNull}
+                                                        size="10px"
+                                                    />
+                                                }
+                                                <ParamField
+                                                    name={p}
+                                                    type={this.props.paramConfigs[p].type}
+                                                    paramValue={this.props.paramValues[p][index]}
+                                                    onChange={this.props.changeParamValue}
+                                                    isNull={this.props.paramValues[p][index] == "null"}
+                                                    itemNullAllowed={this.props.paramConfigs[p].null_allowed}
+                                                    index={index}
+                                                    jobName={this.props.jobName}
+                                                    prevPath={this.props.prevPath}
+                                                    changePrevPath={this.props.changePrevPath}
+                                                    allowedSelection={this.props.paramConfigs[p].allowed_selection}
+                                                />
+                                            </td>
+                                        </tr>
+                                    ))}
+                                </tbody></table>
+                            </td>
+                        ))}
+                    </tr>
+                </tbody></table>
+            </div>
+        )
+    }
+}
+
+class ParamFormRunArray extends ParamForm {
+    render() {
+        const whichrunNameFocus = this.state.whichrunNameFocus ? (
+            this.state.whichrunNameFocus
+        ) : (
+            this.props.runNames[0]
+        )
+
+        let indexByrunName = {}
+        Object.keys(this.props.paramValues).forEach((p) => {
+            indexByrunName[p] = []
+            let runNameHelper = this.props.paramHelperValues[this.props.paramConfigs[p].split_into_runs_by[0]]
+            this.props.paramValues[p].forEach((value, index) => {
+                if (runNameHelper[index] == whichrunNameFocus) {
+                    indexByrunName[p].push(index)
+                }
+            })
+        })
+
+        const isNull = this.checkIfNull(indexByrunName)
+
+        return (
+            <div style={{ overflow: "auto" }}>
+                <h5>Lists:</h5>
+                <TabPanel
+                    title="Run IDs:"
+                    tabs={this.props.runNames}
+                    whichFocus={whichrunNameFocus}
+                    changeFocus={this.changerunNameFocus}
+                >
+                    <table style={{ borderSpacing: "8px 0px" }}><tbody>
                         <tr>
-                            {Object.keys(this.props.paramValues).map( (p) => (
-                                <td 
-                                    key={p} 
-                                    className={this.fieldBackgroundclassName(false) + " w3-cell-top"}
-                                    style={ {padding: "8px", minWidth: this.columnWidth} }
+                            {Object.keys(this.props.paramValues).map((p) => (
+                                <td
+                                    key={p}
+                                    className={this.fieldBackgroundclassName(isNull[p]) + " w3-cell-top"}
+                                    style={{ padding: "8px", minWidth: this.columnWidth }}
                                 >
                                     <table><tbody>
                                         <tr>
-                                            <td>Run ID</td>
-                                            <td style={ {minWidth: this.columnWidth} }>
+                                            <td>#</td>
+                                            <td style={{ minWidth: this.columnWidth }}>
                                                 <ParamName
                                                     name={p}
                                                     config={this.props.paramConfigs[p]}
                                                 />
-                                            </td>
-                                        </tr>
-                                        {[...Array(this.props.runNames.length).keys()].map( (index) => (
-                                            <tr key={index}>
-                                                <td>
-                                                    {this.props.runNames[index]}
-                                                </td>
-                                                <td style={ {minWidth: this.columnWidth} }>
-                                                    {this.props.paramConfigs[p].null_allowed &&
+                                                {this.props.paramConfigs[p].null_allowed &&
+                                                    <span className="w3-right">
                                                         <ParamNullCheckbox
                                                             name={p}
-                                                            isNull={this.props.paramValues[p][index]=="null"}
-                                                            refersTo="item"
+                                                            isNull={isNull[p]}
                                                             nullValue="null"
-                                                            indexOrrunName={index}
-                                                            mode="run_single"
+                                                            refersTo="runName"
+                                                            mode="run_array"
+                                                            indexOrrunName={whichrunNameFocus}
+                                                            toggleNull={this.props.toggleNull}
+                                                            size="20px"
+                                                        />
+                                                    </span>
+                                                }
+                                            </td>
+                                        </tr>
+                                        {[...Array(indexByrunName[p].length).keys()].map((index) => (
+                                            <tr key={index}>
+                                                <td>
+                                                    {index}
+                                                </td>
+                                                <td style={{ minWidth: this.columnWidth }}>
+                                                    {this.props.paramConfigs[p].null_items_allowed &&
+                                                        <ParamNullCheckbox
+                                                            name={p}
+                                                            isNull={this.props.paramValues[p][
+                                                                indexByrunName[p][index]
+                                                            ] == "itemNull"}
+                                                            refersTo="item"
+                                                            nullValue="itemNull"
+                                                            indexOrrunName={indexByrunName[p][index]}
+                                                            mode="run_array"
                                                             toggleNull={this.props.toggleNull}
                                                             size="10px"
+                                                            disabled={isNull[p]}
                                                         />
                                                     }
                                                     <ParamField
                                                         name={p}
                                                         type={this.props.paramConfigs[p].type}
-                                                        paramValue={this.props.paramValues[p][index]}
+                                                        paramValue={this.props.paramValues[p][
+                                                            indexByrunName[p][index]
+                                                        ]}
+                                                        index={indexByrunName[p][index]}
                                                         onChange={this.props.changeParamValue}
-                                                        isNull={this.props.paramValues[p][index]=="null"}
-                                                        itemNullAllowed={this.props.paramConfigs[p].null_allowed}
-                                                        index={index}
+                                                        isNull={isNull[p]}
+                                                        itemNullAllowed={this.props.paramConfigs[p].null_items_allowed}
                                                         jobName={this.props.jobName}
                                                         prevPath={this.props.prevPath}
                                                         changePrevPath={this.props.changePrevPath}
@@ -772,137 +987,26 @@ class ParamFormRunSingle extends ParamForm{
                                             </tr>
                                         ))}
                                     </tbody></table>
+                                    <ParamAddOrRemove
+                                        name={p}
+                                        mode="run_array"
+                                        runName={whichrunNameFocus}
+                                        handleAddOrRemove={this.props.addOrRemoveItem}
+                                        disabled={isNull[p]}
+                                        disabledRemove={indexByrunName[p].length <= 1}
+                                    />
                                 </td>
                             ))}
                         </tr>
                     </tbody></table>
-                </div>
-        )
-    }
-}
-
-class ParamFormRunArray extends ParamForm{
-    render(){
-        const whichrunNameFocus = this.state.whichrunNameFocus ? (
-                this.state.whichrunNameFocus
-            ) : (
-                this.props.runNames[0]
-            )
-
-        let indexByrunName = {}
-        Object.keys(this.props.paramValues).forEach( (p) => {
-            indexByrunName[p] = []
-            let runNameHelper = this.props.paramHelperValues[this.props.paramConfigs[p].split_into_runs_by[0]]
-            this.props.paramValues[p].forEach( (value, index) => {
-                if(runNameHelper[index] == whichrunNameFocus){
-                    indexByrunName[p].push(index)
-                }
-            })
-        })
-
-        const isNull = this.checkIfNull(indexByrunName)
-
-        return(
-                <div style={ {overflow:"auto"} }>
-                    <h5>Lists:</h5>
-                    <TabPanel
-                        title="Run IDs:"
-                        tabs={this.props.runNames}
-                        whichFocus={whichrunNameFocus}
-                        changeFocus={this.changerunNameFocus}
-                    >
-                        <table style={ {borderSpacing: "8px 0px"} }><tbody>
-                            <tr>
-                                {Object.keys(this.props.paramValues).map( (p) => (
-                                    <td 
-                                        key={p} 
-                                        className={this.fieldBackgroundclassName(isNull[p]) + " w3-cell-top"}
-                                        style={ {padding: "8px", minWidth: this.columnWidth} }
-                                    >
-                                        <table><tbody>
-                                            <tr>
-                                                <td>#</td>
-                                                <td style={ {minWidth: this.columnWidth} }>
-                                                    <ParamName
-                                                        name={p}
-                                                        config={this.props.paramConfigs[p]}
-                                                    />
-                                                    {this.props.paramConfigs[p].null_allowed &&
-                                                        <span className="w3-right">
-                                                            <ParamNullCheckbox
-                                                                name={p}
-                                                                isNull={isNull[p]}
-                                                                nullValue="null"
-                                                                refersTo="runName"
-                                                                mode="run_array"
-                                                                indexOrrunName={whichrunNameFocus}
-                                                                toggleNull={this.props.toggleNull}
-                                                                size="20px"
-                                                            />
-                                                        </span>
-                                                    }
-                                                </td>
-                                            </tr>
-                                            {[...Array(indexByrunName[p].length).keys()].map( (index) => (
-                                                <tr key={index}>
-                                                    <td>
-                                                        {index}
-                                                    </td>
-                                                    <td style={ {minWidth: this.columnWidth} }>
-                                                        {this.props.paramConfigs[p].null_items_allowed &&
-                                                            <ParamNullCheckbox
-                                                                name={p}
-                                                                isNull={this.props.paramValues[p][
-                                                                    indexByrunName[p][index]
-                                                                ]=="itemNull"}
-                                                                refersTo="item"
-                                                                nullValue="itemNull"
-                                                                indexOrrunName={indexByrunName[p][index]}
-                                                                mode="run_array"
-                                                                toggleNull={this.props.toggleNull}
-                                                                size="10px"
-                                                                disabled={isNull[p]}
-                                                            />
-                                                        }
-                                                        <ParamField
-                                                            name={p}
-                                                            type={this.props.paramConfigs[p].type}
-                                                            paramValue={this.props.paramValues[p][
-                                                                indexByrunName[p][index]
-                                                            ]}
-                                                            index={indexByrunName[p][index]}
-                                                            onChange={this.props.changeParamValue}
-                                                            isNull={isNull[p]}
-                                                            itemNullAllowed={this.props.paramConfigs[p].null_items_allowed}
-                                                            jobName={this.props.jobName}
-                                                            prevPath={this.props.prevPath}
-                                                            changePrevPath={this.props.changePrevPath}
-                                                            allowedSelection={this.props.paramConfigs[p].allowed_selection}
-                                                        />
-                                                    </td>
-                                                </tr>
-                                            ))}
-                                        </tbody></table>
-                                        <ParamAddOrRemove
-                                            name={p}
-                                            mode="run_array"
-                                            runName={whichrunNameFocus}
-                                            handleAddOrRemove={this.props.addOrRemoveItem}
-                                            disabled={isNull[p]}
-                                            disabledRemove={indexByrunName[p].length <= 1}
-                                        />
-                                    </td>
-                                ))}
-                            </tr>
-                        </tbody></table>
-                    </TabPanel>
-                </div>
+                </TabPanel>
+            </div>
         )
     }
 }
 
 class JobParamFormHTML extends React.Component {
-    constructor(props){
+    constructor(props) {
         super(props);
         // props.cwlTarget
         // props.param_modes
@@ -938,63 +1042,63 @@ class JobParamFormHTML extends React.Component {
         this.createJob = this.createJob.bind(this);
     }
 
-    componentDidMount(){
+    componentDidMount() {
         // setup timer to automatically update
         this.getParamValues()
     }
 
-    getParamValues(){
-            this.ajaxRequest({
-                statusVar: "actionStatus",
-                statusValueDuringRequest: "loading",
-                messageVar: "serverMessages",
-                sendData: {
-                    wf_target: this.props.cwlTarget,
-                    param_modes: this.props.param_modes,
-                    batch_mode: this.props.batchMode, 
-                    run_names: this.props.run_names.filter((r) => r != "")
-                },
-                route: routeGetParamValues,
-                onSuccess: (data, messages) => {
-                    const paramNames = Object.keys(data.configs).filter((p) => data.configs[p].type != "helper")
-                    let paramValuesByMode = {
-                        global_single: {},
-                        global_array: {},
-                        run_single: {},
-                        run_array: {}
-                    }
-                    paramNames.forEach((p) =>{
-                        let run_or_global = this.props.batchMode ? (
-                                this.props.param_modes[p] ? ("run") : ("global")
-                            ) : (
-                                "global"
-                            )
-                        let single_or_array = data.configs[p].is_array ? ("array") : ("single")
-                        let mode = run_or_global + "_" + single_or_array
-                        paramValuesByMode[mode][p] = data.param_values[p]
-                    })
-                    let modeExists = {}
-                    Object.keys(paramValuesByMode).forEach( (mode) => modeExists[mode] = Object.keys(paramValuesByMode[mode]).length > 0)
-                    const paramHelperNames = Object.keys(data.configs).filter((p) => data.configs[p].type == "helper")
-                    let paramHelperValues = {}
-                    paramHelperNames.forEach( (p) => paramHelperValues[p] = data.param_values[p] )
-                    return({
-                        paramConfigs: data.configs,
-                        paramValuesByMode: paramValuesByMode,
-                        paramHelperValues: paramHelperValues,
-                        modeExists: modeExists
-                    })
+    getParamValues() {
+        this.ajaxRequest({
+            statusVar: "actionStatus",
+            statusValueDuringRequest: "loading",
+            messageVar: "serverMessages",
+            sendData: {
+                wf_target: this.props.cwlTarget,
+                param_modes: this.props.param_modes,
+                batch_mode: this.props.batchMode,
+                run_names: this.props.run_names.filter((r) => r != "")
+            },
+            route: routeGetParamValues,
+            onSuccess: (data, messages) => {
+                const paramNames = Object.keys(data.configs).filter((p) => data.configs[p].type != "helper")
+                let paramValuesByMode = {
+                    global_single: {},
+                    global_array: {},
+                    run_single: {},
+                    run_array: {}
                 }
-            })
+                paramNames.forEach((p) => {
+                    let run_or_global = this.props.batchMode ? (
+                        this.props.param_modes[p] ? ("run") : ("global")
+                    ) : (
+                        "global"
+                    )
+                    let single_or_array = data.configs[p].is_array ? ("array") : ("single")
+                    let mode = run_or_global + "_" + single_or_array
+                    paramValuesByMode[mode][p] = data.param_values[p]
+                })
+                let modeExists = {}
+                Object.keys(paramValuesByMode).forEach((mode) => modeExists[mode] = Object.keys(paramValuesByMode[mode]).length > 0)
+                const paramHelperNames = Object.keys(data.configs).filter((p) => data.configs[p].type == "helper")
+                let paramHelperValues = {}
+                paramHelperNames.forEach((p) => paramHelperValues[p] = data.param_values[p])
+                return ({
+                    paramConfigs: data.configs,
+                    paramValuesByMode: paramValuesByMode,
+                    paramHelperValues: paramHelperValues,
+                    modeExists: modeExists
+                })
+            }
+        })
     }
 
-    async createJob(){
+    async createJob() {
         let paramValues = {}
         Object.keys(this.state.paramValuesByMode).forEach((mode) => {
             Object.assign(paramValues, this.state.paramValuesByMode[mode])
         })
         Object.assign(paramValues, this.state.paramHelperValues)
-        
+
         this.ajaxRequest({
             statusVar: "actionStatus",
             statusValueDuringRequest: "create_job",
@@ -1007,18 +1111,23 @@ class JobParamFormHTML extends React.Component {
                 validate_uris: this.props.validateURIs && !permanetlyDisableInputValidation,
                 search_paths: this.props.searchPaths,
                 search_dir: this.props.searchDir,
-                include_subdirs_for_searching: this.props.includeSubbDirsForSearching
+                include_subdirs_for_searching: this.props.includeSubbDirsForSearching,
+                // s3_url: this.props.s3Url,
+                // s3_access_key: this.props.s3AccessKey,
+                // s3_secret_key: this.props.s3SecretKey,
+                // s3_bucket_name: this.props.s3BucketName,
+                // s3_object_name: this.props.s3ObjectName
             },
             route: routeCreateJobFromParamValues
-        })     
+        })
     }
-    changeParamValue(mode, name, index, newValue){
+    changeParamValue(mode, name, index, newValue) {
         let paramValuesByMode = this.state.paramValuesByMode
         paramValuesByMode[mode][name][index] = newValue
-        this.setState({paramValuesByMode: paramValuesByMode})
+        this.setState({ paramValuesByMode: paramValuesByMode })
     }
 
-    dissectParamValuesByrunName(mode, name, runName){
+    dissectParamValuesByrunName(mode, name, runName) {
         const runNameParamName = this.state.paramConfigs[name].split_into_runs_by[0]
         const runNameIndexes = this.state.paramHelperValues[runNameParamName]
         let dissectedParamValues = {
@@ -1036,14 +1145,14 @@ class JobParamFormHTML extends React.Component {
             },
         }
         const paramValues = this.state.paramValuesByMode[mode][name]
-        let before=true
-        for (let r=0; r < runNameIndexes.length; r++){
-            if(runNameIndexes[r] == runName){
-                before=false
+        let before = true
+        for (let r = 0; r < runNameIndexes.length; r++) {
+            if (runNameIndexes[r] == runName) {
+                before = false
                 dissectedParamValues.match.indexes.push(runNameIndexes[r])
                 dissectedParamValues.match.values.push(paramValues[r])
             }
-            else if(before){
+            else if (before) {
                 dissectedParamValues.before.indexes.push(runNameIndexes[r])
                 dissectedParamValues.before.values.push(paramValues[r])
             }
@@ -1053,19 +1162,19 @@ class JobParamFormHTML extends React.Component {
             }
         }
 
-        return(dissectedParamValues)
+        return (dissectedParamValues)
     }
 
-    toggleNull(mode, name, setNull, nullValue, refersTo, indexOrrunName){
+    toggleNull(mode, name, setNull, nullValue, refersTo, indexOrrunName) {
         let paramValuesByMode = this.state.paramValuesByMode
         let paramHelperValues = this.state.paramHelperValues
-        if (refersTo == "all"){
+        if (refersTo == "all") {
             paramValuesByMode[mode][name] = setNull ? ([nullValue]) : (this.state.paramConfigs[name].default_value)
         }
-        else if (refersTo == "item"){
+        else if (refersTo == "item") {
             paramValuesByMode[mode][name][indexOrrunName] = setNull ? (nullValue) : (this.state.paramConfigs[name].default_value[0])
-        } 
-        else if (refersTo == "runName"){
+        }
+        else if (refersTo == "runName") {
             const dissectParamValues = this.dissectParamValuesByrunName(mode, name, indexOrrunName)
             const runNameParamName = this.state.paramConfigs[name].split_into_runs_by[0]
             let newParamValues = setNull ? ([nullValue]) : (this.state.paramConfigs[name].default_value)
@@ -1081,23 +1190,23 @@ class JobParamFormHTML extends React.Component {
         })
     }
 
-    addOrRemoveItem(add, mode, name, runName){
+    addOrRemoveItem(add, mode, name, runName) {
         let paramValuesByMode = this.state.paramValuesByMode
-        if (runName){
+        if (runName) {
             let paramHelperValues = this.state.paramHelperValues
             const runNameParamName = this.state.paramConfigs[name].split_into_runs_by[0]
             const dissectParamValues = this.dissectParamValuesByrunName(mode, name, runName)
             let newParamValues
             let newParamHelperValues
-            if(add){
+            if (add) {
                 newParamValues = dissectParamValues.match.values
                     .concat([this.state.paramConfigs[name].default_value[0]])
                 newParamHelperValues = dissectParamValues.match.indexes
                     .concat([runName])
-            } 
+            }
             else {
-                newParamValues = dissectParamValues.match.values.slice(0,-1)
-                newParamHelperValues = dissectParamValues.match.indexes.slice(0,-1)
+                newParamValues = dissectParamValues.match.values.slice(0, -1)
+                newParamHelperValues = dissectParamValues.match.indexes.slice(0, -1)
             }
             paramValuesByMode[mode][name] = dissectParamValues.before.values
                 .concat(newParamValues).concat(dissectParamValues.after.values)
@@ -1112,7 +1221,7 @@ class JobParamFormHTML extends React.Component {
             paramValuesByMode[mode][name] = add ? (
                 paramValuesByMode[mode][name].concat([this.state.paramConfigs[name].default_value[0]])
             ) : (
-                paramValuesByMode[mode][name].slice(0,-1)
+                paramValuesByMode[mode][name].slice(0, -1)
             )
             this.setState({
                 paramValuesByMode: paramValuesByMode
@@ -1121,18 +1230,18 @@ class JobParamFormHTML extends React.Component {
     }
 
     render() {
-        if (this.state.actionStatus == "loading"){
-            return(
+        if (this.state.actionStatus == "loading") {
+            return (
                 <LoadingIndicator
                     size="large"
                     message="Loading parameters."
                 />
             )
-        } else {          
-            return(
+        } else {
+            return (
                 <div>
                     <DisplayServerMessages messages={this.state.serverMessages} />
-                    {! permanetlyDisableInputValidation &&
+                    {!permanetlyDisableInputValidation &&
                         <div>
                             <ParamValidationOptions
                                 jobName={this.props.jobName}
@@ -1142,23 +1251,24 @@ class JobParamFormHTML extends React.Component {
                                 changeEnablePathSearching={this.props.changeEnablePathSearching}
                                 searchDir={this.props.searchDir}
                                 changeSearchDir={this.props.changeSearchDir}
+                                changeInputField={this.props.changeInputField}
                                 includeSubbDirsForSearching={this.props.includeSubbDirsForSearching}
                                 changeIncludeSubDirsForSearching={this.props.changeIncludeSubDirsForSearching}
                                 prevPath={this.props.prevPath}
                                 changePrevPath={this.props.changePrevPath}
                             />
-                            <hr/>
+                            <hr />
                         </div>
                     }
                     <Message type="hint">
                         <b>Hint</b>
-                        <br/>
+                        <br />
                         Please click on the <Tooltip disabled={true} > </Tooltip> buttons to get information on parameters.
                     </Message>
                     {(this.state.modeExists["global_single"] || this.state.modeExists["global_array"]) &&
                         <span>
                             <h3>Globally-defined Parameters:</h3>
-                            {this.state.modeExists["global_single"] && 
+                            {this.state.modeExists["global_single"] &&
                                 <ParamFormGlobalSingle
                                     paramValues={this.state.paramValuesByMode["global_single"]}
                                     paramConfigs={this.state.paramConfigs}
@@ -1169,7 +1279,7 @@ class JobParamFormHTML extends React.Component {
                                     changePrevPath={this.props.changePrevPath}
                                 />
                             }
-                            {this.state.modeExists["global_array"] && 
+                            {this.state.modeExists["global_array"] &&
                                 <ParamFormGlobalArray
                                     paramValues={this.state.paramValuesByMode["global_array"]}
                                     paramConfigs={this.state.paramConfigs}
@@ -1181,13 +1291,13 @@ class JobParamFormHTML extends React.Component {
                                     changePrevPath={this.props.changePrevPath}
                                 />
                             }
-                            <hr/>
+                            <hr />
                         </span>
                     }
                     {(this.state.modeExists["run_single"] || this.state.modeExists["run_array"]) &&
                         <span>
                             <h3>Run-specific Parameters:</h3>
-                            {this.state.modeExists["run_single"] && 
+                            {this.state.modeExists["run_single"] &&
                                 <ParamFormRunSingle
                                     paramValues={this.state.paramValuesByMode["run_single"]}
                                     paramConfigs={this.state.paramConfigs}
@@ -1199,7 +1309,7 @@ class JobParamFormHTML extends React.Component {
                                     changePrevPath={this.props.changePrevPath}
                                 />
                             }
-                            {this.state.modeExists["run_array"] && 
+                            {this.state.modeExists["run_array"] &&
                                 <ParamFormRunArray
                                     paramValues={this.state.paramValuesByMode["run_array"]}
                                     paramConfigs={this.state.paramConfigs}
@@ -1213,7 +1323,7 @@ class JobParamFormHTML extends React.Component {
                                     changePrevPath={this.props.changePrevPath}
                                 />
                             }
-                            <hr/>
+                            <hr />
                         </span>
                     }
 
@@ -1236,7 +1346,7 @@ class JobParamFormHTML extends React.Component {
 
 
 class JobParamFormSpreadsheet extends React.Component {
-    constructor(props){
+    constructor(props) {
         super(props);
         // props.cwlTarget
         // props.param_modes
@@ -1265,11 +1375,11 @@ class JobParamFormSpreadsheet extends React.Component {
         this.ajaxRequest = ajaxRequest.bind(this)
     }
 
-    changeSheetFormat(event){
-        this.setState({"sheetFormat": event.currentTarget.value})
+    changeSheetFormat(event) {
+        this.setState({ "sheetFormat": event.currentTarget.value })
     }
 
-    async genFormSheet(){
+    async genFormSheet() {
         this.ajaxRequest({
             statusVar: "file_transfer_status",
             statusValueDuringRequest: "downloading",
@@ -1277,7 +1387,7 @@ class JobParamFormSpreadsheet extends React.Component {
             sendData: {
                 wf_target: this.props.cwlTarget,
                 param_modes: this.props.param_modes,
-                batch_mode: this.props.batchMode, 
+                batch_mode: this.props.batchMode,
                 run_names: this.props.run_names.filter((r) => r != ""),
                 job_name: this.props.jobName,
                 sheet_format: this.state.sheetFormat
@@ -1285,13 +1395,13 @@ class JobParamFormSpreadsheet extends React.Component {
             route: routeGenParamFormSheet,
             onSuccess: (data, messages) => {
                 window.location.href = data.get_form_sheet_href
-                return({sheetFormMessages: []})
+                return ({ sheetFormMessages: [] })
             }
         })
     }
 
     render() {
-        return(
+        return (
             <div>
                 <ParamValidationOptions
                     jobName={this.props.jobName}
@@ -1301,24 +1411,25 @@ class JobParamFormSpreadsheet extends React.Component {
                     changeEnablePathSearching={this.props.changeEnablePathSearching}
                     searchDir={this.props.searchDir}
                     changeSearchDir={this.props.changeSearchDir}
+                    changeInputField={this.props.changeInputField}
                     includeSubbDirsForSearching={this.props.includeSubbDirsForSearching}
                     changeIncludeSubDirsForSearching={this.props.changeIncludeSubDirsForSearching}
                     prevPath={this.props.prevPath}
                     changePrevPath={this.props.changePrevPath}
                 />
-                <hr/>
+                <hr />
                 <h3>Provide Parameters Using a Spreadsheet:</h3>
                 <span className="w3-text-green">1. export/download:</span>
-                <br/>
-                <select className="w3-button w3-white w3-border" 
+                <br />
+                <select className="w3-button w3-white w3-border"
                     name="sheet_format"
                     onChange={this.changeSheetFormat}
                     value={this.state.sheetFormat}
-                    >
+                >
                     <option value="xlsx">excel format (xlsx)</option>
                     <option value="xls">excel format (xls)</option>
                     <option value="ods">open office format (ods)</option>
-                </select> 
+                </select>
                 <ActionButton
                     name="export"
                     value="export"
@@ -1327,16 +1438,16 @@ class JobParamFormSpreadsheet extends React.Component {
                     loading={this.state.file_transfer_status == "downloading"}
                     disabled={this.state.file_transfer_status != "none"}
                 />
-                <br/><br/>
+                <br /><br />
                 <span className="w3-text-green">2. open in excel or open office and fill out the form</span>
-                <br/><br/>
+                <br /><br />
                 <span className="w3-text-green">3. Import and create job:</span>
                 <FileUploadComponent
                     requestRoute={routeCreateJobFromParamFormSheet}
                     buttonLabel="import & create job"
                     oneLine={false}
                     disabled={this.state.file_transfer_status != "none"}
-                    metaData={ 
+                    metaData={
                         {
                             job_name: this.props.jobName,
                             validate_uris: this.props.validateURIs,
@@ -1364,14 +1475,14 @@ class JobCreationPrep extends React.Component {
         // Inputs:
         // props.configData
         // props.cwlTarget
-        let paramModes={} // container for param mode (is_run_specific true/false)
+        let paramModes = {} // container for param mode (is_run_specific true/false)
         this.props.configData.params.map((p) =>
             paramModes[p.param_name] = p.is_run_specific
         )
         this.state = {
             actionStatus: "none",
             serverMessages: [],
-            batchMode: false, 
+            batchMode: false,
             run_names: ["run1", "run2", "run3"],
             param_modes: paramModes,
             job_name: "new_job",
@@ -1391,10 +1502,10 @@ class JobCreationPrep extends React.Component {
         let day = date.getDate()
         day = (day < 10) ? ("0" + day.toString()) : (day.toString())
         const dateString = year + month + day
-        let randomNumber = Math.round(Math.random()*1000)
+        let randomNumber = Math.round(Math.random() * 1000)
         randomNumber = (randomNumber < 100) ? ("0" + randomNumber.toString()) : (randomNumber.toString())
         this.jobNameNum = dateString + "_" + randomNumber
-        
+
 
         this.changeJobName = this.changeJobName.bind(this);
         this.changeParamMode = this.changeParamMode.bind(this);
@@ -1406,15 +1517,16 @@ class JobCreationPrep extends React.Component {
         this.changeEnableUriValidation = this.changeEnableUriValidation.bind(this)
         this.changeEnablePathSearching = this.changeEnablePathSearching.bind(this)
         this.changePrevPath = this.changePrevPath.bind(this)
+        this.changeInputField = this.changeInputField.bind(this)
         this.ajaxRequest = ajaxRequest.bind(this)
     }
 
-    changeJobName(event){
+    changeJobName(event) {
         let jobNameString = event.currentTarget.value.trim().replaceAll(" ", "_")
-        this.setState({"job_name": jobNameString})
+        this.setState({ "job_name": jobNameString })
     }
 
-    changeParamMode(param_name, is_run_specific){
+    changeParamMode(param_name, is_run_specific) {
         let update = {}
         update[param_name] = is_run_specific
         this.setState({
@@ -1422,48 +1534,53 @@ class JobCreationPrep extends React.Component {
         })
     }
 
-    changeRunMode(value, new_bool){
-        this.setState({"batchMode": new_bool})
+    changeRunMode(value, new_bool) {
+        this.setState({ "batchMode": new_bool })
     }
 
-    changeRunNames(event){
+    changeRunNames(event) {
         let runNameString = event.currentTarget.value
         runNameString = runNameString.replaceAll("\n", ",").replaceAll("\t", ",").replaceAll(";", ",")
         let runNames = runNameString.split(",")
         runNames = runNames.map((n) => n.trim().replace(" ", "_"))
-        this.setState({"run_names": runNames})
+        this.setState({ "run_names": runNames })
     }
 
-    toggleParamForm(value){
-        this.setState({display: value})
+    toggleParamForm(value) {
+        this.setState({ display: value })
     }
 
-    changeSearchDir(newSearchDir){
-        this.setState({searchDir:newSearchDir})
+    changeSearchDir(newSearchDir) {
+        this.setState({ searchDir: newSearchDir })
     }
 
-    changeIncludeSubDirsForSearching(include){
-        this.setState({includeSubbDirsForSearching:include})
+    changeIncludeSubDirsForSearching(include) {
+        this.setState({ includeSubbDirsForSearching: include })
     }
 
-    changeEnableUriValidation(validateURIs){
+    changeEnableUriValidation(validateURIs) {
         this.setState({
             validateURIs: validateURIs
         })
     }
-    
-    changeEnablePathSearching(searchPaths){
+
+    changeEnablePathSearching(searchPaths) {
         this.setState({
             searchPaths: searchPaths
         })
     }
 
-    changePrevPath(value){
+    changePrevPath(value) {
         this.setState({
             prevPath: value
         })
     }
 
+    changeInputField(event) {
+        this.setState({
+            [event.name]: event.value
+        })
+    }
 
     render() {
 
@@ -1472,12 +1589,12 @@ class JobCreationPrep extends React.Component {
                 <p>
                     <span className="w3-text-green">Job ID:</span>&nbsp;
                     <IneditableValueField>
-                        {this.jobNameNum + "_" + this.state.job_name }
+                        {this.jobNameNum + "_" + this.state.job_name}
                     </IneditableValueField>
                 </p>
                 <p>
-                    <label className="w3-text-green">Job name:</label><br/>
-                    Please enter a job name (no whitespaces allowed).<br/>
+                    <label className="w3-text-green">Job name:</label><br />
+                    Please enter a job name (no whitespaces allowed).<br />
                     <input type="text"
                         className="w3-input w3-border"
                         name="job_name"
@@ -1492,7 +1609,7 @@ class JobCreationPrep extends React.Component {
             <div>
                 <div className="vertical_container_item">
                     If you would like to perform multiple iterations over the same workflow or tool (e.g. due to multiple samples),
-                    you can submit multiple runs as batch. 
+                    you can submit multiple runs as batch.
                     The advantage is that you have to specify parameter all runs have in common only once.
                 </div>
 
@@ -1505,20 +1622,20 @@ class JobCreationPrep extends React.Component {
                         onChange={this.changeRunMode}
                         checked={this.batchMode}
                     />
-                    &nbsp; on (multiple runs)        
+                    &nbsp; on (multiple runs)
                 </div>
-                
+
                 {this.state.batchMode && (
                     <div className="w3-container vertical_container_item">
                         <label className="w3-text-green">Run names/IDs:</label>
                         <Message type="hint">
-                            Please enter a comma-seperated list of unique IDs, one for each run of the the batch. <br/>
-                            (No whitespaces allowed, if inserted they will be automatically converted to "_".) <br/>
+                            Please enter a comma-seperated list of unique IDs, one for each run of the the batch. <br />
+                            (No whitespaces allowed, if inserted they will be automatically converted to "_".) <br />
                             Hint: you may copy&paste cells from an excel file.
                         </Message>
                         <textarea className="w3-input w3-border"
                             rows="2"
-                            name="create_multi_run_job" 
+                            name="create_multi_run_job"
                             value={this.state.run_names.join(", ").trim()}
                             onChange={this.changeRunNames}
                         />
@@ -1526,9 +1643,9 @@ class JobCreationPrep extends React.Component {
                 )}
             </div>
         )
-        
+
         const paramTable = (
-            <div style={ {maxHeight:"50vh", overflowY: "auto"} }>
+            <div style={{ maxHeight: "50vh", overflowY: "auto" }}>
                 {this.state.batchMode && (
                     <Message type="hint">
                         Since batch mode is on, please specify which parameters you need to specify per run (<b>run-specific</b>)
@@ -1544,42 +1661,42 @@ class JobCreationPrep extends React.Component {
                         </tr>
                     </thead>
                     <tbody>
-                        {this.props.configData.params.map( (p) => (
-                            <tr key={p.param_name}> 
+                        {this.props.configData.params.map((p) => (
+                            <tr key={p.param_name}>
                                 <td>
                                     {p.param_name}&nbsp;
                                     <Tooltip
                                         title={"Info ".concat(p.param_name).concat(":")}
                                     >
                                         {p.doc ? (
-                                                p.doc.replaceAll("\\n", "\n").replaceAll("\\t", "\t") 
-                                            ) : (
-                                                "no info available"
-                                            )
+                                            p.doc.replaceAll("\\n", "\n").replaceAll("\\t", "\t")
+                                        ) : (
+                                            "no info available"
+                                        )
                                         }
                                     </Tooltip>
                                 </td>
                                 <td>
-                                    {p.is_array && 
+                                    {p.is_array &&
                                         "List of "
                                     }
                                     {p.type}
-                                    {p.optional && 
+                                    {p.optional &&
                                         " [optional]"
                                     }
                                 </td>
                                 {this.state.batchMode ? (
-                                        <td>
-                                            global &nbsp;
-                                            <BooleanSlider
-                                                name="param_mode_select"
-                                                value={p.param_name}
-                                                onChange={this.changeParamMode}
-                                                checked={this.state.param_modes[p.param_name]}
-                                            />
-                                            &nbsp; run-specific
-                                        </td>
-                                    ) : (null)
+                                    <td>
+                                        global &nbsp;
+                                        <BooleanSlider
+                                            name="param_mode_select"
+                                            value={p.param_name}
+                                            onChange={this.changeParamMode}
+                                            checked={this.state.param_modes[p.param_name]}
+                                        />
+                                        &nbsp; run-specific
+                                    </td>
+                                ) : (null)
                                 }
                             </tr>
                         ))}
@@ -1588,31 +1705,31 @@ class JobCreationPrep extends React.Component {
             </div>
         )
 
-        if (this.state.display == "prep"){
+        if (this.state.display == "prep") {
             // eval of string should be changed
-            return(
+            return (
                 <div>
                     {this.props.configData.templ_meta.doc && (
                         <span>
                             <h3>Workflow info:</h3>
-                            <p style={ {whiteSpace: "pre-wrap"} } >
-                                {eval("String(\"" + this.props.configData.templ_meta.doc+ "\")")}
+                            <p style={{ whiteSpace: "pre-wrap" }} >
+                                {eval("String(\"" + this.props.configData.templ_meta.doc + "\")")}
                             </p>
-                            <hr/>
+                            <hr />
                         </span>
                     )}
                     <h3>Job ID:</h3>
                     {jobNameForm}
-                    <hr/>
+                    <hr />
                     <h3>Batch Submission:</h3>
                     {batchForm}
-                    <hr/>
+                    <hr />
                     <h3>Input parameters:</h3>
                     {paramTable}
-                    <hr/>
+                    <hr />
                     <h3>Provide Parameter Values:</h3>
                     <p>
-                        To provide parameter values, the convenient HTML form can be used (recommended for most use cases). 
+                        To provide parameter values, the convenient HTML form can be used (recommended for most use cases).
                         Alternatively, a spreadsheet can be used (Excel or OpenOffice) which is mainly for very large datasets (over 50 runs) or
                         when you would like to make use of the advanced parameter validation and manipulation options.
                     </p>
@@ -1638,7 +1755,7 @@ class JobCreationPrep extends React.Component {
             )
         }
         else {
-            return(
+            return (
                 <div>
                     <ActionButton
                         name="prep"
@@ -1647,46 +1764,58 @@ class JobCreationPrep extends React.Component {
                         onAction={this.toggleParamForm}
                     />
                     {this.state.display == "form_ssheet" ? (
-                            <div>
-                                <JobParamFormSpreadsheet
-                                    cwlTarget={this.props.cwlTarget}
-                                    param_modes={this.state.param_modes}
-                                    batchMode={this.state.batchMode}
-                                    run_names={this.state.run_names}
-                                    jobName={this.jobNameNum + "_" + this.state.job_name}
-                                    changeSearchDir={this.changeSearchDir}
-                                    changeIncludeSubDirsForSearching={this.changeIncludeSubDirsForSearching}
-                                    changeEnableUriValidation={this.changeEnableUriValidation}
-                                    changeEnablePathSearching={this.changeEnablePathSearching}
-                                    validateURIs={this.state.validateURIs}
-                                    searchPaths={this.state.searchPaths}
-                                    searchDir={this.state.searchDir}
-                                    includeSubbDirsForSearching={this.state.includeSubbDirsForSearching}
-                                    prevPath={this.state.prevPath}
-                                    changePrevPath={this.changePrevPath}
-                                />
-                            </div>
-                        ) : (
-                            <div>
-                                <JobParamFormHTML
-                                    cwlTarget={this.props.cwlTarget}
-                                    param_modes={this.state.param_modes}
-                                    batchMode={this.state.batchMode}
-                                    run_names={this.state.run_names}
-                                    jobName={this.jobNameNum + "_" + this.state.job_name}
-                                    changeSearchDir={this.changeSearchDir}
-                                    changeIncludeSubDirsForSearching={this.changeIncludeSubDirsForSearching}
-                                    changeEnableUriValidation={this.changeEnableUriValidation}
-                                    changeEnablePathSearching={this.changeEnablePathSearching}
-                                    validateURIs={this.state.validateURIs}
-                                    searchPaths={this.state.searchPaths}
-                                    searchDir={this.state.searchDir}
-                                    includeSubbDirsForSearching={this.state.includeSubbDirsForSearching}
-                                    prevPath={this.state.prevPath}
-                                    changePrevPath={this.changePrevPath}
-                                />
-                            </div>
-                        )
+                        <div>
+                            <JobParamFormSpreadsheet
+                                cwlTarget={this.props.cwlTarget}
+                                param_modes={this.state.param_modes}
+                                batchMode={this.state.batchMode}
+                                run_names={this.state.run_names}
+                                jobName={this.jobNameNum + "_" + this.state.job_name}
+                                changeSearchDir={this.changeSearchDir}
+                                changeIncludeSubDirsForSearching={this.changeIncludeSubDirsForSearching}
+                                changeEnableUriValidation={this.changeEnableUriValidation}
+                                changeEnablePathSearching={this.changeEnablePathSearching}
+                                changeInputField={this.changeInputField}
+                                validateURIs={this.state.validateURIs}
+                                searchPaths={this.state.searchPaths}
+                                searchDir={this.state.searchDir}
+                                includeSubbDirsForSearching={this.state.includeSubbDirsForSearching}
+                                prevPath={this.state.prevPath}
+                                changePrevPath={this.changePrevPath}
+                                s3_url={this.props.s3Url}
+                                s3_access_key={this.props.s3AccessKey}
+                                s3_secret_key={this.props.s3SecretKey}
+                                s3_bucket_name={this.props.s3BucketName}
+                                s3_object_name={this.props.s3ObjectName}
+                            />
+                        </div>
+                    ) : (
+                        <div>
+                            <JobParamFormHTML
+                                cwlTarget={this.props.cwlTarget}
+                                param_modes={this.state.param_modes}
+                                batchMode={this.state.batchMode}
+                                run_names={this.state.run_names}
+                                jobName={this.jobNameNum + "_" + this.state.job_name}
+                                changeSearchDir={this.changeSearchDir}
+                                changeIncludeSubDirsForSearching={this.changeIncludeSubDirsForSearching}
+                                changeEnableUriValidation={this.changeEnableUriValidation}
+                                changeEnablePathSearching={this.changeEnablePathSearching}
+                                changeInputField={this.changeInputField}
+                                validateURIs={this.state.validateURIs}
+                                searchPaths={this.state.searchPaths}
+                                searchDir={this.state.searchDir}
+                                includeSubbDirsForSearching={this.state.includeSubbDirsForSearching}
+                                prevPath={this.state.prevPath}
+                                changePrevPath={this.changePrevPath}
+                                s3_url={this.props.s3Url}
+                                s3_access_key={this.props.s3AccessKey}
+                                s3_secret_key={this.props.s3SecretKey}
+                                s3_bucket_name={this.props.s3BucketName}
+                                s3_object_name={this.props.s3ObjectName}
+                            />
+                        </div>
+                    )
                     }
                 </div>
             )
@@ -1704,7 +1833,7 @@ class JobTemplConfigInfoAjax extends React.Component {
         this.buildContentOnSuccess = this.buildContentOnSuccess.bind(this);
     }
 
-    buildContentOnSuccess(data){ // when AJAX request succeeds
+    buildContentOnSuccess(data) { // when AJAX request succeeds
         return (<JobCreationPrep configData={data} cwlTarget={this.props.cwlTarget} />);
     }
 
@@ -1713,9 +1842,9 @@ class JobTemplConfigInfoAjax extends React.Component {
             <AjaxComponent
                 key={this.props.cwlTarget}
                 requestRoute={routeGetJobTemplConfigInfo}
-                sendData={ {
+                sendData={{
                     wf_target: this.props.cwlTarget
-                } }
+                }}
                 buildContentOnSuccess={this.buildContentOnSuccess}
                 loaderSize="large"
                 loaderMessage="Loading template infos."
@@ -1727,27 +1856,27 @@ class JobTemplConfigInfoAjax extends React.Component {
 class JobTemplList extends React.Component {
     constructor(props) {
         super(props);
-        this.state = {whichFocus: ""}; // no list item is focues by default
+        this.state = { whichFocus: "" }; // no list item is focues by default
         this.changeFocus = this.changeFocus.bind(this);
     }
 
-    changeFocus(newFocusValue){
-        this.setState({whichFocus: newFocusValue});
+    changeFocus(newFocusValue) {
+        this.setState({ whichFocus: newFocusValue });
     }
 
     render() {
-        const itemValues = this.props.templFilesInfo.map( (tf) => tf.wf_target);
+        const itemValues = this.props.templFilesInfo.map((tf) => tf.wf_target);
         const itemNames = itemValues; // here no distinction between values and names neccessary
         let itemContent = (
             <div>
-                <DisplayServerMessages messages={this.props.initMessages}/> 
+                <DisplayServerMessages messages={this.props.initMessages} />
                 <p>
                     <i className="fas fa-arrow-left"></i>
                     Select a CWL document to make a new job.
                 </p>
             </div>
         )
-        if(this.state.whichFocus != "") {
+        if (this.state.whichFocus != "") {
             itemContent = <JobTemplConfigInfoAjax cwlTarget={this.state.whichFocus} />
         }
 
@@ -1770,16 +1899,16 @@ class CreateJobRoot extends React.Component {
         this.buildContentOnSuccess = this.buildContentOnSuccess.bind(this);
     }
 
-    buildContentOnSuccess(data, messages){ // when AJAX request succeeds
+    buildContentOnSuccess(data, messages) { // when AJAX request succeeds
         return (
-            <div style={ {height:"100%"} }>
-                { data.length > 0 ? (
-                        <JobTemplList templFilesInfo={data} initMessages={messages}/>
-                    ) : (
-                        <Message type="info">
-                            No job templates found. Please import a CWL document.
-                        </Message>
-                    )
+            <div style={{ height: "100%" }}>
+                {data.length > 0 ? (
+                    <JobTemplList templFilesInfo={data} initMessages={messages} />
+                ) : (
+                    <Message type="info">
+                        No job templates found. Please import a CWL document.
+                    </Message>
+                )
                 }
             </div>
         );
@@ -1789,7 +1918,7 @@ class CreateJobRoot extends React.Component {
         return (
             <AjaxComponent
                 requestRoute={routeGetJobTemplList}
-                sendData={ {} }
+                sendData={{}}
                 buildContentOnSuccess={this.buildContentOnSuccess}
                 loaderSize="large"
                 loaderMessage="Loading available job templates"

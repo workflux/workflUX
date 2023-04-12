@@ -16,12 +16,13 @@ from shutil import move, copyfile, rmtree
 from json import loads as json_loads
 from workflux.users.manage import login_required
 from workflux.log import handle_known_error, handle_unknown_error
+from minio import Minio
+from minio.error import S3Error
 
 
-
-@app.route('/get_job_templ_list/', methods=['GET','POST'])
+@app.route('/get_job_templ_list/', methods=['GET', 'POST'])
 def get_job_templ_list():   # returns list of job templates
-                            # for already imported CWL documents
+    # for already imported CWL documents
     messages = []
     templates = []
     try:
@@ -30,19 +31,19 @@ def get_job_templ_list():   # returns list of job templates
         login_required(access_token=access_token)
         templates = get_job_templates()
     except AssertionError as e:
-        messages.append( handle_known_error(e, return_front_end_message=True))
+        messages.append(handle_known_error(e, return_front_end_message=True))
     except Exception as e:
         messages.append(handle_unknown_error(e, return_front_end_message=True))
     return jsonify({
-            "data": templates,
-            "messages": messages
-        }
+        "data": templates,
+        "messages": messages
+    }
     )
 
 
 @app.route('/get_job_templ_config_info/', methods=['POST'])
-def get_job_templ_config_info():    # returns all parmeter and its default mode (global/job specific) 
-                                    # for a given xls config
+def get_job_templ_config_info():    # returns all parmeter and its default mode (global/job specific)
+    # for a given xls config
     messages = []
     param_config_info = []
     template_metadata = []
@@ -54,21 +55,21 @@ def get_job_templ_config_info():    # returns all parmeter and its default mode 
         param_config_info = get_job_templ_info("config", wf_target)
         template_metadata = get_job_templ_info("metadata", wf_target)
     except AssertionError as e:
-        messages.append( handle_known_error(e, return_front_end_message=True))
+        messages.append(handle_known_error(e, return_front_end_message=True))
     except Exception as e:
         messages.append(handle_unknown_error(e, return_front_end_message=True))
     return jsonify({
-        "data":{
-            "params":param_config_info,
+        "data": {
+            "params": param_config_info,
             "templ_meta": template_metadata,
         },
-        "messages":messages
+        "messages": messages
     })
 
 
 @app.route('/generate_param_form_sheet/', methods=['POST'])
 def generate_param_form_sheet():    # generate param form sheet with data sent
-                                    # by the client
+    # by the client
     messages = []
     data = {}
     try:
@@ -81,12 +82,14 @@ def generate_param_form_sheet():    # generate param form sheet with data sent
         param_modes = data_req["param_modes"]
         run_names = data_req["run_names"]
         batch_mode = data_req["batch_mode"]
-        temp_dir = make_temp_dir() # will stay, need to be cleaned up
+        temp_dir = make_temp_dir()  # will stay, need to be cleaned up
         temp_dir_name = os.path.basename(temp_dir)
-        output_file_path = os.path.join(temp_dir, f"{job_name}_inputs.{sheet_format}")
+        output_file_path = os.path.join(
+            temp_dir, f"{job_name}_inputs.{sheet_format}")
         gen_form_sheet(
-            output_file_path = output_file_path,
-            template_config_file_path = get_path("job_templ", wf_target=wf_target),
+            output_file_path=output_file_path,
+            template_config_file_path=get_path(
+                "job_templ", wf_target=wf_target),
             has_multiple_runs=batch_mode,
             run_names=run_names,
             param_is_run_specific=param_modes,
@@ -94,22 +97,22 @@ def generate_param_form_sheet():    # generate param form sheet with data sent
             metadata={"workflow_name": wf_target}
         )
         data["get_form_sheet_href"] = url_for(
-            "get_param_form_sheet", 
+            "get_param_form_sheet",
             job_name=job_name,
             temp_dir_name=temp_dir_name,
-            access_token=access_token ## should be changed
+            access_token=access_token  # should be changed
         )
     except AssertionError as e:
-        messages.append( handle_known_error(e, return_front_end_message=True))
+        messages.append(handle_known_error(e, return_front_end_message=True))
     except Exception as e:
         messages.append(handle_unknown_error(e, return_front_end_message=True))
     return jsonify({
-        "data":data,
-        "messages":messages
+        "data": data,
+        "messages": messages
     })
 
 
-@app.route('/get_param_form_sheet/', methods=['GET','POST'])
+@app.route('/get_param_form_sheet/', methods=['GET', 'POST'])
 def get_param_form_sheet():
     messages = []
     data = {}
@@ -135,16 +138,17 @@ def get_param_form_sheet():
         return send_from_directory(
             os.path.dirname(sheet_path),
             os.path.basename(sheet_path),
-            attachment_filename=job_name + "_inputs" + os.path.splitext(sheet_path)[1],
+            attachment_filename=job_name + "_inputs" +
+            os.path.splitext(sheet_path)[1],
             as_attachment=True
         )
     except AssertionError as e:
-        messages.append( handle_known_error(e, return_front_end_message=True))
+        messages.append(handle_known_error(e, return_front_end_message=True))
     except Exception as e:
         messages.append(handle_unknown_error(e, return_front_end_message=True))
     return jsonify({
-        "data":data,
-        "messages":messages
+        "data": data,
+        "messages": messages
     })
 
 
@@ -165,37 +169,40 @@ def create_job_from_param_form_sheet():
         assert import_file.filename != '', "No file specified."
 
         assert is_allowed_file(import_file.filename, type="spreadsheet"), "Wrong file type. Only files with following extensions are allowed: " + \
-                ", ".join(allowed_extensions_by_type["spreadsheet"])
+            ", ".join(allowed_extensions_by_type["spreadsheet"])
 
-        sheet_format = os.path.splitext(import_file.filename)[1].strip(".").lower()
-        
+        sheet_format = os.path.splitext(import_file.filename)[
+            1].strip(".").lower()
+
         job_name = metadata["job_name"]
         import_filepath = os.path.join(temp_dir, f"param_sheet.{sheet_format}")
         import_file.save(import_filepath)
 
         validate_uris = metadata["validate_uris"]
         search_paths = metadata["search_paths"]
-        search_dir = os.path.abspath(remove_non_printable_characters(metadata["search_dir"]))
-        include_subdirs_for_searching = metadata["include_subdirs_for_searching"] 
+        search_dir = os.path.abspath(
+            remove_non_printable_characters(metadata["search_dir"]))
+        include_subdirs_for_searching = metadata["include_subdirs_for_searching"]
 
         if search_paths:
             # test if search dir exists:
-            assert os.path.isdir(search_dir), ("The specified search dir \"" + 
-                search_dir + 
-                "\" does not exist or is not a directory."
-            )
-            
+            assert os.path.isdir(search_dir), ("The specified search dir \"" +
+                                               search_dir +
+                                               "\" does not exist or is not a directory."
+                                               )
+
         # validate the uploaded form sheet:
         validation_result = only_validate_xls(
             sheet_file=import_filepath,
-            validate_uris=validate_uris, 
-            search_paths=search_paths, 
-            search_subdirs=include_subdirs_for_searching, 
-            allow_remote_uri=app.config["INPUT_SOURCES"]["URL"], 
-            allow_local_path=app.config["INPUT_SOURCES"]["local_file_system"], 
+            validate_uris=validate_uris,
+            search_paths=search_paths,
+            search_subdirs=include_subdirs_for_searching,
+            allow_remote_uri=app.config["INPUT_SOURCES"]["URL"],
+            allow_local_path=app.config["INPUT_SOURCES"]["local_file_system"],
             input_dir=search_dir
         )
-        assert validation_result == "VALID", "The provided form failed validation: {}".format(validation_result)
+        assert validation_result == "VALID", "The provided form failed validation: {}".format(
+            validation_result)
 
         # create job:
         make_job_dir_tree(job_name)
@@ -209,25 +216,24 @@ def create_job_from_param_form_sheet():
             search_dir=search_dir,
             sheet_format=sheet_format
         )
-            
+
     except AssertionError as e:
-        messages.append( handle_known_error(e, return_front_end_message=True))
+        messages.append(handle_known_error(e, return_front_end_message=True))
     except Exception as e:
         messages.append(handle_unknown_error(e, return_front_end_message=True))
-    
+
     if len(messages) == 0:
-        messages.append( { 
-            "type":"success", 
+        messages.append({
+            "type": "success",
             "text": f"Job {job_name} was successfully created. Please head over to \"Job Execution and Results\""
-        } )
-    
+        })
+
     try:
         rmtree(temp_dir)
     except Exception:
         pass
 
-    return jsonify({"data":data,"messages":messages})
-
+    return jsonify({"data": data, "messages": messages})
 
 
 @app.route('/create_job_from_param_values/', methods=['POST'])
@@ -249,14 +255,15 @@ def create_job_from_param_values():
 
         validate_uris = data_req["validate_uris"]
         search_paths = data_req["search_paths"]
-        search_dir = os.path.abspath(remove_non_printable_characters(data_req["search_dir"]))
-        include_subdirs_for_searching = data_req["include_subdirs_for_searching"] 
+        search_dir = os.path.abspath(
+            remove_non_printable_characters(data_req["search_dir"]))
+        include_subdirs_for_searching = data_req["include_subdirs_for_searching"]
 
         if search_paths:
             # test if search dir exists:
             assert os.path.isdir(search_dir), (
-                "The specified search dir \"" + 
-                search_dir + 
+                "The specified search dir \"" +
+                search_dir +
                 "\" does not exist or is not a directory."
             )
         try:
@@ -265,11 +272,11 @@ def create_job_from_param_values():
                     "param_values": param_values,
                     "configs": param_configs,
                     "output_file": import_filepath,
-                    "validate_uris": validate_uris, 
-                    "search_paths": search_paths, 
-                    "search_subdirs": include_subdirs_for_searching, 
-                    "allow_remote_uri": app.config["INPUT_SOURCES"]["URL"], 
-                    "allow_local_path": app.config["INPUT_SOURCES"]["local_file_system"], 
+                    "validate_uris": validate_uris,
+                    "search_paths": search_paths,
+                    "search_subdirs": include_subdirs_for_searching,
+                    "allow_remote_uri": app.config["INPUT_SOURCES"]["URL"],
+                    "allow_local_path": app.config["INPUT_SOURCES"]["local_file_system"],
                     "input_dir": search_dir,
                     "metadata": {"workflow_name": wf_target}
                 }
@@ -278,16 +285,17 @@ def create_job_from_param_values():
                 param_values=param_values,
                 configs=param_configs,
                 output_file=import_filepath,
-                validate_uris=validate_uris, 
-                search_paths=search_paths, 
-                search_subdirs=include_subdirs_for_searching, 
-                allow_remote_uri=app.config["INPUT_SOURCES"]["URL"], 
-                allow_local_path=app.config["INPUT_SOURCES"]["local_file_system"], 
+                validate_uris=validate_uris,
+                search_paths=search_paths,
+                search_subdirs=include_subdirs_for_searching,
+                allow_remote_uri=app.config["INPUT_SOURCES"]["URL"],
+                allow_local_path=app.config["INPUT_SOURCES"]["local_file_system"],
                 input_dir=search_dir,
                 metadata={"workflow_name": wf_target}
             )
         except AssertionError as e:
-            raise AssertionError("The provided form failed validation: {}".format(str(e)))
+            raise AssertionError(
+                "The provided form failed validation: {}".format(str(e)))
 
         # create job:
         make_job_dir_tree(job_name)
@@ -303,25 +311,26 @@ def create_job_from_param_values():
         )
 
     except AssertionError as e:
-        messages.append( handle_known_error(e, return_front_end_message=True))
+        messages.append(handle_known_error(e, return_front_end_message=True))
     except Exception as e:
         messages.append(handle_unknown_error(e, return_front_end_message=True))
 
     if len(messages) == 0:
-        messages.append( { 
-            "type":"success", 
+        messages.append({
+            "type": "success",
             "text": f"Job {job_name} was successfully created. Please head over to \"Job Execution and Results\""
-        } )
-    
+        })
+
     try:
         rmtree(temp_dir)
     except Exception:
         pass
 
-    return jsonify({"data":data,"messages":messages})
+    return jsonify({"data": data, "messages": messages})
 
-@app.route('/get_param_values/', methods=['GET','POST'])
-def get_param_values():    
+
+@app.route('/get_param_values/', methods=['GET', 'POST'])
+def get_param_values():
     messages = []
     data = {}
     try:
@@ -329,9 +338,10 @@ def get_param_values():
         access_token = data_req["access_token"]
         login_required(access_token=access_token)
         param_values, configs = gen_form_sheet(
-            output_file_path = None,
-            template_config_file_path = get_path("job_templ", wf_target=data_req["wf_target"]),
-            has_multiple_runs= data_req["batch_mode"],
+            output_file_path=None,
+            template_config_file_path=get_path(
+                "job_templ", wf_target=data_req["wf_target"]),
+            has_multiple_runs=data_req["batch_mode"],
             run_names=data_req["run_names"],
             param_is_run_specific=data_req["param_modes"],
             show_please_fill=True,
@@ -342,10 +352,39 @@ def get_param_values():
             "configs": configs
         }
     except AssertionError as e:
-        messages.append( handle_known_error(e, return_front_end_message=True))
+        messages.append(handle_known_error(e, return_front_end_message=True))
     except Exception as e:
         messages.append(handle_unknown_error(e, return_front_end_message=True))
     return jsonify({
-        "data":data,
-        "messages":messages
+        "data": data,
+        "messages": messages
     })
+
+
+@app.route('/create_presigned_s3_url/', methods=['POST'])
+def create_presigned_s3_url():
+    messages = []
+    data = []
+    try:
+        data_req = request.get_json()
+        s3_url = data_req["s3_url"]
+        s3_access_key = data_req["s3_access_key"]
+        s3_secret_key = data_req["s3_secret_key"]
+        s3_bucket_name = data_req["s3_bucket_name"]
+        s3_object_name = data_req["s3_object_name"]
+        client = Minio(s3_url, access_key=s3_access_key,
+                       secret_key=s3_secret_key)
+        try:
+            response = client.get_presigned_url(
+                "GET", bucket_name=s3_bucket_name, object_name=s3_object_name)
+            messages.append(response)
+        except S3Error as e:
+            messages.append(handle_known_error(
+                e, return_front_end_message=True))
+    except AssertionError as e:
+        messages.append(handle_known_error(e, return_front_end_message=True))
+    # change this to unknown error in production mode
+    except Exception as e:
+        messages.append(handle_known_error(e, return_front_end_message=True))
+
+    return jsonify({"data": data, "messages": messages})
