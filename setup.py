@@ -47,7 +47,7 @@ setup(
         "defusedxml==0.7.1",
         "docker==5.0.3",
         "et-xmlfile==1.1.0",
-        "Flask==2.0.2",
+        "Flask==2.3.2",
         "Flask-Login==0.5.0",
         "Flask-SQLAlchemy==2.5.1",
         "Flask-WTF==1.0.0",
