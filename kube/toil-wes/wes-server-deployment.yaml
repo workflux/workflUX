@@ -1,0 +1,70 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  annotations:
+    kompose.cmd: kompose convert --volumes hostPath
+    kompose.version: 1.26.1 (a9d05d509)
+    traefik.enable: "true"
+    traefik.http.middlewares.auth.basicauth.users: test:$2y$12$ci.4U63YX83CwkyUrjqxAucnmi2xXOIlEF6T/KdP9824f1Rf1iyNG
+    traefik.http.routers.wes.entrypoints: web
+    traefik.http.routers.wes.middlewares: auth
+    traefik.http.routers.wes.rule: Host(192.168.49.2)
+    traefik.http.routers.wespublic.rule: Host(192.168.49.2) && Path(`/ga4gh/wes/v1/service-info`)
+  creationTimestamp: null
+  labels:
+    io.kompose.service: wes-server
+  name: wes-server
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      io.kompose.service: wes-server
+  strategy:
+    type: Recreate
+  template:
+    metadata:
+      annotations:
+        kompose.cmd: kompose convert --volumes hostPath
+        kompose.version: 1.26.1 (a9d05d509)
+        traefik.enable: "true"
+        traefik.http.middlewares.auth.basicauth.users: test:$2y$12$ci.4U63YX83CwkyUrjqxAucnmi2xXOIlEF6T/KdP9824f1Rf1iyNG
+        traefik.http.routers.wes.entrypoints: web
+        traefik.http.routers.wes.middlewares: auth
+        traefik.http.routers.wes.rule: Host(192.168.49.2)
+        traefik.http.routers.wespublic.rule: Host(192.168.49.2) && Path(`/ga4gh/wes/v1/service-info`)
+      creationTimestamp: null
+      labels:
+        io.kompose.service: wes-server
+    spec:
+      containers:
+        - args:
+            - toil
+            - server
+            - --host
+            - 0.0.0.0
+            - --port
+            - "8000"
+            - --work_dir
+            - /tmp/toil-workflows
+          env:
+            - name: TOIL_WES_BROKER_URL
+              value: amqp://guest:guest@rabbitmq:5672//
+          image: quay.io/ucsc_cgl/toil:5.7.0a1-dd3b68001c02f65c5d856a670677b99db07793c8-py3.8
+          name: wes-server
+          ports:
+            - containerPort: 8000
+          resources: {}
+          volumeMounts:
+            - mountPath: /tmp/toil-workflows/
+              name: wes-server-outputs
+            # - mountPath: /tmp/toil-workflow/
+            #   name: wes-server-hostpath0
+      volumes:
+        - persistentVolumeClaim:
+            claimName: wes-server-pvc
+          name: wes-server-outputs
+        # - hostPath:
+        #     path: /tmp/toil-workflows/
+        #   name: wes-server-hostpath0
+      restartPolicy: Always
+status: {}

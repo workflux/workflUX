@@ -1,0 +1,71 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  annotations:
+    kompose.cmd: kompose convert --volumes hostPath
+    kompose.version: 1.26.1 (a9d05d509)
+  creationTimestamp: null
+  labels:
+    io.kompose.service: celery
+  name: celery
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      io.kompose.service: celery
+  strategy:
+    type: Recreate
+  template:
+    metadata:
+      annotations:
+        kompose.cmd: kompose convert --volumes hostPath
+        kompose.version: 1.26.1 (a9d05d509)
+      creationTimestamp: null
+      labels:
+        io.kompose.service: celery
+    spec:
+      containers:
+        - args:
+            - celery
+            - --broker=amqp://guest:guest@rabbitmq:5672//
+            - -A
+            - toil.server.celery_app
+            - worker
+            - --loglevel=INFO
+          image: quay.io/ucsc_cgl/toil:5.7.0a1-dd3b68001c02f65c5d856a670677b99db07793c8-py3.8
+          name: celery
+          resources: {}
+          volumeMounts:
+            - mountPath: /tmp/toil-workflows/
+              name: wes-server-outputs
+            - mountPath: /var/run/docker.sock
+              name: celery-hostpath0
+            - mountPath: /var/lib/docker
+              name: celery-hostpath1
+            - mountPath: /var/lib/toil
+              name: celery-hostpath2
+            - mountPath: /var/lib/cwl
+              name: celery-hostpath3
+            # - mountPath: /tmp/toil-workflow
+            #   name: celery-hostpath4
+      restartPolicy: Always
+      volumes:
+        - persistentVolumeClaim:
+            claimName: wes-server-pvc
+          name: wes-server-outputs
+        - hostPath:
+            path: /var/run/docker.sock
+          name: celery-hostpath0
+        - hostPath:
+            path: /var/lib/docker
+          name: celery-hostpath1
+        - hostPath:
+            path: /var/lib/toil
+          name: celery-hostpath2
+        - hostPath:
+            path: /var/lib/cwl
+          name: celery-hostpath3
+        # - hostPath:
+        #     path: /tmp/toil-workflow
+        #   name: celery-hostpath4
+status: {}

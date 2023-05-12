@@ -1,0 +1,30 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: workflux
+  labels:
+    app: workflux
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: workflux
+  template:
+    metadata:
+      labels:
+        app: workflux
+    spec:
+      containers:
+      - image: rewo/wf:toil-wes
+        imagePullPolicy: Always
+        name: workflux
+        ports:
+          - containerPort: 5000
+        volumeMounts:
+          - mountPath: /tmp/toil-workflows/
+            name: wes-server-outputs
+      restartPolicy: Always
+      volumes:
+        - persistentVolumeClaim:
+            claimName: wes-server-pvc
+          name: wes-server-outputs

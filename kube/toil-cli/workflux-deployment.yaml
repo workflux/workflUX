@@ -1,0 +1,23 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: workflux-deployment
+  labels:
+    app: workflux
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: workflux
+  template:
+    metadata:
+      labels:
+        app: workflux
+    spec:
+      containers:
+      - image: rewo/wf:toil-cli
+        imagePullPolicy: Always
+        name: workflux
+        ports:
+        - containerPort: 5000
+      restartPolicy: Always

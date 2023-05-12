@@ -1,0 +1,27 @@
+apiVersion: v1
+kind: Service
+metadata:
+  annotations:
+    kompose.cmd: kompose convert --volumes hostPath
+    kompose.version: 1.26.1 (a9d05d509)
+    traefik.enable: "true"
+    traefik.http.middlewares.auth.basicauth.users: test:$2y$12$ci.4U63YX83CwkyUrjqxAucnmi2xXOIlEF6T/KdP9824f1Rf1iyNG
+    traefik.http.routers.wes.entrypoints: web
+    traefik.http.routers.wes.middlewares: auth
+    traefik.http.routers.wes.rule: Host(192.168.49.2)
+    traefik.http.routers.wespublic.rule: Host(192.168.49.2) && Path(`/ga4gh/wes/v1/service-info`)
+  creationTimestamp: null
+  labels:
+    io.kompose.service: wes-server
+  name: wes-server
+spec:
+  type: NodePort
+  ports:
+    - name: "8000"
+      port: 8000
+      targetPort: 8000
+      nodePort: 30000
+  selector:
+    io.kompose.service: wes-server
+status:
+  loadBalancer: {}
