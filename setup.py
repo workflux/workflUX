@@ -117,7 +117,7 @@ setup(
         "texttable==1.6.4",
         "trs-cli==0.7.0",
         "typing_extensions==4.0.0",
-        "urllib3==1.26.7",
+        "urllib3==1.26.17",
         "wcwidth==0.2.5",
         "websocket-client==1.2.1",
         "Werkzeug==2.0.2",
