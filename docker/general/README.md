@@ -19,7 +19,7 @@ provide an appropriate `/etc/passwd`-file.
 From the root of the repository call:
 
 ```bash
-docker build -t <imagename> -f docker/dev/Dockerfile
+docker build -t <imagename> -f docker/dev/Dockerfile .
 ```
 
 ### Run the container
