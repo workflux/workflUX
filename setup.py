@@ -54,7 +54,7 @@ setup(
         "graphviz==0.18.2",
         "greenlet==1.1.2",
         "humanfriendly==10.0",
-        "idna==3.3",
+        "idna==3.7",
         "illusional.wdlgen==0.3.0",
         "importlib-metadata==4.8.2",
         "isodate==0.6.0",
