@@ -87,7 +87,7 @@ setup(
         "prov==1.5.1",
         "psutil==5.8.0",
         "ptyprocess==0.7.0",
-        "pydantic==1.8.2",
+        "pydantic==1.10.13",
         "pydot==1.4.2",
         "pyexcel==0.6.7",
         "pyexcel-ezodf==0.3.4",
