@@ -67,7 +67,7 @@ setup(
         "janis-pipelines.templates==0.12.0",
         "janis-pipelines.unix==0.11.2",
         "jdcal==1.4.1",
-        "Jinja2==3.1.3",
+        "Jinja2==3.1.4",
         "lark-parser==0.12.0",
         "lml==0.1.0",
         "lockfile==0.12.2",
