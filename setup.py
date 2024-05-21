@@ -105,7 +105,7 @@ setup(
         "rdflib==4.2.2",
         "rdflib-jsonld==0.5.0",
         "regex==2021.11.10",
-        "requests==2.31.0",
+        "requests==2.32.0",
         "requests-mock==1.9.3",
         "responses==0.16.0",
         "ruamel.yaml==0.16.5",
