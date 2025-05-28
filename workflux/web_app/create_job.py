@@ -135,7 +135,7 @@ def get_param_form_sheet():
         return send_from_directory(
             os.path.dirname(sheet_path),
             os.path.basename(sheet_path),
-            attachment_filename=job_name + "_inputs" + os.path.splitext(sheet_path)[1],
+            download_name=job_name + "_inputs" + os.path.splitext(sheet_path)[1],
             as_attachment=True
         )
     except AssertionError as e:
