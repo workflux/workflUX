@@ -168,7 +168,7 @@ def download():
             return send_from_directory(
                 os.path.dirname(path),
                 os.path.basename(path),
-                attachment_filename=os.path.basename(path),
+                download_name=os.path.basename(path),
                 as_attachment=True
             )
     except AssertionError as e:
