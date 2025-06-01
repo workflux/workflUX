@@ -125,7 +125,7 @@ setup(
         "xdg==5.1.1",
         "xlrd==2.0.1",
         "xlwt==1.3.0",
-        "zipp==3.6.0",
+        "zipp==3.19.1",
     ],
     classifiers=[
         'Development Status :: 4 - Beta',
